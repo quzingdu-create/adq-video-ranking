@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>视频号TOP直播间爆款素材榜单 · 2026-04-22</title>
+<style>
+  :root {
+    /* 靓丽浅色主题 */
+    --bg-0: #f5f7fb;
+    --bg-1: #ffffff;
+    --bg-glass: #ffffff;
+    --border: #e4e9f2;
+    --border-hover: #c8d3e8;
+    --text-0: #1e2a3b;
+    --text-1: #5a6b85;
+    --text-2: #8a9ab5;
+
+    /* 主色 — 品牌紫蓝渐变 */
+    --accent: #6366f1;
+    --accent-2: #8b5cf6;
+    --accent-soft: rgba(99, 102, 241, 0.10);
+
+    /* Top 三甲 */
+    --gold-1: #ffd76a;
+    --gold-2: #f59e0b;
+    --silver-1: #e8edf5;
+    --silver-2: #94a3b8;
+    --bronze-1: #f4a572;
+    --bronze-2: #c2410c;
+
+    /* 语义色 */
+    --good: #10b981;
+    --bad: #ef4444;
+    --warn: #f59e0b;
+    --info: #3b82f6;
+    --pink: #ec4899;
+    --teal: #14b8a6;
+
+    /* 行业标签色 */
+    --c-jewelry: #f59e0b;
+    --c-men: #3b82f6;
+    --c-women: #ec4899;
+    --c-sport: #10b981;
+    --c-bag: #8b5cf6;
+    --c-acc: #14b8a6;
+    --c-underwear: #f43f5e;
+    --c-other: #6366f1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-0);
+    color: var(--text-0);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-feature-settings: "tnum";
+    font-size: 16px;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 10% 0%, rgba(139, 92, 246, 0.12), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 0%, rgba(236, 72, 153, 0.10), transparent 60%),
+      radial-gradient(ellipse 80% 40% at 50% 100%, rgba(99, 102, 241, 0.08), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 32px 28px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== Header ===== */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .title-block h1 {
+    margin: 0 0 6px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .title-block .subtitle {
+    color: var(--text-1);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .title-block .date-badge {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 5px 16px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    vertical-align: 6px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .stat {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.05);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .stat:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(99, 102, 241, 0.1); }
+  .stat .num {
+    font-size: 26px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat .label {
+    font-size: 12px;
+    color: var(--text-1);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .history-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .history-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.4);
+  }
+
+  /* ===== 行业导航胶囊 ===== */
+  .industry-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding: 16px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.04);
+  }
+  .industry-pill {
+    padding: 8px 16px;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-0);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .industry-pill:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+
+  /* ===== 搜索框 ===== */
+  .search-bar {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .search-bar input {
+    flex: 1;
+    min-width: 260px;
+    padding: 14px 20px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text-0);
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.04);
+  }
+  .search-bar input::placeholder { color: var(--text-2); }
+  .search-bar input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  /* ===== 行业卡片 ===== */
+  .industry-card {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    margin-bottom: 22px;
+    overflow: hidden;
+    scroll-margin-top: 20px;
+    box-shadow: 0 4px 16px rgba(30, 42, 59, 0.04);
+  }
+  .industry-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--ind-color-soft, rgba(99, 102, 241, 0.08)) 0%, transparent 100%);
+  }
+  .industry-header .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ind-color, #6366f1);
+    box-shadow: 0 0 0 4px var(--ind-color-soft, rgba(99, 102, 241, 0.15));
+  }
+  .industry-header .name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-0);
+  }
+  .industry-header .count {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    background: var(--ind-color, #6366f1);
+    border-radius: 999px;
+  }
+
+  /* ===== 表格 ===== */
+  .ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .ranking-table thead th {
+    background: var(--bg-0);
+    color: var(--text-1);
+    font-weight: 600;
+    font-size: 13px;
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .ranking-table thead th:hover { color: var(--accent); }
+  .ranking-table thead th.sortable::after {
+    content: " ⇅";
+    color: var(--text-2);
+    font-size: 11px;
+  }
+  .ranking-table thead th.sort-asc::after { content: " ↑"; color: var(--accent); }
+  .ranking-table thead th.sort-desc::after { content: " ↓"; color: var(--accent); }
+
+  .ranking-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  .ranking-table tbody tr:hover {
+    background: rgba(99, 102, 241, 0.04);
+  }
+  .ranking-table tbody tr:last-child { border-bottom: none; }
+  .ranking-table td {
+    padding: 16px 18px;
+    vertical-align: middle;
+    color: var(--text-0);
+    font-size: 15px;
+  }
+
+  /* Top3 行特殊底色 */
+  .ranking-table tbody tr.top-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 106, 0.14), rgba(255, 215, 106, 0.02));
+  }
+  .ranking-table tbody tr.top-2 {
+    background: linear-gradient(90deg, rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.02));
+  }
+  .ranking-table tbody tr.top-3 {
+    background: linear-gradient(90deg, rgba(244, 165, 114, 0.14), rgba(244, 165, 114, 0.02));
+  }
+
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    background: var(--bg-0);
+    color: var(--text-1);
+    border: 1px solid var(--border);
+  }
+  .rank-1 {
+    width: 42px; height: 42px;
+    font-size: 17px;
+    background: linear-gradient(135deg, #ffd76a 0%, #f59e0b 100%);
+    color: #78350f;
+    border: 2px solid #fcd34d;
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.45), 0 0 0 4px rgba(252, 211, 77, 0.25);
+    position: relative;
+  }
+  .rank-1::before {
+    content: "👑";
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+  }
+  .rank-2 {
+    width: 40px; height: 40px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+    color: #334155;
+    border: 2px solid #cbd5e1;
+    box-shadow: 0 4px 14px rgba(148, 163, 184, 0.4);
+  }
+  .rank-3 {
+    width: 40px; height: 40px;
+    font-size: 16px;
+    background: linear-gradient(135deg, #f4a572 0%, #c2410c 100%);
+    color: #fff;
+    border: 2px solid #fb923c;
+    box-shadow: 0 4px 14px rgba(194, 65, 12, 0.4);
+  }
+
+  .account {
+    font-weight: 700;
+    color: var(--text-0);
+    font-size: 15.5px;
+  }
+  tr.top-1 .account { color: #b45309; font-size: 16.5px; }
+  tr.top-2 .account { color: #475569; font-size: 16px; }
+  tr.top-3 .account { color: #c2410c; font-size: 16px; }
+
+  .category-path {
+    display: block;
+    color: var(--text-2);
+    font-size: 12.5px;
+    margin-top: 3px;
+    max-width: 340px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .num-cell {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    font-weight: 600;
+  }
+  .metric-ctr { color: var(--info); }
+  .metric-cvr { color: var(--teal); }
+  .metric-roi {
+    font-weight: 700;
+    color: var(--good);
+    font-size: 15.5px;
+  }
+  .metric-price { color: var(--text-0); font-weight: 600; }
+  .metric-refund-low { color: var(--good); }
+  .metric-refund-mid { color: var(--warn); }
+  .metric-refund-high { color: var(--bad); font-weight: 700; }
+
+  /* ===== 素材单元 ===== */
+  .material-cell {
+    width: 130px;
+    text-align: center;
+  }
+  .material-thumb {
+    position: relative;
+    display: inline-block;
+    width: 72px;
+    height: 104px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border: 2px solid transparent;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  }
+  .material-thumb:hover {
+    transform: scale(1.08);
+    border-color: var(--accent);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  }
+  .material-thumb .play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 28px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.5));
+    pointer-events: none;
+  }
+  .material-thumb .thumb-label {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1px 6px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .material-live {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #fecaca, #fca5a5);
+    color: #991b1b;
+    border: 1px solid #f87171;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .material-copy-btn {
+    display: block;
+    margin: 8px auto 0;
+    padding: 4px 12px;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+  }
+  .material-copy-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .material-copy-btn.copied {
+    border-color: var(--good);
+    color: var(--good);
+    background: rgba(16, 185, 129, 0.1);
+  }
+
+  /* ===== 播放弹窗 ===== */
+  .video-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .video-modal.active { display: flex; }
+  .video-modal-inner {
+    position: relative;
+    width: min(90vw, 420px);
+    aspect-ratio: 9/16;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+  .video-modal-inner video {
+    width: 100%;
+    height: 100%;
+  }
+  .video-modal-close {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    backdrop-filter: blur(8px);
+  }
+  .video-modal-close:hover { background: rgba(255, 255, 255, 0.25); }
+
+  /* ===== 历史抽屉 ===== */
+  .history-drawer {
+    position: fixed;
+    top: 0;
+    right: -360px;
+    width: 340px;
+    height: 100vh;
+    background: var(--bg-1);
+    border-left: 1px solid var(--border);
+    transition: right 0.25s ease;
+    z-index: 90;
+    padding: 28px;
+    overflow-y: auto;
+    box-shadow: -8px 0 32px rgba(30, 42, 59, 0.1);
+  }
+  .history-drawer.open { right: 0; }
+  .history-drawer h3 {
+    margin: 0 0 18px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-0);
+  }
+  .history-date-item {
+    display: block;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: var(--bg-0);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-0);
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .history-date-item:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateX(-2px);
+  }
+  .history-date-item.current {
+    border-color: var(--accent);
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  }
+
+  /* ===== 空态 ===== */
+  .empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 768px) {
+    .container { padding: 20px 12px 60px; }
+    .title-block h1 { font-size: 24px; }
+    .stats { gap: 8px; }
+    .stat { padding: 10px 14px; }
+    .stat .num { font-size: 20px; }
+    .category-path { display: none; }
+    .ranking-table { font-size: 13px; }
+    .ranking-table td, .ranking-table th { padding: 10px 10px; font-size: 13px; }
+    .material-thumb { width: 56px; height: 80px; }
+    .industry-nav { padding: 12px; }
+    .industry-pill { font-size: 12.5px; padding: 6px 12px; }
+    .rank-1, .rank-2, .rank-3 { width: 32px; height: 32px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="title-block">
+      <h1>视频号TOP直播间爆款素材榜单<span class="date-badge">2026-04-22</span></h1>
+      <div class="subtitle">二级行业分组 · 每类 Top 10 · 按日均消耗降序</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">80</div><div class="label">视频号</div></div>
+      <div class="stat"><div class="num">8</div><div class="label">行业</div></div>
+      <div class="stat"><div class="num">16</div><div class="label">直播画面</div></div>
+      <button class="history-btn" onclick="toggleHistory()">历史 →</button>
+    </div>
+  </header>
+
+  <nav class="industry-nav" id="industryNav"></nav>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍 搜索视频号、类目...">
+  </div>
+
+  <div id="rankingRoot"></div>
+</div>
+
+<!-- 播放弹窗 -->
+<div class="video-modal" id="videoModal" onclick="closeVideo(event)">
+  <div class="video-modal-inner">
+    <button class="video-modal-close" onclick="closeVideo()">✕</button>
+    <video id="modalVideo" controls autoplay loop playsinline></video>
+  </div>
+</div>
+
+<!-- 历史抽屉 -->
+<div class="history-drawer" id="historyDrawer">
+  <h3>📅 历史榜单</h3>
+  <div id="historyList"></div>
+</div>
+
+<script>
+let DATA = null;
+let CURRENT_SORT = {}; // { industryName: {key, dir} }
+
+// 行业配色映射（CSS variable）
+const INDUSTRY_COLORS = {
+  '珠宝文玩': { c: '#f59e0b', s: 'rgba(245, 158, 11, 0.12)' },
+  '男装':    { c: '#3b82f6', s: 'rgba(59, 130, 246, 0.12)' },
+  '女装':    { c: '#ec4899', s: 'rgba(236, 72, 153, 0.12)' },
+  '运动户外':{ c: '#10b981', s: 'rgba(16, 185, 129, 0.12)' },
+  '运动':    { c: '#10b981', s: 'rgba(16, 185, 129, 0.12)' },
+  '箱包鞋靴':{ c: '#8b5cf6', s: 'rgba(139, 92, 246, 0.12)' },
+  '配饰':    { c: '#14b8a6', s: 'rgba(20, 184, 166, 0.12)' },
+  '贴身衣物':{ c: '#f43f5e', s: 'rgba(244, 63, 94, 0.12)' },
+  '其他':    { c: '#6366f1', s: 'rgba(99, 102, 241, 0.12)' }
+};
+function getIndColor(ind) {
+  return INDUSTRY_COLORS[ind] || INDUSTRY_COLORS['其他'];
+}
+
+// ---- 初始化：加载 ranking_data.json ----
+async function init() {
+  try {
+    const res = await fetch('ranking_data.json?t=' + Date.now());
+    DATA = await res.json();
+    renderNav();
+    renderAll();
+    loadHistory();
+  } catch (e) {
+    document.getElementById('rankingRoot').innerHTML =
+      '<div class="empty">❌ 加载数据失败：' + e.message + '</div>';
+  }
+}
+
+// ---- 渲染行业导航 ----
+function renderNav() {
+  const nav = document.getElementById('industryNav');
+  nav.innerHTML = DATA.industry_order
+    .filter(ind => DATA.groups[ind] && DATA.groups[ind].length > 0)
+    .map(ind => {
+      const col = getIndColor(ind);
+      return `<a class="industry-pill" href="#ind-${slug(ind)}" style="--pill-c:${col.c};">${escapeHtml(ind)} · ${DATA.groups[ind].length}</a>`;
+    })
+    .join('');
+}
+
+// ---- 渲染所有行业榜单 ----
+function renderAll() {
+  const root = document.getElementById('rankingRoot');
+  root.innerHTML = DATA.industry_order
+    .filter(ind => DATA.groups[ind] && DATA.groups[ind].length > 0)
+    .map(ind => renderIndustryCard(ind, DATA.groups[ind]))
+    .join('');
+
+  // 绑定排序事件
+  root.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const industry = th.closest('.industry-card').dataset.industry;
+      const key = th.dataset.key;
+      const cur = CURRENT_SORT[industry] || {};
+      const dir = (cur.key === key && cur.dir === 'desc') ? 'asc' : 'desc';
+      CURRENT_SORT[industry] = { key, dir };
+      sortAndRerender(industry);
+    });
+  });
+
+  // 搜索
+  document.getElementById('searchInput').addEventListener('input', handleSearch);
+}
+
+function renderIndustryCard(industry, rows) {
+  const id = 'ind-' + slug(industry);
+  const col = getIndColor(industry);
+  return `
+    <section class="industry-card" id="${id}" data-industry="${escapeAttr(industry)}"
+             style="--ind-color:${col.c}; --ind-color-soft:${col.s};">
+      <div class="industry-header">
+        <span class="dot"></span>
+        <span class="name">${escapeHtml(industry)}</span>
+        <span class="count">Top ${rows.length}</span>
+      </div>
+      <table class="ranking-table">
+        <thead>
+          <tr>
+            <th style="width:62px;">#</th>
+            <th>视频号名称</th>
+            <th class="sortable" data-key="ctr" style="text-align:right;">CTR(%)</th>
+            <th class="sortable" data-key="cvr" style="text-align:right;">CVR(%)</th>
+            <th class="sortable" data-key="roi" style="text-align:right;">下单 ROI</th>
+            <th class="sortable" data-key="price" style="text-align:right;">客单价(元)</th>
+            <th class="sortable" data-key="refund_rate" style="text-align:right;">24H 退款率</th>
+            <th style="width:140px;text-align:center;">素材</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(renderRow).join('')}
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
+function renderRow(r) {
+  const rankClass = r.rank <= 3 ? `rank-${r.rank}` : '';
+  const rowClass = r.rank <= 3 ? `top-${r.rank}` : '';
+  const refundClass = r.refund_rate < 10 ? 'metric-refund-low'
+                    : r.refund_rate < 15 ? 'metric-refund-mid'
+                    : 'metric-refund-high';
+  return `
+    <tr class="${rowClass}" data-account="${escapeAttr(r.account)}" data-category="${escapeAttr(r.category_path)}">
+      <td><span class="rank-badge ${rankClass}">${r.rank}</span></td>
+      <td>
+        <span class="account">${escapeHtml(r.account)}</span>
+        <span class="category-path" title="${escapeAttr(r.category_path)}">${escapeHtml(r.category_path)}</span>
+      </td>
+      <td class="num-cell metric-ctr">${fmt(r.ctr, 1)}</td>
+      <td class="num-cell metric-cvr">${fmt(r.cvr, 1)}</td>
+      <td class="num-cell metric-roi">${escapeHtml(r.roi.label || '-')}</td>
+      <td class="num-cell metric-price">${r.price ?? '-'}</td>
+      <td class="num-cell ${refundClass}">${fmt(r.refund_rate, 1)}</td>
+      <td class="material-cell">${renderMaterial(r)}</td>
+    </tr>
+  `;
+}
+
+function renderMaterial(r) {
+  if (!r.material || r.material.is_live || !r.material.src) {
+    return `<span class="material-live">📡 直播画面</span>`;
+  }
+  const src = r.material.src;
+  // 视频懒加载：不用 <video preload>，改成纯 CSS 占位图 + 点击才播放
+  return `
+    <div class="material-thumb" onclick="openVideo('${escapeAttr(src)}')" title="点击播放">
+      <div class="play-icon">▶</div>
+      <span class="thumb-label">视频</span>
+    </div>
+    <button class="material-copy-btn" onclick="copyLink(this, '${escapeAttr(src)}')">复制链接</button>
+  `;
+}
+
+// ---- 排序 ----
+function sortAndRerender(industry) {
+  const { key, dir } = CURRENT_SORT[industry];
+  const rows = [...DATA.groups[industry]];
+  rows.sort((a, b) => {
+    const va = getSortVal(a, key);
+    const vb = getSortVal(b, key);
+    if (va === vb) return 0;
+    return (dir === 'desc' ? -1 : 1) * (va > vb ? 1 : -1);
+  });
+  const card = document.querySelector(`.industry-card[data-industry="${escapeAttr(industry)}"]`);
+  card.querySelector('tbody').innerHTML = rows.map(renderRow).join('');
+  // 更新表头状态
+  card.querySelectorAll('th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.key === key) th.classList.add('sort-' + dir);
+  });
+}
+
+function getSortVal(r, key) {
+  if (key === 'roi') return r.roi.lower ?? 0;
+  return r[key] ?? 0;
+}
+
+// ---- 搜索 ----
+function handleSearch(e) {
+  const q = e.target.value.trim().toLowerCase();
+  document.querySelectorAll('.industry-card').forEach(card => {
+    let shown = 0;
+    card.querySelectorAll('tbody tr').forEach(tr => {
+      const acc = tr.dataset.account.toLowerCase();
+      const cat = tr.dataset.category.toLowerCase();
+      const match = !q || acc.includes(q) || cat.includes(q);
+      tr.style.display = match ? '' : 'none';
+      if (match) shown++;
+    });
+    card.style.display = shown > 0 ? '' : 'none';
+  });
+}
+
+// ---- 素材播放 ----
+function openVideo(src) {
+  const modal = document.getElementById('videoModal');
+  const video = document.getElementById('modalVideo');
+  video.src = src;
+  modal.classList.add('active');
+}
+function closeVideo(e) {
+  if (e && e.target.closest('.video-modal-inner')) return;
+  const modal = document.getElementById('videoModal');
+  const video = document.getElementById('modalVideo');
+  video.pause();
+  video.src = '';
+  modal.classList.remove('active');
+}
+
+// ---- 复制链接 ----
+async function copyLink(btn, src) {
+  try {
+    await navigator.clipboard.writeText(src);
+    btn.textContent = '✓ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '复制链接'; btn.classList.remove('copied'); }, 1500);
+  } catch (e) {
+    // 降级：createTextArea
+    const ta = document.createElement('textarea');
+    ta.value = src;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); btn.textContent = '✓ 已复制'; btn.classList.add('copied'); }
+    catch(_) { btn.textContent = '复制失败'; }
+    document.body.removeChild(ta);
+    setTimeout(() => { btn.textContent = '复制链接'; btn.classList.remove('copied'); }, 1500);
+  }
+}
+
+// ---- 历史 ----
+function toggleHistory() {
+  document.getElementById('historyDrawer').classList.toggle('open');
+}
+async function loadHistory() {
+  try {
+    const res = await fetch('history/index.json?t=' + Date.now());
+    const idx = await res.json();
+    const list = document.getElementById('historyList');
+    list.innerHTML = (idx.dates || [])
+      .map(d => `<a class="history-date-item ${d === DATA.date ? 'current' : ''}"
+                    onclick="loadDate('${d}')">${d}${d === DATA.date ? ' · 当前' : ''}</a>`)
+      .join('');
+  } catch (e) {
+    document.getElementById('historyList').innerHTML = '<div class="empty">暂无历史</div>';
+  }
+}
+async function loadDate(date) {
+  try {
+    const res = await fetch(`history/${date}.json?t=` + Date.now());
+    DATA = await res.json();
+    document.querySelector('.date-badge').textContent = date;
+    document.querySelector('.stats .stat:nth-child(1) .num').textContent = DATA.stats.total_accounts;
+    document.querySelector('.stats .stat:nth-child(2) .num').textContent = DATA.stats.industries_count;
+    document.querySelector('.stats .stat:nth-child(3) .num').textContent = DATA.stats.live_count;
+    CURRENT_SORT = {};
+    renderNav();
+    renderAll();
+    loadHistory();
+    toggleHistory();
+  } catch (e) {
+    alert('加载失败：' + e.message);
+  }
+}
+
+// ---- 工具 ----
+function fmt(n, d = 1) {
+  if (n === null || n === undefined) return '-';
+  return Number(n).toFixed(d);
+}
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+function slug(s) { return String(s).replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '-'); }
+
+// 键盘关闭弹窗
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeVideo();
+    document.getElementById('historyDrawer').classList.remove('open');
+  }
+});
+
+init();
+</script>
+
+</body>
+</html>
