@@ -677,9 +677,6 @@
       <div class="subtitle">二级行业分组 · 每类 Top 10 · 按日均消耗降序 · <span class="date-badge">2026-04-22</span></div>
     </div>
     <div class="stats">
-      <div class="stat"><div class="num">80</div><div class="label">视频号</div></div>
-      <div class="stat"><div class="num">8</div><div class="label">行业</div></div>
-      <div class="stat"><div class="num">16</div><div class="label">直播画面</div></div>
       <button class="history-btn" onclick="toggleHistory()">历史 →</button>
     </div>
   </header>
@@ -945,9 +942,6 @@ async function loadDate(date) {
     const res = await fetch(`history/${date}.json?t=` + Date.now());
     DATA = await res.json();
     document.querySelector('.date-badge').textContent = date;
-    document.querySelector('.stats .stat:nth-child(1) .num').textContent = DATA.stats.total_accounts;
-    document.querySelector('.stats .stat:nth-child(2) .num').textContent = DATA.stats.industries_count;
-    document.querySelector('.stats .stat:nth-child(3) .num').textContent = DATA.stats.live_count;
     CURRENT_SORT = {};
     renderNav();
     renderAll();
