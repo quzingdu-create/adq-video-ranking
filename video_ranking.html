@@ -809,9 +809,6 @@ function renderIndustryCard(industry, rows) {
 function renderRow(r) {
   const rankClass = r.rank <= 3 ? `rank-${r.rank}` : '';
   const rowClass = r.rank <= 3 ? `top-${r.rank}` : '';
-  const refundClass = r.refund_rate < 10 ? 'metric-refund-low'
-                    : r.refund_rate < 15 ? 'metric-refund-mid'
-                    : 'metric-refund-high';
   return `
     <tr class="${rowClass}" data-account="${escapeAttr(r.account)}" data-category="${escapeAttr(r.category_path)}">
       <td><span class="rank-badge ${rankClass}">${r.rank}</span></td>
@@ -823,10 +820,16 @@ function renderRow(r) {
       <td class="num-cell metric-cvr">${fmt(r.cvr, 1)}</td>
       <td class="num-cell metric-roi">${escapeHtml(r.roi.label || '-')}</td>
       <td class="num-cell metric-price">${r.price ?? '-'}</td>
-      <td class="num-cell ${refundClass}">${fmt(r.refund_rate, 1)}</td>
+      <td class="num-cell">${bucketRefund(r.refund_rate)}</td>
       <td class="material-cell">${renderMaterial(r)}</td>
     </tr>
   `;
+}
+
+function bucketRefund(v) {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  const lo = Math.floor(v / 5) * 5;
+  return `${lo}~${lo + 5}`;
 }
 
 function renderMaterial(r) {
