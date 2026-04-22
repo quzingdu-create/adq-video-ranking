@@ -108,18 +108,81 @@
   }
   .title-block .date-badge {
     display: inline-block;
-    margin-left: 12px;
-    padding: 5px 16px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff;
-    border-radius: 999px;
-    font-size: 15px;
-    font-weight: 700;
+    padding: 2px 10px;
+    background: rgba(99, 102, 241, 0.10);
+    color: var(--accent) !important;
+    -webkit-text-fill-color: var(--accent) !important;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-    vertical-align: 6px;
   }
+
+  /* ============ 反馈浮窗 ============ */
+  .fb-fab {
+    position: fixed; right: 24px; bottom: 24px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; border: none; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(99,102,241,.4);
+    font-size: 24px; z-index: 998;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s;
+  }
+  .fb-fab:hover { transform: scale(1.08) rotate(-8deg); }
+  .fb-mask {
+    position: fixed; inset: 0; background: rgba(15,23,42,.45);
+    backdrop-filter: blur(4px);
+    display: none; align-items: center; justify-content: center;
+    z-index: 999;
+  }
+  .fb-mask.show { display: flex; }
+  .fb-dialog {
+    background: #fff; border-radius: 16px; padding: 24px;
+    width: 92%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(15,23,42,.25);
+  }
+  .fb-dialog h3 { margin: 0 0 4px; font-size: 18px; color: var(--text-0); }
+  .fb-dialog .fb-sub { font-size: 13px; color: var(--text-2); margin-bottom: 16px; }
+  .fb-dialog label { display: block; font-size: 13px; color: var(--text-1); margin: 12px 0 6px; font-weight: 600; }
+  .fb-types { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fb-type-btn {
+    padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-size: 13px; color: var(--text-1);
+    transition: all .15s;
+  }
+  .fb-type-btn:hover { border-color: var(--accent); }
+  .fb-type-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; border-color: transparent;
+  }
+  .fb-dialog textarea {
+    width: 100%; box-sizing: border-box; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; font-family: inherit; resize: vertical;
+    min-height: 88px; outline: none;
+  }
+  .fb-dialog textarea:focus { border-color: var(--accent); }
+  .fb-actions { display: flex; gap: 10px; margin-top: 18px; justify-content: flex-end; }
+  .fb-btn {
+    padding: 9px 20px; border-radius: 10px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .fb-btn-cancel { background: var(--bg-0); color: var(--text-1); }
+  .fb-btn-submit {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+  }
+  .fb-btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+  .fb-toast {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    background: #10b981; color: #fff; padding: 10px 20px;
+    border-radius: 10px; font-size: 14px; z-index: 1001;
+    box-shadow: 0 8px 24px rgba(16,185,129,.3);
+    opacity: 0; transition: opacity .2s, transform .2s;
+  }
+  .fb-toast.show { opacity: 1; transform: translateX(-50%) translateY(8px); }
+  .fb-toast.err { background: #ef4444; box-shadow: 0 8px 24px rgba(239,68,68,.3); }
 
   .stats {
     display: flex;
@@ -603,14 +666,15 @@
     .rank-1, .rank-2, .rank-3 { width: 32px; height: 32px; font-size: 13px; }
   }
 </style>
+<script async defer src="https://cloud.umami.is/script.js" data-website-id="c6f2a3b7-8411-413d-971f-2f0c570186f7"></script>
 </head>
 <body>
 
 <div class="container">
   <header>
     <div class="title-block">
-      <h1>视频号TOP直播间爆款素材榜单<span class="date-badge">2026-04-22</span></h1>
-      <div class="subtitle">二级行业分组 · 每类 Top 10 · 按日均消耗降序</div>
+      <h1>视频号TOP直播间爆款素材榜单</h1>
+      <div class="subtitle">二级行业分组 · 每类 Top 10 · 按日均消耗降序 · <span class="date-badge">2026-04-22</span></div>
     </div>
     <div class="stats">
       <div class="stat"><div class="num">80</div><div class="label">视频号</div></div>
@@ -915,6 +979,103 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+</script>
+
+<!-- ============ 反馈浮窗 ============ -->
+<button class="fb-fab" onclick="fbOpen()" title="反馈">💬</button>
+<div class="fb-mask" id="fbMask" onclick="if(event.target===this)fbClose()">
+  <div class="fb-dialog">
+    <h3>反馈问题</h3>
+    <div class="fb-sub">看到数据异常或有建议？告诉我，会第二天修。</div>
+
+    <label>类型</label>
+    <div class="fb-types" id="fbTypes">
+      <button class="fb-type-btn active" data-type="bug">🐞 Bug</button>
+      <button class="fb-type-btn" data-type="data">📊 数据错</button>
+      <button class="fb-type-btn" data-type="suggest">💡 建议</button>
+      <button class="fb-type-btn" data-type="other">📝 其他</button>
+    </div>
+
+    <label>问题描述 <span style="color:#ef4444">*</span></label>
+    <textarea id="fbContent" placeholder="例：男装 Top3 的 xxx 视频号素材点开打不开 / 建议加个按 ROI 排序..."></textarea>
+
+    <div class="fb-actions">
+      <button class="fb-btn fb-btn-cancel" onclick="fbClose()">取消</button>
+      <button class="fb-btn fb-btn-submit" id="fbSubmit" onclick="fbSubmit()">提交</button>
+    </div>
+  </div>
+</div>
+<div class="fb-toast" id="fbToast"></div>
+
+<script>
+// 反馈 webhook（企微群机器人，由 push.js 注入）
+const FB_WEBHOOK = "";
+
+let FB_TYPE = 'bug';
+document.querySelectorAll('#fbTypes .fb-type-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('#fbTypes .fb-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    FB_TYPE = btn.dataset.type;
+  };
+});
+
+function fbOpen() { document.getElementById('fbMask').classList.add('show'); setTimeout(() => document.getElementById('fbContent').focus(), 100); }
+function fbClose() { document.getElementById('fbMask').classList.remove('show'); }
+
+function fbToast(msg, isErr) {
+  const t = document.getElementById('fbToast');
+  t.textContent = msg;
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+async function fbSubmit() {
+  const content = document.getElementById('fbContent').value.trim();
+  if (!content) { fbToast('描述不能为空', true); return; }
+  if (!FB_WEBHOOK || FB_WEBHOOK.indexOf('{{') === 0) {
+    fbToast('webhook 未配置，联系管理员', true); return;
+  }
+
+  const typeMap = { bug: '🐞 Bug', data: '📊 数据错', suggest: '💡 建议', other: '📝 其他' };
+  const text = [
+    `【ADQ 视频号榜单 · 用户反馈】`,
+    `类型：${typeMap[FB_TYPE] || FB_TYPE}`,
+    `日期：${(window.DATA && window.DATA.date) || '-'}`,
+    `UA：${navigator.userAgent.slice(0, 80)}`,
+    `内容：`,
+    content,
+  ].join('\n');
+
+  const btn = document.getElementById('fbSubmit');
+  btn.disabled = true; btn.textContent = '提交中…';
+  try {
+    const res = await fetch(FB_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ msgtype: 'text', text: { content: text } }),
+      mode: 'cors',
+    });
+    // 企微 webhook 成功返回 {"errcode":0}
+    let ok = res.ok;
+    try { const j = await res.json(); ok = ok && j.errcode === 0; } catch (e) {}
+    if (ok) {
+      fbToast('✅ 已提交，谢谢反馈！');
+      document.getElementById('fbContent').value = '';
+      setTimeout(fbClose, 800);
+    } else {
+      throw new Error('server rejected');
+    }
+  } catch (e) {
+    fbToast('提交失败：' + (e.message || 'network error'), true);
+  } finally {
+    btn.disabled = false; btn.textContent = '提交';
+  }
+}
+
+// ESC 关闭
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fbClose(); });
 </script>
 
 </body>
