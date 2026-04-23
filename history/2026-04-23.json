@@ -1,0 +1,1557 @@
+{
+  "date": "2026-04-23",
+  "generated_at": "2026-04-23T10:52:11+08:00",
+  "industry_order": [
+    "女装（童装）",
+    "贴身衣物",
+    "男装",
+    "运动鞋服",
+    "运动用品",
+    "箱包鞋靴",
+    "珠宝文玩",
+    "配饰"
+  ],
+  "stats": {
+    "total_accounts": 80,
+    "industries_count": 8,
+    "live_count": 13
+  },
+  "groups": {
+    "女装（童装）": [
+      {
+        "industry": "女装（童装）",
+        "category_path": "运动户外-户外服装/运动服装-健身/运动服装-健身衣/运动衣",
+        "account": "夏星臻选",
+        "ctr": 3.88,
+        "cvr": 12,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 59.6,
+        "refund_rate": 23.22,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53oycryaafseahpp6suvur65qedr3akhca.f0.mp4?dis_k=8a118c7981956721d8b9c4e4a0f87280&dis_t=1776236130&m=f9e360c6e9a909b2c66525131583e853&sha256=dc012bda349eb315434e5178d71d20ca6cc400bbd21ed3ee94ee053a4899fce7"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-背心/吊带",
+        "account": "哥弟商元家居服饰",
+        "ctr": 2.71,
+        "cvr": 8.27,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 167.31,
+        "refund_rate": 17.67,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b532ebcwaaceyapw7g6dburruiefpiqek2a.f0.mp4?dis_k=2dc7dcc574ad3c01b44a566135d14731&dis_t=1776079353&m=b8abb5f2ffff00dccb68d5ba4f9ced5f&sha256=67ee1c89a37dae1300187a7f285d525d03087568ba423d4a55ac3b85bd0e132e"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-T恤",
+        "account": "哥弟商元内衣旗舰店",
+        "ctr": 2.43,
+        "cvr": 4.99,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 214.35,
+        "refund_rate": 17.45,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 3
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-衬衫",
+        "account": "浙锦ZHEJIN",
+        "ctr": 3,
+        "cvr": 4.31,
+        "roi": {
+          "lower": 6.5,
+          "upper": 7,
+          "label": "6.5~7.0"
+        },
+        "price": 1573.05,
+        "refund_rate": 22.75,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b537ec3kaafwuaeee6z4fur76iewx4qlnka.f0.mp4?dis_k=a3daf6beaddb118328cc5f62b5b9fe70&dis_t=1776089139&m=c808d48d5d7d8351d746d6c5366cbea1&sha256=c8636e4e4940b6fb91f20e962fcac310e62938b394de2badbe923c13a7846511"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-T恤",
+        "account": "YOKO懿彄特伦",
+        "ctr": 4.29,
+        "cvr": 5.4,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 70.1,
+        "refund_rate": 17.3,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3lyciwaaegaadxkgo45ur4xqernpajc2a.f0.mp4?dis_k=5716144b3e3147dec60bfe3dc42ca59a&dis_t=1774891323&m=007286c0255e35638eb3d6ba54d9d801&sha256=2c3721d7ebed9baf06bcea1160fb64f15ade033fd102ecb0a61d0b20c855aff8"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-蕾丝衫/雪纺衫",
+        "account": "Koradior珂莱蒂尔官方",
+        "ctr": 0.56,
+        "cvr": 2.05,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 1175.18,
+        "refund_rate": 26.02,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 6
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-奶奶装",
+        "account": "雨泽中老年女装",
+        "ctr": 2.94,
+        "cvr": 6.99,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 122.62,
+        "refund_rate": 15.38,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc37aa6gaab3iaeikoz25urx6ae4p4ady2a.f0.mp4?dis_k=5f6f822290c087ac4063229002c53193&dis_t=1775806265&m=f90644be64b0641ceb8b681634da414d&sha256=39b724dc13ee2e7864a4e5af0e31f6004fa52f6c373ae4efea961b49b18763f4"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-上衣-Polo衫",
+        "account": "王王王大头OT设计师",
+        "ctr": 2.33,
+        "cvr": 16.88,
+        "roi": {
+          "lower": 15.5,
+          "upper": 16,
+          "label": "15.5~16.0"
+        },
+        "price": 451.26,
+        "refund_rate": 23.25,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3o4c6kaafjaammjph2jur65ye4v3qlzka.f0.mp4?dis_k=983f82d56dede69f2310ac8823643491&dis_t=1776427850&m=80a0eae196a7320ec97cf9c5d0f7ec47&sha256=85766692a856a78a956b1f9e3fa6e86ce230b170709184afb8ac3a1e41369ab9"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "运动户外-户外服装/运动服装-健身/运动服装-运动文胸/运动背心",
+        "account": "kolakola颂晗服装厂",
+        "ctr": 2.31,
+        "cvr": 9.15,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 69.86,
+        "refund_rate": 14.73,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53mebu6aaddaai4mnupbursyiej5qqgt2a.f0.mp4?dis_k=9326a0e0af4e156b138db7d9089638b8&dis_t=1774873645&m=d91a0db0350f1502027b62d0079a7963&sha256=e6d512ec9c91d9adff85acabb6acce6f774fa72788586dddd5708f3a0e8edcf9"
+        },
+        "rank": 9
+      },
+      {
+        "industry": "女装（童装）",
+        "category_path": "服饰鞋包-女装-裤子-休闲裤",
+        "account": "森衣惠女装.",
+        "ctr": 5.55,
+        "cvr": 5.83,
+        "roi": {
+          "lower": 4.5,
+          "upper": 5,
+          "label": "4.5~5.0"
+        },
+        "price": 129.39,
+        "refund_rate": 17.25,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3hecfsaaeniaiekwhqjub4oiele4qiwka.f0.mp4?dis_k=f30912c4a03303ba9219568b2d84cc6c&dis_t=1773395497&m=5148eba4943abd863bdf7863b419357e&sha256=068bfbd90798c33dbcb3f8e1bd6fae890c33bff709beceaf49836182146b7499"
+        },
+        "rank": 10
+      }
+    ],
+    "贴身衣物": [
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "婷美GRACEWELL内衣馆",
+        "ctr": 1.67,
+        "cvr": 11.13,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 229.71,
+        "refund_rate": 13.04,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3oqaaaaaah4apsiw4ijurw5aeab2aaaca.f0.mp4?dis_k=f789338da0cf562a34a6a7e78b590dc8&dis_t=1776089430"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "草本初色普碧",
+        "ctr": 1.6,
+        "cvr": 9.02,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 129.13,
+        "refund_rate": 11.87,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b535mad4aaajuac2sw7bfurv2yeh3vqapsa.f0.mp4?dis_k=f2d0f8a136a111f5758624843bc4edd3&dis_t=1776251948&m=68d7cdabd9dbaf09b80efb2f592e668c&sha256=12efe381c6eda20c331d22bdc36eaf94a46d2c0a92372bc7f2808a7d5f1c13ec"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-塑身衣/裤-塑身美体裤",
+        "account": "南极人春塘服饰",
+        "ctr": 2.82,
+        "cvr": 8.21,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 170.21,
+        "refund_rate": 11.81,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3zqc7maafbuakc4w2krur5tae63gal5sa.f0.mp4?dis_k=f7f77427fa83a23e311fd8c4b06183fb&dis_t=1776244693&m=bee6cec5b99e3896de3b204edd562c04"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "焕丽女王内衣服饰优选",
+        "ctr": 2.61,
+        "cvr": 4.13,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 69.89,
+        "refund_rate": 8.18,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3aqb74aadbyaaokghxjurqbae7ycah7sa.f0.mp4?dis_k=d16b68188354339dadb9f61970883d21&dis_t=1774517454&m=c2f6318757f08b5e9f39524ced22a8a1&sha256=b2c541a2492fae8d6c413b1afa566b9cf4cd3977e13c9653d4a1e2f522ccaa59"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "婷美GRACEWELL内衣生活馆店",
+        "ctr": 1.51,
+        "cvr": 8.6,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 234.12,
+        "refund_rate": 10.89,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b536yblqaac6qaj3dwyizurt5qexd3afoca.f0.mp4?dis_k=06fb163922d248014e5284b7be8c92e3&dis_t=1775904017&m=db8ab72c774e013484584cd500276e4e"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "曼妮芬旗舰店",
+        "ctr": 1.36,
+        "cvr": 7.25,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 276.6,
+        "refund_rate": 11.69,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53h4b2maadamao6qw5tnurspyeuy7qhjsa.f0.mp4?dis_k=fd92482bdaa67111c537ad319473206f&dis_t=1776175428&m=27291e27e4ed26472366eadf3d02670f&sha256=7a6c964d6bc64d54396260cd84ab957b2d0467aeb014354c6bed0ae011badad6"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "美嘉挺内衣品牌",
+        "ctr": 1.85,
+        "cvr": 6.83,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 69.98,
+        "refund_rate": 8.72,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53zec6kaafwaaedvgyurur7sie4xeqlzka.f0.mp4?dis_k=1a9b772e0401ff1a9831d6af262f168b&dis_t=1776133392&m=89eb76de282b532f54f86dbfb42213cb&sha256=b7a5104c83fc9e8d41bba3c191ab6b61b568d695344c8bdecb687699250a32e1"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-女士内裤",
+        "account": "梵客隆木绎内衣店",
+        "ctr": 2.66,
+        "cvr": 10.37,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 70.04,
+        "refund_rate": 10.95,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53dqai4aaa5iam3evjhnuruhaeryoabdsa.f0.mp4?dis_k=b3fc8495e9ecdf468b59cae37dcd303a&dis_t=1775844754&m=5c145bc36e693d6e42fc4829dec705c8&sha256=3dbdf97dcef6dfb6099e21573c099caf5c121d5441b423f8d3432bf058a586d2"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "完美记忆依兮小店",
+        "ctr": 1.66,
+        "cvr": 13.74,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 64.14,
+        "refund_rate": 13.98,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b537mdamaagyaan65xho5urz6yea35qmbsa.f0.mp4?dis_k=1a9ba80058c151fad3ffed0bfe130e36&dis_t=1776409131&m=e13bcd34c0f90ee0cc963229dc536d2c&sha256=1b5913c17abedfe9a69a09df7f9c4a96adfd65d57c7b6b5680bef3d9f2e29a42"
+        },
+        "rank": 9
+      },
+      {
+        "industry": "贴身衣物",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-文胸/乳贴/内裤-文胸",
+        "account": "欧迪芬Ordifen服饰生活馆",
+        "ctr": 2.51,
+        "cvr": 9.07,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 149.66,
+        "refund_rate": 12.22,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53sealwaaa64afsfwetfurveiexoiqbo2a.f0.mp4?dis_k=b2b531c21dfc774ae1dfdaff3724a20a&dis_t=1774515254&m=d14c372087daa3c6340ed6bd6eb632e4&sha256=d1d03394f60c64f11bd52c89ed7b42023f13dbdfd70966860dfafa667db40c67"
+        },
+        "rank": 10
+      }
+    ],
+    "男装": [
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-女装-上衣-T恤",
+        "account": "拇指白小T官方旗舰店",
+        "ctr": 2.38,
+        "cvr": 4.38,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 242.35,
+        "refund_rate": 12.86,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3diacoaaagyaf2gwmvburwgqee4naaj2a.f0.mp4?dis_k=97dbda08d1b4115810765419f7b5b36f&dis_t=1775008514&m=2afee6b3204a1e9ba1ec5ef1027001d1&sha256=9387fa3cfd5c80da201e366204f09c84ae8e43cf64829310586f4b447ca495e5"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-Polo衫",
+        "account": "拇指白小T运动商务",
+        "ctr": 1.71,
+        "cvr": 6.27,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 298.22,
+        "refund_rate": 12.86,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53dibdiaac6qaaut5hvzurqgqegqnaenca.f0.mp4?dis_k=e65cc716987a2a33bfb01989f50299ea&dis_t=1774261904&m=e20dbfdfe9e0a635490d07dfb20ee5ec&sha256=12d164ea831b47e83a9df54f6e2a4f5af85b7623ef245f68d2c80cc9807f8a66"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-Polo衫",
+        "account": "皮尔卡丹男装服饰配件",
+        "ctr": 2.41,
+        "cvr": 11.07,
+        "roi": {
+          "lower": 4,
+          "upper": 4.5,
+          "label": "4.0~4.5"
+        },
+        "price": 101,
+        "refund_rate": 15.55,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 3
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-T恤",
+        "account": "思小简纯棉T恤",
+        "ctr": 1.75,
+        "cvr": 5.49,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 104.16,
+        "refund_rate": 8.83,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53hucd2aaea4abwlglcbur4piehu6qipka.f0.mp4?dis_k=be69875c3ffb5201ec93ab981fd45774&dis_t=1776416499&m=a3051c8b16005501f999a2699c000335&sha256=81bb727b486e9bf1960ddba682ca61633319b7ab09dcdfd5bf5889d62b615368"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "男装",
+        "category_path": "运动户外-户外服装/运动服装-防晒衣/皮肤衣",
+        "account": "恒源祥奥莱店",
+        "ctr": 2.89,
+        "cvr": 4.84,
+        "roi": {
+          "lower": 3.5,
+          "upper": 4,
+          "label": "3.5~4.0"
+        },
+        "price": 199.42,
+        "refund_rate": 16.33,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3hadagaags4apllgybjur2oaeam4ama2a.f0.mp4?dis_k=4bf18524d3861f519b062c1e8d81cd98&dis_t=1776222117&m=d9ddbd89177736ed6c21a75e2a3d5ccd&sha256=b2e0e5ed4e439212bb94eda96dde7371a2ee8b505e58ac584c6f7f8f5052645e"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-T恤",
+        "account": "新随衣品牌特卖",
+        "ctr": 3.82,
+        "cvr": 3.81,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 144.8,
+        "refund_rate": 13.01,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53aicveaafyaap6egwvjur6aqekibakusa.f0.mp4?dis_k=9e80e067e5a10301657e01bca3e3bb94&dis_t=1775480295&m=b625d9ed267aca0753495df0ed742f12&sha256=e6bbd516f6185ce650c7bbd7df417bb25277c5a95283cea094cb7166ed8afdcb"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-T恤",
+        "account": "吉普Jeep辉腾",
+        "ctr": 2.66,
+        "cvr": 6.98,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 139.7,
+        "refund_rate": 11.95,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53nybmyaacq4ajrmvjavurq3qezrxaftca.f0.mp4?dis_k=813c3e8681f30260c8e77858b9031b89&dis_t=1773189157&m=f68b3bc17596f62b60ff7c2f4095b1e4&sha256=9457dc362101db2699d4cc5c9938c48dd5a09dabb9e56769e62d0777f0356883"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-裤子-休闲裤",
+        "account": "老爷车芃集轻奢男装",
+        "ctr": 4.97,
+        "cvr": 6.21,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 99.59,
+        "refund_rate": 10.47,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc33uausaabkyajsdwzdzurxxiejhoqcska.f0.mp4?dis_k=7be8f1a52b3b0e78d16bcd8c16309654&dis_t=1775817603&m=33f3e3b7c69424a218f45cb942c737f1&sha256=a8ede26308896b85f7d28547a1f9276f06d8a654651a66ec4a667d79c83b0a1b"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-男装-上衣-T恤",
+        "account": "白小T服饰店",
+        "ctr": 1.68,
+        "cvr": 5.88,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 317.91,
+        "refund_rate": 11.39,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc34ibesaac4eak64ostjtrryqejhraeska.f0.mp4?dis_k=7f20152f2850f647de919087889fc588&dis_t=1748586131&sha256=dd91fb458ffb8654f56e0fe2ee99a64d1338a2396d2ea2bd81c5a21632b0f95e&m=0d7ed4f35a58e1fe62d2d317faed8327"
+        },
+        "rank": 9
+      },
+      {
+        "industry": "男装",
+        "category_path": "服饰鞋包-女装-上衣-T恤",
+        "account": "霞湖世家官方旗舰店",
+        "ctr": 2.8,
+        "cvr": 6.22,
+        "roi": {
+          "lower": 5.5,
+          "upper": 6,
+          "label": "5.5~6.0"
+        },
+        "price": 172.85,
+        "refund_rate": 16.53,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3cqbqkaadzaap7zf7qfursfaeaukagbka.f0.mp4?dis_k=35eaac5df0e5f21157b878c8029cd266&dis_t=1773992873&m=de67dbbd40261308ca3c8062d01b156d&sha256=6b64bbd72b766cf0fcd8997b95730225cc53bba8154d7e3707e836a90e4c6094"
+        },
+        "rank": 10
+      }
+    ],
+    "运动鞋服": [
+      {
+        "industry": "运动鞋服",
+        "category_path": "服饰鞋包-女装-裤子-休闲裤",
+        "account": "SIINSIIN星钥品牌",
+        "ctr": 2.8,
+        "cvr": 10.02,
+        "roi": {
+          "lower": 4.5,
+          "upper": 5,
+          "label": "4.5~5.0"
+        },
+        "price": 270.06,
+        "refund_rate": 14.04,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3tibn6aaciqairz6q4jurrgqe36nafx2a.f0.mp4?dis_k=5067647e64c9049c3223354cb0c1968d&dis_t=1776148734&m=2db26ef8db965ee404bfabeff7bb9c92&sha256=6bab121ec84ac992a3235c34467df0935c620d528b376e90235ebe8b614153b7"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-防晒服配-防晒口罩/防晒脖套",
+        "account": "小野和子服饰品牌",
+        "ctr": 2.39,
+        "cvr": 16.78,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 70.81,
+        "refund_rate": 18.29,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3omb62aadvaaatxw2xburs4ye5vzqh3ka.f0.mp4?dis_k=1cdb598304273754e8332b18adcc0a59&dis_t=1775890832&m=d0b26bb215df70d6fbb49a24f6fba90a&sha256=5ae5a7604e88f6244d6ae9115e25254b29efc73013d2c2ef37e429b02229e40f"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "服饰鞋包-女装-裤子-休闲裤",
+        "account": "SIINSIIN女装品牌店",
+        "ctr": 2.3,
+        "cvr": 9.1,
+        "roi": {
+          "lower": 4.5,
+          "upper": 5,
+          "label": "4.5~5.0"
+        },
+        "price": 266.06,
+        "refund_rate": 12.86,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc36qbdsaacgyabha65prurr5aehh2aeoka.f0.mp4?dis_k=4a81b0eaf54fb2fd2fcac5b4ccccb0a1&dis_t=1776415141&m=8e744d26d3d12ed340cf04e427a2affd&sha256=d736e7e8b216c8e8868db2b06eaa25696ddcb9f05227e69333de9bcd4e47a6cb"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "运动户外-户外服装/运动服装-防晒衣/皮肤衣",
+        "account": "小野和子女装品牌",
+        "ctr": 2.12,
+        "cvr": 8.83,
+        "roi": {
+          "lower": 3.5,
+          "upper": 4,
+          "label": "3.5~4.0"
+        },
+        "price": 182.39,
+        "refund_rate": 16.44,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53tqaecaaamuaky26aa5urvhaeigoaaqka.f0.mp4?dis_k=bdd48a85da5af0569c4b8dd3ebf89633&dis_t=1774251711&m=2b657ba895df193a67fa7082d46748b9&sha256=a463168286dba0719e8e7700dda565b3b696320749f9d0954d0e01e0ff4a15e2"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "运动户外-户外服装/运动服装-冲锋衣裤-冲锋衣",
+        "account": "KAILAS凯乐石",
+        "ctr": 0.37,
+        "cvr": 0,
+        "roi": {
+          "lower": 0,
+          "upper": 0.5,
+          "label": "0.0~0.5"
+        },
+        "price": 880,
+        "refund_rate": 0,
+        "material": {
+          "is_live": false,
+          "src": null
+        },
+        "rank": 5
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "服饰鞋包-内衣裤袜/睡衣/家居服-袜子-连裤袜/打底袜",
+        "account": "小野和子品牌直播间",
+        "ctr": 1.74,
+        "cvr": 15.32,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 80.66,
+        "refund_rate": 9.65,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3qyajgaaajeae4awe2nurvbqesodabe2a.f0.mp4?dis_k=88416b4fb1ecc495ef2e9abf997b7fc4&dis_t=1774581508&m=834f3fb8c06d182c78c19c2df29ee833&sha256=b2275bfd5f9c1071f0bf54d9b0905b3ac85e698f29b1281a9f78baf941c6575b"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "运动户外-登山/攀岩/攀冰-登山鞋/徒步鞋/越野鞋",
+        "account": "KAILASFUGA",
+        "ctr": 2.74,
+        "cvr": 0.96,
+        "roi": {
+          "lower": 4.5,
+          "upper": 5,
+          "label": "4.5~5.0"
+        },
+        "price": 1219.05,
+        "refund_rate": 17.77,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 7
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "运动户外-户外服装/运动服装-速干衣裤-速干T恤",
+        "account": "UTO悠途",
+        "ctr": 3.14,
+        "cvr": 3.7,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 214.43,
+        "refund_rate": 15.92,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3oebmyaaceiafhcwvbburq4iezryqftca.f0.mp4?dis_k=1560d77279d61a172d9bbb668e98dfec&dis_t=1776328128&m=19034c57f912ce05b39bd101284a4080&sha256=6c7415af3e0c247781aa571aa8034460855879a900c61de564921f866f5e19af"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "运动户外-户外服装/运动服装-速干衣裤-速干T恤",
+        "account": "UTO悠途户外运动",
+        "ctr": 3.03,
+        "cvr": 3.89,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 168.18,
+        "refund_rate": 12.7,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53myajiaaa6yaolr67qzuruzqesrtabfca.f0.mp4?dis_k=84668e52929a578b71a233baadf73249&dis_t=1776251287&m=818df9f6948f4f768e48011e37736327"
+        },
+        "rank": 9
+      },
+      {
+        "industry": "运动鞋服",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-防晒服配-防晒口罩/防晒脖套",
+        "account": "小野和子服饰专场",
+        "ctr": 2.26,
+        "cvr": 13.55,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 55.47,
+        "refund_rate": 12.63,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53baauaaab2iamztgnlrurwcaeiaeacqca.f0.mp4?dis_k=6ab15dd080e57d131190286bbf5de852&dis_t=1775112442&m=1cfb6b7c21e44c4d65c161ea48573c0c&sha256=d7162518ad8687329f66c73cc93c74cbe3c98e7a78d2512c7f9e3f00255bb3ec"
+        },
+        "rank": 10
+      }
+    ],
+    "运动用品": [
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-露营/野炊/旅行装备-帐篷/天幕/帐篷配件-帐篷",
+        "account": "太力户外帐篷店",
+        "ctr": 3.69,
+        "cvr": 0.71,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 1603.31,
+        "refund_rate": 18.44,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3nebtiaadpialj45mvburs2iegruqgnca.f0.mp4?dis_k=7274c3f1a2f08f2abb05f8f25c96c396&dis_t=1773219314&m=67e3395d3bae0bbd530b4cffb21e3d5b&sha256=362d6a146166ec376751c8f59877a21da96a6b3a10d55bc603cd14e15b07546f"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-运动装备-运动护具-运动护膝",
+        "account": "康舒护具",
+        "ctr": 2.09,
+        "cvr": 5.55,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 103.2,
+        "refund_rate": 15.44,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53hicvuaafleap6korqfub6oqeli5akwsa.f0.mp4?dis_k=f2027c6d628564f41994ac7e5b01622c&dis_t=1758766451&m=2042f7e99818070d8d4313c97171f978&sha256=4215a36aea9669463369b2bce40274e49d6e5b0b13654ea089d04582f4e38fa0"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-中小型健身器材-跳绳",
+        "account": "兰老师-青少年体育",
+        "ctr": 1.75,
+        "cvr": 8.53,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 29.92,
+        "refund_rate": 5.82,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53maaksaaas4aats2m5burwyaevfqabkka.f0.mp4?dis_k=3cdef642a53c1daecdbd2de44f2fa143&dis_t=1766643982&m=a1d89f8251fdd2da984ffe3c5d57af08&sha256=1bbc842111d9cfec2d2c05764286f8a9045fcb254e224bf23d84cb9938dbf2bc"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-露营/野炊/旅行装备-帐篷/天幕/帐篷配件-帐篷",
+        "account": "太力户外露营直播间",
+        "ctr": 2.37,
+        "cvr": 0.87,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 1156.37,
+        "refund_rate": 17.65,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3nebtiaadpialj45mvburs2iegruqgnca.f0.mp4?dis_k=7274c3f1a2f08f2abb05f8f25c96c396&dis_t=1773219314&m=67e3395d3bae0bbd530b4cffb21e3d5b&sha256=362d6a146166ec376751c8f59877a21da96a6b3a10d55bc603cd14e15b07546f"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-鞋配件-鞋垫",
+        "account": "狗哥品牌店",
+        "ctr": 2.75,
+        "cvr": 9.83,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 76.72,
+        "refund_rate": 7.23,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3diadoaaaciac5ducuburugqeg4naan2a.f0.mp4?dis_k=fa61e9aa44a4724571330633de3a0dcf&dis_t=1774679271&m=6d11987a18e73cfc67e42e0175d2a9c2&sha256=d852917ff07d98e393dd8ba33de45c50ff6013bcc6602aa4dc372ac392e3cf4e"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-中小型健身器材-甩脂机/律动机",
+        "account": "OES懒人运动健身",
+        "ctr": 1.61,
+        "cvr": 4,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 360.19,
+        "refund_rate": 16.25,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b532eafkaaa6aafr7f5jburvuiekxiqavka.f0.mp4?dis_k=e7d29f8a535a11bd917f452b6ee94854&dis_t=1774064455&m=3c7dc7cc00c3c50bedb7d0987d859bea&sha256=c87a88d2c8904fa1c84e2f579d1370e1bb64bf5ccac94bae12fa6888f60a62a8"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-户外服装/运动服装-健身/运动服装-健身衣/运动衣",
+        "account": "夏星臻选",
+        "ctr": 3.47,
+        "cvr": 11.55,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 59.94,
+        "refund_rate": 22.52,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53oycryaafseahpp6suvur65qedr3akhca.f0.mp4?dis_k=8a118c7981956721d8b9c4e4a0f87280&dis_t=1776236130&m=f9e360c6e9a909b2c66525131583e853&sha256=dc012bda349eb315434e5178d71d20ca6cc400bbd21ed3ee94ee053a4899fce7"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-运动装备-运动护具-运动护腰",
+        "account": "专注护腰三十年",
+        "ctr": 1.38,
+        "cvr": 7.51,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 68.09,
+        "refund_rate": 12.58,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3dyawsaabiualkxa2z5urwhqenepac2ka.f0.mp4?dis_k=54b61443b84ece6ec076ea2a0a470e1d&dis_t=1763433661&m=f88c73ace07319c4287bf815f55f3659&sha256=010191bb09bf10b6f0bc898f890a8af99b33c81b0b41673ce643c2fb2563df7b"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-运动装备-运动护具-其他运动护具",
+        "account": "康舒运动店",
+        "ctr": 1.3,
+        "cvr": 7.01,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 111.81,
+        "refund_rate": 12.52,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53pyczmaafeaagm5gyvnur67qesz7alfsa.f0.mp4?dis_k=8f838ee8afcfd6513c359f6bf1f11630&dis_t=1776152702&m=c8c36a133c6950bd1d3430318e6d7c78&sha256=2a93e510c394e546f1a9691fb72e7b11f1950e9370d23000d2978bd9e6aabbdb"
+        },
+        "rank": 9
+      },
+      {
+        "industry": "运动用品",
+        "category_path": "运动户外-骑行运动-摩托车/电动车整车及装备-摩托车头盔/电动车头盔",
+        "account": "两只小蜜蜂户外用品",
+        "ctr": 1.82,
+        "cvr": 3.51,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 296.65,
+        "refund_rate": 21.21,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3eqbieaacbiain3ncgnurqjaeqisafasa.f0.mp4?dis_k=af420dc40884eed7eeddf0b00ddf7d9c&dis_t=1773116517&m=f960b7f7469b7728e3b68b32e49dd9e9&sha256=852487f811b9e7411d17af55b8e2eb137eda03b28a4578f4535366ddc9e3773f"
+        },
+        "rank": 10
+      }
+    ],
+    "箱包鞋靴": [
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-女鞋-拖鞋-包头拖",
+        "account": "STACCATO思加图",
+        "ctr": 1.45,
+        "cvr": 1.05,
+        "roi": {
+          "lower": 4,
+          "upper": 4.5,
+          "label": "4.0~4.5"
+        },
+        "price": 946.44,
+        "refund_rate": 21.89,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 1
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-箱包皮具-通用箱包-双肩包",
+        "account": "reeyee旅行箱包",
+        "ctr": 1.48,
+        "cvr": 3.07,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 379.05,
+        "refund_rate": 13.4,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3iuasaaabwiahynifarurwrieebcqcica.f0.mp4?dis_k=42a412c67870fb31ace3765b656680d3&dis_t=1761893779&m=7ae465c1bf219eaf6d5b61b2bcc63cef&sha256=cdc2acc14190a8eba71eef0bc7966857c6251986e6f479ffe3f2011ef86ae781"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-箱包皮具-女包-腋下包",
+        "account": "路易卡迪时尚箱包",
+        "ctr": 3.8,
+        "cvr": 8.58,
+        "roi": {
+          "lower": 4,
+          "upper": 4.5,
+          "label": "4.0~4.5"
+        },
+        "price": 299.94,
+        "refund_rate": 17.44,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3kmbrqaadoiao5lfx2fursuyedbjqggca.f0.mp4?dis_k=25bed8345b645387c5cdb6c80098598b&dis_t=1773467221&m=7b482277f5cbb0f531bb3b481523ef69&sha256=0bb1b0af7793daf6aaeb2c13fe701f2548a146350268c3154e4a91758627ce68"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-女鞋-休闲鞋-老爹鞋",
+        "account": "思加图女鞋品牌店",
+        "ctr": 2.72,
+        "cvr": 1.11,
+        "roi": {
+          "lower": 5,
+          "upper": 5.5,
+          "label": "5.0~5.5"
+        },
+        "price": 814.82,
+        "refund_rate": 22.27,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 4
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-女鞋-时尚单鞋-玛丽珍鞋",
+        "account": "大姚家女鞋",
+        "ctr": 2.11,
+        "cvr": 8.77,
+        "roi": {
+          "lower": 4,
+          "upper": 4.5,
+          "label": "4.0~4.5"
+        },
+        "price": 189.97,
+        "refund_rate": 14.72,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53paczgaafimahivw5gbur66aesn4ale2a.f0.mp4?dis_k=dea1429153eebe931003905b23f77423&dis_t=1775822653&m=a0a99b7ac5003dbc41e1f33ddfa5a368"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-女鞋-时尚单鞋-玛丽珍鞋",
+        "account": "DIOUGENS迪欧摩尼女鞋",
+        "ctr": 2.23,
+        "cvr": 5.94,
+        "roi": {
+          "lower": 5.5,
+          "upper": 6,
+          "label": "5.5~6.0"
+        },
+        "price": 301.36,
+        "refund_rate": 16.35,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53gibuyaad4aafstns2nursmqejqzagtca.f0.mp4?dis_k=0515200097793debbf3b2581acf95762&dis_t=1773213141&m=d8330f727893b63970ffbea5cddaa08d"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-箱包皮具-通用箱包-拉杆箱/拉杆包",
+        "account": "海贸箱包公司",
+        "ctr": 3.14,
+        "cvr": 4.45,
+        "roi": {
+          "lower": 5,
+          "upper": 5.5,
+          "label": "5.0~5.5"
+        },
+        "price": 216.35,
+        "refund_rate": 31.28,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc33ackgaaegianl2wltbur5waeupmaji2a.f0.mp4?dis_k=1288300a47b9cac292c1dd5ea4dd03d2&dis_t=1775204080&m=f4ff3dc7366c8a35b93e214899e3c71b&sha256=b6ef481b689341f10775445df4065c77e7d42c875609478eff627f78412f5b5c"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-箱包皮具-通用箱包-拉杆箱/拉杆包",
+        "account": "卡拉羊总裁华姐",
+        "ctr": 2.21,
+        "cvr": 5.13,
+        "roi": {
+          "lower": 3.5,
+          "upper": 4,
+          "label": "3.5~4.0"
+        },
+        "price": 724.66,
+        "refund_rate": 20.08,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 8
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-箱包皮具-女包-手提包/手拎包",
+        "account": "明明舅在欧洲",
+        "ctr": 2.56,
+        "cvr": 2.42,
+        "roi": {
+          "lower": 9,
+          "upper": 9.5,
+          "label": "9.0~9.5"
+        },
+        "price": 1244.32,
+        "refund_rate": 27.01,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 9
+      },
+      {
+        "industry": "箱包鞋靴",
+        "category_path": "服饰鞋包-女鞋-休闲鞋-德训鞋",
+        "account": "卡米高百搭增高女鞋",
+        "ctr": 0.98,
+        "cvr": 7.43,
+        "roi": {
+          "lower": 6.5,
+          "upper": 7,
+          "label": "6.5~7.0"
+        },
+        "price": 270.02,
+        "refund_rate": 22.9,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3yicn6aaefqahrfolrfur5qqe37bajx2a.f0.mp4?dis_k=ab9d2dc2e50c3add15cb89a8a61e8fc0&dis_t=1775216626&m=d921bd3f4864b872bae31e8fd3fe83a1"
+        },
+        "rank": 10
+      }
+    ],
+    "珠宝文玩": [
+      {
+        "industry": "珠宝文玩",
+        "category_path": "服饰鞋包-眼镜及配件-太阳镜",
+        "account": "巴宝莎韩老板",
+        "ctr": 2.64,
+        "cvr": 3.95,
+        "roi": {
+          "lower": 3.5,
+          "upper": 4,
+          "label": "3.5~4.0"
+        },
+        "price": 297.79,
+        "refund_rate": 13,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53z4bccaacseaowso2gzurrtyeehhqeika.f0.mp4?dis_k=31530d0947fdab44299e083ef0417816&dis_t=1775815280&m=aac76b02aa04c1ce6eb1886405738302&sha256=b59a7d3461e837608886d39feee730b311dafcd7d83388d7c75d5d6c400ceb49"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "珠宝/首饰/手表-珍珠-颈饰",
+        "account": "阮仕珠宝官方店",
+        "ctr": 1.53,
+        "cvr": 10.89,
+        "roi": {
+          "lower": 6.5,
+          "upper": 7,
+          "label": "6.5~7.0"
+        },
+        "price": 1448.06,
+        "refund_rate": 36.27,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 2
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "服饰鞋包-眼镜及配件-太阳镜",
+        "account": "美琳轻奢太阳墨镜",
+        "ctr": 2.66,
+        "cvr": 7.39,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 50.11,
+        "refund_rate": 13.32,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3pabhoaacpeag43kcvfubq6aeo54ae52a.f0.mp4?dis_k=717c1117fc20e380698cba8077b739a5&dis_t=1754726568&sha256=81d823ad192cf418ae1cbac4cdefbbf3f94a58370d7ff27ba6d5680cab9f6252&m=4fd38be43d5c2f6cf1c4b4638cb41ecf"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "珠宝/首饰/手表-天然珠宝玉石-水晶饰品",
+        "account": "麦玲玲Maklinghit",
+        "ctr": 2.01,
+        "cvr": 3.56,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 299.08,
+        "refund_rate": 6.35,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3smafaaaaiqahb6gxknurveyekcjqauca.f0.mp4?dis_k=f1f6a86075f1c618245b428cdbd2b7d2&dis_t=1775717495&m=8a6e92fc3d61df9dc2a53e15cf9d4676&sha256=d4e0c5d568ac064db654eec37d4a99f2d2b0862dcbf6e13e690ff996dfcc3910"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "服饰鞋包-眼镜及配件-太阳镜",
+        "account": "宏发发企业服务",
+        "ctr": 2.44,
+        "cvr": 6.21,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 79.46,
+        "refund_rate": 9.28,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc37abcqaacjaagy6nl65urr6aefd4aekca.f0.mp4?dis_k=0d9fda4736e1fa0fab4a0d557810a733&dis_t=1772700861&m=69723806d4cc27b265d41c741e70d510&sha256=860d7e04ccfd4eeb238a61bce2c2d0bef870e1bc80d28fce7e0e94c5b43d59bf"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "珠宝/首饰/手表-银饰-耳饰",
+        "account": "白岚BAILAN",
+        "ctr": 2,
+        "cvr": 3.57,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 458.89,
+        "refund_rate": 24.77,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 6
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "服饰鞋包-眼镜及配件-老花眼镜",
+        "account": "巴宝莎老花眼镜",
+        "ctr": 2.88,
+        "cvr": 6.34,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 59.08,
+        "refund_rate": 11.79,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3yuayaaabzmaihql3gzurxrieqdcqdaca.f0.mp4?dis_k=3fdaf083b6a18ac88255175864bd54de&dis_t=1772518920&m=05978b5cc2a8c115191bae882f9a05e4&sha256=dfc02df22501fe5c3b5040adb467e952a0ea507e1a0517b78e3f447f048653c2"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "服饰鞋包-眼镜及配件-太阳镜",
+        "account": "巴宝莎轻奢墨镜",
+        "ctr": 1.77,
+        "cvr": 4.56,
+        "roi": {
+          "lower": 3,
+          "upper": 3.5,
+          "label": "3.0~3.5"
+        },
+        "price": 271.57,
+        "refund_rate": 12.58,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53myb3maadiqaixlfycrurszqewztahnsa.f0.mp4?dis_k=4e335391ec5ce1c2079c6734dfe97460&dis_t=1773878574&m=4bd69e692bf0726d81431ec03595602c&sha256=1480394778c4df1e6eae69aa0ea404f3327041c916c7b5945b3c7defd2c80faf"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "珠宝/首饰/手表-天然珠宝玉石-玉石饰品",
+        "account": "左氏小左总",
+        "ctr": 3.1,
+        "cvr": 3.34,
+        "roi": {
+          "lower": 14.5,
+          "upper": 15,
+          "label": "14.5~15.0"
+        },
+        "price": 1912.22,
+        "refund_rate": 45.28,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 9
+      },
+      {
+        "industry": "珠宝文玩",
+        "category_path": "日用百货-餐饮用具-茶具-茶壶",
+        "account": "北京工艺美术博物馆非遗陶茶文化",
+        "ctr": 3.05,
+        "cvr": 10.99,
+        "roi": {
+          "lower": 6.5,
+          "upper": 7,
+          "label": "6.5~7.0"
+        },
+        "price": 386.75,
+        "refund_rate": 37.52,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 10
+      }
+    ],
+    "配饰": [
+      {
+        "industry": "配饰",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-腰带/皮带/腰链",
+        "account": "CalermKeens官方专柜店",
+        "ctr": 1.2,
+        "cvr": 4.17,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 170.47,
+        "refund_rate": 7.67,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53xabjwaacyuaf4iore5urtoaeto4afg2a.f0.mp4?dis_k=e0c6ddccf5660788022b4e3a1cca9477&dis_t=1775486343"
+        },
+        "rank": 1
+      },
+      {
+        "industry": "配饰",
+        "category_path": "运动户外-运动装备-运动护具-运动护膝",
+        "account": "泊伊尚品丝佳居家生活",
+        "ctr": 2.53,
+        "cvr": 12.04,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 14.05,
+        "refund_rate": 7.87,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53hqbiqaacpeaj56ntajurqpaera6afcca.f0.mp4?dis_k=e878dfe056b791959ddfd1f6c530f4db&dis_t=1773214936&m=963ce62838312284a3b2b942c52efbe7&sha256=bcfa68de836b9af78b75b6fe9be813edb7cba80b4ee63996a7aa323c88840f9b"
+        },
+        "rank": 2
+      },
+      {
+        "industry": "配饰",
+        "category_path": "文玩收藏-木制手串/饰品-沉香-手串",
+        "account": "宫鸿燕息肌丸麝香手链",
+        "ctr": 4.23,
+        "cvr": 5.33,
+        "roi": {
+          "lower": 2.5,
+          "upper": 3,
+          "label": "2.5~3.0"
+        },
+        "price": 317.54,
+        "refund_rate": 17.7,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53beb4kaadguabyjnyvjurscieyueqhrka.f0.mp4?dis_k=0f7a3c47093cd12a0abff679f999b854&dis_t=1774953609&m=224ccf6b4ba59df1f9cfe07f5f319046&sha256=c7fa26762f4553b44d63cbdcb139adce28105a50cc69186e999325d68c3185f7"
+        },
+        "rank": 3
+      },
+      {
+        "industry": "配饰",
+        "category_path": "运动户外-运动装备-运动护具-其他运动护具",
+        "account": "康舒运动店",
+        "ctr": 2.23,
+        "cvr": 5.43,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 108.84,
+        "refund_rate": 12.46,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53pyczmaafeaagm5gyvnur67qesz7alfsa.f0.mp4?dis_k=8f838ee8afcfd6513c359f6bf1f11630&dis_t=1776152702&m=c8c36a133c6950bd1d3430318e6d7c78&sha256=2a93e510c394e546f1a9691fb72e7b11f1950e9370d23000d2978bd9e6aabbdb"
+        },
+        "rank": 4
+      },
+      {
+        "industry": "配饰",
+        "category_path": "文玩收藏-木制手串/饰品-沉香-手串",
+        "account": "宫鸿燕麝香息肌丸",
+        "ctr": 2.83,
+        "cvr": 5.17,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 311.14,
+        "refund_rate": 9.76,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0b53pmbwoaadfqaph45zv5urs6yem55qgz2a.f0.mp4?dis_k=3d96822e09e29a4f828f830f29a53c8d&dis_t=1774953212&m=2e1a55df4c8e0ed791de987a7957f629&sha256=8064c0b0f1c2edf099e05f48f5817cdd81e1da663638bad63c82b2b1204d7e58"
+        },
+        "rank": 5
+      },
+      {
+        "industry": "配饰",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-腰带/皮带/腰链",
+        "account": "古格缇品牌户外腰带",
+        "ctr": 1.4,
+        "cvr": 4.72,
+        "roi": {
+          "lower": 1,
+          "upper": 1.5,
+          "label": "1.0~1.5"
+        },
+        "price": 100.29,
+        "refund_rate": 7.88,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3qaaemaaafiafo3f5m5urvaaei2aaarsa.f0.mp4?dis_k=a9a2bc657d7143ec34f40e2afdb48827&dis_t=1775633549&m=adf666c5304192d18e2129cabcf34480&sha256=a8f826f3deb387b3039b2baabd0361063caa52b39a7d5081b2a957a9f7cd955c"
+        },
+        "rank": 6
+      },
+      {
+        "industry": "配饰",
+        "category_path": "运动户外-运动装备-运动护具-运动护膝",
+        "account": "泊伊尚品木涧服饰配件",
+        "ctr": 2.18,
+        "cvr": 16.56,
+        "roi": {
+          "lower": 1.5,
+          "upper": 2,
+          "label": "1.5~2.0"
+        },
+        "price": 40.36,
+        "refund_rate": 11.59,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3pyacqaaaayaoujv3bvuru7qefb7aakca.f0.mp4?dis_k=24cff8e77a89bcb467214e8acdae9013&dis_t=1775646111&m=dbc8f3a5afdc733a98a6af1b5949bf74&sha256=ea270a3f4de197312bb8cfaa2a4f312adfb0c3b36cc4f21a66e99d6aad94c1db"
+        },
+        "rank": 7
+      },
+      {
+        "industry": "配饰",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-鞋配件-鞋垫",
+        "account": "狗哥品牌店",
+        "ctr": 4.94,
+        "cvr": 5.17,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 76.56,
+        "refund_rate": 7.34,
+        "material": {
+          "is_live": false,
+          "src": "http://adsmind.gdtimg.com/ads_svp_video__0bc3diadoaaaciac5ducuburugqeg4naan2a.f0.mp4?dis_k=fa61e9aa44a4724571330633de3a0dcf&dis_t=1774679271&m=6d11987a18e73cfc67e42e0175d2a9c2&sha256=d852917ff07d98e393dd8ba33de45c50ff6013bcc6602aa4dc372ac392e3cf4e"
+        },
+        "rank": 8
+      },
+      {
+        "industry": "配饰",
+        "category_path": "服饰鞋包-服饰配件/皮带/帽子/围巾-腰带/皮带/腰链",
+        "account": "CalermKeens.",
+        "ctr": 1.46,
+        "cvr": 1.99,
+        "roi": {
+          "lower": 2,
+          "upper": 2.5,
+          "label": "2.0~2.5"
+        },
+        "price": 195.92,
+        "refund_rate": 11.17,
+        "material": {
+          "is_live": false,
+          "src": null
+        },
+        "rank": 9
+      },
+      {
+        "industry": "配饰",
+        "category_path": "食品饮料-休闲食品-饼干/膨化食品-其他饼干",
+        "account": "豆豆姐姐Rahma",
+        "ctr": 3.82,
+        "cvr": 10.99,
+        "roi": {
+          "lower": 11,
+          "upper": 11.5,
+          "label": "11.0~11.5"
+        },
+        "price": 189.87,
+        "refund_rate": 16.74,
+        "material": {
+          "is_live": true,
+          "src": null
+        },
+        "rank": 10
+      }
+    ]
+  }
+}
