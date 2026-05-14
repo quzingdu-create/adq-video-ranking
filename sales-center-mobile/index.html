@@ -185,8 +185,7 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
         <button id="btnTeam">团队</button>
       </div>
     </div>
-    <div class="filter-row">
-      <select id="saleSel"></select>
+    <div class="filter-row" style="grid-template-columns: 1fr;">
       <select id="quarterSel"></select>
     </div>
   </header>
@@ -226,6 +225,9 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
 
       <div class="section">
         <div class="section-head"><h2>🔥 够一够冲新客</h2><span class="more" id="growthCount">0 个候选</span></div>
+        <div style="margin-bottom:8px;">
+          <select id="growthSaleSel" style="width:100%; border:1px solid var(--line); background:#fff; border-radius:10px; padding:9px 10px; font-size:13px; font-weight:700; color:var(--text);"></select>
+        </div>
         <div class="chips" id="growthChips">
           <button class="chip active" data-limit="20">Top20</button>
           <button class="chip" data-limit="50">Top50</button>
@@ -248,6 +250,7 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   let currentQuarter = "2026Q2";
   let topFilter = "all";
   let topSaleTab = "all";
+  let growthSale = localStorage.getItem("mobile_growth_sale") || "all";
   let growthLimit = 20;
 
   const $ = id => document.getElementById(id);
@@ -295,25 +298,27 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   function initFilters(){
     const quarters = [...new Set(summary.map(r => r.quarter).filter(Boolean))].sort();
     currentQuarter = quarters.includes("2026Q2") ? "2026Q2" : (quarters[quarters.length - 1] || "2026Q2");
-    $("saleSel").innerHTML = sales.filter(s => s !== "合计" && s !== "其他").map(s => `<option value="${s}">${s}</option>`).join("");
-    $("saleSel").value = currentSale;
+    // 季度下拉
     $("quarterSel").innerHTML = quarters.map(q => `<option value="${q}">${q}</option>`).join("");
     $("quarterSel").value = currentQuarter;
-    // 初始化销售 tab：与顶部下拉一致
-    topSaleTab = currentSale;
-    document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === currentSale));
-    $("saleSel").addEventListener("change", e => { currentSale = e.target.value; localStorage.setItem("mobile_sale", currentSale); topSaleTab = currentSale; document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === currentSale)); renderAll(); });
+    // 够一够的销售下拉
+    const saleOpts = ["all", ...sales.filter(s => s !== "合计" && s !== "其他")];
+    const saleLabel = s => s === "all" ? "全部销售" : s;
+    $("growthSaleSel").innerHTML = saleOpts.map(s => `<option value="${s}">${saleLabel(s)}</option>`).join("");
+    $("growthSaleSel").value = growthSale;
+    // 初始化 Top 销售 tab：默认 all（全部 74 家）
+    topSaleTab = "all";
+    document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === "all"));
+    // 事件
     $("quarterSel").addEventListener("change", e => { currentQuarter = e.target.value; renderAll(); });
+    $("growthSaleSel").addEventListener("change", e => { growthSale = e.target.value; localStorage.setItem("mobile_growth_sale", growthSale); renderGrowth(); });
     $("btnMine").addEventListener("click", () => { view = "mine"; $("btnMine").classList.add("active"); $("btnTeam").classList.remove("active"); renderAll(); });
     $("btnTeam").addEventListener("click", () => { view = "team"; $("btnTeam").classList.add("active"); $("btnMine").classList.remove("active"); renderAll(); });
     document.querySelectorAll("#salesTabs button").forEach(btn => btn.addEventListener("click", () => {
       document.querySelectorAll("#salesTabs button").forEach(x => x.classList.remove("active"));
       btn.classList.add("active");
       topSaleTab = btn.dataset.sale;
-      // tab 反向同步顶部下拉（"all" 时不动下拉）
-      if (topSaleTab !== "all") { currentSale = topSaleTab; $("saleSel").value = currentSale; localStorage.setItem("mobile_sale", currentSale); }
       renderTop();
-      renderGrowth();
     }));
     document.querySelectorAll("#todoChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#todoChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topFilter = btn.dataset.filter; renderTop(); }));
     document.querySelectorAll("#growthChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#growthChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); growthLimit = Number(btn.dataset.limit); renderGrowth(); }));
@@ -472,8 +477,8 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
 
   function renderGrowth(){
     let rows = records.filter(r => normQ(r.firstQuarter) === currentQuarter && Number(r.quarterCost || 0) > 0 && Number(r.quarterCost || 0) < 1000 && !r.isLaoke && !r.old24);
-    // 销售 tab：all=全部、否则按销售筛
-    if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
+    // 销售下拉：all=全部、否则按销售筛
+    if (growthSale !== "all") rows = rows.filter(r => r.sale === growthSale);
     rows = rows.map(r => ({...r, gap: 1000 - Number(r.quarterCost || 0)})).sort((a,b) => a.gap - b.gap || Number(b.yestCost || 0) - Number(a.yestCost || 0));
     $("growthCount").textContent = `${rows.length} 个候选`;
     $("growthList").innerHTML = rows.slice(0, growthLimit).map(r => `
