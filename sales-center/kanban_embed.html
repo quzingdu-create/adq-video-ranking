@@ -387,9 +387,13 @@
 
 </style>
 <style>
-  /* embed 模式：隐藏 Demo 提示条和顶部标题（被 PC 父页面 Tab 嵌入时） */
-  body.embed-mode #demoBanner,
-  body.embed-mode .topbar { display: none !important; }
+  /* embed 模式：隐藏 Demo 提示条；topbar 保留但精简（只留功能按钮，藏标题和重复入口） */
+  body.embed-mode #demoBanner { display: none !important; }
+  body.embed-mode .topbar { padding: 8px 20px !important; min-height: auto !important; background: transparent !important; border: none !important; box-shadow: none !important; }
+  body.embed-mode .topbar h1,
+  body.embed-mode .topbar .btn-link,
+  body.embed-mode .topbar .view-toggle { display: none !important; }
+  body.embed-mode .topbar .topbar-right { width: 100%; justify-content: flex-end; }
 </style>
 <script>
   // embed=1 参数下进入 embed-mode

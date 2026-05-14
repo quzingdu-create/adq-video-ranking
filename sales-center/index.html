@@ -48,6 +48,7 @@
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 28px;
+    max-width: 1440px; margin: 0 auto; box-sizing: border-box; width: 100%;
     background: #fff;
     border-bottom: 1px solid var(--border);
     position: sticky; top: 0; z-index: 100;
@@ -68,7 +69,9 @@
 
   /* 顶部 Tab 大切换 */
   .tabbar {
-    display: flex; gap: 4px; padding: 0 28px; background: #fff;
+    display: flex; gap: 4px; padding: 0 28px;
+    max-width: 1440px; margin: 0 auto; box-sizing: border-box;
+    background: #fff;
     border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99;
   }
   .tab-btn {
@@ -86,7 +89,7 @@
   }
   @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 0 5px rgba(239,68,68,0); } }
 
-  .container { padding: 20px 28px; }
+  .container { padding: 20px 28px; max-width: 1440px; margin: 0 auto; }
   .section { margin-bottom: 24px; }
   .section-title {
     font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 14px;
