@@ -589,119 +589,18 @@
   <button class="tab-btn" data-tab="special">🧪 专项进展 <span style="font-size:10px;opacity:0.6;">建设中</span></button>
 </div>
 
-<!-- ========== 首页 ========== -->
+<!-- ========== 首页（嵌入手机端紧凑单页内容） ========== -->
 <div class="tab-page active" id="page-home">
-  <div class="container">
-
-    <!-- 顶部 1 行精简 banner（替代原 3 大红点卡） -->
-    <div class="section">
-      <div class="quick-banner">
-        <div class="qb-left">
-          <span class="qb-greet">早上好，<b id="qbUser">kinsleyjin</b> 🦞</span>
-          <span class="qb-date" id="qbDate">--</span>
-        </div>
-        <div class="qb-right" id="qbStat">
-          今日待处理：<span class="qb-num info" onclick="switchTab('info')">📢 <b id="qbInfo">0</b></span>
-          <span class="qb-num tuoke" onclick="switchTab('battle')">🚀 <b id="qbTuoke">0</b></span>
-        </div>
-      </div>
+  <div style="max-width:760px; margin:0 auto; padding:8px 0;">
+    <iframe
+      src="../sales-center-mobile/index.html"
+      style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
+      title="今日待办小红点（手机端内容嵌入）"
+      onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
+    ></iframe>
+    <div style="text-align:center; margin-top:6px; color:#6b7280; font-size:12px;">
+      💡 此模块内容与手机端完全一致，可在 <a href="../sales-center-mobile/" target="_blank" style="color:#2563eb;">手机端独立窗口</a> 打开
     </div>
-
-    <!-- KPI 完成进度（置顶战情区） -->
-    <div class="section">
-      <div class="section-title">
-        <div class="left">
-          <span>📊 季度 KPI 完成进度</span>
-          <span class="badge" id="kpiViewTag">🦞 我的视图 · 2026 Q2</span>
-        </div>
-      </div>
-      <div class="kpi-grid" id="kpiGrid"></div>
-    </div>
-
-    <!-- 今日小红点完成进度（团队 + 个人） -->
-    <div class="section">
-      <div class="section-title">
-        <div class="left">
-          <span>📅 今日小红点完成进度</span>
-          <span class="badge">实时统计 · 消除红点后立即更新</span>
-        </div>
-      </div>
-      <div class="yest-progress">
-        <div class="yp-card team">
-          <div class="yp-head">
-            <span class="yp-icon">👥</span>
-            <span class="yp-label">团队维度</span>
-            <span class="yp-rate" id="ypTeamRate">—</span>
-          </div>
-          <div class="yp-bar"><div class="yp-fill team" id="ypTeamFill"></div></div>
-          <div class="yp-meta">
-            已完成 <b id="ypTeamDone">—</b> / 共 <b id="ypTeamTotal">—</b> 条
-            · <span id="ypTeamMiss" class="yp-miss"></span>
-          </div>
-        </div>
-        <div class="yp-card mine">
-          <div class="yp-head">
-            <span class="yp-icon">🦞</span>
-            <span class="yp-label">个人维度（<span id="ypMineUser">kinsleyjin</span>）</span>
-            <span class="yp-rate" id="ypMineRate">—</span>
-          </div>
-          <div class="yp-bar"><div class="yp-fill mine" id="ypMineFill"></div></div>
-          <div class="yp-meta">
-            已完成 <b id="ypMineDone">—</b> / 共 <b id="ypMineTotal">—</b> 条
-            · <span id="ypMineRank" class="yp-miss"></span>
-          </div>
-        </div>
-
-        <!-- 团队完成情况排名 by 销售维度 -->
-        <div class="yp-rank-card">
-          <div class="yp-rank-head">
-            <span class="yp-icon">🏆</span>
-            <span class="yp-label">团队完成情况排名 · by 销售维度</span>
-            <span class="yp-rank-tip">按完成率降序 · 当前用户高亮</span>
-          </div>
-          <div class="yp-rank-list" id="ypRankList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 今日要做的事（按红点类型分组） -->
-    <div class="section">
-      <div class="section-title">
-        <div class="left">
-          <span>📋 今日要做的事 · 按红点分组</span>
-          <span class="badge">信息类 / 客户类 / 拓客类</span>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-sm ghost" onclick="resetNotify()" style="font-size:12px;">🔄 重置</button>
-          <button class="btn-sm" style="background:var(--success);font-size:12px;" onclick="markAllDone()">✅ 一键全部已通知</button>
-        </div>
-      </div>
-
-      <div class="task-group">
-        <div class="task-group-title">
-          📢 信息类待办 <span class="count">（来自最新政策/活动/产品能力推送）</span>
-          <div class="group-actions"><button class="primary" onclick="markGroupDone('taskInfo')">✅ 全组已通知</button></div>
-        </div>
-        <div class="task-list" id="taskInfo"></div>
-      </div>
-
-      <div class="task-group">
-        <div class="task-group-title">
-          🎯 客户类待办 <span class="count">（重点关注 + 冲刺 + 新客生死期）</span>
-          <div class="group-actions"><button class="primary" onclick="markGroupDone('taskClient')">✅ 全组已通知</button></div>
-        </div>
-        <div class="task-list" id="taskClient"></div>
-      </div>
-
-      <div class="task-group">
-        <div class="task-group-title">
-          🚀 拓客类待办 <span class="count">（拓客登记 / 建联 / 报备推进）</span>
-          <div class="group-actions"><button class="primary" onclick="markGroupDone('taskTuoke')">✅ 全组已通知</button></div>
-        </div>
-        <div class="task-list" id="taskTuoke"></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
