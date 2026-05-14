@@ -1,0 +1,2 @@
+/* fresh AData 2026-05-14 */
+window.__DELIVERY_SIDE_SUMMARY__ = [{"quarter":"2026Q2","side":"ADQ","newCount":422,"validCount":256,"risingCount":17,"yestCost":578093.68118,"firstCost":13089708.12415},{"quarter":"2026Q2","side":"全域通","newCount":3760,"validCount":707,"risingCount":5,"yestCost":367990.25195000006,"firstCost":12775107.032510001},{"quarter":"2026Q2","side":"双投放","newCount":71,"validCount":56,"risingCount":3,"yestCost":105727.76364,"firstCost":2164182.55186}];

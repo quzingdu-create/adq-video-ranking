@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>小红点 · 移动端</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f5f7fa">
+<script src="data/center_quarter_summary.js"></script>
+<script src="data/center_daily_kpi.js"></script>
+<script src="data/top80_effective_metrics.js"></script>
+<script src="data/tuoke_real_records.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #f5f7fa;
+    font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    color: #2c3e50;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    padding: env(safe-area-inset-top, 0) 14px calc(env(safe-area-inset-bottom, 0) + 80px);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ===== 顶部 brand（移动端：销售选择独占一行） ===== */
+  .brand {
+    padding: 14px 0 12px;
+    position: sticky; top: 0;
+    background: rgba(245,247,250,0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
+    margin: 0 -14px 12px;
+    padding-left: 14px; padding-right: 14px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .brand-row1 {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .brand-row1 h1 {
+    font-size: 17px; font-weight: 700; color: #1a202c;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .brand-row1 .time {
+    font-size: 11px; color: #a0aec0;
+    text-align: right; line-height: 1.3;
+  }
+  .brand-row2 {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sales-wrap {
+    flex: 1; position: relative;
+  }
+  .sales-wrap::before {
+    content: "👤 当前销售";
+    position: absolute; top: -7px; left: 10px;
+    font-size: 10px; color: #718096;
+    background: #f5f7fa; padding: 0 5px;
+    z-index: 1;
+  }
+  .brand select {
+    width: 100%;
+    padding: 12px 36px 12px 14px;
+    font-size: 15px; font-weight: 600;
+    border: 1.5px solid #4299e1; border-radius: 10px;
+    background: #fff;
+    color: #2d3748;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234299e1'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 22px;
+  }
+  .brand .tag {
+    font-size: 10px; color: #718096; background: #e2e8f0;
+    padding: 4px 8px; border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* ===== 顶部 3 个 KPI 卡（移动端：一行3个） ===== */
+  .kpi-scroll {
+    margin: 0 0 14px;
+    padding: 0;
+  }
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .kpi-card {
+    border-radius: 10px;
+    padding: 9px 8px 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid;
+    display: flex; flex-direction: column; gap: 3px;
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .kpi-card::before {
+    content: ""; position: absolute; top: 0; right: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%; opacity: 0.25; transform: translate(30%, -30%);
+  }
+  .kpi-card.blue   { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); border-color: #7dd3fc; }
+  .kpi-card.purple { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-color: #c4b5fd; }
+  .kpi-card.amber  { background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%); border-color: #fbbf24; }
+  .kpi-card.blue::before   { background: #7dd3fc; }
+  .kpi-card.purple::before { background: #c4b5fd; }
+  .kpi-card.amber::before  { background: #fbbf24; }
+
+  .kpi-card .label {
+    font-size: 10px; color: #4a5568; font-weight: 600;
+    position: relative; z-index: 1;
+    line-height: 1.25;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kpi-card .value {
+    font-size: 17px; font-weight: 700; color: #1a202c; letter-spacing: -0.3px;
+    position: relative; z-index: 1;
+    display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap;
+    line-height: 1.1;
+  }
+  .kpi-card .value .unit { font-size: 10px; font-weight: 500; color: #4a5568; }
+  .kpi-card .chip {
+    display: inline-flex; align-items: center; gap: 1px;
+    font-size: 9px; font-weight: 600;
+    padding: 1px 4px; border-radius: 6px;
+    background: rgba(255,255,255,0.7);
+    color: #2d3748;
+    margin-left: auto;
+  }
+  .kpi-card .chip.up   { color: #047857; background: rgba(209,250,229,0.85); }
+  .kpi-card .chip.down { color: #b91c1c; background: rgba(254,226,226,0.85); }
+  .kpi-card .chip.flat { color: #475569; background: rgba(241,245,249,0.85); }
+  .kpi-card .sub {
+    font-size: 9px; color: #64748b; position: relative; z-index: 1;
+    line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .kpi-dots { display: none; }
+
+  /* ===== 小红点 section ===== */
+  .todo-section {
+    margin-bottom: 16px;
+    border-radius: 14px;
+    padding: 14px 12px 8px;
+    border: 1px solid;
+  }
+  .section-top10 { background: #fff5f5; border-color: #feb2b2; }
+  .section-push  { background: #fffaf0; border-color: #f6d365; }
+
+  .section-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .section-head .icon { font-size: 18px; }
+  .section-head .title { font-size: 15px; font-weight: 700; }
+  .section-top10 .title { color: #c53030; }
+  .section-push  .title { color: #b7791f; }
+  .section-head .count {
+    background: #fff; padding: 3px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid currentColor;
+    margin-left: auto;
+  }
+  .section-top10 .count { color: #c53030; }
+  .section-push  .count { color: #b7791f; }
+  .section-head .desc {
+    font-size: 11px; color: #718096; line-height: 1.5;
+    width: 100%;
+    background: rgba(255,255,255,0.6);
+    padding: 6px 8px; border-radius: 6px;
+    margin-top: 2px;
+  }
+
+  /* ===== 筛选 tab（横向滑动） ===== */
+  .filter-tabs {
+    display: flex; gap: 6px; margin: 0 -12px 10px; padding: 0 12px 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-tabs::-webkit-scrollbar { display: none; }
+  .filter-tab {
+    padding: 7px 12px; font-size: 12px;
+    border-radius: 16px;
+    background: #fff; border: 1px solid #e2e8f0;
+    color: #4a5568; font-weight: 500;
+    user-select: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-tab.active { background: #2d3748; color: #fff; border-color: #2d3748; }
+  .filter-tab .n { opacity: 0.75; margin-left: 3px; font-weight: 400; }
+
+  /* ===== 客户卡片（移动端单列） ===== */
+  .card-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .client-card {
+    background: #fff; border-radius: 12px;
+    padding: 12px 12px 12px 16px;
+    position: relative;
+    border: 1px solid #e2e8f0;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .client-card.actionable {
+    padding-bottom: 50px;
+  }
+
+  /* 左侧状态条（移动端用左边竖条更醒目） */
+  .statusdot {
+    position: absolute; top: 10px; bottom: 10px; left: 0;
+    width: 4px; border-radius: 2px;
+  }
+  .statusdot.alert  { background: #e53e3e; animation: pulseRed 1s infinite; }
+  .statusdot.warn   { background: #dd6b20; animation: pulseOrange 1.6s infinite; }
+  .statusdot.stable { background: #cbd5e0; }
+  .statusdot.push   { background: #d69e2e; animation: pulseGold 1.2s infinite; }
+
+  @keyframes pulseRed {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+  @keyframes pulseOrange {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  @keyframes pulseGold {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  .client-card.done { opacity: 0.5; background: #f7fafc; }
+  .client-card.done .client-name { text-decoration: line-through; }
+  .client-card.done::after {
+    content: "✅ 已处理"; position: absolute; top: 10px; right: 12px;
+    color: #48bb78; font-size: 11px; font-weight: 600;
+  }
+
+  .card-row1 {
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .client-name { font-size: 15px; font-weight: 700; color: #1a202c; }
+  .rank-tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 5px;
+    background: #edf2f7; color: #4a5568; font-weight: 500;
+  }
+  .badge {
+    font-size: 11px; padding: 2px 7px; border-radius: 5px;
+    font-weight: 600;
+  }
+  .badge.alert-drop, .badge.alert-roi, .badge.alert-infra { background: #fed7d7; color: #9b2c2c; }
+  .badge.warn-drop,  .badge.warn-roi  { background: #feebc8; color: #b7791f; }
+  .badge.warn-infra  { background: #fefcbf; color: #975a16; }
+  .badge.grow        { background: #c6f6d5; color: #276749; }
+  .badge.stable      { background: #edf2f7; color: #4a5568; }
+  .badge.gap         { background: #feebc8; color: #b7791f; }
+
+  .card-row2 {
+    font-size: 12px; color: #4a5568; line-height: 1.6;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px;
+    margin-top: 2px;
+  }
+  .metric-item {
+    display: flex; align-items: baseline; gap: 4px;
+    font-size: 11px;
+  }
+  .metric-item .lbl { color: #a0aec0; font-size: 10px; }
+  .metric-item .num { font-weight: 700; color: #2d3748; font-size: 13px; }
+  .metric-item .neg { color: #e53e3e; font-weight: 600; font-size: 11px; }
+  .metric-item .pos { color: #38a169; font-weight: 600; font-size: 11px; }
+
+  .done-btn {
+    position: absolute; bottom: 10px; left: 16px; right: 12px;
+    padding: 9px 12px; font-size: 13px;
+    border-radius: 8px; border: 1px solid;
+    font-weight: 600;
+    background: #fff;
+    text-align: center;
+  }
+  .section-top10 .done-btn { color: #c53030; border-color: #feb2b2; }
+  .section-top10 .done-btn:active { background: #fed7d7; }
+  .section-push  .done-btn { color: #b7791f; border-color: #f6d365; }
+  .section-push  .done-btn:active { background: #feebc8; }
+  .client-card.done .done-btn {
+    color: #48bb78; border-color: #c6f6d5; background: #f0fff4;
+  }
+
+  .empty-state {
+    text-align: center; padding: 30px 16px;
+    color: #a0aec0; font-size: 13px;
+  }
+  .empty-state .emoji { font-size: 32px; display: block; margin-bottom: 6px; }
+
+
+  /* 产品经理版：只突出待处理动作，已处理不再占空白 */
+  .client-card.done { opacity: 1; background: #f8fafc; border-style: dashed; }
+  .client-card.done .client-name { text-decoration: none; color:#64748b; }
+  .client-card.done .card-row1, .client-card.done .card-row2 { opacity:.72; }
+  .client-card.done::after { content:"已处理"; top:8px; right:10px; padding:2px 7px; border-radius:999px; background:#ecfdf5; color:#059669; }
+  .client-card.done .done-btn { position:static; margin-top:8px; }
+  .client-card.actionable.done { padding-bottom:12px; }
+  .action-hint { font-size:11px; color:#64748b; margin-top:2px; line-height:1.45; }
+  .todo-section .section-head .desc b { color:#1f2937; }
+
+  .reset-float {
+    position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 16px); right: 14px;
+    padding: 8px 12px; font-size: 11px; color: #a0aec0;
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 50;
+    display: none;
+  }
+  .reset-float.show { display: block; }
+
+  /* ===== 原因填写浮层（标记已处理时弹出） ===== */
+  .reason-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .reason-mask.show { display: flex; }
+  .reason-sheet {
+    width: 100%; max-width: 480px;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    padding: 16px 16px calc(env(safe-area-inset-bottom, 0) + 16px);
+    animation: slideUp 0.22s ease-out;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .reason-sheet h3 {
+    font-size: 15px; color: #2d3748; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .reason-sheet .sub-tip {
+    font-size: 11px; color: #a0aec0; margin-bottom: 12px;
+  }
+  .reason-sheet .quick-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+  }
+  .reason-sheet .quick-tag {
+    padding: 6px 11px; font-size: 12px;
+    border: 1px solid #e2e8f0; border-radius: 14px;
+    color: #4a5568; background: #f7fafc;
+  }
+  .reason-sheet .quick-tag.active {
+    background: #4299e1; color: #fff; border-color: #4299e1;
+  }
+  .reason-sheet textarea {
+    width: 100%; min-height: 70px;
+    border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 12px; font-size: 13px;
+    font-family: inherit; color: #2d3748;
+    resize: none;
+    background: #fafbfc;
+  }
+  .reason-sheet textarea:focus {
+    outline: none; border-color: #4299e1; background: #fff;
+  }
+  .reason-sheet .btn-row {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .reason-sheet .btn {
+    flex: 1; padding: 11px; font-size: 14px; font-weight: 600;
+    border-radius: 9px; text-align: center;
+    border: 1px solid;
+  }
+  .reason-sheet .btn.cancel { background: #fff; color: #718096; border-color: #e2e8f0; }
+  .reason-sheet .btn.skip   { background: #fff; color: #4a5568; border-color: #cbd5e0; }
+  .reason-sheet .btn.confirm{ background: #4299e1; color: #fff; border-color: #4299e1; }
+
+  /* 桌面端友好（≥640px 时也能看） */
+  @media (min-width: 640px) {
+    body { padding-left: 24px; padding-right: 24px; max-width: 480px; margin: 0 auto; background: #fff; box-shadow: 0 0 30px rgba(0,0,0,0.08); }
+    .brand { margin-left: -24px; margin-right: -24px; padding-left: 24px; padding-right: 24px; }
+    .kpi-scroll { margin-left: -24px; margin-right: -24px; padding-left: 24px; padding-right: 24px; }
+  }
+
+  /* ============================================================
+     PC 端嵌入模式样式（被大系统 iframe 嵌入时启用：body.pc-embed）
+     设计目标：放开宽度限制；KPI 三列大卡更舒展；Top10 / 差一步用 2 列网格展开
+     ============================================================ */
+  body.pc-embed {
+    max-width: none !important;
+    padding: 16px 24px !important;
+    background: #f5f7fb !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+  body.pc-embed .brand {
+    margin-left: -24px; margin-right: -24px;
+    padding: 14px 24px;
+    background: #fff;
+    border-radius: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  body.pc-embed .brand h1 { font-size: 18px; }
+  body.pc-embed .brand .tag { display: none; } /* PC 端不再显示「移动版」标签 */
+  body.pc-embed .kpi-scroll {
+    margin-left: 0 !important; margin-right: 0 !important;
+    padding-left: 0 !important; padding-right: 0 !important;
+    overflow: visible;
+  }
+  body.pc-embed .kpi-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    width: 100%;
+  }
+  body.pc-embed .kpi-card {
+    padding: 16px 18px;
+    border-radius: 14px;
+    gap: 6px;
+  }
+  body.pc-embed .kpi-card .label { font-size: 13px; }
+  body.pc-embed .kpi-card .value { font-size: 26px; }
+  body.pc-embed .kpi-card .value .unit { font-size: 13px; }
+  body.pc-embed .kpi-card .chip { font-size: 12px; }
+  body.pc-embed .kpi-card .sub  { font-size: 12px; }
+
+  body.pc-embed .section { padding: 16px 18px; border-radius: 14px; }
+  body.pc-embed .section-head .title { font-size: 16px; }
+  body.pc-embed .section-head .desc { font-size: 12px; }
+
+  /* Top10 / 差一步：PC 端 2 列网格 */
+  body.pc-embed .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  body.pc-embed .client-card {
+    border-radius: 10px;
+    padding: 12px 14px 12px 18px;
+  }
+  body.pc-embed .client-card.actionable { padding-bottom: 14px; }
+  /* PC 端「标记已处理」按钮回归右上角，不悬浮底部 */
+  body.pc-embed .client-card .done-btn {
+    position: absolute; top: 10px; right: 12px;
+    width: auto; min-height: 0;
+    padding: 4px 10px; font-size: 11px;
+    background: #fff;
+  }
+  body.pc-embed .client-card .card-row2 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px 12px;
+  }
+  body.pc-embed .client-name { font-size: 14px; }
+
+  /* PC 端「原因填写浮层」改为屏幕居中对话框（不再贴底部 sheet 风格） */
+  body.pc-embed .reason-mask {
+    align-items: center;          /* 垂直居中 */
+    justify-content: center;
+    padding: 20px;
+  }
+  body.pc-embed .reason-sheet {
+    width: 100%; max-width: 520px;
+    border-radius: 14px;          /* 四角圆 */
+    padding: 20px 22px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: fadeInScale 0.18s ease-out;
+  }
+  @keyframes fadeInScale {
+    from { transform: scale(0.96); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+  body.pc-embed .reason-sheet h3      { font-size: 16px; }
+  body.pc-embed .reason-sheet textarea{ min-height: 90px; font-size: 14px; }
+  body.pc-embed .reason-sheet .btn    { padding: 10px; font-size: 13px; }
+
+  /* 屏幕足够宽时（≥1280）KPI 卡更舒展；客户卡可 3 列 */
+  @media (min-width: 1280px) {
+    body.pc-embed .card-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部 brand -->
+<div class="brand">
+  <div class="brand-row1">
+    <h1>🦞 销售作战中心 <span class="tag">移动版</span></h1>
+    <span class="time" id="nowTime"></span>
+  </div>
+  <div class="brand-row2">
+    <div class="sales-wrap">
+      <select id="salesSelect"></select>
+    </div>
+  </div>
+</div>
+
+<!-- 顶部 3 个 KPI 卡（一行3个） -->
+<div class="kpi-scroll" id="kpiScroll">
+  <div class="kpi-row">
+    <div class="kpi-card blue">
+      <div class="label">新锐新客数</div>
+      <div class="value">
+        <span id="kpiNewCustElite">--</span><span class="unit">个</span>
+        <span class="chip" id="kpiNewCustEliteChg">--</span>
+      </div>
+      <div class="sub">26Q2 · 最新</div>
+    </div>
+    <div class="kpi-card purple">
+      <div class="label">新客日耗</div>
+      <div class="value">
+        <span id="kpiNewCustCost">--</span><span class="unit">万</span>
+        <span class="chip" id="kpiNewCustCostChg">--</span>
+      </div>
+      <div class="sub">ADQ+全域通 · 环比昨日</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="label">中心日耗</div>
+      <div class="value">
+        <span id="kpiCenterCost">--</span><span class="unit">万</span>
+        <span class="chip" id="kpiCenterCostChg">--</span>
+      </div>
+      <div class="sub">中心昨日 · 环比昨日</div>
+    </div>
+  </div>
+</div>
+
+<!-- Top10 重点客户状态 -->
+<div class="todo-section section-top10">
+  <div class="section-head">
+    <span class="icon">🎯</span>
+    <span class="title">本季度有效新客TOP客户</span>
+    <span class="count" id="cntTop10">0</span>
+    <span class="desc">🔴 需告警 = 日耗跌超20%或ROI跌超30% · 🟠 需关注 = 日耗跌10%-20%/ROI跌15%-30%/创意基建明显下降 · ⚪ 基本稳定 = 无明显下滑或增长</span>
+  </div>
+  <div class="filter-tabs" id="top10Tabs"></div>
+  <div class="card-grid" id="top10Grid"></div>
+</div>
+
+<!-- 够一够冲新客 -->
+<div class="todo-section section-push">
+  <div class="section-head">
+    <span class="icon">🔥</span>
+    <span class="title">够一够冲新客</span>
+    <span class="count" id="cntPush">0</span>
+    <span class="desc">已开户但当季消耗未破 1000 元 · 差一步就能计入有效新客</span>
+  </div>
+  <div class="card-grid" id="pushGrid"></div>
+</div>
+
+<div class="reset-float" id="resetBtn">↺ 重置已处理</div>
+
+<!-- 原因填写浮层（标记已处理时弹出，原因非必填） -->
+<div class="reason-mask" id="reasonMask">
+  <div class="reason-sheet" onclick="event.stopPropagation()">
+    <h3>✓ 标记 <span id="reasonClientName" style="color:#4299e1;">--</span> 为已处理</h3>
+    <div class="sub-tip">可选：简短记录这次的处理情况（攒3个月就是你的客户运营史）</div>
+    <div class="quick-tags" id="reasonQuickTags">
+      <span class="quick-tag" data-r="已电联沟通">已电联沟通</span>
+      <span class="quick-tag" data-r="客户已知晓">客户已知晓</span>
+      <span class="quick-tag" data-r="暂无意向">暂无意向</span>
+      <span class="quick-tag" data-r="转其他渠道">转其他渠道</span>
+      <span class="quick-tag" data-r="客户搁置">客户搁置</span>
+    </div>
+    <textarea id="reasonText" placeholder="可写具体细节，如「客户反馈ROI不达预期，准备调整出价」（非必填）"></textarea>
+    <div class="btn-row">
+      <div class="btn cancel" id="reasonCancel">取消</div>
+      <div class="btn skip" id="reasonSkip">跳过原因</div>
+      <div class="btn confirm" id="reasonConfirm">完成</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   移动端 MVP · 基于 v3.5 适配
+   ================================================================ */
+
+const SALES = ["brownfan","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+const TRACKS = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
+
+// 销售身份：优先用 URL 参数（被 iframe 嵌入时由父页传入），其次 localStorage，最后默认 kinsleyjin
+const _urlParams = new URLSearchParams(location.search);
+const _urlUser = _urlParams.get("user");
+let currentSales = (_urlUser && SALES.includes(_urlUser)) ? _urlUser : (localStorage.getItem("v34_sales") || "kinsleyjin");
+const IS_EMBED = _urlParams.get("embed") === "1";
+let currentFilter = "alert";
+
+// 视图模式：mine = 仅当前销售；team = 全销售汇总（被父级嵌入时由 ?view=team 或 postMessage 控制）
+let viewMode = (_urlParams.get("view") === "team") ? "team" : "mine";
+
+// PC 嵌入模式：放开宽度、改用 PC 网格布局
+if (IS_EMBED) {
+  document.documentElement.classList.add("pc-embed");
+  document.body && document.body.classList.add("pc-embed");
+  // 兜底：DOMContentLoaded 时再补一次（避免脚本执行顺序问题）
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.classList.add("pc-embed");
+  });
+}
+
+// 监听父页（大系统）切销售：postMessage({type:"setUser", user:"xxx"})
+// 监听父页切视角：postMessage({type:"setView", view:"team"|"mine"})
+window.addEventListener("message", (ev) => {
+  if (!ev.data || typeof ev.data !== "object") return;
+  if (ev.data.type === "setUser" && SALES.includes(ev.data.user)) {
+    if (currentSales === ev.data.user) return;
+    currentSales = ev.data.user;
+    localStorage.setItem("v34_sales", currentSales);
+    const sel = document.getElementById("salesSelect");
+    if (sel) sel.value = currentSales;
+    if (typeof render === "function") render();
+  }
+  if (ev.data.type === "setView" && (ev.data.view === "team" || ev.data.view === "mine")) {
+    if (viewMode === ev.data.view) return;
+    viewMode = ev.data.view;
+    // 团队视角下隐藏「切销售」下拉（PC embed 中由父级控制全销售）
+    const sel = document.getElementById("salesSelect");
+    if (sel && sel.parentElement) sel.parentElement.style.display = (viewMode === "team" && IS_EMBED) ? "none" : "";
+    if (typeof render === "function") render();
+  }
+});
+
+// 暴露当前未处理告警数给父页（已合并到 render 末尾，此处保留兼容入口）
+function _postNotifyCount() {
+  if (typeof render === "function") render();
+}
+
+const CENTER_KPI = {
+  newCustElite: { value: 28, chg: +15.4 },
+  newCustCost:  { value: 458_720, chg: +8.7 },
+  centerCost:   { value: 3_254_600, chg: -2.3 }
+};
+
+const TOP10_STATUS_SOURCE = "https://adata.woa.com/bi/view/15729?s=20S1yv";
+function parsePercent(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if (!s || s === "~" || s === "-" || s.toLowerCase() === "nan") return null;
+  const n = Number(s.replace(/,/g, "").replace(/%/g, "").replace(/^\+/, ""));
+  return Number.isFinite(n) ? n : null;
+}
+function parseMetricNumber(v) {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  if (!s || s === "~" || s === "-" || s.toLowerCase() === "nan") return null;
+  const n = Number(s.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+function classifyTopClient(row) {
+  const costRate = parsePercent(row.costRate);
+  const roiRate = parsePercent(row.roiRate);
+  const creativeRate = parsePercent(row.creativeRate);
+  const noDelivery = String(row.matchStatus || "").includes("近两日无投放") ||
+    ((parseMetricNumber(row.yestCostWan) || 0) === 0 && String(row.bidCost || "") === "~");
+  if (noDelivery) return {status:"alert", subReason:"noDelivery", reason:"近两日无投放"};
+  if (costRate !== null && costRate <= -20) return {status:"alert", subReason:"drop", reason:"日耗跌超20%"};
+  if (roiRate !== null && roiRate <= -30) return {status:"alert", subReason:"roi", reason:"ROI跌超30%"};
+  if (costRate !== null && costRate <= -10) return {status:"warn", subReason:"drop", reason:"日耗跌10%-20%"};
+  if (roiRate !== null && roiRate <= -15) return {status:"warn", subReason:"roi", reason:"ROI跌15%-30%"};
+  if (creativeRate !== null && creativeRate <= -30) return {status:"warn", subReason:"infra", reason:"创意基建明显下降"};
+  return {status:"stable", subReason:(costRate !== null && costRate >= 0) ? "grow" : "flat", reason:"基本稳定"};
+}
+const TOP10_CLIENTS = (() => {
+  const rows = Array.isArray(window.__TOP80_EFFECTIVE_METRICS__) ? window.__TOP80_EFFECTIVE_METRICS__ : [];
+  return rows.map((r, idx) => {
+    const cls = classifyTopClient(r);
+    const yestWan = parseMetricNumber(r.yestCostWan) || 0;
+    const chgPct = parsePercent(r.costRate);
+    const roiChgPct = parsePercent(r.roiRate);
+    const infraChgPct = parsePercent(r.creativeRate);
+    const creativeId = parseMetricNumber(r.creativeIds);
+    const roi = parseMetricNumber(r.roi);
+    return {
+      id: `top_effective_${r.sale || ""}_${r.rank || idx+1}_${r.name || ""}`,
+      name: r.name || "未命名客户",
+      sales: r.sale || "其他",
+      rank: Number(r.rank || idx + 1),
+      status: cls.status,
+      subReason: cls.subReason,
+      statusReason: cls.reason,
+      deliverySide: r.deliverySide || "",
+      matchStatus: r.matchStatus || "",
+      quarterCostWan: parseMetricNumber(r.quarterCostWan || r.firstCostWan) || 0,
+      yestCost: yestWan * 10000,
+      todayCost: yestWan * 10000,
+      chgPct: chgPct === null ? (cls.subReason === "noDelivery" ? -100 : 0) : Number(chgPct.toFixed(1)),
+      roi: roi === null ? "~" : roi.toFixed(2),
+      roiChgPct: roiChgPct === null ? 0 : Number(roiChgPct.toFixed(1)),
+      creativeId: creativeId === null ? "~" : creativeId,
+      infraChgPct: infraChgPct === null ? 0 : Number(infraChgPct.toFixed(1)),
+      metricSource: TOP10_STATUS_SOURCE
+    };
+  });
+})();
+
+const PUSH_NEWCUST = (() => {
+  const rows = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  return rows
+    .filter(r => {
+      const fq = String(r.firstQuarter || "").replace("/", "");
+      const cost = Number(r.quarterCost || 0);
+      return fq === "2026Q2" && !r.old24 && cost > 0 && cost < 1000;
+    })
+    .map((r, idx) => {
+      const cost = Number(r.quarterCost || 0);
+      const yest = Number(r.yestCost || 0);
+      const gap = Math.max(0, 1000 - cost);
+      return {
+        id: `push_real_${r.sale || ""}_${r.shortName || r.name || idx}`,
+        name: r.shortName || r.name || "未命名客户",
+        sales: r.sale || "其他",
+        track: r.cat || "未打标",
+        cost: Number(cost.toFixed(1)),
+        lifecycle: yest > 0 ? "投放中" : "已开户",
+        startedDays: "",
+        gap: Number(gap.toFixed(1)),
+        yestCost: yest,
+        deliverySide: r.deliverySide || "",
+        urgency: gap <= 200 && yest > 0 ? "high" : "mid"
+      };
+    })
+    .sort((a,b) => (a.gap - b.gap) || (b.yestCost - a.yestCost));
+})();
+
+const DONE_KEY = "v34_done_ids";
+const REASON_KEY = "v34_done_reasons";  // {clientId: [{ts, reason, sales}]}
+function getDoneIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || "[]")); }
+  catch(e) { return new Set(); }
+}
+function saveDoneIds(set) { localStorage.setItem(DONE_KEY, JSON.stringify([...set])); }
+function getReasons() {
+  try { return JSON.parse(localStorage.getItem(REASON_KEY) || "{}"); }
+  catch(e) { return {}; }
+}
+function saveReasons(obj) { localStorage.setItem(REASON_KEY, JSON.stringify(obj)); }
+function appendReason(clientId, reason, action, clientName) {
+  const r = getReasons();
+  if (!r[clientId]) r[clientId] = [];
+  r[clientId].push({
+    ts: new Date().toISOString(),
+    reason: reason || "",
+    sales: currentSales,
+    action: action || "mark_done",
+    clientName: clientName || ""
+  });
+  saveReasons(r);
+}
+
+/* ===== 后端同步：写原因到服务器 =====
+   失败也不阻塞用户操作（localStorage 保底）
+*/
+function syncReasonToServer(clientId, reason, action, clientName) {
+  try {
+    fetch("/api/reason", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Sales-Name": currentSales || ""
+      },
+      body: JSON.stringify({
+        clientId: clientId,
+        reason: reason || "",
+        sales: currentSales || "",
+        action: action || "mark_done",
+        clientName: clientName || ""
+      }),
+      keepalive: true
+    }).catch(() => { /* 网络抖动也不打扰销售 */ });
+  } catch (e) { /* 老浏览器兜底 */ }
+}
+
+function getClientNameById(id) {
+  const node = document.querySelector(`.client-card[data-id="${id}"] .client-name`);
+  return node ? node.textContent.replace(/[🔥⏳]\s*/g, "").trim() : "";
+}
+
+function toggleDone(id) {
+  const done = getDoneIds();
+  if (done.has(id)) {
+    // 撤销已处理：直接撤销，不弹原因
+    done.delete(id);
+    saveDoneIds(done);
+    appendReason(id, "", "undo", getClientNameById(id));
+    syncReasonToServer(id, "", "undo", getClientNameById(id));
+    render();
+  } else {
+    // 标记已处理：先弹原因输入框（非必填）
+    openReasonSheet(id);
+  }
+}
+
+/* ===== 原因填写浮层逻辑 ===== */
+let _pendingDoneId = null;
+function openReasonSheet(id) {
+  _pendingDoneId = id;
+  // 找到客户名展示
+  const card = document.querySelector(`.client-card[data-id="${id}"] .client-name`);
+  document.getElementById("reasonClientName").textContent = card ? card.textContent.replace(/[🔥⏳]\s*/g, "") : "该客户";
+  // 重置输入框 & 快捷标签
+  document.getElementById("reasonText").value = "";
+  document.querySelectorAll("#reasonQuickTags .quick-tag").forEach(el => el.classList.remove("active"));
+  document.getElementById("reasonMask").classList.add("show");
+}
+function closeReasonSheet() {
+  _pendingDoneId = null;
+  document.getElementById("reasonMask").classList.remove("show");
+}
+function commitDone(reason) {
+  if (!_pendingDoneId) return;
+  const id = _pendingDoneId;
+  const clientName = getClientNameById(id);
+  const done = getDoneIds();
+  done.add(id);
+  saveDoneIds(done);
+  appendReason(id, reason, "mark_done", clientName);
+  syncReasonToServer(id, reason, "mark_done", clientName);
+  closeReasonSheet();
+  render();
+}
+
+document.getElementById("reasonCancel").addEventListener("click", closeReasonSheet);
+document.getElementById("reasonMask").addEventListener("click", (e) => {
+  if (e.target.id === "reasonMask") closeReasonSheet();
+});
+document.getElementById("reasonSkip").addEventListener("click", () => commitDone(""));
+document.getElementById("reasonConfirm").addEventListener("click", () => {
+  const txt = document.getElementById("reasonText").value.trim();
+  // 把激活的快捷标签也带上
+  const tags = [...document.querySelectorAll("#reasonQuickTags .quick-tag.active")].map(el => el.dataset.r);
+  const finalReason = [tags.join(" / "), txt].filter(Boolean).join(" · ");
+  commitDone(finalReason);
+});
+document.querySelectorAll("#reasonQuickTags .quick-tag").forEach(el => {
+  el.addEventListener("click", () => el.classList.toggle("active"));
+});
+
+function render() {
+  const done = getDoneIds();
+  // viewMode === "team"：团队视角，全销售汇总；否则按当前销售过滤
+  const myTop10 = (viewMode === "team") ? TOP10_CLIENTS.slice() : TOP10_CLIENTS.filter(c => c.sales === currentSales);
+  const myPushes = (viewMode === "team") ? PUSH_NEWCUST.slice() : PUSH_NEWCUST.filter(c => c.sales === currentSales);
+
+  const pendingTop10 = myTop10.filter(c => !done.has(c.id));
+  const cntAlert  = pendingTop10.filter(c => c.status === "alert").length;
+  const cntWarn   = pendingTop10.filter(c => c.status === "warn").length;
+  const cntStable = pendingTop10.filter(c => c.status === "stable").length;
+  const doneTop10 = myTop10.length - pendingTop10.length;
+
+  document.getElementById("cntTop10").textContent =
+    `待处理 ${cntAlert + cntWarn} / 全部 ${myTop10.length}`;
+
+  const tabs = [
+    { k: "all",    label: "待处理",       n: cntAlert + cntWarn },
+    { k: "alert",  label: "🔴 需告警",  n: cntAlert },
+    { k: "warn",   label: "🟠 需关注",  n: cntWarn },
+    { k: "stable", label: "⚪ 基本稳定", n: cntStable },
+    { k: "done",   label: "✅ 已处理", n: doneTop10 }
+  ];
+  document.getElementById("top10Tabs").innerHTML = tabs.map(t => `
+    <div class="filter-tab ${currentFilter===t.k?'active':''}" onclick="setFilter('${t.k}')">
+      ${t.label}<span class="n">(${t.n})</span>
+    </div>
+  `).join("");
+
+  let shown;
+  if (currentFilter === "done") shown = myTop10.filter(c => done.has(c.id));
+  else if (currentFilter === "stable") shown = pendingTop10.filter(c => c.status === "stable");
+  else if (currentFilter === "all") shown = pendingTop10.filter(c => c.status === "alert" || c.status === "warn");
+  else shown = pendingTop10.filter(c => c.status === currentFilter);
+
+  const grid = document.getElementById("top10Grid");
+  if (shown.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><span class="emoji">🎉</span>当前筛选下没有待处理客户</div>`;
+  } else {
+    const order = { alert: 0, warn: 1, stable: 2 };
+    shown.sort((a, b) => {
+      const aDone = done.has(a.id) ? 1 : 0;
+      const bDone = done.has(b.id) ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+      return (order[a.status] ?? 9) - (order[b.status] ?? 9);
+    });
+    grid.innerHTML = shown.map(c => renderTop10Card(c, done.has(c.id))).join("");
+  }
+
+  const pendingPushes = myPushes.filter(c => !done.has(c.id));
+  const donePushes = myPushes.length - pendingPushes.length;
+  document.getElementById("cntPush").textContent = `${pendingPushes.length} 待处理 / ${myPushes.length} 全部`;
+  const pushGrid = document.getElementById("pushGrid");
+  const shownPushes = pendingPushes.slice(0, viewMode === "team" ? 30 : 20);
+  if (shownPushes.length === 0) {
+    pushGrid.innerHTML = `<div class="empty-state"><span class="emoji">✨</span>当前没有待处理的"够一够"客户${donePushes ? `，已处理 ${donePushes} 个` : ""}</div>`;
+  } else {
+    pushGrid.innerHTML = shownPushes.map(c => renderPushCard(c, false)).join("");
+  }
+
+  // 同步红点徽章给父页（大系统顶栏 dotHome）
+  if (window.parent !== window) {
+    try {
+      const unhandledTop = myTop10.filter(c => !done.has(c.id) && (c.status === "alert" || c.status === "warn")).length;
+      const unhandledPush = myPushes.filter(c => !done.has(c.id)).length;
+      window.parent.postMessage({type:"notifyCount", count: unhandledTop + unhandledPush, source:"home"}, "*");
+    } catch(e) {}
+  }
+}
+
+function setFilter(k) { currentFilter = k; render(); }
+
+function renderTop10Card(c, isDone) {
+  let dotCls, rankTag, badge, actionable = true;
+  const chgColor = c.chgPct < 0 ? "neg" : "pos";
+  const roiColor = Number(c.roiChgPct) < 0 ? "neg" : "pos";
+  const infraColor = Number(c.infraChgPct) < 0 ? "neg" : "pos";
+
+  if (c.status === "alert") {
+    dotCls = "alert"; rankTag = `Top${c.rank} 需告警`;
+    if (c.subReason === "drop") badge = `<span class="badge alert-drop">日耗下滑 ▼${Math.abs(c.chgPct)}%</span>`;
+    else if (c.subReason === "roi") badge = `<span class="badge alert-roi">ROI 下滑 ▼${Math.abs(c.roiChgPct)}%</span>`;
+    else if (c.subReason === "noDelivery") badge = `<span class="badge alert-drop">近两日无投放</span>`;
+    else badge = `<span class="badge alert-infra">基建下滑 ▼${Math.abs(c.infraChgPct)}%</span>`;
+  } else if (c.status === "warn") {
+    dotCls = "warn"; rankTag = `Top${c.rank} 需关注`;
+    if (c.subReason === "drop") badge = `<span class="badge warn-drop">日耗下滑 ▼${Math.abs(c.chgPct)}%</span>`;
+    else if (c.subReason === "roi") badge = `<span class="badge warn-roi">ROI 下滑 ▼${Math.abs(c.roiChgPct)}%</span>`;
+    else badge = `<span class="badge warn-infra">基建萎缩 ▼${Math.abs(c.infraChgPct)}%</span>`;
+  } else {
+    dotCls = "stable"; rankTag = `Top${c.rank} 稳定`;
+    if (c.subReason === "grow") badge = `<span class="badge grow">▲${c.chgPct}%</span>`;
+    else badge = `<span class="badge stable">${c.chgPct >= 0 ? "+" : ""}${c.chgPct}%</span>`;
+    actionable = false;
+  }
+
+  const detail = `
+    <div class="metric-item"><span class="lbl">昨日</span><span class="num">${(c.todayCost/10000).toFixed(2)}w</span><span class="${chgColor}">${c.chgPct >= 0 ? "+" : ""}${c.chgPct}%</span></div>
+    <div class="metric-item"><span class="lbl">ROI</span><span class="num">${c.roi}</span><span class="${roiColor}">${c.roiChgPct >= 0 ? "+" : ""}${c.roiChgPct}%</span></div>
+    <div class="metric-item"><span class="lbl">创意id</span><span class="num">${c.creativeId}</span><span class="${infraColor}">${c.infraChgPct >= 0 ? "+" : ""}${c.infraChgPct}%</span></div>
+    <div class="metric-item"><span class="lbl">投放端</span><span class="num">${c.deliverySide || '未匹配'}</span></div>
+  `;
+
+  return `
+    <div class="client-card ${actionable ? 'actionable' : ''} ${isDone ? 'done' : ''}" data-id="${c.id}">
+      <div class="statusdot ${dotCls}"></div>
+      <div class="card-row1">
+        <span class="client-name">${c.name}</span>
+        <span class="rank-tag">${c.sales} · ${rankTag}</span>
+        ${badge}
+      </div>
+      <div class="card-row2">${detail}</div>
+      ${actionable ? `<div class="action-hint">建议：确认预算/ROI/素材基建，必要时今天直接电联处理。</div>` : ``}
+      ${actionable ? `
+        <div class="done-btn" onclick="event.stopPropagation(); toggleDone('${c.id}')">
+          ${isDone ? '↺ 撤销处理' : '✓ 标记已处理'}
+        </div>` : ''}
+    </div>
+  `;
+}
+
+function renderPushCard(c, isDone) {
+  const icon = c.urgency === "high" ? "🔥" : "⏳";
+  const yestWan = Number(c.yestCost || 0) / 10000;
+  const action = Number(c.yestCost || 0) > 0 ? "还在投，今天推动补到1000" : "疑似停投，先确认恢复投放";
+  return `
+    <div class="client-card actionable ${isDone ? 'done' : ''}" data-id="${c.id}">
+      <div class="statusdot push"></div>
+      <div class="card-row1">
+        <span class="client-name">${icon} ${c.name}</span>
+        <span class="rank-tag">${c.sales} · ${c.track}</span>
+        <span class="badge gap">还差 ¥${c.gap}</span>
+      </div>
+      <div class="card-row2">
+        <div class="metric-item"><span class="lbl">季累</span><span class="num">¥${c.cost}</span></div>
+        <div class="metric-item"><span class="lbl">昨日</span><span class="num">${yestWan.toFixed(2)}w</span></div>
+        <div class="metric-item"><span class="lbl">投放端</span><span class="num">${c.deliverySide || '未匹配'}</span></div>
+        <div class="metric-item"><span class="lbl">状态</span><span class="num">${c.lifecycle}</span></div>
+      </div>
+      <div class="action-hint">建议：${action}</div>
+      <div class="done-btn" onclick="event.stopPropagation(); toggleDone('${c.id}')">
+        ${isDone ? '↺ 撤销处理' : '✓ 标记已处理'}
+      </div>
+    </div>`;
+}
+
+function formatChip(chg) {
+  const abs = Math.abs(chg);
+  const cls = chg > 0.5 ? "up" : chg < -0.5 ? "down" : "flat";
+  const arrow = chg > 0.5 ? "▲" : chg < -0.5 ? "▼" : "≈";
+  return `${arrow} ${abs.toFixed(1)}%`;
+}
+function pctFromFraction(v) {
+  const n = Number(v || 0);
+  return Math.abs(n) <= 2 ? n * 100 : n;
+}
+function renderKPI() {
+  const centerRows = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
+  const total = centerRows.find(r => r.quarter === "2026Q2" && (r.sale === "合计" || String(r.sale).includes("合计"))) || null;
+  const risingValue = total ? Number(total.risingCount || 0) : CENTER_KPI.newCustElite.value;
+  const newCostValue = total ? Number(total.yestCost || 0) : CENTER_KPI.newCustCost.value;
+  const newCostChg = total ? pctFromFraction(total.dayCostRate) : CENTER_KPI.newCustCost.chg;
+  const risingChg = null; // 暂无真实周环比源，不展示假环比
+  const centerCostValue = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.centerCost) ? window.__CENTER_DAILY_KPI__.centerCost : CENTER_KPI.centerCost.value;
+  const centerCostChg = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.centerCostChg !== undefined) ? window.__CENTER_DAILY_KPI__.centerCostChg : CENTER_KPI.centerCost.chg;
+
+  document.getElementById("kpiNewCustElite").textContent = risingValue;
+  const c1 = document.getElementById("kpiNewCustEliteChg");
+  c1.textContent = risingChg === null ? "最新" : formatChip(risingChg);
+  c1.className = `chip ${risingChg === null ? "flat" : (risingChg > 0.5 ? "up" : risingChg < -0.5 ? "down" : "flat")}`;
+
+  document.getElementById("kpiNewCustCost").textContent = (newCostValue / 10000).toFixed(1);
+  const c2 = document.getElementById("kpiNewCustCostChg");
+  c2.textContent = formatChip(newCostChg);
+  c2.className = `chip ${newCostChg > 0.5 ? "up" : newCostChg < -0.5 ? "down" : "flat"}`;
+
+  document.getElementById("kpiCenterCost").textContent = (centerCostValue / 10000).toFixed(0);
+  const c3 = document.getElementById("kpiCenterCostChg");
+  c3.textContent = formatChip(centerCostChg);
+  c3.className = `chip ${centerCostChg > 0.5 ? "up" : centerCostChg < -0.5 ? "down" : "flat"}`;
+}
+
+function initSalesSelect() {
+  const sel = document.getElementById("salesSelect");
+  sel.innerHTML = SALES.map(s => `<option value="${s}" ${s === currentSales ? 'selected' : ''}>${s}</option>`).join("");
+  sel.addEventListener("change", e => {
+    currentSales = e.target.value;
+    localStorage.setItem("v34_sales", currentSales);
+    render();
+  });
+}
+
+function renderTime() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  document.getElementById("nowTime").innerHTML =
+    `更新于<br>${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/* KPI 滑动指示点（已改为3列网格，无需再用） */
+function initKpiDots() { /* no-op */ }
+
+/* 重置按钮：默认隐藏，长按页面右下角空白区 1.5 秒召唤（防误触） */
+(function setupResetBtn() {
+  const btn = document.getElementById("resetBtn");
+  let pressTimer = null;
+  let hideTimer = null;
+  // 在右下角放一个 50x50 的隐形热区
+  const hotzone = document.createElement("div");
+  hotzone.style.cssText = "position:fixed;bottom:0;right:0;width:60px;height:60px;z-index:49;";
+  document.body.appendChild(hotzone);
+
+  const startPress = () => {
+    pressTimer = setTimeout(() => {
+      btn.classList.add("show");
+      clearTimeout(hideTimer);
+      // 5 秒后自动隐藏（如果用户没点）
+      hideTimer = setTimeout(() => btn.classList.remove("show"), 5000);
+    }, 1200);
+  };
+  const cancelPress = () => clearTimeout(pressTimer);
+
+  hotzone.addEventListener("touchstart", startPress);
+  hotzone.addEventListener("touchend", cancelPress);
+  hotzone.addEventListener("touchmove", cancelPress);
+  hotzone.addEventListener("mousedown", startPress);
+  hotzone.addEventListener("mouseup", cancelPress);
+  hotzone.addEventListener("mouseleave", cancelPress);
+
+  btn.addEventListener("click", () => {
+    if (confirm("确认清除所有本地已处理状态？\n（包括客户标记和填写过的原因记录）")) {
+      localStorage.removeItem(DONE_KEY);
+      localStorage.removeItem(REASON_KEY);
+      btn.classList.remove("show");
+      render();
+    }
+  });
+})();
+
+initSalesSelect();
+renderKPI();
+renderTime();
+initKpiDots();
+render();
+</script>
+
+</body>
+</html>

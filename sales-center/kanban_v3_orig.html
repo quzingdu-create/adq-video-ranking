@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>拓客作战看板 v3 · 服饰中心增长组</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --panel-2: #f8fafd;
+    --border: #e5e9f0;
+    --border-2: #eef1f6;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --primary: #3b82f6;
+    --primary-2: #2563eb;
+    --primary-bg: #eff6ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --gold: #d97706;
+    --gold-bg: #fef3c7;
+    --purple: #8b5cf6;
+    --purple-bg: #f5f3ff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-width: 1280px;
+    padding-bottom: 60px;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar h1 {
+    font-size: 18px; font-weight: 600;
+    background: linear-gradient(90deg, var(--primary), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .topbar h1 .ver { font-size: 12px; color: var(--text-2); margin-left: 8px; -webkit-text-fill-color: var(--text-2); font-weight: 400; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar select, .topbar button, .topbar a.btn-link {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .topbar select:hover, .topbar button:hover, .topbar a.btn-link:hover { border-color: var(--primary); color: var(--primary); }
+  .topbar a.btn-link.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .topbar a.btn-link.primary:hover { color: #fff; background: var(--primary-2); }
+  .view-toggle {
+    display: inline-flex; background: var(--panel-2); border-radius: 8px; padding: 3px;
+    border: 1px solid var(--border);
+  }
+  .view-toggle button {
+    background: transparent; border: none; padding: 5px 14px; border-radius: 6px;
+    color: var(--text-2); font-size: 13px; cursor: pointer;
+  }
+  .view-toggle button.active { background: var(--primary); color: #fff; }
+
+  .container { padding: 20px 28px; }
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title .left { display: flex; align-items: center; gap: 10px; }
+  .section-title .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+    background: var(--primary-bg); color: var(--primary);
+  }
+  .section-title .right { display: flex; gap: 8px; }
+  .section-title .right button {
+    background: #fff; color: var(--text-2); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .section-title .right button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* KPI 大卡 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--accent, var(--primary));
+  }
+  .kpi-card.gold { --accent: var(--gold); }
+  .kpi-card.purple { --accent: var(--purple); }
+  .kpi-card.success { --accent: var(--success); }
+  .kpi-card .label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .kpi-card .value-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; color: var(--text); }
+  .kpi-card .target { font-size: 13px; color: var(--text-2); }
+  .progress-bar {
+    width: 100%; height: 6px; background: var(--border-2); border-radius: 3px; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent, var(--primary));
+    border-radius: 3px; transition: width 0.6s;
+  }
+  .kpi-card .meta {
+    display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2);
+  }
+  .kpi-card .pct { color: var(--accent, var(--primary)); font-weight: 600; }
+
+  /* 销售个人进度条 */
+  .sales-progress-list {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 22px; box-shadow: var(--shadow);
+  }
+  .sales-progress-row {
+    display: grid; grid-template-columns: 80px 1fr 80px 1fr 80px; gap: 12px;
+    align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-2);
+    font-size: 13px;
+  }
+  .sales-progress-row:last-child { border-bottom: none; }
+  .sales-progress-row .name { font-weight: 600; }
+  .sales-progress-row .label { color: var(--text-2); font-size: 12px; }
+  .mini-bar { background: var(--border-2); height: 6px; border-radius: 3px; overflow: hidden; }
+  .mini-bar > div { height: 100%; background: var(--primary); border-radius: 3px; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; box-shadow: var(--shadow);
+  }
+  .panel h3 { font-size: 14px; margin-bottom: 12px; color: var(--text); font-weight: 600; }
+
+  /* 销售画像 */
+  .portrait-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .portrait-tabs button {
+    background: #fff; border: 1px solid var(--border); color: var(--text-2);
+    padding: 6px 14px; border-radius: 18px; cursor: pointer; font-size: 13px;
+  }
+  .portrait-tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .portrait-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .chart-box { height: 280px; }
+
+  /* 表格 */
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  table.tbl th, table.tbl td {
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-2);
+  }
+  table.tbl th { color: var(--text-2); font-weight: 500; background: var(--panel-2); }
+  table.tbl tr:hover td { background: var(--primary-bg); }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+  }
+  .tag.gray { background: var(--border-2); color: var(--text-2); }
+  .tag.blue { background: var(--primary-bg); color: var(--primary); }
+  .tag.green { background: var(--success-bg); color: var(--success); }
+  .tag.gold { background: var(--gold-bg); color: var(--gold); }
+  .tag.purple { background: var(--purple-bg); color: var(--purple); }
+  .tag.red { background: var(--danger-bg); color: var(--danger); }
+
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-chips .chip {
+    background: #fff; border: 1px solid var(--border); color: var(--text-2);
+    padding: 4px 10px; border-radius: 14px; font-size: 12px; cursor: pointer;
+  }
+  .filter-chips .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .toolbar input, .toolbar select {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px;
+  }
+
+  /* 模态框 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 24px; min-width: 480px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+  .modal h2 { margin-bottom: 16px; font-size: 16px; }
+  .modal .row { margin-bottom: 14px; }
+  .modal .row label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .modal .row input, .modal .row select {
+    width: 100%; background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 8px 10px; border-radius: 6px; font-size: 13px;
+  }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  .hint {
+    font-size: 12px; color: var(--text-2); padding: 10px 14px;
+    background: var(--primary-bg); border-left: 3px solid var(--primary);
+    border-radius: 4px; margin-bottom: 12px;
+  }
+
+  .btn-sm {
+    background: var(--primary); color: #fff; border: none; padding: 4px 10px; border-radius: 5px;
+    font-size: 12px; cursor: pointer;
+  }
+  .btn-sm.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+  .btn-sm:hover { opacity: 0.85; }
+
+  /* TOP10 产业带卡片网格 */
+  .zone-top-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .zone-card {
+    background: #fff;
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+    position: relative; overflow: hidden; transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .zone-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .zone-card .rank-num {
+    position: absolute; top: 10px; right: 12px;
+    font-size: 22px; font-weight: 700; color: var(--border-2);
+  }
+  .zone-card.r1 .rank-num { color: #fcd34d; }
+  .zone-card.r2 .rank-num { color: #d1d5db; }
+  .zone-card.r3 .rank-num { color: #fbbf24; }
+  .zone-card .zone-name {
+    font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .zone-card .zone-loc { font-size: 11px; color: var(--text-2); margin-bottom: 12px; }
+  .zone-card .zone-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    border-top: 1px dashed var(--border-2); padding-top: 10px;
+  }
+  .zone-card .stat { text-align: center; }
+  .zone-card .stat-num { font-size: 16px; font-weight: 700; color: var(--text); }
+  .zone-card .stat-num.gold { color: var(--gold); }
+  .zone-card .stat-num.purple { color: var(--purple); }
+  .zone-card .stat-label { font-size: 10px; color: var(--text-2); margin-top: 2px; }
+  .maturity-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+  }
+  .maturity-dot.cultiv { background: var(--success); }
+
+  .zone-collapse {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    margin-top: 4px; box-shadow: var(--shadow);
+  }
+  .zone-collapse-header {
+    padding: 12px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--text-2);
+  }
+  .zone-collapse-header:hover { color: var(--text); }
+  .zone-collapse-body { display: none; padding: 0 18px 18px; }
+  .zone-collapse.open .zone-collapse-body { display: block; }
+  .zone-collapse-header .arrow { transition: transform 0.2s; }
+  .zone-collapse.open .arrow { transform: rotate(180deg); }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+
+<!-- Demo 提示条 -->
+<div id="demoBanner" style="background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 28px;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f59e0b;">
+  <div><strong>🦞 Demo 演示版</strong> · 图表数据为模拟数据 · <span style="color:#92400e;">请回 <a href="index.html" style="color:#78350f;">作战中心首页</a> 提交建议</span></div>
+  <a href="javascript:void(0)" onclick="document.getElementById('demoBanner').style.display='none'" style="color:#78350f;text-decoration:none;">收起 ✕</a>
+</div>
+
+<div class="topbar">
+  <h1>🦞 拓客作战看板 <span class="ver">v3 原型 · DEMO</span></h1>
+  <div class="topbar-right">
+    <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
+    <div class="view-toggle">
+      <button id="viewTeam" class="active">团队视图</button>
+      <button id="viewMine">我的视图</button>
+    </div>
+    <select id="quarterSel">
+      <option value="2026Q2">2026 Q2（当前）</option>
+      <option value="2026Q1">2026 Q1</option>
+      <option value="2025Q4">2025 Q4</option>
+    </select>
+    <button id="btnTarget">⚙️ 目标管理</button>
+    <a href="靶向品牌池_v3.html" class="btn-link">🎯 靶向品牌池</a>
+    <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ========== 第一屏：团队季度KPI ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>📊 团队季度 KPI 完成进度</span>
+        <span class="badge" id="quarterTag">2026 Q2</span>
+      </div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>👥 销售个人进度</span></div>
+    </div>
+    <div class="sales-progress-list" id="salesProgress"></div>
+  </div>
+
+  <!-- ========== 第二屏：销售拓客模型画像 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>🎯 销售拓客模型画像</span></div>
+      <div class="right">
+        <button class="active" data-portrait="all">全部新客</button>
+        <button data-portrait="rising">仅新锐新客</button>
+      </div>
+    </div>
+    <div class="portrait-tabs" id="portraitTabs"></div>
+    <div class="portrait-grid">
+      <div class="panel"><h3>类目分布</h3><div id="chartCategory" class="chart-box"></div></div>
+      <div class="panel"><h3>链路分布</h3><div id="chartLink" class="chart-box"></div></div>
+      <div class="panel"><h3>服务商分布</h3><div id="chartAgent" class="chart-box"></div></div>
+      <div class="panel"><h3>客户来源分布</h3><div id="chartSource" class="chart-box"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== 第三屏：产业带渗透 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>🗺️ 产业带渗透情况</span>
+        <span class="badge">报备制 · 省·市·区·类目</span>
+      </div>
+      <div class="right">
+        <button id="zoneSortCost" class="active">按消耗排序</button>
+        <button id="zoneSortNew">按新客数排序</button>
+      </div>
+    </div>
+    <div class="hint">💡 渗透 = 在该产业带的<b style="color:#fff">新客数 / 新锐新客数 / 日耗</b>。重点展示 TOP10 产业带，其他产业带默认收起，可点击展开查看全部。聚合粒度为「省+市+区+类目」。</div>
+
+    <!-- TOP10 卡片 -->
+    <div class="filter-chips" id="indMaturity">
+      <span class="chip active" data-m="">全部</span>
+      <span class="chip" data-m="成熟">🏆 成熟产业带</span>
+      <span class="chip" data-m="培育">🌱 培育产业带</span>
+    </div>
+    <div class="zone-top-grid" id="zoneTopGrid"></div>
+
+    <!-- 折叠：其他产业带 -->
+    <div class="zone-collapse" id="zoneCollapse">
+      <div class="zone-collapse-header" id="zoneCollapseHeader">
+        <span>📂 其他产业带（<span id="zoneOtherCount">0</span> 个）</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="zone-collapse-body">
+        <table class="tbl" id="zoneOtherTable">
+          <thead><tr>
+            <th>产业带（省·市·区·类目）</th><th>成熟度</th><th>新客数</th><th>新锐新客</th><th>日耗(元)</th><th>参与销售</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 报备明细 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>📋 拓客报备明细</span></div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <input id="recordSearch" placeholder="搜索客户主体/品牌" />
+        <select id="recordSales"><option value="">全部销售</option></select>
+        <select id="recordCategory"><option value="">全部类目</option></select>
+        <select id="recordRising">
+          <option value="">全部</option>
+          <option value="是">仅新锐</option>
+          <option value="否">仅非新锐</option>
+        </select>
+      </div>
+      <table class="tbl" id="recordTable">
+        <thead><tr>
+          <th>登记日期</th><th>销售</th><th>客户主体</th><th>主营品牌</th><th>类目</th><th>链路</th><th>服务商</th><th>客户来源</th><th>新锐</th><th>靶向</th><th>产业带</th>
+        </tr></thead>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- 目标管理弹窗 -->
+<div class="modal-mask" id="modalTarget">
+  <div class="modal">
+    <h2>⚙️ 季度目标管理</h2>
+    <div class="row"><label>新锐新客数（团队总目标）</label><input id="goalRising" type="number" /></div>
+    <div class="row"><label>新客消耗（团队总目标，万元日耗汇总）</label><input id="goalCost" type="number" /></div>
+    <div class="actions">
+      <button class="btn-sm ghost" onclick="closeModal('modalTarget')">取消</button>
+      <button class="btn-sm" onclick="saveGoals()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增登记弹窗（简化版） -->
+<div class="modal-mask" id="modalRecord">
+  <div class="modal" style="min-width:560px;">
+    <h2>+ 新增拓客登记</h2>
+    <div class="row"><label>客户主体名</label><input id="rcName" placeholder="如：东莞市虎门镇XX服饰有限公司" /></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+      <div class="row"><label>省</label><select id="rcProv"></select></div>
+      <div class="row"><label>市</label><select id="rcCity"></select></div>
+      <div class="row"><label>区</label><select id="rcDist"></select></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="row"><label>主营类目</label><select id="rcCat"></select></div>
+      <div class="row"><label>链路</label><select id="rcLink"></select></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="row"><label>服务商</label><input id="rcAgent" /></div>
+      <div class="row"><label>客户来源</label><select id="rcSource"></select></div>
+    </div>
+    <div class="hint" id="rcHint" style="display:none;"></div>
+    <div class="actions">
+      <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
+      <button class="btn-sm" onclick="submitRecord()">提交登记</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   共享虚拟数据 · v3 原型
+   ========================= */
+const SALES = ["王晓琳","李明哲","张悦","陈思远","刘子青","赵婧怡","周柏川"];
+const CURRENT_USER = "刘子青";
+const CATEGORIES = ["女装","男装","珠宝配饰","运动户外","箱包鞋靴","贴身衣物","潮奢跑品"];
+const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店直购","视频号橱窗"];
+const AGENTS = ["蓝色光标","利欧数字","引力传媒","华扬联众","天与空","直接对接"];
+const SOURCES = ["沙龙拓客","1v1走访","全域通电销","服务商转介绍","客户转介绍","主动来询"];
+const PRIORITIES = ["S","A","B"];
+
+// 季度目标（注意：cost 单位为「万元」，是季度内日耗的累计汇总值）
+let GOALS = {
+  rising: 60,
+  cost: 1500,
+  newCust: 140
+};
+
+// 50 个虚拟靶向品牌
+const TARGET_BRAND_NAMES = [
+  "茵曼","裂帛","太平鸟","拉夏贝尔","JNBY","ONLY","欧时力","伊芙丽","朗姿","赫莲娜",
+  "海澜之家","马克华菲","柒牌","劲霸","利郎","九牧王","报喜鸟","雅戈尔","希努尔",
+  "周大福","周生生","老凤祥","六福","谢瑞麟","潮宏基","明牌","金至尊",
+  "李宁","安踏","特步","361度","鸿星尔克","FILA","始祖鸟",
+  "百丽","千百度","达芙妮","奥康","红蜻蜓","新秀丽",
+  "都市丽人","曼妮芬","爱慕","三枪",
+  "波司登","蕉下","蕉内","Ubras","内外NEIWAI","始祖鸟"
+];
+
+// 靶向品牌：去掉「认领」逻辑，改为「建联状态 + 投放状态」
+//  - 建联状态：未建联 / 已建联（销售已接触上对应客户）
+//  - 投放状态：未投放 / 投放中 / 投放断档（曾投放但近30天无消耗）
+const targetBrands = [...new Set(TARGET_BRAND_NAMES)].slice(0, 50).map((name, i) => {
+  const cat = i < 10 ? "女装" : i < 19 ? "男装" : i < 27 ? "珠宝配饰" : i < 34 ? "运动户外" : i < 40 ? "箱包鞋靴" : i < 44 ? "贴身衣物" : "潮奢跑品";
+
+  // 建联 / 投放分布
+  // 30% 未建联；30% 已建联未投放；30% 投放中；10% 投放断档
+  let contactStatus, deliveryStatus, contactSale = "", contactDate = "", dailyCost = 0, totalCost = 0;
+  const r = Math.random();
+  if (r < 0.30) {
+    contactStatus = "未建联"; deliveryStatus = "—";
+  } else if (r < 0.60) {
+    contactStatus = "已建联"; deliveryStatus = "未投放";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-04-" + String(5 + (i%20)).padStart(2,'0');
+  } else if (r < 0.90) {
+    contactStatus = "已建联"; deliveryStatus = "投放中";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-03-" + String(10 + (i%20)).padStart(2,'0');
+    dailyCost = Math.round((Math.random()*8 + 0.5)*1000); // 500-8500元/日耗
+    totalCost = Math.round(dailyCost * (Math.random()*60 + 20));
+  } else {
+    contactStatus = "已建联"; deliveryStatus = "投放断档";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-02-" + String(10 + (i%18)).padStart(2,'0');
+    dailyCost = 0;
+    totalCost = Math.round((Math.random()*30 + 5)*10000);
+  }
+
+  return {
+    name, category: cat,
+    priority: i < 12 ? "S" : i < 30 ? "A" : "B",
+    contactStatus, deliveryStatus,
+    contactSale, contactDate,
+    dailyCost, totalCost
+  };
+});
+
+// 30 个产业带（扩充原 15 个，让 TOP10 + 折叠展示效果更明显）
+const INDUSTRIAL_ZONES = [
+  { prov:"广东省", city:"东莞市", dist:"虎门镇", cat:"女装", maturity:"成熟" },
+  { prov:"浙江省", city:"杭州市", dist:"四季青", cat:"女装", maturity:"成熟" },
+  { prov:"广东省", city:"广州市", dist:"沙河", cat:"女装", maturity:"成熟" },
+  { prov:"福建省", city:"晋江市", dist:"陈埭镇", cat:"运动户外", maturity:"成熟" },
+  { prov:"福建省", city:"泉州市", dist:"石狮市", cat:"男装", maturity:"成熟" },
+  { prov:"广东省", city:"深圳市", dist:"水贝", cat:"珠宝配饰", maturity:"成熟" },
+  { prov:"河北省", city:"保定市", dist:"白沟新城", cat:"箱包鞋靴", maturity:"成熟" },
+  { prov:"浙江省", city:"义乌市", dist:"廿三里", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"江苏省", city:"常熟市", dist:"招商城", cat:"男装", maturity:"成熟" },
+  { prov:"广东省", city:"汕头市", dist:"潮南区", cat:"贴身衣物", maturity:"成熟" },
+  { prov:"山东省", city:"青岛市", dist:"即墨区", cat:"男装", maturity:"培育" },
+  { prov:"江苏省", city:"苏州市", dist:"盛泽镇", cat:"女装", maturity:"培育" },
+  { prov:"广东省", city:"中山市", dist:"沙溪镇", cat:"男装", maturity:"培育" },
+  { prov:"浙江省", city:"温州市", dist:"瓯海区", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"广东省", city:"佛山市", dist:"南海区", cat:"贴身衣物", maturity:"培育" },
+  { prov:"浙江省", city:"金华市", dist:"义乌市", cat:"潮奢跑品", maturity:"培育" },
+  { prov:"江苏省", city:"无锡市", dist:"江阴市", cat:"女装", maturity:"培育" },
+  { prov:"福建省", city:"莆田市", dist:"涵江区", cat:"运动户外", maturity:"培育" },
+  { prov:"山东省", city:"烟台市", dist:"龙口市", cat:"珠宝配饰", maturity:"培育" },
+  { prov:"广东省", city:"惠州市", dist:"博罗县", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"河南省", city:"郑州市", dist:"二七区", cat:"女装", maturity:"培育" },
+  { prov:"湖北省", city:"武汉市", dist:"汉正街", cat:"女装", maturity:"培育" },
+  { prov:"四川省", city:"成都市", dist:"金牛区", cat:"女装", maturity:"培育" },
+  { prov:"辽宁省", city:"大连市", dist:"中山区", cat:"贴身衣物", maturity:"培育" },
+  { prov:"安徽省", city:"合肥市", dist:"瑶海区", cat:"男装", maturity:"培育" }
+];
+
+// 报备记录
+function genRecords() {
+  const records = [];
+  const today = new Date("2026-05-11");
+  for (let i = 0; i < 180; i++) {
+    const sale = SALES[i % 7];
+    const cat = CATEGORIES[Math.floor(Math.random()*CATEGORIES.length)];
+    const link = LINKS[Math.floor(Math.random()*LINKS.length)];
+    const agent = AGENTS[Math.floor(Math.random()*AGENTS.length)];
+    const source = SOURCES[Math.floor(Math.random()*SOURCES.length)];
+    const isRising = Math.random() < 0.4 ? "是" : "否";
+    const inZone = Math.random() < 0.7;
+    const zone = inZone ? INDUSTRIAL_ZONES[Math.floor(Math.random()*INDUSTRIAL_ZONES.length)] : null;
+    const isTarget = Math.random() < 0.4;
+    const targetBrand = isTarget ? targetBrands[Math.floor(Math.random()*targetBrands.length)].name : "";
+    const d = new Date(today);
+    d.setDate(d.getDate() - Math.floor(Math.random()*60));
+    records.push({
+      date: d.toISOString().slice(0,10),
+      sale,
+      name: zone ? `${zone.city}${zone.dist}${["丽人","风尚","天匠","锦绣","云裳"][i%5]}${cat}有限公司` : `${["北京","上海","成都","重庆","武汉"][i%5]}${["华美","乐尚","潮兮","朗格","知行"][i%5]}${cat}有限公司`,
+      brand: isTarget ? targetBrand : ["乐尚","天匠","云裳","知行","锦绣"][i%5] + cat,
+      cat, link, agent, source,
+      isRising,
+      isTarget,
+      cost: Math.round((Math.random()*8 + 0.5) * 10000) / 10000, // 万元 · 季度日耗汇总
+      zone: zone ? `${zone.prov}·${zone.city}·${zone.dist}·${cat}` : "",
+      maturity: zone ? zone.maturity : ""
+    });
+  }
+  return records;
+}
+const RECORDS = genRecords();
+
+</script>
+<script>
+/* =========================
+   一、视图状态
+   ========================= */
+const state = {
+  view: "team",
+  portrait: "all",
+  portraitSale: "团队总览",
+  industrialMaturity: "",
+  zoneSort: "cost", // cost | new
+  recordSearch: "", recordSales: "", recordCategory: "", recordRising: ""
+};
+
+function filteredRecords() {
+  let list = RECORDS;
+  if (state.view === "mine") list = list.filter(r => r.sale === CURRENT_USER);
+  return list;
+}
+
+/* =========================
+   二、KPI 渲染
+   ========================= */
+function renderKPI() {
+  const list = filteredRecords();
+  const newCnt = list.length;
+  const risingCnt = list.filter(r => r.isRising === "是").length;
+  const totalCost = list.reduce((s,r)=>s + r.cost, 0); // 万元（日耗汇总）
+
+  const risingGoal = state.view==="team" ? GOALS.rising : Math.ceil(GOALS.rising/7);
+  const costGoal = state.view==="team" ? GOALS.cost : Math.ceil(GOALS.cost/7);
+  const newGoal = state.view==="team" ? GOALS.newCust : Math.ceil(GOALS.newCust/7);
+
+  // TOP10 产业带渗透
+  const zoneAgg = aggregateZones(list);
+  const top10 = zoneAgg.slice(0,10);
+  const top10New = top10.reduce((s,z)=>s+z.customers,0);
+
+  const cards = [
+    {label:"新客数（季度累计）", value:newCnt, target:newGoal, unit:"个", cls:""},
+    {label:"新锐新客数（季度累计）", value:risingCnt, target:risingGoal, unit:"个", cls:"gold"},
+    {label:"新客日耗汇总（季度）", value:totalCost.toFixed(1), target:costGoal, unit:"万元", cls:"purple"},
+    {label:"TOP10 产业带渗透客户", value:top10New, target:zoneAgg.length, unit:"个", subText:`覆盖 ${zoneAgg.length} 个产业带`, cls:"success"}
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c => {
+    const pct = Math.min(100, Math.round((parseFloat(c.value)/c.target)*100));
+    return `
+      <div class="kpi-card ${c.cls}">
+        <div class="label">${c.label}</div>
+        <div class="value-row">
+          <div class="value">${c.value}</div>
+          <div class="target">/ ${c.target} ${c.unit}</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="meta">
+          <span>${c.subText || `还需 ${(c.target - parseFloat(c.value)).toFixed(1)} ${c.unit}`}</span>
+          <span class="pct">${pct}%</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* =========================
+   三、销售个人进度条
+   ========================= */
+function renderSalesProgress() {
+  const html = SALES.map(s => {
+    const list = RECORDS.filter(r => r.sale === s);
+    const rising = list.filter(r=>r.isRising==="是").length;
+    const cost = list.reduce((sum,r)=>sum + r.cost, 0);
+    const risingPct = Math.min(100, Math.round(rising/(GOALS.rising/7)*100));
+    const costPct = Math.min(100, Math.round(cost/(GOALS.cost/7)*100));
+    return `
+      <div class="sales-progress-row">
+        <div class="name">${s === CURRENT_USER ? "🦞 "+s : s}</div>
+        <div>
+          <div class="label">新锐新客 ${rising}/${Math.ceil(GOALS.rising/7)}</div>
+          <div class="mini-bar"><div style="width:${risingPct}%; background:var(--gold);"></div></div>
+        </div>
+        <div class="label" style="text-align:right; padding-right:10px;">${risingPct}%</div>
+        <div>
+          <div class="label">日耗汇总 ${cost.toFixed(1)}/${Math.ceil(GOALS.cost/7)}万</div>
+          <div class="mini-bar"><div style="width:${costPct}%; background:var(--purple);"></div></div>
+        </div>
+        <div class="label" style="text-align:right;">${costPct}%</div>
+      </div>`;
+  }).join('');
+  document.getElementById('salesProgress').innerHTML = html;
+}
+
+/* =========================
+   四、销售画像（4 图）
+   ========================= */
+let charts = {};
+function renderPortrait() {
+  const tabs = ["团队总览", ...SALES];
+  document.getElementById('portraitTabs').innerHTML = tabs.map(t =>
+    `<button class="${t===state.portraitSale?'active':''}" data-sale="${t}">${t}</button>`
+  ).join('');
+  document.querySelectorAll('#portraitTabs button').forEach(b => {
+    b.onclick = () => { state.portraitSale = b.dataset.sale; renderPortrait(); };
+  });
+
+  let list = RECORDS;
+  if (state.portraitSale !== "团队总览") list = list.filter(r => r.sale === state.portraitSale);
+  if (state.portrait === "rising") list = list.filter(r => r.isRising === "是");
+
+  const colorPool = ["#3b82f6","#8b5cf6","#d97706","#10b981","#ef4444","#06b6d4","#f59e0b"];
+
+  function pieOption(field) {
+    const map = {};
+    list.forEach(r => { map[r[field]] = (map[r[field]]||0) + 1; });
+    const data = Object.entries(map).map(([k,v])=>({name:k,value:v}));
+    return {
+      tooltip: { trigger: 'item' },
+      legend: { bottom: 0, textStyle:{color:'#6b7280',fontSize:11}, itemWidth:8, itemHeight:8 },
+      color: colorPool,
+      series: [{
+        type: 'pie', radius: ['40%','65%'],
+        center: ['50%','45%'],
+        label: { color:'#1f2937', fontSize:11 },
+        data
+      }]
+    };
+  }
+  ['Category','Link','Agent','Source'].forEach((k) => {
+    const id = 'chart' + k;
+    const fields = {Category:'cat',Link:'link',Agent:'agent',Source:'source'};
+    if (!charts[id]) charts[id] = echarts.init(document.getElementById(id));
+    charts[id].setOption(pieOption(fields[k]));
+  });
+}
+
+/* =========================
+   五、产业带渗透（核心改造）
+   ========================= */
+function aggregateZones(list) {
+  const map = {};
+  list.filter(r=>r.zone).forEach(r => {
+    if (!map[r.zone]) map[r.zone] = {
+      zone:r.zone, maturity:r.maturity,
+      customers:0, rising:0, cost:0, sales:new Set()
+    };
+    map[r.zone].customers++;
+    if (r.isRising === "是") map[r.zone].rising++;
+    map[r.zone].cost += r.cost;
+    map[r.zone].sales.add(r.sale);
+  });
+  let zones = Object.values(map);
+  if (state.industrialMaturity) zones = zones.filter(z=>z.maturity === state.industrialMaturity);
+  if (state.zoneSort === "cost") zones.sort((a,b)=> b.cost - a.cost);
+  else zones.sort((a,b)=> b.customers - a.customers);
+  return zones;
+}
+
+function renderIndustrial() {
+  const zones = aggregateZones(filteredRecords());
+  const top10 = zones.slice(0,10);
+  const others = zones.slice(10);
+
+  // TOP10 卡片
+  document.getElementById('zoneTopGrid').innerHTML = top10.map((z,i) => {
+    const parts = z.zone.split('·');
+    const matCls = z.maturity === '成熟' ? '' : 'cultiv';
+    const rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    return `
+      <div class="zone-card ${rankCls}">
+        <div class="rank-num">#${i+1}</div>
+        <div class="zone-name">
+          <span class="maturity-dot ${matCls}"></span>
+          ${parts[2]}·${parts[3]}
+        </div>
+        <div class="zone-loc">${parts[0]} ${parts[1]} · ${z.maturity==='成熟'?'🏆 成熟':'🌱 培育'}</div>
+        <div class="zone-stats">
+          <div class="stat">
+            <div class="stat-num">${z.customers}</div>
+            <div class="stat-label">新客数</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num gold">${z.rising}</div>
+            <div class="stat-label">新锐</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num purple">${(z.cost*10000/90).toFixed(0)}</div>
+            <div class="stat-label">日耗(元)</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;color:var(--text-2);padding:40px;">暂无匹配数据</div>';
+
+  // 其他产业带（折叠）
+  document.getElementById('zoneOtherCount').textContent = others.length;
+  document.querySelector('#zoneOtherTable tbody').innerHTML = others.map(z => `
+    <tr>
+      <td><b>${z.zone}</b></td>
+      <td><span class="tag ${z.maturity==='成熟'?'gold':'green'}">${z.maturity==='成熟'?'🏆 成熟':'🌱 培育'}</span></td>
+      <td>${z.customers}</td>
+      <td><span style="color:var(--gold);font-weight:600;">${z.rising}</span></td>
+      <td>${(z.cost*10000/90).toFixed(0)}</td>
+      <td>${[...z.sales].join('、')}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:30px;">暂无更多产业带</td></tr>';
+}
+
+/* =========================
+   六、报备明细
+   ========================= */
+function renderRecords() {
+  const salesSel = document.getElementById('recordSales');
+  if (salesSel.options.length === 1) {
+    SALES.forEach(s => salesSel.innerHTML += `<option>${s}</option>`);
+  }
+  const catSel = document.getElementById('recordCategory');
+  if (catSel.options.length === 1) {
+    CATEGORIES.forEach(c => catSel.innerHTML += `<option>${c}</option>`);
+  }
+
+  let list = filteredRecords();
+  if (state.recordSearch) {
+    const q = state.recordSearch.toLowerCase();
+    list = list.filter(r => r.name.toLowerCase().includes(q) || r.brand.toLowerCase().includes(q));
+  }
+  if (state.recordSales) list = list.filter(r => r.sale === state.recordSales);
+  if (state.recordCategory) list = list.filter(r => r.cat === state.recordCategory);
+  if (state.recordRising) list = list.filter(r => r.isRising === state.recordRising);
+
+  list.sort((a,b)=> b.date.localeCompare(a.date));
+
+  const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
+  tbody.innerHTML = list.slice(0,50).map(r => `
+    <tr>
+      <td>${r.date}</td>
+      <td>${r.sale}</td>
+      <td>${r.name}</td>
+      <td>${r.brand}</td>
+      <td>${r.cat}</td>
+      <td>${r.link}</td>
+      <td>${r.agent}</td>
+      <td>${r.source}</td>
+      <td>${r.isRising==="是" ? '<span class="tag gold">新锐</span>' : '<span class="tag gray">否</span>'}</td>
+      <td>${r.isTarget ? '<span class="tag purple">靶向</span>' : '—'}</td>
+      <td>${r.zone ? `<span class="tag green" title="${r.zone}">${r.zone.split('·').slice(1,3).join('·')}</span>` : '—'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-2);padding:30px;">暂无数据</td></tr>';
+
+  if (list.length > 50) {
+    tbody.innerHTML += `<tr><td colspan="11" style="text-align:center;color:var(--text-2);padding:14px;">仅展示最新 50 条，共 ${list.length} 条</td></tr>`;
+  }
+}
+
+/* =========================
+   七、交互绑定
+   ========================= */
+document.getElementById('viewTeam').onclick = () => switchView('team');
+document.getElementById('viewMine').onclick = () => switchView('mine');
+function switchView(v) {
+  state.view = v;
+  document.getElementById('viewTeam').classList.toggle('active', v==='team');
+  document.getElementById('viewMine').classList.toggle('active', v==='mine');
+  document.getElementById('quarterTag').textContent = (v==='mine'? `🦞 ${CURRENT_USER} · `:'') + document.getElementById('quarterSel').value.replace(/(\d+)Q(\d+)/,'$1 Q$2');
+  renderAll();
+}
+
+document.getElementById('quarterSel').onchange = (e) => {
+  document.getElementById('quarterTag').textContent = (state.view==='mine'? `🦞 ${CURRENT_USER} · `:'') + e.target.value.replace(/(\d+)Q(\d+)/,'$1 Q$2');
+};
+
+document.querySelectorAll('[data-portrait]').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-portrait]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.portrait = b.dataset.portrait;
+    renderPortrait();
+  };
+});
+
+document.querySelectorAll('#indMaturity .chip').forEach(c => {
+  c.onclick = () => {
+    document.querySelectorAll('#indMaturity .chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+    state.industrialMaturity = c.dataset.m;
+    renderIndustrial();
+    renderKPI();
+  };
+});
+
+document.getElementById('zoneSortCost').onclick = () => {
+  state.zoneSort = "cost";
+  document.getElementById('zoneSortCost').classList.add('active');
+  document.getElementById('zoneSortNew').classList.remove('active');
+  renderIndustrial();
+};
+document.getElementById('zoneSortNew').onclick = () => {
+  state.zoneSort = "new";
+  document.getElementById('zoneSortNew').classList.add('active');
+  document.getElementById('zoneSortCost').classList.remove('active');
+  renderIndustrial();
+};
+
+document.getElementById('zoneCollapseHeader').onclick = () => {
+  document.getElementById('zoneCollapse').classList.toggle('open');
+};
+
+document.getElementById('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
+document.getElementById('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
+document.getElementById('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
+document.getElementById('recordRising').onchange = e => { state.recordRising = e.target.value; renderRecords(); };
+
+document.getElementById('btnTarget').onclick = () => {
+  document.getElementById('goalRising').value = GOALS.rising;
+  document.getElementById('goalCost').value = GOALS.cost;
+  openModal('modalTarget');
+};
+
+window.openModal = id => document.getElementById(id).classList.add('show');
+window.closeModal = id => document.getElementById(id).classList.remove('show');
+window.saveGoals = () => {
+  GOALS.rising = +document.getElementById('goalRising').value || GOALS.rising;
+  GOALS.cost = +document.getElementById('goalCost').value || GOALS.cost;
+  closeModal('modalTarget');
+  renderAll();
+};
+
+document.getElementById('btnAddRecord').onclick = () => {
+  const fillSel = (id, arr) => {
+    const el = document.getElementById(id);
+    el.innerHTML = arr.map(x=>`<option>${x}</option>`).join('');
+  };
+  fillSel('rcCat', CATEGORIES); fillSel('rcLink', LINKS); fillSel('rcSource', SOURCES);
+  fillSel('rcProv', ['广东省','浙江省','福建省','江苏省','山东省','河北省']);
+  fillSel('rcCity', ['东莞市','杭州市','广州市','晋江市','泉州市']);
+  fillSel('rcDist', ['虎门镇','四季青','沙河','陈埭镇','石狮市']);
+  document.getElementById('rcName').oninput = e => {
+    const v = e.target.value;
+    const matched = targetBrands.find(b => v.includes(b.name));
+    const hint = document.getElementById('rcHint');
+    if (matched) {
+      hint.style.display = 'block';
+      hint.innerHTML = `🎯 命中靶向品牌「${matched.name}」（${matched.priority}级）`;
+    } else { hint.style.display = 'none'; }
+  };
+  openModal('modalRecord');
+};
+
+window.submitRecord = () => {
+  alert('🦞 演示版已禁用真实写入；正式版会落库到后端，并触发：\n1) 自动判定是否命中靶向品牌\n2) 自动归属到「省·市·区·类目」产业带\n3) 重复登记预警');
+  closeModal('modalRecord');
+};
+
+/* =========================
+   八、统一入口
+   ========================= */
+function renderAll() {
+  renderKPI();
+  renderSalesProgress();
+  renderPortrait();
+  renderIndustrial();
+  renderRecords();
+}
+renderAll();
+
+window.addEventListener('resize', () => {
+  Object.values(charts).forEach(c => c && c.resize());
+});
+</script>
+</body>
+</html>

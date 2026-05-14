@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>靶向品牌池 v3.2 · 拓新作战中心</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --panel-2: #f8fafd;
+    --border: #e5e9f0;
+    --border-2: #eef1f6;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --primary: #3b82f6;
+    --primary-2: #2563eb;
+    --primary-bg: #eff6ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --gold: #d97706;
+    --gold-bg: #fef3c7;
+    --purple: #8b5cf6;
+    --purple-bg: #f5f3ff;
+    /* 涨跌色（中国股市习惯：涨=绿、跌=红） */
+    --up: #16a34a;
+    --up-bg: #dcfce7;
+    --down: #dc2626;
+    --down-bg: #fee2e2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    /* min-width removed for mobile */
+    padding-bottom: 60px;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar h1 {
+    font-size: 18px; font-weight: 600;
+    background: linear-gradient(90deg, var(--gold), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .topbar h1 .ver { font-size: 12px; color: var(--text-2); margin-left: 8px; -webkit-text-fill-color: var(--text-2); font-weight: 400; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar select, .topbar a.btn-link, .topbar button {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    text-decoration: none; display: inline-block;
+  }
+  .topbar a.btn-link:hover, .topbar button:hover { border-color: var(--primary); color: var(--primary); }
+  .topbar a.btn-link.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .topbar a.btn-link.primary:hover { color: #fff; background: var(--primary-2); }
+
+  .container { padding: 20px 28px; }
+  .section { margin-bottom: 22px; }
+  .section-title {
+    font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title .left { display: flex; align-items: center; gap: 10px; }
+  .section-title .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+    background: var(--gold-bg); color: var(--gold);
+  }
+
+  /* 4 个核心 KPI */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--accent, var(--primary));
+  }
+  .kpi-card.gold { --accent: var(--gold); }
+  .kpi-card.purple { --accent: var(--purple); }
+  .kpi-card.success { --accent: var(--success); }
+  .kpi-card .label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .kpi-card .value-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; color: var(--text); }
+  .kpi-card .target { font-size: 13px; color: var(--text-2); }
+  .progress-bar {
+    width: 100%; height: 6px; background: var(--border-2); border-radius: 3px; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent, var(--primary));
+    border-radius: 3px; transition: width 0.6s;
+  }
+  .kpi-card .meta {
+    display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2);
+  }
+  .kpi-card .pct { color: var(--accent, var(--primary)); font-weight: 600; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; box-shadow: var(--shadow);
+  }
+  .panel h3 { font-size: 14px; margin-bottom: 12px; color: var(--text); font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel h3 .h3-extra { font-size: 12px; color: var(--text-2); font-weight: 400; }
+
+  .funnel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chart-box { height: 300px; }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  table.tbl th, table.tbl td {
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-2);
+  }
+  table.tbl th { color: var(--text-2); font-weight: 500; background: var(--panel-2); }
+  table.tbl tr:hover td { background: var(--gold-bg); }
+
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+  }
+  .tag.gray { background: var(--border-2); color: var(--text-2); }
+  .tag.blue { background: var(--primary-bg); color: var(--primary); }
+  .tag.green { background: var(--success-bg); color: var(--success); }
+  .tag.gold { background: var(--gold-bg); color: var(--gold); }
+  .tag.purple { background: var(--purple-bg); color: var(--purple); }
+  .tag.red { background: var(--danger-bg); color: var(--danger); }
+  .tag.warn { background: var(--warn-bg); color: var(--warn); }
+  .tag.S { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; font-weight: 700; }
+  .tag.A { background: var(--primary-bg); color: var(--primary); font-weight: 600; }
+  .tag.B { background: var(--border-2); color: var(--text-2); }
+
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .toolbar input, .toolbar select {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px;
+  }
+  .toolbar .my-toggle {
+    display: inline-flex; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 2px;
+  }
+  .toolbar .my-toggle button {
+    background: transparent; border: none; color: var(--text-2);
+    padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;
+  }
+  .toolbar .my-toggle button.active { background: var(--primary); color: #fff; }
+
+  .hint {
+    font-size: 12px; color: var(--text-2); padding: 10px 14px;
+    background: var(--gold-bg); border-left: 3px solid var(--gold);
+    border-radius: 4px; margin-bottom: 16px;
+  }
+  .hint b { color: var(--gold); }
+
+  .leaderboard-row {
+    display: grid; grid-template-columns: 28px 80px 1fr 60px 60px 60px; gap: 8px;
+    align-items: center; padding: 10px 0; font-size: 13px;
+    border-bottom: 1px dashed var(--border-2);
+  }
+  .leaderboard-row:last-child { border-bottom: none; }
+  .leaderboard-row.me { background: var(--primary-bg); border-radius: 6px; padding-left: 6px; }
+  .leaderboard-row .rank {
+    display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center;
+    border-radius: 50%; background: var(--panel-2); font-size: 11px; color: var(--text-2);
+  }
+  .leaderboard-row.top1 .rank { background: linear-gradient(135deg, #fcd34d, #f59e0b); color: #fff; font-weight: 700; }
+  .leaderboard-row.top2 .rank { background: #d1d5db; color: #fff; font-weight: 700; }
+  .leaderboard-row.top3 .rank { background: #fbbf24; color: #fff; font-weight: 700; }
+  .mini-bar { background: var(--border-2); height: 6px; border-radius: 3px; overflow: hidden; }
+  .mini-bar > div { height: 100%; background: var(--gold); border-radius: 3px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* 认领 + 联系按钮 */
+  .row-actions { display: inline-flex; gap: 4px; }
+  .btn-mini {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 4px 10px; border-radius: 5px; font-size: 12px;
+    border: 1px solid var(--border); background: #fff; color: var(--text-2);
+    cursor: pointer; transition: all 0.15s; gap: 3px;
+  }
+  .btn-mini:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-mini.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-mini.primary:hover { background: var(--primary-2); color: #fff; }
+  .btn-mini.gold { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .btn-mini.gold:hover { background: #b45309; color: #fff; }
+  .btn-mini.disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* 模态框（认领 / 更新进展） */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 24px; min-width: 560px; max-width: 720px;
+    max-height: 85vh; overflow-y: auto; border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+  .modal h2 { font-size: 17px; margin-bottom: 4px; color: var(--text); }
+  .modal .modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+  .modal label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; margin-top: 12px; font-weight: 500; }
+  .modal select, .modal textarea, .modal input {
+    width: 100%; background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 8px 10px; border-radius: 6px; font-size: 13px; font-family: inherit;
+  }
+  .modal textarea { min-height: 70px; resize: vertical; }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn {
+    background: var(--primary); color: #fff; border: none; padding: 8px 18px; border-radius: 6px;
+    font-size: 13px; cursor: pointer; font-weight: 500;
+  }
+  .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+  .btn:hover { opacity: 0.85; }
+
+  /* 进展时间线 */
+  .timeline { padding: 8px 0; }
+  .timeline-item {
+    position: relative; padding-left: 24px; padding-bottom: 14px;
+    border-left: 2px solid var(--border-2); margin-left: 6px;
+  }
+  .timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -7px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--primary); border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+  .timeline-item.first::before { background: var(--gold); }
+  .timeline-item .ti-meta { font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+  .timeline-item .ti-status { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .timeline-item .ti-status .stage-tag { font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+  .timeline-item .ti-note { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+  /* 可点击的"我的"高亮 */
+  .row-mine td { background: #fef9f0; }
+  .row-mine:hover td { background: #fef3c7; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* 涨跌色 tag/数值通用类（中国股市习惯：涨=绿、跌=红） */
+  .num-up   { color: var(--up)   !important; font-weight: 600; }
+  .num-down { color: var(--down) !important; font-weight: 600; }
+  .num-flat { color: var(--text-2) !important; }
+  .tag.up   { background: var(--up-bg);   color: var(--up); }
+  .tag.down { background: var(--down-bg); color: var(--down); }
+
+  /* ============= 移动端响应式 ============= */
+  @media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .grid-2   { grid-template-columns: 1fr !important; }
+    .portrait-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .zone-top-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .container { padding: 14px; }
+    .modal { min-width: 90vw !important; max-width: 95vw !important; padding: 18px; }
+    .toolbar { gap: 6px; }
+    .toolbar input, .toolbar select { font-size: 12px; padding: 5px 8px; }
+    table.tbl { font-size: 12px; }
+    table.tbl th, table.tbl td { padding: 8px 6px; }
+    table.tbl thead { display: none; }
+    table.tbl tr {
+      display: block; margin-bottom: 12px; padding: 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: #fff;
+    }
+    table.tbl td {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px dashed var(--border-2); text-align: right;
+    }
+    table.tbl td:before {
+      content: attr(data-label); color: var(--text-2); font-weight: 500; margin-right: 10px; text-align: left;
+    }
+    table.tbl td:last-child { border-bottom: none; }
+    .chart-box { height: 240px !important; }
+  }
+  @media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: 1fr !important; }
+    .portrait-grid { grid-template-columns: 1fr !important; }
+    .zone-top-grid { grid-template-columns: 1fr !important; }
+    .topbar h1 { font-size: 15px; }
+    .topbar h1 .ver { display: none; }
+    .kpi-card .value { font-size: 22px; }
+    .filter-chips { flex-wrap: wrap; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Demo 提示条 -->
+<div id="demoBanner" style="background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 28px;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f59e0b;">
+  <div><strong>🦞 Demo 演示版</strong> · 数据为模拟数据，认领/进展刷新即清空 · <span style="color:#92400e;">请回 <a href="index.html" style="color:#78350f;">作战中心首页</a> 提交建议</span></div>
+  <a href="javascript:void(0)" onclick="document.getElementById('demoBanner').style.display='none'" style="color:#78350f;text-decoration:none;">收起 ✕</a>
+</div>
+
+<div class="topbar">
+  <h1>🎯 靶向品牌池 <span class="ver">v3.1 · 浅色版 · DEMO</span></h1>
+  <div class="topbar-right">
+    <span style="font-size:12px;color:var(--text-2);">当前销售：</span>
+    <select id="userSel" style="padding:5px 10px;">
+      <option value="kinsleyjin">kinsleyjin</option>
+      <option value="brownfan">brownfan</option>
+      <option value="lijunwu">lijunwu</option>
+      <option value="Jonzhu">Jonzhu</option>
+      <option value="kaikaigenli">kaikaigenli</option>
+      <option value="ruilingzhan">ruilingzhan</option>
+      <option value="yvaineechen">yvaineechen</option>
+    </select>
+    <a href="拓客作战看板_v3.html" class="btn-link">← 作战看板</a>
+    <a href="index.html" class="btn-link primary">🏠 返回作战中心</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 顶部说明 -->
+  <div class="hint">
+    💡 <b>靶向品牌池</b>由主管维护，关注靶向品牌的<b>建联进度</b>和<b>投放进度</b>。销售可<b>认领未建联品牌</b>并持续<b>更新跟进进展</b>。
+  </div>
+
+  <!-- 第一屏：4 个核心 KPI -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>📊 靶向品牌覆盖核心指标</span>
+        <span class="badge">建联 · 投放 双视角</span>
+      </div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <!-- 第二屏：双漏斗 + 销售排行 -->
+  <div class="section">
+    <div class="grid-2">
+      <div class="panel">
+        <h3>🪜 靶向品牌进度漏斗</h3>
+        <div id="funnelChart" class="chart-box"></div>
+      </div>
+      <div class="panel">
+        <h3>👥 销售建联/投放贡献排行</h3>
+        <div id="leaderboard" style="padding:6px 0;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第三屏：分布图 -->
+  <div class="section">
+    <div class="grid-2">
+      <div class="panel">
+        <h3>🥧 各类目靶向品牌投放进度</h3>
+        <div id="chartCategory" class="chart-box"></div>
+      </div>
+      <div class="panel">
+        <h3>📊 投放中品牌 · 日耗 TOP10</h3>
+        <div id="chartTopCost" class="chart-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第四屏：完整名单 -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>📋 靶向品牌完整名单</span>
+        <span class="badge" id="brandCount">共 0 个</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <div class="my-toggle">
+          <button id="scopeAll" class="active">全部品牌</button>
+          <button id="scopeMine">🦞 我认领的</button>
+          <button id="scopeUnclaimed">🆕 未认领（S/A级）</button>
+        </div>
+        <input id="searchKw" placeholder="搜索品牌名 / 类目 / 销售" style="width:200px;" />
+        <select id="filterCat"><option value="">全部类目</option></select>
+        <select id="filterPriority">
+          <option value="">全部优先级</option>
+          <option value="S">S 级</option>
+          <option value="A">A 级</option>
+          <option value="B">B 级</option>
+        </select>
+        <select id="filterContact">
+          <option value="">建联状态</option>
+          <option value="未建联">未建联</option>
+          <option value="已建联">已建联</option>
+        </select>
+        <select id="filterDelivery">
+          <option value="">投放状态</option>
+          <option value="未投放">未投放</option>
+          <option value="投放中">投放中</option>
+          <option value="投放断档">投放断档</option>
+        </select>
+        <button id="btnExport" style="background:#fff;border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer;color:var(--text-2);">📥 导出</button>
+      </div>
+      <table class="tbl" id="brandTable">
+        <thead><tr>
+          <th>品牌</th>
+          <th>类目</th>
+          <th>优先级</th>
+          <th>建联状态 / 当前阶段</th>
+          <th>对接销售</th>
+          <th>最近动作</th>
+          <th>投放状态</th>
+          <th>近30天日耗(元)</th>
+          <th>操作</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- 认领弹窗 -->
+<div class="modal-mask" id="modalClaim">
+  <div class="modal">
+    <h2>🎯 认领靶向品牌</h2>
+    <div class="modal-sub" id="claimBrand">—</div>
+
+    <label>认领理由（可选）</label>
+    <textarea id="claimReason" placeholder="如：之前在另一家服务过，有渠道；客户在我跟进的另一品牌母公司..."></textarea>
+
+    <label>预计首次建联时间</label>
+    <input type="date" id="claimEta" />
+
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal('modalClaim')">取消</button>
+      <button class="btn" onclick="confirmClaim()">✅ 确认认领</button>
+    </div>
+  </div>
+</div>
+
+<!-- 更新进展弹窗 -->
+<div class="modal-mask" id="modalProgress">
+  <div class="modal">
+    <h2>📝 更新跟进进展</h2>
+    <div class="modal-sub" id="progressBrand">—</div>
+
+    <label>当前阶段</label>
+    <select id="progressStage">
+      <option value="未联系">🆕 未联系</option>
+      <option value="已联系">📞 已联系</option>
+      <option value="已加微信">💬 已加微信</option>
+      <option value="已发方案">📄 已发方案</option>
+      <option value="客户考虑中">🤔 客户考虑中</option>
+      <option value="已开户">✅ 已开户</option>
+      <option value="已投放">🚀 已投放</option>
+      <option value="客户拒绝">❌ 客户拒绝</option>
+      <option value="暂时搁置">⏸️ 暂时搁置</option>
+    </select>
+
+    <label>本次进展记录</label>
+    <textarea id="progressNote" placeholder="如：今天和品牌总监XXX沟通，对方对ADQ链路有兴趣，下周二二次约谈，会带服务商一起..."></textarea>
+
+    <label>下一步计划 + 时间</label>
+    <input type="text" id="progressNext" placeholder="如：5/15 上午带蓝色光标二次拜访" />
+
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal('modalProgress')">取消</button>
+      <button class="btn" onclick="confirmProgress()">✅ 提交进展</button>
+    </div>
+  </div>
+</div>
+
+<!-- 进展时间线弹窗 -->
+<div class="modal-mask" id="modalHistory">
+  <div class="modal">
+    <h2 id="historyTitle">📜 跟进进展时间线</h2>
+    <div class="modal-sub" id="historySub">—</div>
+    <div class="timeline" id="historyTimeline"></div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeModal('modalHistory')">关闭</button>
+      <button class="btn" id="historyAddBtn">📝 追加新进展</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   共享虚拟数据 · v3.1 浅色版
+   ========================= */
+const SALES = ["brownfan","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+let CURRENT_USER = "kinsleyjin";
+const CATEGORIES = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
+
+// 50 个虚拟靶向品牌
+const TARGET_BRAND_NAMES = [
+  "茵曼","裂帛","太平鸟","拉夏贝尔","JNBY","ONLY","欧时力","伊芙丽","朗姿","赫莲娜",
+  "海澜之家","马克华菲","柒牌","劲霸","利郎","九牧王","报喜鸟","雅戈尔","希努尔",
+  "周大福","周生生","老凤祥","六福","谢瑞麟","潮宏基","明牌","金至尊",
+  "李宁","安踏","特步","361度","鸿星尔克","FILA","始祖鸟",
+  "百丽","千百度","达芙妮","奥康","红蜻蜓","新秀丽",
+  "都市丽人","曼妮芬","爱慕","三枪",
+  "波司登","蕉下","蕉内","Ubras","内外NEIWAI"
+];
+
+// 阶段标签映射
+const STAGE_TAGS = {
+  "未联系": { color: "gray", emoji: "🆕" },
+  "已联系": { color: "blue", emoji: "📞" },
+  "已加微信": { color: "blue", emoji: "💬" },
+  "已发方案": { color: "purple", emoji: "📄" },
+  "客户考虑中": { color: "warn", emoji: "🤔" },
+  "已开户": { color: "green", emoji: "✅" },
+  "已投放": { color: "green", emoji: "🚀" },
+  "客户拒绝": { color: "red", emoji: "❌" },
+  "暂时搁置": { color: "gray", emoji: "⏸️" }
+};
+
+// 靶向品牌：建联状态 + 投放状态 + 认领进展（新增）
+const targetBrands = [...new Set(TARGET_BRAND_NAMES)].slice(0, 48).map((name, i) => {
+  const cat = i < 10 ? "女装" : i < 19 ? "男装" : i < 27 ? "珠宝文玩" : i < 34 ? "运动户外" : i < 40 ? "箱包鞋靴" : i < 44 ? "贴身衣物" : "未打标";
+  // 用 i 决定，固定数据，便于演示
+  let contactStatus, deliveryStatus, contactSale = "", contactDate = "", dailyCost = 0, totalCost = 0, stage = "未联系", history = [];
+  const r = (i * 17 + 13) % 100;  // 伪随机但稳定
+
+  if (r < 30) {
+    // 30% 未建联 / 未认领
+    contactStatus = "未建联"; deliveryStatus = "—"; stage = "未联系";
+  } else if (r < 55) {
+    // 25% 已认领但还在跟进早期
+    contactStatus = "已建联"; deliveryStatus = "未投放";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-04-" + String(5 + (i%20)).padStart(2,'0');
+    const stages = ["已联系","已加微信","已发方案","客户考虑中"];
+    stage = stages[i % 4];
+    history = [
+      { date: contactDate, stage: "已联系", note: "首次电话沟通，介绍公司+ADQ链路", next: "约下周面谈", sale: contactSale },
+      { date: "2026-04-" + String(15 + (i%10)).padStart(2,'0'), stage: stage, note: stage === "已发方案" ? "已发送ADQ链路+小店商品方案" : (stage === "客户考虑中" ? "对方在比对ADQ vs 巨量A3方案" : "已加微信，建立联系群"), next: "等待客户反馈", sale: contactSale }
+    ];
+  } else if (r < 85) {
+    // 30% 投放中
+    contactStatus = "已建联"; deliveryStatus = "投放中"; stage = "已投放";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-03-" + String(10 + (i%20)).padStart(2,'0');
+    dailyCost = Math.round(((i*23 + 7) % 80 + 5) * 100); // 500-8500元/日耗
+    totalCost = Math.round(dailyCost * 30);
+    history = [
+      { date: contactDate, stage: "已联系", note: "首次电话建联", next: "争取上门拜访", sale: contactSale },
+      { date: "2026-03-" + String(20 + (i%10)).padStart(2,'0'), stage: "已开户", note: "完成ADQ账户开户", next: "推动首充", sale: contactSale },
+      { date: "2026-04-" + String(5 + (i%15)).padStart(2,'0'), stage: "已投放", note: "首条广告上线，ROI 3.2，符合预期", next: "持续优化人群+创意", sale: contactSale }
+    ];
+  } else {
+    // 15% 投放断档
+    contactStatus = "已建联"; deliveryStatus = "投放断档"; stage = "暂时搁置";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-02-" + String(10 + (i%18)).padStart(2,'0');
+    dailyCost = 0;
+    totalCost = ((i*31 + 11) % 30 + 5) * 10000;
+    history = [
+      { date: contactDate, stage: "已联系", note: "首次建联", next: "推动开户", sale: contactSale },
+      { date: "2026-03-" + String(5 + (i%10)).padStart(2,'0'), stage: "已开户", note: "完成开户", next: "首充", sale: contactSale },
+      { date: "2026-03-" + String(20 + (i%10)).padStart(2,'0'), stage: "已投放", note: "上线投放，初期效果尚可", next: "扩量", sale: contactSale },
+      { date: "2026-04-" + String(15 + (i%10)).padStart(2,'0'), stage: "暂时搁置", note: "近30天无消耗，反馈：素材跑量难，团队人手不足", next: "5月底回访，重新激活", sale: contactSale }
+    ];
+  }
+
+  return {
+    id: "b" + i,
+    name, category: cat,
+    priority: i < 12 ? "S" : i < 30 ? "A" : "B",
+    contactStatus, deliveryStatus,
+    contactSale, contactDate,
+    stage, history,
+    dailyCost, totalCost
+  };
+});
+
+/* =========================
+   状态 + 弹窗
+   ========================= */
+let charts = {};
+const state = {
+  searchKw: "", filterCat: "", filterPriority: "",
+  filterContact: "", filterDelivery: "",
+  scope: "all"  // all / mine / unclaimed
+};
+let currentEditBrandId = null;
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+/* 认领 */
+function openClaim(brandId) {
+  currentEditBrandId = brandId;
+  const b = targetBrands.find(x => x.id === brandId);
+  document.getElementById('claimBrand').innerHTML = `品牌：<b>${b.name}</b>（${b.category} · ${b.priority}级） · 认领后将归你跟进`;
+  document.getElementById('claimReason').value = '';
+  // 默认认领后 3 天
+  const eta = new Date(); eta.setDate(eta.getDate() + 3);
+  document.getElementById('claimEta').value = eta.toISOString().slice(0,10);
+  openModal('modalClaim');
+}
+function confirmClaim() {
+  const b = targetBrands.find(x => x.id === currentEditBrandId);
+  const reason = document.getElementById('claimReason').value.trim();
+  const eta = document.getElementById('claimEta').value;
+  b.contactStatus = "已建联";
+  b.contactSale = CURRENT_USER;
+  b.contactDate = new Date().toISOString().slice(0,10);
+  b.stage = "未联系";
+  b.history = [{
+    date: b.contactDate,
+    stage: "已认领",
+    note: reason || "认领该靶向品牌",
+    next: `计划 ${eta} 前完成首次建联`,
+    sale: CURRENT_USER
+  }];
+  closeModal('modalClaim');
+  refreshAll();
+  alert(`🦞 已认领 ${b.name}！记得 ${eta} 前完成首次建联，并在「更新进展」里记录。`);
+}
+
+/* 更新进展 */
+function openProgress(brandId) {
+  currentEditBrandId = brandId;
+  const b = targetBrands.find(x => x.id === brandId);
+  document.getElementById('progressBrand').innerHTML = `品牌：<b>${b.name}</b> · 当前阶段：${b.stage}`;
+  document.getElementById('progressStage').value = b.stage;
+  document.getElementById('progressNote').value = '';
+  document.getElementById('progressNext').value = '';
+  openModal('modalProgress');
+}
+function confirmProgress() {
+  const b = targetBrands.find(x => x.id === currentEditBrandId);
+  const stage = document.getElementById('progressStage').value;
+  const note = document.getElementById('progressNote').value.trim();
+  const next = document.getElementById('progressNext').value.trim();
+  if (!note) { alert('🦞 请填写本次进展记录'); return; }
+  b.stage = stage;
+  b.history.push({
+    date: new Date().toISOString().slice(0,10),
+    stage, note, next, sale: CURRENT_USER
+  });
+  // 阶段联动投放状态
+  if (stage === "已投放") b.deliveryStatus = "投放中";
+  if (stage === "客户拒绝" || stage === "暂时搁置") {
+    if (b.deliveryStatus === "投放中") b.deliveryStatus = "投放断档";
+  }
+  closeModal('modalProgress');
+  refreshAll();
+}
+
+/* 进展时间线 */
+function openHistory(brandId) {
+  currentEditBrandId = brandId;
+  const b = targetBrands.find(x => x.id === brandId);
+  document.getElementById('historyTitle').innerHTML = `📜 ${b.name} · 跟进进展时间线`;
+  document.getElementById('historySub').innerHTML = `认领人：<b>${b.contactSale || '未认领'}</b> · 当前阶段：<b>${b.stage}</b> · 共 ${b.history.length} 条记录`;
+  document.getElementById('historyTimeline').innerHTML = b.history.length === 0
+    ? '<div style="text-align:center;color:var(--text-2);padding:30px;">暂无跟进记录</div>'
+    : b.history.slice().reverse().map((h, idx) => {
+        const tg = STAGE_TAGS[h.stage] || { color: 'gray', emoji: '📌' };
+        return `
+          <div class="timeline-item ${idx === 0 ? 'first' : ''}">
+            <div class="ti-meta">${h.date} · ${h.sale}</div>
+            <div class="ti-status">
+              <span class="tag ${tg.color} stage-tag">${tg.emoji} ${h.stage}</span>
+            </div>
+            <div class="ti-note">📝 ${h.note}${h.next ? `<br/>👉 下一步：${h.next}` : ''}</div>
+          </div>
+        `;
+      }).join('');
+  document.getElementById('historyAddBtn').onclick = () => {
+    closeModal('modalHistory');
+    openProgress(brandId);
+  };
+  openModal('modalHistory');
+}
+
+/* =========================
+   渲染
+   ========================= */
+function initFilters() {
+  const cats = [...new Set(targetBrands.map(b=>b.category))];
+  const sel = document.getElementById('filterCat');
+  cats.forEach(c => sel.innerHTML += `<option>${c}</option>`);
+}
+
+function renderKPI() {
+  const total = targetBrands.length;
+  const contacted = targetBrands.filter(b=>b.contactStatus==="已建联").length;
+  const delivering = targetBrands.filter(b=>b.deliveryStatus==="投放中").length;
+  const broken = targetBrands.filter(b=>b.deliveryStatus==="投放断档").length;
+  const dailyCostSum = targetBrands.reduce((s,b)=>s + (b.dailyCost||0), 0);
+
+  const cards = [
+    {label:"靶向品牌总数", value:total, target:total, unit:"个", subText:`S级 ${targetBrands.filter(b=>b.priority==='S').length} · A级 ${targetBrands.filter(b=>b.priority==='A').length} · B级 ${targetBrands.filter(b=>b.priority==='B').length}`, cls:""},
+    {label:"已建联品牌", value:contacted, target:total, unit:"个", subText:`建联率`, cls:"gold"},
+    {label:"投放中品牌", value:delivering, target:total, unit:"个", subText:`投放率`, cls:"success"},
+    {label:"投放品牌日耗汇总", value:dailyCostSum.toLocaleString(), target:0, unit:"元/日", subText:`断档 ${broken} 个需重启`, cls:"purple", noPct:true}
+  ];
+
+  document.getElementById('kpiGrid').innerHTML = cards.map(c => {
+    const pct = c.noPct ? 0 : Math.round((parseFloat(String(c.value).replace(/,/g,''))/c.target)*100);
+    const showPct = !c.noPct && c.target > 0;
+    return `
+      <div class="kpi-card ${c.cls}">
+        <div class="label">${c.label}</div>
+        <div class="value-row">
+          <div class="value">${c.value}</div>
+          <div class="target">${c.target>0 && !c.noPct ? `/ ${c.target} ${c.unit}` : c.unit}</div>
+        </div>
+        ${showPct ? `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>` : '<div style="height:14px"></div>'}
+        <div class="meta">
+          <span>${c.subText}</span>
+          ${showPct ? `<span class="pct">${pct}%</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderFunnel() {
+  const total = targetBrands.length;
+  const contacted = targetBrands.filter(b=>b.contactStatus==="已建联").length;
+  const everDelivered = targetBrands.filter(b=>b.deliveryStatus==="投放中"||b.deliveryStatus==="投放断档").length;
+  const delivering = targetBrands.filter(b=>b.deliveryStatus==="投放中").length;
+
+  const data = [
+    { value: total, name: '靶向池总数' },
+    { value: contacted, name: '已建联' },
+    { value: everDelivered, name: '曾投放' },
+    { value: delivering, name: '投放中' }
+  ];
+
+  if (!charts.funnel) charts.funnel = echarts.init(document.getElementById('funnelChart'));
+  charts.funnel.setOption({
+    tooltip: { trigger: 'item', formatter: p => `${p.name}<br/>数量：${p.value} 个<br/>占总数：${(p.value/total*100).toFixed(1)}%` },
+    color: ['#3b82f6','#d97706','#8b5cf6','#10b981'],
+    series: [{
+      type:'funnel', left: '10%', top: 20, bottom: 20, width: '80%',
+      sort: 'descending',
+      gap: 4,
+      label: { color: '#1f2937', fontSize: 13, formatter: p => `${p.name}：${p.value}` },
+      data
+    }]
+  });
+}
+
+function renderLeaderboard() {
+  const map = {};
+  SALES.forEach(s => map[s] = { contact: 0, delivering: 0, dailyCost: 0 });
+  targetBrands.forEach(b => {
+    if (b.contactSale && map[b.contactSale]) {
+      if (b.contactStatus === "已建联") map[b.contactSale].contact++;
+      if (b.deliveryStatus === "投放中") map[b.contactSale].delivering++;
+      map[b.contactSale].dailyCost += (b.dailyCost||0);
+    }
+  });
+  const sorted = Object.entries(map).sort((a,b)=> b[1].dailyCost - a[1].dailyCost);
+  const maxContact = Math.max(...sorted.map(x=>x[1].contact), 1);
+
+  document.getElementById('leaderboard').innerHTML = `
+    <div class="leaderboard-row" style="color:var(--text-2);font-size:11px;border-bottom:1px solid var(--border);">
+      <span></span><span>销售</span><span>建联进度</span><span>建联</span><span>投放中</span><span>日耗(元)</span>
+    </div>
+  ` + sorted.map(([s,v],i) => `
+    <div class="leaderboard-row ${i===0?'top1':i===1?'top2':i===2?'top3':''} ${s===CURRENT_USER?'me':''}">
+      <span class="rank">${i+1}</span>
+      <span>${s===CURRENT_USER?"🦞 "+s:s}</span>
+      <div class="mini-bar"><div style="width:${Math.min(100,v.contact/maxContact*100)}%;"></div></div>
+      <span style="color:var(--gold);font-weight:600">${v.contact}</span>
+      <span style="color:var(--success);font-weight:600">${v.delivering}</span>
+      <span style="color:var(--purple);font-weight:600">${v.dailyCost.toLocaleString()}</span>
+    </div>
+  `).join('');
+}
+
+function renderCategory() {
+  const cats = [...new Set(targetBrands.map(b=>b.category))];
+  const total = cats.map(c => targetBrands.filter(b=>b.category===c).length);
+  const contacted = cats.map(c => targetBrands.filter(b=>b.category===c && b.contactStatus==="已建联").length);
+  const delivering = cats.map(c => targetBrands.filter(b=>b.category===c && b.deliveryStatus==="投放中").length);
+
+  if (!charts.cat) charts.cat = echarts.init(document.getElementById('chartCategory'));
+  charts.cat.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { textStyle: { color: '#6b7280', fontSize: 11 }, top: 0 },
+    grid: { left: 50, right: 20, top: 40, bottom: 40 },
+    xAxis: { type: 'category', data: cats, axisLabel: { color: '#6b7280', fontSize: 11, rotate: 20 }, axisLine: { lineStyle: { color: '#e5e9f0' } } },
+    yAxis: { type: 'value', axisLabel: { color: '#6b7280', fontSize: 11 }, splitLine: { lineStyle: { color: '#eef1f6' } } },
+    series: [
+      { name: '总数', type: 'bar', data: total, itemStyle: { color: '#dbeafe' } },
+      { name: '已建联', type: 'bar', data: contacted, itemStyle: { color: '#fbbf24' } },
+      { name: '投放中', type: 'bar', data: delivering, itemStyle: { color: '#10b981' } }
+    ]
+  });
+}
+
+function renderTopCost() {
+  const top = targetBrands.filter(b=>b.deliveryStatus==="投放中")
+    .sort((a,b)=>b.dailyCost - a.dailyCost).slice(0,10).reverse();
+  if (!charts.top) charts.top = echarts.init(document.getElementById('chartTopCost'));
+  charts.top.setOption({
+    tooltip: { trigger: 'axis', formatter: p => `${p[0].name}<br/>日耗：${p[0].value.toLocaleString()} 元` },
+    grid: { left: 100, right: 60, top: 10, bottom: 30 },
+    xAxis: { type: 'value', axisLabel: { color: '#6b7280', fontSize: 11 }, splitLine: { lineStyle: { color: '#eef1f6' } } },
+    yAxis: { type: 'category', data: top.map(b=>b.name), axisLabel: { color: '#1f2937', fontSize: 12 }, axisLine: { lineStyle: { color: '#e5e9f0' } } },
+    series: [{
+      type: 'bar', data: top.map(b=>b.dailyCost),
+      itemStyle: { color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 0, colorStops: [{ offset: 0, color: '#fbbf24' }, { offset: 1, color: '#8b5cf6' }] }, borderRadius: [0, 6, 6, 0] },
+      label: { show: true, position: 'right', color: '#6b7280', fontSize: 11, formatter: p => p.value.toLocaleString() }
+    }]
+  });
+}
+
+function renderTable() {
+  let list = targetBrands;
+  // scope 筛选
+  if (state.scope === 'mine') list = list.filter(b => b.contactSale === CURRENT_USER);
+  if (state.scope === 'unclaimed') list = list.filter(b => b.contactStatus === '未建联' && (b.priority === 'S' || b.priority === 'A'));
+
+  if (state.searchKw) {
+    const q = state.searchKw.toLowerCase();
+    list = list.filter(b => b.name.toLowerCase().includes(q) || b.category.includes(q) || (b.contactSale||"").includes(q));
+  }
+  if (state.filterCat) list = list.filter(b => b.category === state.filterCat);
+  if (state.filterPriority) list = list.filter(b => b.priority === state.filterPriority);
+  if (state.filterContact) list = list.filter(b => b.contactStatus === state.filterContact);
+  if (state.filterDelivery) list = list.filter(b => b.deliveryStatus === state.filterDelivery);
+
+  document.getElementById('brandCount').textContent = `共 ${list.length} 个`;
+
+  const tagOf = (status) => {
+    const m = {"未建联":"gray","已建联":"blue","未投放":"gray","投放中":"green","投放断档":"warn","—":"gray"};
+    return m[status] || "gray";
+  };
+
+  document.querySelector('#brandTable tbody').innerHTML = list.map(b => {
+    const isMine = b.contactSale === CURRENT_USER;
+    const stageTag = STAGE_TAGS[b.stage] || { color: 'gray', emoji: '📌' };
+    const lastH = b.history && b.history.length > 0 ? b.history[b.history.length-1] : null;
+    // 操作按钮：未建联→认领；已是我的→更新进展+查看时间线；别人的→查看时间线
+    let actionBtns = '';
+    if (b.contactStatus === '未建联') {
+      actionBtns = `<button class="btn-mini gold" onclick="openClaim('${b.id}')">🎯 认领</button>`;
+    } else if (isMine) {
+      actionBtns = `
+        <button class="btn-mini primary" onclick="openProgress('${b.id}')">📝 更新进展</button>
+        <button class="btn-mini" onclick="openHistory('${b.id}')">📜 时间线</button>`;
+    } else {
+      actionBtns = `<button class="btn-mini" onclick="openHistory('${b.id}')">📜 查看进展</button>`;
+    }
+
+    return `
+    <tr class="${isMine ? 'row-mine' : ''}">
+      <td><b>${b.name}</b></td>
+      <td>${b.category}</td>
+      <td><span class="tag ${b.priority}">${b.priority}</span></td>
+      <td>
+        <span class="tag ${tagOf(b.contactStatus)}">${b.contactStatus}</span>
+        ${b.contactStatus === '已建联' ? `<br/><span class="tag ${stageTag.color}" style="margin-top:4px;font-size:10px;">${stageTag.emoji} ${b.stage}</span>` : ''}
+      </td>
+      <td>${b.contactSale ? (isMine ? '🦞 ' + b.contactSale : b.contactSale) : '<span style="color:var(--text-3);">未认领</span>'}</td>
+      <td style="font-size:11px;color:var(--text-2);">
+        ${lastH ? `${lastH.date}<br/><span title="${lastH.note}" style="display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;">${lastH.note}</span>` : '—'}
+      </td>
+      <td><span class="tag ${tagOf(b.deliveryStatus)}">${b.deliveryStatus}</span></td>
+      <td>${b.dailyCost ? b.dailyCost.toLocaleString() : '—'}</td>
+      <td><div class="row-actions">${actionBtns}</div></td>
+    </tr>
+  `;}).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--text-2);padding:30px;">暂无匹配数据</td></tr>';
+}
+
+function refreshAll() {
+  renderKPI();
+  renderFunnel();
+  renderLeaderboard();
+  renderCategory();
+  renderTopCost();
+  renderTable();
+}
+
+/* 交互绑定 */
+document.getElementById('searchKw').oninput = e => { state.searchKw = e.target.value; renderTable(); };
+document.getElementById('filterCat').onchange = e => { state.filterCat = e.target.value; renderTable(); };
+document.getElementById('filterPriority').onchange = e => { state.filterPriority = e.target.value; renderTable(); };
+document.getElementById('filterContact').onchange = e => { state.filterContact = e.target.value; renderTable(); };
+document.getElementById('filterDelivery').onchange = e => { state.filterDelivery = e.target.value; renderTable(); };
+document.getElementById('userSel').onchange = e => { CURRENT_USER = e.target.value; refreshAll(); };
+
+// scope 切换
+['scopeAll','scopeMine','scopeUnclaimed'].forEach(id => {
+  document.getElementById(id).onclick = () => {
+    state.scope = id === 'scopeAll' ? 'all' : (id === 'scopeMine' ? 'mine' : 'unclaimed');
+    ['scopeAll','scopeMine','scopeUnclaimed'].forEach(x => document.getElementById(x).classList.toggle('active', x === id));
+    renderTable();
+  };
+});
+
+document.getElementById('btnExport').onclick = () => {
+  alert('🦞 演示版：正式版会导出 CSV / Excel 名单（含建联进度+投放数据），便于发周报。');
+};
+
+// 点击遮罩关闭
+['modalClaim','modalProgress','modalHistory'].forEach(id => {
+  document.getElementById(id).onclick = (e) => { if (e.target.id === id) closeModal(id); };
+});
+
+initFilters();
+refreshAll();
+
+window.addEventListener('resize', () => {
+  Object.values(charts).forEach(c => c && c.resize());
+});
+</script>
+</body>
+</html>
