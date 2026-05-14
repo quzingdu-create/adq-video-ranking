@@ -1156,9 +1156,9 @@ function updateBattleFrameUser() {
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
-  document.getElementById('viewTeam').classList.toggle('active', viewMode==="team");
-  document.getElementById('viewMine').classList.toggle('active', viewMode==="mine");
-  document.getElementById('kpiViewTag').textContent = (viewMode==="mine" ? `🦞 ${CURRENT_USER} · ` : "团队 · ") + "2026 Q2";
+  const vt = document.getElementById('viewTeam'); if (vt) vt.classList.toggle('active', viewMode==="team");
+  const vm = document.getElementById('viewMine'); if (vm) vm.classList.toggle('active', viewMode==="mine");
+  const kvt = document.getElementById('kpiViewTag'); if (kvt) kvt.textContent = (viewMode==="mine" ? `🦞 ${CURRENT_USER} · ` : "团队 · ") + "2026 Q2";
   document.body.classList.toggle('view-mine', viewMode === "mine");
   updateLiveDate();
   updateBattleFrameUser();
