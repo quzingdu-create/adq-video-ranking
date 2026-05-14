@@ -494,7 +494,7 @@
       </div>
       <table class="tbl" id="recordTable">
         <thead><tr>
-          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th><th>建联截图</th>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
         </tr></thead>
       </table>
     </div>
@@ -542,14 +542,6 @@
       <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
       <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source"></select></div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
-      <div class="field" style="grid-column:span 2;">
-        <label style="display:block;color:#595959;margin-bottom:4px;">建联截图</label>
-        <div id="paste-zone" class="paste-zone" tabindex="0">
-          <div style="margin-bottom:4px;">点击选择图片，或把截图拖进来 / Ctrl+V 粘贴</div>
-          <input id="m-files" type="file" accept="image/*" multiple style="display:none;" />
-          <div id="paste-thumbs" class="thumbs"></div>
-        </div>
-      </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;position:sticky;bottom:0;background:#fff;">
       <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
@@ -1087,11 +1079,10 @@ function csvEscape(v) {
 }
 function exportRecordsCsv() {
   const rows = currentRecordList();
-  const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户口径','建联截图'];
+  const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户口径'];
   const body = rows.map(r => {
     const linkText = r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : '');
-    const imageText = (r.images && r.images.length) ? `${r.images.length}张` : '';
-    const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,r.channel,r.resource,r.source,customerTypeForQuarter(r),imageText];
+    const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,r.channel,r.resource,r.source,customerTypeForQuarter(r)];
     return vals.map(csvEscape).join(',');
   });
   const csv = String.fromCharCode(0xFEFF) + [headers.join(','), ...body].join(String.fromCharCode(10));
@@ -1120,7 +1111,6 @@ function renderRecords() {
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = list.map(r => {
     const linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
-    const imageText = (r.images && r.images.length) ? `${r.images.length}张` : '';
     const customerType = display(customerTypeForQuarter(r));
     return `
       <tr>
@@ -1135,9 +1125,8 @@ function renderRecords() {
         <td>${display(r.resource)}</td>
         <td>${display(r.source)}</td>
         <td>${customerType ? `<span class="tag ${customerType.includes('新客') && !customerType.includes('非本季度') ? 'green' : 'gray'}">${customerType}</span>` : ''}</td>
-        <td>${imageText}</td>
       </tr>`;
-  }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
+  }).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
 }
 
 /* =========================
@@ -1369,7 +1358,7 @@ window.submitRecord = () => {
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', customerType:look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客', status:look.isLaoke ? '存量' : '新客',
-    cost:0, zone:'', maturity:'', deliverySide, images:pendingImages.map(p => ({id:p.id, dataUrl:p.dataUrl}))
+    cost:0, zone:'', maturity:'', deliverySide, images:[]
   };
   saveUserRecord(rec);
   closeModal('modalRecord');
