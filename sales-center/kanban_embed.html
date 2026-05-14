@@ -386,6 +386,21 @@
   .top80-table .status-miss { color:#b45309; background:#fffbeb; padding:3px 8px; border-radius:999px; }
 
 </style>
+<style>
+  /* embed 模式：隐藏 Demo 提示条和顶部标题（被 PC 父页面 Tab 嵌入时） */
+  body.embed-mode #demoBanner,
+  body.embed-mode .topbar { display: none !important; }
+</style>
+<script>
+  // embed=1 参数下进入 embed-mode
+  (function(){
+    const sp = new URLSearchParams(location.search);
+    if (sp.get('embed') === '1' || sp.get('embed') === 'pc') {
+      document.documentElement.dataset.embed = '1';
+      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embed-mode'));
+    }
+  })();
+</script>
 </head>
 <body>
 
@@ -1273,6 +1288,10 @@ function onNameInput() {
   const dup = lookupDuplicates(raw);
   let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
   hint += look.isOld24 ? `<span class="badge-laoke">24年老客</span>` : (look.isLaoke ? `<span class="badge-laoke">非本季度新客 ${look.firstQuarter || ''}老客</span>` : `<span class="badge-newk">新客</span>`);
+  // 投放端识别
+  const DSM = window.__DELIVERY_SIDE_MAP__ || {};
+  const ds = DSM[shortName] || DSM[raw] || '';
+  if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
   if (!look.matched) hint += `<span style="font-size:11px;color:#bfbfbf;">（未命中字典，默认以主体作为简称）</span>`;
   hint += `</div>`;
   if (dup.total) {
@@ -1340,18 +1359,21 @@ window.submitRecord = () => {
     if (!confirm(`客户主体「${name}」已被登记 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
   }
   const finalBrand = shortName;
+  // 自动匹配投放端（基于今晚的字典；查不到 = 未匹配投放）
+  const DELIVERY_SIDE_MAP = window.__DELIVERY_SIDE_MAP__ || {};
+  const deliverySide = DELIVERY_SIDE_MAP[shortName] || DELIVERY_SIDE_MAP[name] || '未匹配投放';
   const rec = {
     id:Date.now(), date, sale:sales, name, shortName,
     brand:finalBrand, cat:category, link:links.join('、'), links,
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', customerType:look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客', status:look.isLaoke ? '存量' : '新客',
-    cost:0, zone:'', maturity:'', images:pendingImages.map(p => ({id:p.id, dataUrl:p.dataUrl}))
+    cost:0, zone:'', maturity:'', deliverySide, images:pendingImages.map(p => ({id:p.id, dataUrl:p.dataUrl}))
   };
   saveUserRecord(rec);
   closeModal('modalRecord');
   renderAll();
-  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}`);
+  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}`);
 };
 
 

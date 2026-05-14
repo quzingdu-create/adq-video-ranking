@@ -170,7 +170,20 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   .bottom-nav button.active { background: var(--blue2); color: var(--blue); }
   [data-page] { display: none; }
   [data-page].active { display: block; }
-  @media (min-width: 520px) { body { max-width: 520px; margin: 0 auto; } .bottom-nav { max-width: 520px; margin: 0 auto; } }
+  /* PC 端自适应：宽屏时双栏布局 */
+  @media (min-width: 720px) {
+    body { max-width: 1080px; margin: 0 auto; padding-left: 18px; padding-right: 18px; }
+    .kpi-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .kpi.wide { grid-column: 1 / -1; }
+    .card-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .card-list > .empty { grid-column: 1 / -1; }
+    .sales-table { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+    .hero { margin-left: -18px; margin-right: -18px; padding-left: 18px; padding-right: 18px; }
+    .filter-row select { max-width: 360px; }
+  }
+  @media (min-width: 1080px) {
+    .card-list { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  }
 </style>
 </head>
 <body>
@@ -178,7 +191,6 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     <div class="hero-main">
       <div class="title">
         <h1>🦞 销售作战中心</h1>
-        <p id="updateText">移动端 · 读取中</p>
       </div>
       <div class="view-pill">
         <button id="btnMine" class="active">我的</button>
@@ -329,7 +341,7 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     const r = rowFor(currentQuarter, "合计") || {};
     const centerCost = daily.centerCost || 0;
     const centerChg = daily.centerCostChg;
-    $("updateText").textContent = `手机版 · ${daily.updatedAt || "最新数据"}`;
+    $("updateText") && ($("updateText").textContent = `${currentQuarter}`);
     $("homeSub").textContent = `${currentQuarter} · 服饰中心全量`;
     $("kpiGrid").innerHTML = `
       <div class="kpi wide"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比前一天 <span class="${clsTrend(centerChg / 100)}">${centerChg === undefined ? "—" : (Number(centerChg) >= 0 ? "+" : "") + Number(centerChg).toFixed(1) + "%"}</span></div></div>
