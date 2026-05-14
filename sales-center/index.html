@@ -1127,12 +1127,12 @@ document.querySelectorAll('.tab-btn').forEach(b => {
 });
 
 /* ===========================================================
-   三、视图切换
+   三、视图切换（DOM 已删，全部 nullish 保护）
    =========================================================== */
 let viewMode = "mine";  // mine | team
-document.getElementById('viewTeam').onclick = () => { viewMode = "team"; updateViewToggle(); renderAll(); };
-document.getElementById('viewMine').onclick = () => { viewMode = "mine"; updateViewToggle(); renderAll(); };
-document.getElementById('userSel').onchange = e => { CURRENT_USER = e.target.value; renderAll(); };
+const _vt = document.getElementById('viewTeam'); if (_vt) _vt.onclick = () => { viewMode = "team"; updateViewToggle(); renderAll(); };
+const _vm = document.getElementById('viewMine'); if (_vm) _vm.onclick = () => { viewMode = "mine"; updateViewToggle(); renderAll(); };
+const _us = document.getElementById('userSel'); if (_us) _us.onchange = e => { CURRENT_USER = e.target.value; renderAll(); };
 
 function formatTodayLabel() {
   const now = new Date();

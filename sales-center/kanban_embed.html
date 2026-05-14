@@ -833,6 +833,7 @@ function renderKPI() {
 }
 
 function renderSalesProgress() {
+  if (!document.getElementById('salesProgress')) return;  // DOM 已删，跳过
   const rows = centerSummaryRows();
   if (rows.length) {
     const html = `
