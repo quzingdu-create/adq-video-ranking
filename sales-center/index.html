@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>销售作战中心 - 今日待办小红点</title>
+<title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
 <style>
@@ -77,22 +77,18 @@
 
   /* 顶部 Tab 大切换 */
   .tabbar {
-    display: flex; align-items: center; gap: 10px; padding: 10px 28px; background: #fff;
+    display: flex; gap: 4px; padding: 0 28px; background: #fff;
     border-bottom: 1px solid var(--border); position: sticky; top: 57px; z-index: 99;
-    box-shadow: 0 2px 10px rgba(15,23,42,0.04);
-  }
-  .tab-label {
-    font-size: 13px; color: var(--text-2); font-weight: 600; margin-right: 2px; white-space: nowrap;
   }
   .tab-btn {
-    background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
-    padding: 10px 18px; cursor: pointer; font-size: 14px; font-weight: 600;
-    border-radius: 10px; transition: all 0.2s; position: relative; min-width: 150px;
+    background: transparent; border: none; color: var(--text-2);
+    padding: 12px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; transition: all 0.2s; position: relative;
   }
-  .tab-btn:hover { color: var(--primary); border-color: var(--primary); background: var(--primary-bg); }
-  .tab-btn.active { color: #fff; border-color: var(--primary); background: var(--primary); box-shadow: 0 4px 12px rgba(59,130,246,0.22); }
-  .tab-btn .dot { display: none !important;
-    /* display: inline-block; */ min-width: 18px; height: 18px; padding: 0 5px;
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-btn .dot {
+    display: inline-block; min-width: 18px; height: 18px; padding: 0 5px;
     background: var(--danger); color: #fff; font-size: 11px; font-weight: 700;
     border-radius: 9px; margin-left: 6px; line-height: 18px; text-align: center;
     animation: pulse 2s infinite;
@@ -490,9 +486,8 @@
     .layer-grid { grid-template-columns: repeat(3, 1fr) !important; }
     .task-list { grid-template-columns: 1fr !important; }
     .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
-    .tabbar { padding: 8px 12px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
-    .tab-label { display: none; }
-    .tab-btn { white-space: nowrap; padding: 10px 14px; font-size: 13px; min-width: 138px; }
+    .tabbar { padding: 0 12px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .tab-btn { white-space: nowrap; padding: 12px 14px; font-size: 13px; }
     .container { padding: 14px; }
     .modal { min-width: 90vw !important; max-width: 95vw !important; padding: 18px; }
     .nav-banner { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -568,7 +563,7 @@
 
 <!-- ========== 顶栏 ========== -->
 <div class="topbar">
-  <h1>🦞 销售作战中心 <span class="ver">v3.2 · 今日待办小红点</span></h1>
+  <h1>🦞 销售作战中心 <span class="ver">v3.2 · 拓新组定制版 · DEMO</span></h1>
   <div class="topbar-right">
     <div class="view-toggle">
       <button id="viewTeam">团队视图</button>
@@ -583,35 +578,20 @@
       <option value="ruilingzhan">ruilingzhan</option>
       <option value="yvaineechen">yvaineechen</option>
     </select>
-    <a class="btn-link" href="手机直开版.html">📱 手机版</a>
   </div>
 </div>
 
 <!-- ========== Tab 切换 ========== -->
-<div class="tabbar" id="mainTabbar">
-  <span class="tab-label">模块切换：</span>
-  <button class="tab-btn active" data-tab="home">📌 今日待办小红点</button>
-  <button class="tab-btn" data-tab="battle">🚀 拓客作战看板</button>
-  <button class="tab-btn" data-tab="info">📚 信息同步库（建设中敬请期待）</button>
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="home">📌 今日待办小红点 <span class="dot" id="dotHome">0</span></button>
+  <button class="tab-btn" data-tab="battle">🚀 拓客作战看板 <span class="dot" id="dotTuoke">0</span></button>
+  <button class="tab-btn" data-tab="info">📚 信息同步库 <span class="dot" id="dotInfo">0</span></button>
+  <button class="tab-btn" data-tab="special">🧪 专项进展 <span style="font-size:10px;opacity:0.6;">建设中</span></button>
 </div>
 
-<!-- ========== 首页：仅融合同事小红点页面，其余原系统不动 ========== -->
+<!-- ========== 首页 ========== -->
 <div class="tab-page active" id="page-home">
-  <div class="container" style="max-width:1400px;">
-    <div class="section" style="padding:0;overflow:hidden;background:transparent;border:0;box-shadow:none;">
-      <iframe
-        id="homeFrame"
-        src="小红点_v3.3.html?embed=1&user=kinsleyjin&view=mine"
-        style="width:100%;height:calc(100vh - 150px);min-height:980px;border:0;display:block;background:#f5f7fb;border-radius:12px;"
-        title="今日待办小红点 · 同事版 v3.3"
-        loading="lazy"
-        allow="clipboard-read; clipboard-write"
-      ></iframe>
-    </div>
-  </div>
-
-  <!-- 原首页旧小红点 DOM 仅隐藏保留，避免打断原有统计/弹窗脚本；实际展示以上方同事版 iframe 为准 -->
-  <div class="container" style="display:none;">
+  <div class="container">
 
     <!-- 顶部 1 行精简 banner（替代原 3 大红点卡） -->
     <div class="section">
@@ -731,14 +711,82 @@
 
     <div class="nav-banner">
       <div class="nb-text">
-        <strong>📚 信息同步库（建设中敬请期待）</strong>
+        <strong>📚 信息同步库</strong>
         <small>同步产品能力、行业概况、政策活动和标杆案例；仅供查看与下载，不参与小红点消除</small>
       </div>
     </div>
 
     <div class="section">
+      <!-- 静态信息卡片 -->
+      <div class="info-grid" style="margin-bottom:20px;">
+        <div class="info-card">
+          <div class="ic-head"><div class="ic-title">🏗️ 产品能力</div><div class="ic-count">产品简介 & 对外文档</div></div>
+          <div class="info-item">
+            <div class="ii-title">ADQ 服饰投放产品矩阵</div>
+            <div class="ii-desc">涵盖 ADQ / AQQ / 全域通 三大投放端，支持视频号、朋友圈、小程序等多版位组合投放能力。</div>
+            <div class="ii-meta">
+              <div class="ii-tags"><span class="tag blue">ADQ</span><span class="tag blue">全域通</span><span class="tag green">视频号</span></div>
+              <div class="ii-cta gold" style="cursor:default;">📄 产品手册（待上传）</div>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="ic-head"><div class="ic-title">📊 行业概况</div><div class="ic-count">日耗 / 占比 / 版位</div></div>
+          <div class="info-item">
+            <div class="ii-title">2026Q2 服饰行业大盘趋势</div>
+            <div class="ii-desc">按赛道展示日耗量级及环比、日耗占比、链路占比、版位情况、核心指标等 5 维度数据看板。</div>
+            <div class="ii-meta">
+              <div class="ii-tags"><span class="tag purple">女装</span><span class="tag purple">运动户外</span><span class="tag purple">配饰</span></div>
+              <div class="ii-cta gold" style="cursor:default;">📈 数据看板（建设中）</div>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="ic-head"><div class="ic-title">📢 政策活动</div><div class="ic-count">平台政策 & 营销活动</div></div>
+          <div class="info-item">
+            <div class="ii-title">近期平台政策与激励活动</div>
+            <div class="ii-desc">腾讯广告平台最新政策解读、服饰行业专项扶持活动、新客补贴与返点政策汇总。</div>
+            <div class="ii-meta">
+              <div class="ii-tags"><span class="tag red warn">新客补贴</span><span class="tag warn">返点政策</span></div>
+              <div class="ii-cta gold" style="cursor:default;">📋 活动清单（待更新）</div>
+            </div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="ic-head"><div class="ic-title">🏆 标杆案例</div><div class="ic-count">优秀案例 & 复盘</div></div>
+          <div class="info-item">
+            <div class="ii-title">服饰拓新标杆客户案例库</div>
+            <div class="ii-desc">收集整理拓新组优秀新客案例，包含投放策略、素材方向、ROI 表现、可复制方法论。</div>
+            <div class="ii-meta">
+              <div class="ii-tags"><span class="tag green">案例</span><span class="tag green">复盘</span><span class="tag blue">方法论</span></div>
+              <div class="ii-cta gold" style="cursor:default;">🎯 案例库（收集中）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 动态信息列表（原有） -->
       <div class="info-grid" id="infoGrid"></div>
     </div>
+  </div>
+</div>
+
+<!-- ========== 专项进展 Tab（建设中） ========== -->
+<div class="tab-page" id="page-special">
+  <div class="container">
+
+    <div class="nav-banner">
+      <div class="nb-text">
+        <strong>🧪 专项进展</strong>
+        <small>建设中 · 敬请期待</small>
+      </div>
+    </div>
+
+    <div style="text-align:center; padding:80px 20px; color:var(--text-2);">
+      <div style="font-size:48px; margin-bottom:16px;">🚧</div>
+      <div style="font-size:18px; font-weight:600; margin-bottom:8px;">模块建设中</div>
+      <div style="font-size:13px;">专项进展追踪功能即将上线，敬请期待</div>
+    </div>
+
   </div>
 </div>
 
@@ -824,7 +872,7 @@
       </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&view=mine" style="width:100%;height:1180px;border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin" style="width:100%;height:1180px;border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1228,37 +1276,12 @@ function updateLiveDate() {
   const el = document.getElementById('qbDate');
   if (el) el.textContent = formatTodayLabel();
 }
-function updateHomeFrameUser() {
-  const frame = document.getElementById('homeFrame');
-  if (!frame) return;
-  try { localStorage.setItem("v34_sales", CURRENT_USER); } catch(e) {}
-  if (frame.contentWindow) {
-    try { frame.contentWindow.postMessage({type:"setUser", user: CURRENT_USER}, "*"); } catch(e) {}
-    try { frame.contentWindow.postMessage({type:"setView", view: viewMode}, "*"); } catch(e) {}
-  }
-  const target = `小红点_v3.3.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&view=${viewMode}`;
-  const cur = frame.getAttribute('src') || '';
-  if (!cur.includes(`user=${encodeURIComponent(CURRENT_USER)}`) || !cur.includes(`view=${viewMode}`)) frame.setAttribute('src', target);
-}
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  if (frame.contentWindow) {
-    try { frame.contentWindow.postMessage({type:"setUser", user: CURRENT_USER}, "*"); } catch(e) {}
-    try { frame.contentWindow.postMessage({type:"setView", view: viewMode}, "*"); } catch(e) {}
-  }
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&view=${viewMode}`;
-  const cur = frame.getAttribute('src') || '';
-  if (!cur.includes(`user=${encodeURIComponent(CURRENT_USER)}`) || !cur.includes(`view=${viewMode}`)) frame.setAttribute('src', target);
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}`;
+  if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
-window.addEventListener("message", (ev) => {
-  if (!ev.data || typeof ev.data !== "object") return;
-  if (ev.data.type === "notifyCount" && ev.data.source === "home") {
-    const n = Number(ev.data.count) || 0;
-    const dot = document.getElementById('dotHome');
-    if (dot) { dot.textContent = n; dot.style.display = n > 0 ? '' : 'none'; }
-  }
-});
 function updateViewToggle() {
   document.getElementById('viewTeam').classList.toggle('active', viewMode==="team");
   document.getElementById('viewMine').classList.toggle('active', viewMode==="mine");
@@ -1266,7 +1289,6 @@ function updateViewToggle() {
   document.body.classList.toggle('view-mine', viewMode === "mine");
   updateLiveDate();
   updateBattleFrameUser();
-  updateHomeFrameUser();
 }
 
 function getMyClients() {
