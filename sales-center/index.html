@@ -1377,16 +1377,22 @@ function calcStatsForUser(user) {
 }
 
 function renderTodayTasks() {
+  // PC 首页改用 mobile iframe 嵌入，原 task* div 已删除，本函数仅在旧 DOM 存在时跑
+  const taskInfoEl = document.getElementById('taskInfo');
+  const taskClientEl = document.getElementById('taskClient');
+  const taskTuokeEl = document.getElementById('taskTuoke');
+  if (!taskInfoEl && !taskClientEl && !taskTuokeEl) return;
+
   const data = buildTodayTaskData();
   const { infoTasks, clientTasks, tuokeTasks, stats } = data;
 
-  document.getElementById('taskInfo').innerHTML = infoTasks.length
+  if (taskInfoEl) taskInfoEl.innerHTML = infoTasks.length
     ? infoTasks.map(t => taskItemHTML(t)).join('')
     : `<div class="empty-task">🎉 ${viewMode==='mine'?'你':'团队'}今日暂无信息类待办</div>`;
-  document.getElementById('taskClient').innerHTML = clientTasks.length
+  if (taskClientEl) taskClientEl.innerHTML = clientTasks.length
     ? clientTasks.map(t => taskItemHTML(t)).join('')
     : `<div class="empty-task">🎉 ${viewMode==='mine'?'你':'团队'}今日暂无客户类待办</div>`;
-  document.getElementById('taskTuoke').innerHTML = tuokeTasks.length
+  if (taskTuokeEl) taskTuokeEl.innerHTML = tuokeTasks.length
     ? tuokeTasks.map(t => taskItemHTML(t)).join('')
     : `<div class="empty-task">🎉 ${viewMode==='mine'?'你':'团队'}今日暂无拓客类待办</div>`;
 
