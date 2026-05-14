@@ -564,28 +564,14 @@
 <!-- ========== 顶栏 ========== -->
 <div class="topbar">
   <h1>🦞 销售作战中心 <span class="ver">v3.2 · 拓新组定制版 · DEMO</span></h1>
-  <div class="topbar-right">
-    <div class="view-toggle">
-      <button id="viewTeam">团队视图</button>
-      <button id="viewMine" class="active">我的视图</button>
-    </div>
-    <select id="userSel">
-      <option value="kinsleyjin">kinsleyjin</option>
-      <option value="brownfan">brownfan</option>
-      <option value="lijunwu">lijunwu</option>
-      <option value="Jonzhu">Jonzhu</option>
-      <option value="kaikaigenli">kaikaigenli</option>
-      <option value="ruilingzhan">ruilingzhan</option>
-      <option value="yvaineechen">yvaineechen</option>
-    </select>
-  </div>
+  <div class="topbar-right"></div>
 </div>
 
 <!-- ========== Tab 切换 ========== -->
 <div class="tabbar">
   <button class="tab-btn active" data-tab="home">📌 今日待办小红点 <span class="dot" id="dotHome">0</span></button>
-  <button class="tab-btn" data-tab="battle">🚀 拓客作战看板 <span class="dot" id="dotTuoke">0</span></button>
-  <button class="tab-btn" data-tab="info">📚 信息同步库 <span class="dot" id="dotInfo">0</span></button>
+  <button class="tab-btn" data-tab="battle">🚀 拓客作战看板</button>
+  <button class="tab-btn" data-tab="info">📚 信息同步库</button>
   <button class="tab-btn" data-tab="special">🧪 专项进展 <span style="font-size:10px;opacity:0.6;">建设中</span></button>
 </div>
 
@@ -1412,13 +1398,13 @@ function renderTodayTasks() {
   document.querySelectorAll('[data-client-name]').forEach(el => { el.onclick = () => openClientDetail(el.dataset.clientName); });
   document.querySelectorAll('[data-link]').forEach(el => { el.onclick = () => window.location.href = el.dataset.link; });
 
-  document.getElementById('dotInfo').textContent = stats.info.undone;
-  const dotClientEl = document.getElementById('dotClient'); if (dotClientEl) dotClientEl.textContent = stats.client.undone;
-  document.getElementById('dotTuoke').textContent = stats.tuoke.undone;
-  document.getElementById('dotHome').textContent = stats.undone;
-  ['dotInfo','dotTuoke','dotHome'].forEach(id => {
+  document.getElementById('dotInfo') && (document.getElementById('dotInfo').style.display = 'none');
+  const dotClientEl = document.getElementById('dotClient'); if (dotClientEl) dotClientEl.style.display = 'none';
+  document.getElementById('dotTuoke') && (document.getElementById('dotTuoke').style.display = 'none');
+  // dotHome 由手机端 iframe postMessage 实时更新（在文件末尾监听）
+  ['dotInfo','dotTuoke'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.style.display = '';
+    if (el) el.style.display = 'none';
   });
 
   const qbUser = document.getElementById('qbUser'); if (qbUser) qbUser.textContent = CURRENT_USER;
@@ -1426,6 +1412,18 @@ function renderTodayTasks() {
   const qbC = document.getElementById('qbClient'); if (qbC) qbC.textContent = stats.client.undone;
   const qbT = document.getElementById('qbTuoke'); if (qbT) qbT.textContent = stats.tuoke.undone;
 }
+
+// 接收 iframe 实时通知，更新今日待办小红点的 dotHome 数字
+window.addEventListener('message', function(ev){
+  if (ev && ev.data && ev.data.type === 'todo-redpoint') {
+    const dot = document.getElementById('dotHome');
+    if (dot) {
+      const n = Number(ev.data.count || 0);
+      dot.textContent = n;
+      dot.style.display = n > 0 ? '' : 'none';
+    }
+  }
+});
 
 function taskItemHTML(t) {
   const dataAttr = t.infoId ? `data-info-id="${t.infoId}"`

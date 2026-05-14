@@ -409,6 +409,16 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     document.querySelectorAll("[data-undo]").forEach(btn =>
       btn.addEventListener("click", () => undoDone(btn.dataset.undo))
     );
+    // 通知父页面（PC iframe 嵌入时）：未处理 告警+关注 客户数
+    try {
+      const allWithStatus = topRows.map(r => ({...r, _s: statusOf(r)}));
+      const pendingCount = allWithStatus.filter(r =>
+        (r._s.status === "alarm" || r._s.status === "focus") && !isDone(r.name)
+      ).length;
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: "todo-redpoint", count: pendingCount }, "*");
+      }
+    } catch(e){}
   }
 
   /* ---- 弹窗：标记为已处理 ---- */
