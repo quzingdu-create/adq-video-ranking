@@ -643,8 +643,7 @@
           </div>
         </div>
       </div>
-      <!-- 动态信息列表（原有） -->
-      <div class="info-grid" id="infoGrid"></div>
+      <!-- 动态列表已移除（用户 2026-05-15 拍板：信息同步库只保留 4 张静态卡） -->
     </div>
   </div>
 </div>
@@ -1632,7 +1631,9 @@ function renderInfoTab() {
       }).join('')}
     </div>
   `).join('');
-  document.getElementById('infoGrid').innerHTML = html;
+  const _ig = document.getElementById('infoGrid');
+  if (!_ig) return;  // 用户 2026-05-15 删除动态列表，DOM 已不存在
+  _ig.innerHTML = html;
 
   document.querySelectorAll('#infoGrid [data-info-id]').forEach(el => {
     el.onclick = () => openInfoDetail(el.dataset.infoId);

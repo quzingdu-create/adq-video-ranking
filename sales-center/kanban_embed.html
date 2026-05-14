@@ -437,7 +437,6 @@
     <button id="btnTarget">⚙️ 目标管理</button>
     <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
     <button id="btnBulkImport">📥 上传导入</button>
-    <button id="btnBulkImportPreset">⚡ 导入批量.xlsx</button>
     <input id="bulkImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" />
   </div>
 </div>
@@ -531,11 +530,9 @@
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">类目</label><select id="m-category"></select></div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">销售</label><select id="m-sales"></select></div>
       <div class="field" style="grid-column:span 2;">
-        <label class="req" style="display:block;color:#595959;margin-bottom:4px;">链路（可多选）</label>
-        <div id="m-link" class="checkbox-group" style="padding-top:4px;">
-          <label><input type="checkbox" value="小店" /> 小店</label>
-          <label><input type="checkbox" value="直播" /> 直播</label>
-          <label><input type="checkbox" value="CID" /> CID</label>
+        <label style="display:block;color:#595959;margin-bottom:4px;">链路 <span style="color:#bfbfbf;font-weight:normal;">（无需填写，登记成功后系统每日匹配 AData 链路明细自动更新）</span></label>
+        <div id="m-link" class="checkbox-group" style="padding-top:4px;color:#bfbfbf;font-size:12px;">
+          系统每日凌晨从 AData 抓取 T-1 链路数据并匹配
         </div>
       </div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="m-channel" onchange="onChannelChange()"></select></div>
@@ -1263,7 +1260,7 @@ function initRegisterModal() {
   document.getElementById('m-sales').value = CURRENT_USER;
   document.getElementById('m-date').value = new Date().toISOString().slice(0,10);
   ['m-name','m-resource'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
-  document.querySelectorAll('#m-link input').forEach(c => c.checked = false);
+  // 链路已改为系统自动匹配，无需重置
   pendingImages = []; renderThumbs();
   document.getElementById('m-name-hint').innerHTML = '';
   onChannelChange();
@@ -1333,13 +1330,13 @@ window.submitRecord = () => {
   const name = document.getElementById('m-name').value.trim();
   const category = document.getElementById('m-category').value;
   const sales = document.getElementById('m-sales').value;
-  const links = Array.from(document.querySelectorAll('#m-link input:checked')).map(c => c.value);
+  // 链路不再由销售手动选，登记后由系统每日抓 AData 链路接口（s=4695Or）匹配填充
+  const links = [];
   const channel = document.getElementById('m-channel').value;
   const resource = document.getElementById('m-resource').value.trim();
   const source = document.getElementById('m-source').value;
   const date = document.getElementById('m-date').value;
   if (!name) return alert('客户主体名称必填');
-  if (!links.length) return alert('链路至少选择 1 项');
   if (channel !== '自拓' && !resource) return alert('拓客途径为「' + channel + '」时，资源方需要填写');
   const look = lookupEntity(name);
   const shortName = look.short || name;
@@ -1488,7 +1485,7 @@ function handleBulkFile(file) {
 }
 const exportBtn = document.getElementById('btnExportRecords'); if (exportBtn) exportBtn.onclick = exportRecordsCsv;
 document.getElementById('btnBulkImport').onclick = () => document.getElementById('bulkImportFile').click();
-document.getElementById('btnBulkImportPreset').onclick = importPresetBulkRows;
+document.getElementById('btnBulkImportPreset') && (document.getElementById('btnBulkImportPreset').onclick = importPresetBulkRows);
 document.getElementById('bulkImportFile').onchange = e => {
   const f = e.target.files && e.target.files[0];
   if (f) handleBulkFile(f);
