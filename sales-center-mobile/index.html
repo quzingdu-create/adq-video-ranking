@@ -118,12 +118,13 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
   .section-head h2 { font-size: 15px; font-weight: 800; }
   .section-head .more { font-size: 12px; color: var(--muted); }
-  .kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
-  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 13px; box-shadow: var(--shadow); min-height: 94px; }
-  .kpi.wide { grid-column: 1 / -1; background: linear-gradient(135deg, #ffffff, #eef4ff); }
-  .kpi .label { font-size: 12px; color: var(--muted); font-weight: 700; }
-  .kpi .value { margin-top: 8px; font-size: 24px; font-weight: 900; letter-spacing: -0.6px; }
-  .kpi .sub { margin-top: 6px; font-size: 11px; color: var(--muted); line-height: 1.35; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 11px; box-shadow: var(--shadow); min-height: 0; }
+  .kpi.wide { grid-column: 1 / -1; background: linear-gradient(135deg, #ffffff, #eef4ff); padding: 10px 12px; }
+  .kpi .label { font-size: 11px; color: var(--muted); font-weight: 700; }
+  .kpi .value { margin-top: 3px; font-size: 18px; font-weight: 900; letter-spacing: -0.4px; line-height: 1.15; }
+  .kpi.wide .value { font-size: 22px; }
+  .kpi .sub { margin-top: 3px; font-size: 10px; color: var(--muted); line-height: 1.3; }
   .trend-up { color: var(--green); font-weight: 800; }
   .trend-down { color: var(--red); font-weight: 800; }
   .trend-flat { color: var(--muted); font-weight: 800; }
