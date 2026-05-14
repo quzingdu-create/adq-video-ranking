@@ -1,2 +1,2 @@
-/* fresh AData 2026-05-14 */
-window.__DELIVERY_SIDE_SUMMARY__ = [{"quarter":"2026Q2","side":"ADQ","newCount":422,"validCount":256,"risingCount":17,"yestCost":578093.68118,"firstCost":13089708.12415},{"quarter":"2026Q2","side":"全域通","newCount":3760,"validCount":707,"risingCount":5,"yestCost":367990.25195000006,"firstCost":12775107.032510001},{"quarter":"2026Q2","side":"双投放","newCount":71,"validCount":56,"risingCount":3,"yestCost":105727.76364,"firstCost":2164182.55186}];
+/* Auto-generated: 2026Q2 新客投放端分布 */
+window.__DELIVERY_SIDE_SUMMARY__ = [{"quarter":"2026Q2","side":"ADQ","newCount":406,"validCount":245,"risingCount":18,"yestCost":752058.1162800001,"firstCost":12332412.0888},{"quarter":"2026Q2","side":"全域通","newCount":3694,"validCount":687,"risingCount":6,"yestCost":315145.63646,"firstCost":12018028.9894},{"quarter":"2026Q2","side":"双投放","newCount":68,"validCount":52,"risingCount":4,"yestCost":93582.57517,"firstCost":2054268.94822}];
