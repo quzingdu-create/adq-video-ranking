@@ -52,7 +52,11 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; }
-  body { padding: env(safe-area-inset-top, 0) 12px calc(env(safe-area-inset-bottom, 0) + 78px); font-size: 14px; }
+  body { padding: env(safe-area-inset-top, 0) 12px env(safe-area-inset-bottom, 0); font-size: 14px; }
+  .sales-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; margin-bottom: 8px; }
+  .sales-tabs::-webkit-scrollbar { display: none; }
+  .sales-tabs button { flex: 0 0 auto; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; cursor: pointer; }
+  .sales-tabs button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
   button, select, input { font-family: inherit; }
   .hero {
     position: sticky; top: 0; z-index: 20;
@@ -147,70 +151,48 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
 
   <main>
     <section data-page="home" class="active">
-      <div class="notice">手机端只放高频查看内容：今日待办、销售 KPI、够一够冲 1000、Top 有效新客风险。完整表格仍建议在电脑端看。</div>
       <div class="section">
-        <div class="section-head"><h2>今日核心盘</h2><span class="more" id="homeSub">最新刷新</span></div>
+        <div class="section-head"><h2>📊 今日核心盘</h2><span class="more" id="homeSub">最新刷新</span></div>
         <div class="kpi-grid" id="kpiGrid"></div>
       </div>
       <div class="section">
-        <div class="section-head"><h2>销售 KPI 速览</h2><span class="more">按昨耗排序</span></div>
+        <div class="section-head"><h2>💰 销售 KPI 速览</h2><span class="more">按昨耗排序</span></div>
         <div class="sales-table" id="salesList"></div>
       </div>
-    </section>
 
-    <section data-page="todo">
       <div class="section">
-        <div class="section-head"><h2>未处理动作</h2><span class="more" id="todoCount">0 条</span></div>
+        <div class="section-head"><h2>🎯 本季度有效新客 TOP 客户</h2><span class="more" id="topTotal">0 家</span></div>
+        <div class="sales-tabs" id="salesTabs">
+          <button data-sale="all" class="active">全部</button>
+          <button data-sale="kinsleyjin">kinsleyjin</button>
+          <button data-sale="brownfan">brownfan</button>
+          <button data-sale="lijunwu">lijunwu</button>
+          <button data-sale="Jonzhu">Jonzhu</button>
+          <button data-sale="kaikaigenli">kaikaigenli</button>
+          <button data-sale="ruilingzhan">ruilingzhan</button>
+          <button data-sale="yvaineechen">yvaineechen</button>
+        </div>
         <div class="chips" id="todoChips">
           <button class="chip active" data-filter="all">全部</button>
           <button class="chip" data-filter="alarm">需告警</button>
           <button class="chip" data-filter="focus">需关注</button>
+          <button class="chip" data-filter="stable">基本稳定</button>
           <button class="chip" data-filter="done">已处理</button>
         </div>
+        <div class="card-list" id="topList"></div>
       </div>
-      <div class="card-list" id="todoList"></div>
-    </section>
 
-    <section data-page="growth">
       <div class="section">
-        <div class="section-head"><h2>够一够冲 1000</h2><span class="more" id="growthCount">0 个候选</span></div>
+        <div class="section-head"><h2>🔥 够一够冲新客</h2><span class="more" id="growthCount">0 个候选</span></div>
         <div class="chips" id="growthChips">
           <button class="chip active" data-limit="20">Top20</button>
           <button class="chip" data-limit="50">Top50</button>
           <button class="chip" data-limit="9999">全部</button>
         </div>
-      </div>
-      <div class="card-list" id="growthList"></div>
-    </section>
-
-    <section data-page="top">
-      <div class="section">
-        <div class="section-head"><h2>Top 有效新客</h2><span class="more">手机只展示核心指标</span></div>
-      </div>
-      <div class="card-list" id="topList"></div>
-    </section>
-
-    <section data-page="links">
-      <div class="section">
-        <div class="section-head"><h2>模块入口</h2><span class="more">需要完整功能时打开</span></div>
-        <div class="link-grid">
-          <a class="link-card" href="小红点_v3.3.html"><div><b>今日待办小红点</b><span>同事版移动页面，适合处理待办</span></div><em class="arrow">›</em></a>
-          <a class="link-card" href="kanban_embed.html"><div><b>拓客作战看板</b><span>完整数据看板，手机可横向查看</span></div><em class="arrow">›</em></a>
-          <a class="link-card" href="index.html"><div><b>PC 综合入口</b><span>三大模块完整入口</span></div><em class="arrow">›</em></a>
-          <a class="link-card" href="拓客作战看板_v3.2.html"><div><b>原始看板页</b><span>保留原大屏页面</span></div><em class="arrow">›</em></a>
-          <div class="link-card"><div><b>信息同步库</b><span>建设中，当前不展示红点</span></div><em class="arrow">—</em></div>
-        </div>
+        <div class="card-list" id="growthList"></div>
       </div>
     </section>
   </main>
-
-  <nav class="bottom-nav">
-    <button class="active" data-go="home"><i>📊</i>总览</button>
-    <button data-go="todo"><i>🔴</i>待办</button>
-    <button data-go="growth"><i>🚀</i>冲刺</button>
-    <button data-go="top"><i>🏆</i>Top</button>
-    <button data-go="links"><i>🧭</i>入口</button>
-  </nav>
 
 <script>
 (function(){
@@ -222,7 +204,8 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   let view = "mine";
   let currentSale = localStorage.getItem("mobile_sale") || "kinsleyjin";
   let currentQuarter = "2026Q2";
-  let todoFilter = "all";
+  let topFilter = "all";
+  let topSaleTab = "all";
   let growthLimit = 20;
 
   const $ = id => document.getElementById(id);
@@ -254,7 +237,7 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   const visibleSale = () => view === "team" ? "合计" : currentSale;
   const doneKey = name => "mobile_done_" + name;
   const isDone = name => localStorage.getItem(doneKey(name)) === "1";
-  const setDone = name => { localStorage.setItem(doneKey(name), "1"); renderTodo(); };
+  const setDone = name => { localStorage.setItem(doneKey(name), "1"); renderTop(); };
 
   function initFilters(){
     const quarters = [...new Set(summary.map(r => r.quarter).filter(Boolean))].sort();
@@ -263,19 +246,13 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     $("saleSel").value = currentSale;
     $("quarterSel").innerHTML = quarters.map(q => `<option value="${q}">${q}</option>`).join("");
     $("quarterSel").value = currentQuarter;
-    $("saleSel").addEventListener("change", e => { currentSale = e.target.value; localStorage.setItem("mobile_sale", currentSale); renderAll(); });
+    $("saleSel").addEventListener("change", e => { currentSale = e.target.value; localStorage.setItem("mobile_sale", currentSale); topSaleTab = currentSale; document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === currentSale)); renderAll(); });
     $("quarterSel").addEventListener("change", e => { currentQuarter = e.target.value; renderAll(); });
     $("btnMine").addEventListener("click", () => { view = "mine"; $("btnMine").classList.add("active"); $("btnTeam").classList.remove("active"); renderAll(); });
     $("btnTeam").addEventListener("click", () => { view = "team"; $("btnTeam").classList.add("active"); $("btnMine").classList.remove("active"); renderAll(); });
-    document.querySelectorAll(".bottom-nav button").forEach(btn => btn.addEventListener("click", () => switchPage(btn.dataset.go)));
-    document.querySelectorAll("#todoChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#todoChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); todoFilter = btn.dataset.filter; renderTodo(); }));
+    document.querySelectorAll("#salesTabs button").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#salesTabs button").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topSaleTab = btn.dataset.sale; renderTop(); }));
+    document.querySelectorAll("#todoChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#todoChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topFilter = btn.dataset.filter; renderTop(); }));
     document.querySelectorAll("#growthChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#growthChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); growthLimit = Number(btn.dataset.limit); renderGrowth(); }));
-  }
-
-  function switchPage(page){
-    document.querySelectorAll("[data-page]").forEach(el => el.classList.toggle("active", el.dataset.page === page));
-    document.querySelectorAll(".bottom-nav button").forEach(el => el.classList.toggle("active", el.dataset.go === page));
-    window.scrollTo({top:0, behavior:"smooth"});
   }
 
   function renderKpis(){
@@ -330,14 +307,21 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     return topRows.filter(r => (sale === "合计" || r.sale === sale)).map(r => ({...r, _s: statusOf(r)})).filter(r => includeStable || r._s.status !== "stable");
   }
 
-  function renderTodo(){
-    let rows = filteredTopRows(false);
-    if (todoFilter === "alarm") rows = rows.filter(r => r._s.status === "alarm" && !isDone(r.name));
-    else if (todoFilter === "focus") rows = rows.filter(r => r._s.status === "focus" && !isDone(r.name));
-    else if (todoFilter === "done") rows = rows.filter(r => isDone(r.name));
+  function renderTop(){
+    let rows = topRows.map(r => ({...r, _s: statusOf(r)}));
+    // 销售 tab 筛选（all 表示全部 74 家）
+    if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
+    // 总数（在状态过滤前算）
+    $("topTotal").textContent = `${rows.length} 家`;
+    // 状态 chip 筛选
+    if (topFilter === "alarm") rows = rows.filter(r => r._s.status === "alarm" && !isDone(r.name));
+    else if (topFilter === "focus") rows = rows.filter(r => r._s.status === "focus" && !isDone(r.name));
+    else if (topFilter === "stable") rows = rows.filter(r => r._s.status === "stable" && !isDone(r.name));
+    else if (topFilter === "done") rows = rows.filter(r => isDone(r.name));
     else rows = rows.filter(r => !isDone(r.name));
-    $("todoCount").textContent = `${rows.length} 条`;
-    $("todoList").innerHTML = rows.slice(0, 60).map(r => cardTop(r, true)).join("") || `<div class="empty">当前没有待处理动作</div>`;
+    // 按昨日消耗降序
+    rows.sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
+    $("topList").innerHTML = rows.map(r => cardTop(r, true)).join("") || `<div class="empty">当前筛选下暂无客户</div>`;
     document.querySelectorAll("[data-done]").forEach(btn => btn.addEventListener("click", () => setDone(btn.dataset.done)));
   }
 
@@ -382,7 +366,7 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     `).join("") || `<div class="empty">当前筛选下暂无够一够客户</div>`;
   }
 
-  function renderTop(){
+  function renderTop_OLD(){
     const rows = filteredTopRows(true).sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
     $("topList").innerHTML = rows.slice(0, 60).map(r => cardTop(r, false)).join("") || `<div class="empty">暂无 Top 有效新客数据</div>`;
   }
@@ -390,9 +374,8 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   function renderAll(){
     renderKpis();
     renderSales();
-    renderTodo();
-    renderGrowth();
     renderTop();
+    renderGrowth();
   }
 
   initFilters();
