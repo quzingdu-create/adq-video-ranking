@@ -57,6 +57,47 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   .sales-tabs::-webkit-scrollbar { display: none; }
   .sales-tabs button { flex: 0 0 auto; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; cursor: pointer; }
   .sales-tabs button.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  /* ── 紧凑卡片（参考阿迪达斯样式） ── */
+  .card-head { display: flex; align-items: center; gap: 8px; }
+  .card-name { font-size: 15px; font-weight: 850; color: var(--text); flex: 1; line-height: 1.3; word-break: break-all; }
+  .badge { flex: 0 0 auto; display: inline-flex; align-items: center; border-radius: 999px; padding: 3px 8px; font-size: 10px; font-weight: 800; }
+  .badge.alarm { background: var(--red2); color: var(--red); }
+  .badge.focus { background: var(--orange2); color: var(--orange); }
+  .badge.stable { background: var(--green2); color: var(--green); }
+  .card-headline { margin-top: 6px; display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .card-headline.alarm { background: #fdecec; color: var(--red); }
+  .card-headline.focus { background: #fff1de; color: var(--orange); }
+  .card-headline.stable { background: var(--green2); color: var(--green); }
+  .card-metrics { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 12px 16px; font-size: 13px; }
+  .m-item { display: inline-flex; align-items: baseline; gap: 4px; }
+  .m-item i { font-style: normal; color: var(--muted); font-size: 11px; }
+  .m-item b { font-weight: 850; color: var(--text); font-size: 14px; }
+  .rate-up { color: var(--green); font-weight: 800; font-size: 11px; }
+  .rate-down { color: var(--red); font-weight: 800; font-size: 11px; }
+  .rate-flat { color: var(--muted); font-weight: 800; font-size: 11px; }
+  .card-foot { margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card-sub { color: var(--muted); font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-mini { border: 0; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
+  .btn-mini.primary { background: var(--blue); color: #fff; }
+  .btn-mini.ghost { background: #fff; color: var(--muted); border: 1px solid var(--line); }
+  .done-note { margin-top: 7px; padding: 7px 10px; background: #f1f5f9; border-radius: 10px; font-size: 11px; color: #475569; }
+
+  /* ── 弹窗 ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 9999; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+  .modal-card { width: 100%; max-width: 520px; background: #fff; border-radius: 16px 16px 0 0; padding: 20px 16px calc(env(safe-area-inset-bottom, 0) + 16px); box-shadow: 0 -10px 40px rgba(0,0,0,0.18); animation: slide-up 0.18s ease-out; }
+  @keyframes slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-title { font-size: 15px; font-weight: 850; color: var(--text); }
+  .modal-target { color: var(--blue); }
+  .modal-sub { margin-top: 6px; color: var(--muted); font-size: 12px; }
+  .modal-tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag-btn { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; }
+  .tag-btn.active { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+  .modal-input { margin-top: 12px; width: 100%; min-height: 68px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; font-family: inherit; resize: vertical; box-sizing: border-box; }
+  .modal-actions { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .m-btn { border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 10px; padding: 10px 0; font-size: 13px; font-weight: 800; cursor: pointer; }
+  .m-btn.ghost { background: #fff; color: var(--muted); }
+  .m-btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
   button, select, input { font-family: inherit; }
   .hero {
     position: sticky; top: 0; z-index: 20;
@@ -236,8 +277,19 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   const rowFor = (q, sale) => summary.find(r => r.quarter === q && r.sale === sale) || null;
   const visibleSale = () => view === "team" ? "合计" : currentSale;
   const doneKey = name => "mobile_done_" + name;
-  const isDone = name => localStorage.getItem(doneKey(name)) === "1";
-  const setDone = name => { localStorage.setItem(doneKey(name), "1"); renderTop(); };
+  const isDone = name => !!localStorage.getItem(doneKey(name));
+  const doneRecord = name => {
+    const raw = localStorage.getItem(doneKey(name));
+    if (!raw) return null;
+    if (raw === "1") return { tag: "", note: "" };
+    try { return JSON.parse(raw); } catch { return { tag: "", note: "" }; }
+  };
+  const setDone = (name, payload) => {
+    const data = JSON.stringify({ tag: payload.tag || "", note: payload.note || "", at: Date.now() });
+    localStorage.setItem(doneKey(name), data);
+    renderTop();
+  };
+  const undoDone = name => { localStorage.removeItem(doneKey(name)); renderTop(); };
 
   function initFilters(){
     const quarters = [...new Set(summary.map(r => r.quarter).filter(Boolean))].sort();
@@ -246,22 +298,33 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     $("saleSel").value = currentSale;
     $("quarterSel").innerHTML = quarters.map(q => `<option value="${q}">${q}</option>`).join("");
     $("quarterSel").value = currentQuarter;
+    // 初始化销售 tab：与顶部下拉一致
+    topSaleTab = currentSale;
+    document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === currentSale));
     $("saleSel").addEventListener("change", e => { currentSale = e.target.value; localStorage.setItem("mobile_sale", currentSale); topSaleTab = currentSale; document.querySelectorAll("#salesTabs button").forEach(b => b.classList.toggle("active", b.dataset.sale === currentSale)); renderAll(); });
     $("quarterSel").addEventListener("change", e => { currentQuarter = e.target.value; renderAll(); });
     $("btnMine").addEventListener("click", () => { view = "mine"; $("btnMine").classList.add("active"); $("btnTeam").classList.remove("active"); renderAll(); });
     $("btnTeam").addEventListener("click", () => { view = "team"; $("btnTeam").classList.add("active"); $("btnMine").classList.remove("active"); renderAll(); });
-    document.querySelectorAll("#salesTabs button").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#salesTabs button").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topSaleTab = btn.dataset.sale; renderTop(); }));
+    document.querySelectorAll("#salesTabs button").forEach(btn => btn.addEventListener("click", () => {
+      document.querySelectorAll("#salesTabs button").forEach(x => x.classList.remove("active"));
+      btn.classList.add("active");
+      topSaleTab = btn.dataset.sale;
+      // tab 反向同步顶部下拉（"all" 时不动下拉）
+      if (topSaleTab !== "all") { currentSale = topSaleTab; $("saleSel").value = currentSale; localStorage.setItem("mobile_sale", currentSale); }
+      renderTop();
+      renderGrowth();
+    }));
     document.querySelectorAll("#todoChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#todoChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topFilter = btn.dataset.filter; renderTop(); }));
     document.querySelectorAll("#growthChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#growthChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); growthLimit = Number(btn.dataset.limit); renderGrowth(); }));
   }
 
   function renderKpis(){
-    const sale = visibleSale();
-    const r = rowFor(currentQuarter, sale) || rowFor(currentQuarter, "合计") || {};
+    // KPI 4 卡永远显示服饰中心全量（增长组+其他=合计），不随销售切换变化
+    const r = rowFor(currentQuarter, "合计") || {};
     const centerCost = daily.centerCost || 0;
     const centerChg = daily.centerCostChg;
     $("updateText").textContent = `手机版 · ${daily.updatedAt || "最新数据"}`;
-    $("homeSub").textContent = `${currentQuarter} · ${sale}`;
+    $("homeSub").textContent = `${currentQuarter} · 服饰中心全量`;
     $("kpiGrid").innerHTML = `
       <div class="kpi wide"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比前一天 <span class="${clsTrend(centerChg / 100)}">${centerChg === undefined ? "—" : (Number(centerChg) >= 0 ? "+" : "") + Number(centerChg).toFixed(1) + "%"}</span></div></div>
       <div class="kpi"><div class="label">新客数</div><div class="value">${Number(r.newCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较前一天 <span class="${clsTrend(r.newDayDelta)}">${delta(r.newDayDelta)}</span></div></div>
@@ -287,19 +350,20 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     const creative = parsePct(row.creativeRate);
     let status = "stable";
     let label = "基本稳定";
-    const reasons = [];
-    if (String(row.matchStatus || "").includes("无投放")) reasons.push("近两日无投放");
-    if (cost !== null && cost <= -20) reasons.push(`消耗${row.costRate}`);
-    if (roi !== null && roi <= -30) reasons.push(`ROI${row.roiRate}`);
-    if (reasons.length) { status = "alarm"; label = "需告警"; }
-    else {
-      if (cost !== null && cost <= -10) reasons.push(`消耗${row.costRate}`);
-      if (roi !== null && roi <= -15) reasons.push(`ROI${row.roiRate}`);
-      if (creative !== null && creative <= -20) reasons.push(`创意${row.creativeRate}`);
-      if (reasons.length) { status = "focus"; label = "需关注"; }
-      else reasons.push("指标无明显异常");
+    let headline = "指标平稳";
+    if (String(row.matchStatus || "").includes("无投放")) {
+      status = "alarm"; label = "需告警"; headline = "近两日无投放";
+    } else if ((cost !== null && cost <= -20) || (roi !== null && roi <= -30)) {
+      status = "alarm"; label = "需告警";
+      if (cost !== null && cost <= -20) headline = `日耗剧烈下滑 ▼${Math.abs(cost).toFixed(0)}%`;
+      else headline = `ROI 跳水 ▼${Math.abs(roi).toFixed(0)}%`;
+    } else if ((cost !== null && cost <= -10) || (roi !== null && roi <= -15) || (creative !== null && creative <= -20)) {
+      status = "focus"; label = "需关注";
+      if (cost !== null && cost <= -10) headline = `日耗下滑 ▼${Math.abs(cost).toFixed(0)}%`;
+      else if (roi !== null && roi <= -15) headline = `ROI 走弱 ▼${Math.abs(roi).toFixed(0)}%`;
+      else headline = `创意减少 ▼${Math.abs(creative).toFixed(0)}%`;
     }
-    return {status, label, reason: reasons.join("；")};
+    return {status, label, headline};
   }
 
   function filteredTopRows(includeStable){
@@ -309,45 +373,106 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
 
   function renderTop(){
     let rows = topRows.map(r => ({...r, _s: statusOf(r)}));
-    // 销售 tab 筛选（all 表示全部 74 家）
     if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
-    // 总数（在状态过滤前算）
     $("topTotal").textContent = `${rows.length} 家`;
+    rows.sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
+    // 排名先存（按昨日消耗降序）
+    rows = rows.map((r, i) => ({...r, _rank: i}));
     // 状态 chip 筛选
     if (topFilter === "alarm") rows = rows.filter(r => r._s.status === "alarm" && !isDone(r.name));
     else if (topFilter === "focus") rows = rows.filter(r => r._s.status === "focus" && !isDone(r.name));
     else if (topFilter === "stable") rows = rows.filter(r => r._s.status === "stable" && !isDone(r.name));
     else if (topFilter === "done") rows = rows.filter(r => isDone(r.name));
     else rows = rows.filter(r => !isDone(r.name));
-    // 按昨日消耗降序
-    rows.sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
-    $("topList").innerHTML = rows.map(r => cardTop(r, true)).join("") || `<div class="empty">当前筛选下暂无客户</div>`;
-    document.querySelectorAll("[data-done]").forEach(btn => btn.addEventListener("click", () => setDone(btn.dataset.done)));
+    $("topList").innerHTML = rows.map(r => cardTop(r, r._rank)).join("") || `<div class="empty">当前筛选下暂无客户</div>`;
+    document.querySelectorAll("[data-handle]").forEach(btn =>
+      btn.addEventListener("click", () => openHandleModal(btn.dataset.handle))
+    );
+    document.querySelectorAll("[data-undo]").forEach(btn =>
+      btn.addEventListener("click", () => undoDone(btn.dataset.undo))
+    );
   }
 
-  function cardTop(r, withAction){
-    const done = isDone(r.name);
-    return `
-      <div class="work-card ${done ? "done" : ""}">
-        <div class="work-top"><div class="name">${r.name}</div><span class="badge ${r._s.status}">${done ? "已处理" : r._s.label}</span></div>
-        <div class="meta-grid">
-          <div class="meta"><b>${r.sale || "—"}</b><span>销售</span></div>
-          <div class="meta"><b>${wan(r.yestCostWan)}</b><span>昨日消耗</span></div>
-          <div class="meta"><b>${r.costRate || "—"}</b><span>消耗环比</span></div>
-          <div class="meta"><b>${r.roi || "—"}</b><span>ROI</span></div>
-          <div class="meta"><b>${r.roiRate || "—"}</b><span>ROI环比</span></div>
-          <div class="meta"><b>${r.deliverySide || "—"}</b><span>投放端</span></div>
+  /* ---- 弹窗：标记为已处理 ---- */
+  function openHandleModal(name){
+    const tags = ["已电联沟通","客户已知晓","暂无意向","转其他渠道","客户搁置"];
+    let pickedTag = "";
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-title">✓ 标记 <span class="modal-target">${name}</span> 为已处理</div>
+        <div class="modal-sub">可选：简短记录这次的处理情况（攒3个月就是你的客户运营史）</div>
+        <div class="modal-tags">
+          ${tags.map(t => `<button class="tag-btn" data-tag="${t}">${t}</button>`).join("")}
         </div>
-        <div class="reason">${r._s.reason}</div>
-        ${withAction ? `<div class="actions"><button class="primary" data-done="${r.name}">标记已处理</button><button class="secondary" onclick="alert('建议：先确认昨日投放波动，再同步销售跟进客户预算、素材、ROI变化。')">处理建议</button></div>` : ""}
-      </div>
-    `;
+        <textarea class="modal-input" placeholder="可写具体细节，如「客户反馈ROI不达预期，准备调整出价」（非必填）"></textarea>
+        <div class="modal-actions">
+          <button class="m-btn" data-act="cancel">取消</button>
+          <button class="m-btn ghost" data-act="skip">跳过原因</button>
+          <button class="m-btn primary" data-act="ok">完成</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelectorAll(".tag-btn").forEach(b =>
+      b.addEventListener("click", () => {
+        overlay.querySelectorAll(".tag-btn").forEach(x => x.classList.remove("active"));
+        b.classList.add("active");
+        pickedTag = b.dataset.tag;
+      })
+    );
+    overlay.querySelectorAll(".m-btn").forEach(b =>
+      b.addEventListener("click", () => {
+        const act = b.dataset.act;
+        if (act === "cancel") { overlay.remove(); return; }
+        const note = overlay.querySelector(".modal-input").value.trim();
+        if (act === "skip") setDone(name, { tag: "", note: "" });
+        else setDone(name, { tag: pickedTag, note });
+        overlay.remove();
+      })
+    );
+    overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
   }
+
+  function rateChip(rateStr){
+    const n = parsePct(rateStr);
+    if (n === null) return `<span class="rate-flat">~</span>`;
+    const cls = n > 0 ? "rate-up" : n < 0 ? "rate-down" : "rate-flat";
+    const sign = n > 0 ? "+" : "";
+    return `<span class="${cls}">${sign}${n.toFixed(0)}%</span>`;
+  }
+
+  function cardTop(r, idx){
+    const done = isDone(r.name);
+    const doneInfo = doneRecord(r.name);
+    return `
+      <div class="work-card ${done ? "done" : ""}" data-card="${escapeAttr(r.name)}">
+        <div class="card-head">
+          <div class="card-name">${r.name}</div>
+          <span class="badge ${r._s.status}">${done ? "已处理" : `Top${idx + 1} ${r._s.label}`}</span>
+        </div>
+        <div class="card-headline ${r._s.status}">${done && doneInfo ? `已处理 · ${doneInfo.tag || "已沟通"}` : r._s.headline}</div>
+        <div class="card-metrics">
+          <span class="m-item"><i>日耗</i><b>${wan(r.yestCostWan)}</b>${rateChip(r.costRate)}</span>
+          <span class="m-item"><i>ROI</i><b>${r.roi || "—"}</b>${rateChip(r.roiRate)}</span>
+          <span class="m-item"><i>创意</i><b>${r.creativeIds || "—"}</b>${rateChip(r.creativeRate)}</span>
+        </div>
+        <div class="card-foot">
+          <span class="card-sub">${r.sale || "—"} · ${r.deliverySide || "—"} · 季累 ${wan(r.quarterCostWan)}</span>
+          ${done
+            ? `<button class="btn-mini ghost" data-undo="${escapeAttr(r.name)}">撤销</button>`
+            : `<button class="btn-mini primary" data-handle="${escapeAttr(r.name)}">去处理</button>`}
+        </div>
+        ${done && doneInfo && doneInfo.note ? `<div class="done-note">📝 ${doneInfo.note}</div>` : ""}
+      </div>`;
+  }
+
+  function escapeAttr(s){ return String(s || "").replace(/"/g, "&quot;"); }
 
   function renderGrowth(){
-    const sale = visibleSale();
     let rows = records.filter(r => normQ(r.firstQuarter) === currentQuarter && Number(r.quarterCost || 0) > 0 && Number(r.quarterCost || 0) < 1000 && !r.isLaoke && !r.old24);
-    if (sale !== "合计") rows = rows.filter(r => r.sale === sale);
+    // 销售 tab：all=全部、否则按销售筛
+    if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
     rows = rows.map(r => ({...r, gap: 1000 - Number(r.quarterCost || 0)})).sort((a,b) => a.gap - b.gap || Number(b.yestCost || 0) - Number(a.yestCost || 0));
     $("growthCount").textContent = `${rows.length} 个候选`;
     $("growthList").innerHTML = rows.slice(0, growthLimit).map(r => `
