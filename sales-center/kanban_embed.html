@@ -484,9 +484,9 @@
           <option value="是">仅新锐</option>
           <option value="否">仅非新锐</option>
         </select>
-        <button id="recordToday">今日</button>
+        <button id="recordToday" class="active">今日</button>
         <button id="record7d">近7天</button>
-        <button id="recordAll" class="active">全部</button>
+        <button id="recordAll">全部</button>
       </div>
       <table class="tbl" id="recordTable">
         <thead><tr>
@@ -726,7 +726,7 @@ const state = {
   portraitSale: "团队总览",
   industrialMaturity: "",
   zoneSort: "cost", // cost | new
-  recordSearch: "", recordSales: "", recordCategory: "", recordRising: "", recordRange: "all"
+  recordSearch: "", recordSales: "", recordCategory: "", recordRising: "", recordRange: "today"
 };
 
 function filteredRecords() {
@@ -928,10 +928,12 @@ function renderPortrait() {
       }]
     };
   }
-  const fields = {Category:'cat', Link:'link', Agent:'channel', Source:'source', Delivery:'deliverySide'};
+  const fields = {Category:'cat', Link:'link', Source:'source', Delivery:'deliverySide'};
   Object.entries(fields).forEach(([k,field]) => {
     const id = 'chart' + k;
-    if (!charts[id]) charts[id] = echarts.init(document.getElementById(id));
+    const el = document.getElementById(id);
+    if (!el) return;  // 如果 DOM 不存在跳过，避免抛错
+    if (!charts[id]) charts[id] = echarts.init(el);
     charts[id].setOption(pieOption(field), true);
   });
 }
@@ -1421,9 +1423,10 @@ function showAllImportedRecords() {
   state.recordSales = '';
   state.recordCategory = '';
   state.recordRising = '';
+  state.recordRange = 'today';
   ['recordToday','record7d','recordAll'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.classList.toggle('active', id === 'recordAll');
+    if (el) el.classList.toggle('active', id === 'recordToday');
   });
   ['recordSearch','recordSales','recordCategory','recordRising'].forEach(id => {
     const el = document.getElementById(id);
