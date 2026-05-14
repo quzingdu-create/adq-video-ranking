@@ -11,6 +11,7 @@
 <script src="data/old24_customer_data.js"></script>
 <script src="data/bulk_import_rows.js"></script>
 <script src="data/tuoke_real_records.js"></script>
+<script src="data/customer_link_data.js"></script>
 <script src="data/center_sales_summary.js"></script>
 <script src="data/center_quarter_summary.js"></script>
 <script src="data/delivery_side_summary.js"></script>
@@ -938,14 +939,52 @@ function renderPortrait() {
       }]
     };
   }
-  const fields = {Category:'cat', Link:'link', Source:'source', Delivery:'deliverySide'};
+  // chartLink 特殊处理：用 AData s=4695Or 链路明细字典（按消耗汇总，不是记录数）
+  function pieOptionByLink() {
+    const linkMap = window.__CUSTOMER_LINK_MAP__ || {};
+    const costByLink = {};
+    list.forEach(r => {
+      const short = (r.shortName || r.name || '').trim();
+      const arr = linkMap[short];
+      if (Array.isArray(arr) && arr.length) {
+        arr.forEach(item => {
+          const k = item.link || '未填写';
+          costByLink[k] = (costByLink[k] || 0) + Number(item.cost || 0);
+        });
+      }
+    });
+    const data = Object.entries(costByLink)
+      .filter(([_, v]) => v > 0)
+      .map(([k, v]) => ({ name: k, value: Math.round(v) }))
+      .sort((a, b) => b.value - a.value);
+    // 给最高消耗链路加粗（echarts label.fontWeight=bold）
+    if (data.length) data[0].label = { fontWeight: 'bold', fontSize: 12, color: '#111' };
+    return {
+      tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+      legend: { bottom: 0, textStyle: { color: '#6b7280', fontSize: 11 }, itemWidth: 8, itemHeight: 8 },
+      color: colorPool,
+      series: [{
+        type: 'pie', radius: ['40%', '65%'], center: ['50%', '45%'],
+        label: { color: '#1f2937', fontSize: 11 },
+        data
+      }]
+    };
+  }
+
+  const fields = {Category:'cat', Source:'source', Delivery:'deliverySide'};
   Object.entries(fields).forEach(([k,field]) => {
     const id = 'chart' + k;
     const el = document.getElementById(id);
-    if (!el) return;  // 如果 DOM 不存在跳过，避免抛错
+    if (!el) return;
     if (!charts[id]) charts[id] = echarts.init(el);
     charts[id].setOption(pieOption(field), true);
   });
+  // chartLink 单独用 link map
+  const linkEl = document.getElementById('chartLink');
+  if (linkEl) {
+    if (!charts['chartLink']) charts['chartLink'] = echarts.init(linkEl);
+    charts['chartLink'].setOption(pieOptionByLink(), true);
+  }
 }
 
 /* =========================
@@ -1078,7 +1117,10 @@ function exportRecordsCsv() {
   const rows = currentRecordList();
   const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户口径'];
   const body = rows.map(r => {
-    const linkText = r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : '');
+    const linkArr = (window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    const linkText = (Array.isArray(linkArr) && linkArr.length)
+      ? linkArr.map(x => x.bold ? `*${x.link}*` : x.link).join(' / ')
+      : (r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
     const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,r.channel,r.resource,r.source,customerTypeForQuarter(r)];
     return vals.map(csvEscape).join(',');
   });
@@ -1107,7 +1149,14 @@ function renderRecords() {
   const display = v => (v === null || v === undefined) ? '' : String(v);
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = list.map(r => {
-    const linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
+    // 链路列优先用 AData s=4695Or 字典（按消耗占比降序，最高消耗加粗）
+    const linkArr = (window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    let linkText;
+    if (Array.isArray(linkArr) && linkArr.length) {
+      linkText = linkArr.map(x => x.bold ? `<strong>${x.link}</strong>` : x.link).join(' / ');
+    } else {
+      linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
+    }
     const customerType = display(customerTypeForQuarter(r));
     return `
       <tr>
