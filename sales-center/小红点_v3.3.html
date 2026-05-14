@@ -586,14 +586,15 @@ const TRACKS = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","
 const _urlParams = new URLSearchParams(location.search);
 const _urlUser = _urlParams.get("user");
 let currentSales = (_urlUser && SALES.includes(_urlUser)) ? _urlUser : (localStorage.getItem("v34_sales") || "kinsleyjin");
-const IS_EMBED = _urlParams.get("embed") === "1";
+const IS_EMBED = (_urlParams.get("embed") === "1" || _urlParams.get("embed") === "pc" || (window.self !== window.top));
 let currentFilter = "alert";
 
 // 视图模式：mine = 仅当前销售；team = 全销售汇总（被父级嵌入时由 ?view=team 或 postMessage 控制）
 let viewMode = (_urlParams.get("view") === "team") ? "team" : "mine";
 
-// PC 嵌入模式：放开宽度、改用 PC 网格布局
-if (IS_EMBED) {
+// PC 嵌入模式或宽屏直接访问：放开宽度、改用 PC 网格布局
+const _isWideScreen = (typeof window !== "undefined") && window.innerWidth >= 768;
+if (IS_EMBED || _isWideScreen) {
   document.documentElement.classList.add("pc-embed");
   document.body && document.body.classList.add("pc-embed");
   // 兜底：DOMContentLoaded 时再补一次（避免脚本执行顺序问题）
