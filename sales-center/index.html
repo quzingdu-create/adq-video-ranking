@@ -1222,7 +1222,9 @@ function renderKPI() {
     { label:"新客日耗汇总（季度）", value:totalCost.toFixed(1), target:g.c, unit:"万元", cls:"purple" },
     rankCard
   ];
-  document.getElementById('kpiGrid').innerHTML = cards.map(c => {
+  const _kpiGrid = document.getElementById('kpiGrid');
+  if (!_kpiGrid) return;  // PC 端没这个 div（KPI 在 kanban_embed iframe 里）
+  _kpiGrid.innerHTML = cards.map(c => {
     if (c.isRank) {
       return `<div class="kpi-card ${c.cls}"><div class="label">${c.label}</div>${c.body}</div>`;
     }
