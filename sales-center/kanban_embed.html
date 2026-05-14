@@ -426,7 +426,7 @@
       <option value="2025Q2">2025 Q2</option>
       <option value="2025Q1">2025 Q1</option>
     </select>
-    <select id="compareSel">
+    <select id="compareSel" style="display:none;">
       <option value="qoq">环比上季度</option>
       <option value="dod">环比前一天</option>
     </select>
@@ -803,18 +803,34 @@ function renderKPI() {
     const row = state.view === "team"
       ? rows.find(r => r.sale === "合计")
       : (rows.find(r => r.sale === CURRENT_USER) || rows.find(r => r.sale === "合计"));
+    // 同时展示「环比上季度」+「环比前一天」两个维度
     const cards = [
-      {label:"新客数", value: row.newCount, sub:`${activeCompareLabel()} ${fmtSigned(pickDelta(row, 'newDelta', 'newDayDelta'))}`, sub2:deliveryShareText(row), cls:"blue", delta:pickDelta(row, 'newDelta', 'newDayDelta')},
-      {label:"有效新客数", value: row.validCount, sub:`${activeCompareLabel()} ${fmtSigned(pickDelta(row, 'validDelta', 'validDayDelta'))}`, cls:"green", delta:pickDelta(row, 'validDelta', 'validDayDelta')},
-      {label:"新锐客户数", value: row.risingCount, sub:`${activeCompareLabel()} ${fmtSigned(pickDelta(row, 'risingDelta', 'risingDayDelta'))}`, cls:"gold", delta:pickDelta(row, 'risingDelta', 'risingDayDelta')},
-      {label:"昨日消耗", value: fmtWan(row.yestCost), sub:`${activeCompareLabel()} ${fmtPct(pickDelta(row, 'costRate', 'dayCostRate'))}`, cls:"purple", delta:pickDelta(row, 'costRate', 'dayCostRate')},
+      {
+        label:"新客数", value: row.newCount, cls:"blue",
+        deltaQoq: row.newDelta,    deltaDod: row.newDayDelta,
+        sub2: deliveryShareText(row)
+      },
+      {
+        label:"有效新客数", value: row.validCount, cls:"green",
+        deltaQoq: row.validDelta,  deltaDod: row.validDayDelta
+      },
+      {
+        label:"新锐客户数", value: row.risingCount, cls:"gold",
+        deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta
+      },
+      {
+        label:"昨日消耗", value: fmtWan(row.yestCost), cls:"purple",
+        deltaQoq: row.costRate,    deltaDod: row.dayCostRate,
+        isPct: true
+      },
     ];
     document.getElementById('kpiGrid').innerHTML = cards.map(c => `
       <div class="kpi-card ${c.cls}">
         <div class="label">${c.label}</div>
         <div class="value-row"><div class="value">${c.value}</div></div>
-        <div class="meta"><span class="${deltaCls(c.delta)}">${c.sub}</span><span></span></div>
-        ${c.sub2 ? `<div class="meta"><span>${c.sub2}</span><span></span></div>` : ``}
+        <div class="meta"><span class="${deltaCls(c.deltaQoq)}">较上季度 ${c.isPct ? fmtPct(c.deltaQoq) : fmtSigned(c.deltaQoq)}</span></div>
+        <div class="meta"><span class="${deltaCls(c.deltaDod)}">较前一天 ${c.isPct ? fmtPct(c.deltaDod) : fmtSigned(c.deltaDod)}</span></div>
+        ${c.sub2 ? `<div class="meta"><span>${c.sub2}</span></div>` : ``}
       </div>`).join('');
     return;
   }
