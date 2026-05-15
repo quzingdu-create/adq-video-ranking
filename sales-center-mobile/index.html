@@ -122,7 +122,9 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   .trend-flat { color: var(--muted); font-weight: 800; }
   .chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: none; }
   .chips::-webkit-scrollbar { display: none; }
-  .chip { flex: 0 0 auto; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .chip { flex: 0 0 auto; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 800; color: var(--muted); position: relative; }
+  .chip .c-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 10px; font-weight: 900; color: #fff; background: var(--red); margin-left: 4px; line-height: 1; }
+  .chip.active .c-dot { background: #fff; color: var(--red); }
   .chip.active { background: var(--text); color: #fff; border-color: var(--text); }
   .card-list { display: flex; flex-direction: column; gap: 9px; }
   .work-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 13px; box-shadow: var(--shadow); }
@@ -220,11 +222,11 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
           <button data-sale="yvaineechen">yvaineechen</button>
         </div>
         <div class="chips" id="todoChips">
-          <button class="chip active" data-filter="all">全部</button>
-          <button class="chip" data-filter="alarm">需告警</button>
-          <button class="chip" data-filter="focus">需关注</button>
-          <button class="chip" data-filter="stable">基本稳定</button>
-          <button class="chip" data-filter="done">已处理</button>
+          <button class="chip active" data-filter="all">全部<span class="c-dot">0</span></button>
+          <button class="chip" data-filter="alarm">需告警<span class="c-dot">0</span></button>
+          <button class="chip" data-filter="focus">需关注<span class="c-dot">0</span></button>
+          <button class="chip" data-filter="stable">基本稳定<span class="c-dot">0</span></button>
+          <button class="chip" data-filter="done">已处理<span class="c-dot">0</span></button>
         </div>
         <div class="card-list" id="topList"></div>
       </div>
@@ -396,24 +398,42 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   function renderTop(){
     let rows = topRows.map(r => ({...r, _s: statusOf(r)}));
     if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
-    $("topTotal").textContent = `${rows.length} 家`;
+    $("topTotal").textContent = `${rows.length} \u5bb6`;
     rows.sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
-    // 排名先存（按昨日消耗降序）
     rows = rows.map((r, i) => ({...r, _rank: i}));
-    // 状态 chip 筛选
+    // \u8ba1\u7b97\u5404\u7b5b\u9009\u72b6\u6001\u7684\u6570\u91cf\uff08\u672a\u5904\u7406\uff09
+    const counts = {all: 0, alarm: 0, focus: 0, stable: 0, done: 0};
+    rows.forEach(r => {
+      const done = isDone(r.name);
+      if (done) counts.done++;
+      else {
+        counts.all++;
+        if (r._s.status === "alarm") counts.alarm++;
+        else if (r._s.status === "focus") counts.focus++;
+        else if (r._s.status === "stable") counts.stable++;
+      }
+    });
+    // \u66f4\u65b0 chip \u6c14\u6ce1
+    document.querySelectorAll("#todoChips .chip").forEach(btn => {
+      const f = btn.dataset.filter;
+      const n = counts[f] || 0;
+      const dot = btn.querySelector(".c-dot");
+      if (dot) dot.textContent = n;
+    });
+    // \u7b5b\u9009
     if (topFilter === "alarm") rows = rows.filter(r => r._s.status === "alarm" && !isDone(r.name));
     else if (topFilter === "focus") rows = rows.filter(r => r._s.status === "focus" && !isDone(r.name));
     else if (topFilter === "stable") rows = rows.filter(r => r._s.status === "stable" && !isDone(r.name));
     else if (topFilter === "done") rows = rows.filter(r => isDone(r.name));
     else rows = rows.filter(r => !isDone(r.name));
-    $("topList").innerHTML = rows.map(r => cardTop(r, r._rank)).join("") || `<div class="empty">当前筛选下暂无客户</div>`;
+    $("topList").innerHTML = rows.map(r => cardTop(r, r._rank)).join("") || `<div class="empty">\u6682\u65e0\u6570\u636e</div>`;
     document.querySelectorAll("[data-handle]").forEach(btn =>
       btn.addEventListener("click", () => openHandleModal(btn.dataset.handle))
     );
     document.querySelectorAll("[data-undo]").forEach(btn =>
       btn.addEventListener("click", () => undoDone(btn.dataset.undo))
     );
-    // 通知父页面（PC iframe 嵌入时）：未处理 告警+关注 客户数
+    // \u7ed9PC iframe\u53d1\u7ea2\u70b9\u6570\uff08alarm+focus\u672a\u5904\u7406\uff09
     try {
       const allWithStatus = topRows.map(r => ({...r, _s: statusOf(r)}));
       const pendingCount = allWithStatus.filter(r =>
@@ -424,8 +444,6 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
       }
     } catch(e){}
   }
-
-  /* ---- 弹窗：标记为已处理 ---- */
   function openHandleModal(name){
     const tags = ["已电联沟通","客户已知晓","暂无意向","转其他渠道","客户搁置"];
     let pickedTag = "";
