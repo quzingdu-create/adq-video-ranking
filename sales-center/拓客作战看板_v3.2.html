@@ -391,13 +391,14 @@
 
 <!-- Demo 提示条 -->
 <div id="demoBanner" style="background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 28px;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f59e0b;">
-  <div><strong>销售作战中心</strong> · 拓客作战看板深度页</div>
+  <div><strong>Demo 演示版</strong> · 图表数据为模拟数据 · <span style="color:#92400e;">请回 <a href="index.html" style="color:#78350f;">作战中心首页</a> 提交建议</span></div>
   <a href="javascript:void(0)" onclick="document.getElementById('demoBanner').style.display='none'" style="color:#78350f;text-decoration:none;">收起 ✕</a>
 </div>
 
 <div class="topbar">
-  <h1>销售作战中心 <span class="ver">拓客作战看板</span></h1>
+  <h1>拓客作战看板 <span class="ver">v3 原型 · DEMO</span></h1>
   <div class="topbar-right">
+    <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
     <div class="view-toggle">
       <button id="viewTeam" class="active">团队视图</button>
       <button id="viewMine">我的视图</button>
@@ -411,13 +412,13 @@
       <option value="2025Q1">2025 Q1</option>
     </select>
     <select id="compareSel">
-      <option value="dod">环比前一天</option>
       <option value="qoq">环比上季度</option>
+      <option value="dod">环比前一天</option>
     </select>
     <button id="btnTarget">⚙️ 目标管理</button>
     <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
     <button id="btnBulkImport">📥 上传导入</button>
-    <!-- 备用内置批量导入按钮已隐藏：避免和上传导入混淆 -->
+    <button id="btnBulkImportPreset">⚡ 导入批量.xlsx</button>
     <input id="bulkImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" />
   </div>
 </div>
@@ -446,12 +447,12 @@
   <!-- ========== 本季度有效新客TOP客户 ========== -->
   <div class="section">
     <div class="section-title">
-      <div class="left"><span>🏆 本季度有效新客TOP客户</span><span class="badge">7销售+其他 · 按季度累计消耗Top10</span></div>
+      <div class="left"><span>🏆 本季度有效新客TOP客户</span><span class="badge">7销售+其他 · 按首投季度消耗Top10</span></div>
       <div class="right"><select id="topSaleFilter"><option value="">全部销售</option></select></div>
     </div>
     <div class="panel top80-panel">
       <div class="table-scroll"><table class="top80-table" id="top80Table">
-        <thead><tr><th>销售</th><th>季度累计消耗排名</th><th>客户简称</th><th>投放端</th><th>季度累计消耗</th><th>昨日消耗</th><th>消耗环比</th><th>ROI</th><th>ROI环比</th><th>CTR</th><th>CTR环比</th><th>CVR</th><th>CVR环比</th><th>状态</th></tr></thead>
+        <thead><tr><th>销售</th><th>排名</th><th>客户简称</th><th>投放端</th><th>昨日消耗</th><th>竞价消耗</th><th>消耗环比</th><th>ROI</th><th>ROI环比</th><th>CTR</th><th>CTR环比</th><th>CVR</th><th>CVR环比</th><th>状态</th></tr></thead>
         <tbody></tbody>
       </table></div>
     </div>
@@ -470,6 +471,7 @@
     <div class="portrait-grid">
       <div class="panel"><h3>类目分布</h3><div id="chartCategory" class="chart-box"></div></div>
       <div class="panel"><h3>链路分布</h3><div id="chartLink" class="chart-box"></div></div>
+      <div class="panel"><h3>服务商分布</h3><div id="chartAgent" class="chart-box"></div></div>
       <div class="panel"><h3>客户来源分布</h3><div id="chartSource" class="chart-box"></div></div>
       <div class="panel"><h3>投放端分布</h3><div id="chartDelivery" class="chart-box"></div></div>
     </div>
@@ -496,7 +498,7 @@
       </div>
       <table class="tbl" id="recordTable">
         <thead><tr>
-          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th><th>建联截图</th>
         </tr></thead>
       </table>
     </div>
@@ -544,7 +546,14 @@
       <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
       <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source"></select></div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
-      <!-- 字段已按口径删除 -->
+      <div class="field" style="grid-column:span 2;">
+        <label style="display:block;color:#595959;margin-bottom:4px;">建联截图</label>
+        <div id="paste-zone" class="paste-zone" tabindex="0">
+          <div style="margin-bottom:4px;">点击选择图片，或把截图拖进来 / Ctrl+V 粘贴</div>
+          <input id="m-files" type="file" accept="image/*" multiple style="display:none;" />
+          <div id="paste-thumbs" class="thumbs"></div>
+        </div>
+      </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;position:sticky;bottom:0;background:#fff;">
       <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
@@ -718,9 +727,9 @@ function saveUserRecordsBulk(records) {
    一、视图状态
    ========================= */
 const state = {
-  view: (new URLSearchParams(window.location.search).get('view') === 'mine') ? "mine" : "team",
+  view: "team",
   quarter: "2026Q2",
-  compareMode: "dod",
+  compareMode: "qoq",
   portrait: "all",
   portraitSale: "团队总览",
   industrialMaturity: "",
@@ -879,8 +888,8 @@ function renderTop80Metrics() {
   const cls = v => String(v || '').includes('-') ? 'delta-down' : (String(v || '').includes('+') ? 'delta-up' : 'delta-flat');
   const body = list.map(r => `<tr>
     <td>${r.sale}</td><td>${r.rank}</td><td class="name">${r.name}</td><td>${r.deliverySide || ''}</td>
-    <td>${Number(r.quarterCostWan || r.firstCostWan || 0).toFixed(1)}万</td><td>${Number(r.yestCostWan || 0).toFixed(1)}万</td>
-    <td><span class="${cls(r.costRate)}">${r.costRate || ''}</span></td>
+    <td>${Number(r.yestCostWan || 0).toFixed(1)}万</td>
+    <td>${r.bidCost || ''}</td><td><span class="${cls(r.costRate)}">${r.costRate || ''}</span></td>
     <td>${r.roi || ''}</td><td><span class="${cls(r.roiRate)}">${r.roiRate || ''}</span></td>
     <td>${r.ctr || ''}</td><td><span class="${cls(r.ctrRate)}">${r.ctrRate || ''}</span></td>
     <td>${r.cvr || ''}</td><td><span class="${cls(r.cvrRate)}">${r.cvrRate || ''}</span></td>
@@ -901,7 +910,7 @@ function renderPortrait() {
     b.onclick = () => { state.portraitSale = b.dataset.sale; renderPortrait(); };
   });
 
-  let list = RECORDS.filter(r => normalizeQuarter(r.firstQuarter) === state.quarter);
+  let list = RECORDS.filter(r => !normalizeQuarter(r.firstQuarter) || normalizeQuarter(r.firstQuarter) === state.quarter);
   if (state.portraitSale !== teamLabel) list = list.filter(r => r.sale === state.portraitSale);
   if (state.portrait === "rising") list = list.filter(isRisingRecord);
 
@@ -927,7 +936,7 @@ function renderPortrait() {
       }]
     };
   }
-  const fields = {Category:'cat', Link:'link', Source:'source', Delivery:'deliverySide'};
+  const fields = {Category:'cat', Link:'link', Agent:'channel', Source:'source', Delivery:'deliverySide'};
   Object.entries(fields).forEach(([k,field]) => {
     const id = 'chart' + k;
     if (!charts[id]) charts[id] = echarts.init(document.getElementById(id));
@@ -1015,8 +1024,7 @@ function customerTypeForQuarter(r) {
   const fq = normalizeQuarter(r.firstQuarter || r.customerType || r.status || '');
   if (fq && fq === state.quarter) return `${fq.slice(0,4)}Q${fq.slice(-1)}新客`;
   if (fq) return `非本季度新客 ${fq.slice(0,4)}Q${fq.slice(-1)}老客`;
-  const rawStatus = r.customerType || r.status || '';
-  return rawStatus === '未开始投放' ? '未开始投放' : rawStatus;
+  return r.customerType || r.status || '';
 }
 function recordDedupKey(r) {
   const raw = String(r && (r.name || r.shortName || r.brand) || '').trim();
@@ -1064,10 +1072,11 @@ function csvEscape(v) {
 }
 function exportRecordsCsv() {
   const rows = currentRecordList();
-  const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户投放状态'];
+  const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户口径','建联截图'];
   const body = rows.map(r => {
     const linkText = r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : '');
-    const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,r.channel,r.resource,r.source,customerTypeForQuarter(r)];
+    const imageText = (r.images && r.images.length) ? `${r.images.length}张` : '';
+    const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,r.channel,r.resource,r.source,customerTypeForQuarter(r),imageText];
     return vals.map(csvEscape).join(',');
   });
   const csv = String.fromCharCode(0xFEFF) + [headers.join(','), ...body].join(String.fromCharCode(10));
@@ -1096,6 +1105,7 @@ function renderRecords() {
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = list.map(r => {
     const linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
+    const imageText = (r.images && r.images.length) ? `${r.images.length}张` : '';
     const customerType = display(customerTypeForQuarter(r));
     return `
       <tr>
@@ -1110,8 +1120,9 @@ function renderRecords() {
         <td>${display(r.resource)}</td>
         <td>${display(r.source)}</td>
         <td>${customerType ? `<span class="tag ${customerType.includes('新客') && !customerType.includes('非本季度') ? 'green' : 'gray'}">${customerType}</span>` : ''}</td>
+        <td>${imageText}</td>
       </tr>`;
-  }).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
 }
 
 /* =========================
@@ -1121,25 +1132,12 @@ document.getElementById('viewTeam').onclick = () => switchView('team');
 document.getElementById('viewMine').onclick = () => switchView('mine');
 function switchView(v) {
   state.view = v;
-  const teamBtn = document.getElementById('viewTeam');
-  const mineBtn = document.getElementById('viewMine');
-  if (teamBtn) teamBtn.classList.toggle('active', v==='team');
-  if (mineBtn) mineBtn.classList.toggle('active', v==='mine');
+  document.getElementById('viewTeam').classList.toggle('active', v==='team');
+  document.getElementById('viewMine').classList.toggle('active', v==='mine');
   document.getElementById('quarterTag').textContent = (v==='mine'? `${CURRENT_USER} · `:'') + quarterLabel(state.quarter);
   renderAll();
-  applyEmbedMode();
+applyEmbedMode();
 }
-
-window.addEventListener('message', (ev) => {
-  if (!ev.data || typeof ev.data !== 'object') return;
-  if (ev.data.type === 'setUser' && SALES.includes(ev.data.user)) {
-    CURRENT_USER = ev.data.user;
-    renderAll();
-  }
-  if (ev.data.type === 'setView' && (ev.data.view === 'team' || ev.data.view === 'mine')) {
-    switchView(ev.data.view);
-  }
-});
 
 document.getElementById('quarterSel').onchange = (e) => {
   state.quarter = normalizeQuarter(e.target.value) || '2026Q2';
@@ -1147,7 +1145,7 @@ document.getElementById('quarterSel').onchange = (e) => {
   renderAll();
 };
 document.getElementById('compareSel').onchange = (e) => {
-  state.compareMode = e.target.value || 'dod';
+  state.compareMode = e.target.value || 'qoq';
   renderAll();
 };
 
@@ -1181,8 +1179,6 @@ function isEmbedMode() {
 function applyEmbedMode() {
   if (!isEmbedMode()) return;
   document.body.classList.add('embed-mode');
-  const innerViewToggle = document.querySelector('.topbar .view-toggle');
-  if (innerViewToggle) innerViewToggle.style.display = 'none';
   // 只隐藏产业带深度模块本身，不隐藏 KPI 区里的“TOP10产业带渗透客户”指标卡
   const zoneGrid = document.getElementById('zoneTopGrid');
   if (zoneGrid) {
@@ -1192,7 +1188,7 @@ function applyEmbedMode() {
   // embed 模式保留顶部新增登记按钮，只隐藏返回首页和靶向品牌池入口
   document.querySelectorAll('.topbar .btn-link').forEach(a => {
     const t = a.textContent || '';
-    if (t.includes('首页') || t.includes('靶向品牌池')) a.style.display = 'none';
+    if (t.includes('返回作战中心') || t.includes('靶向品牌池')) a.style.display = 'none';
   });
 }
 window.openModal = id => document.getElementById(id).classList.add('show');
@@ -1204,7 +1200,7 @@ window.saveGoals = () => {
   renderAll();
 };
 
-/* ===== 新增拓客登记：精简口径（客户主体/类目/销售/链路/拓客途径/资源方/客户来源/日期） ===== */
+/* ===== 新增拓客登记：精简口径（客户主体/类目/销售/链路/拓客途径/资源方/客户来源/日期/建联截图） ===== */
 const PRESET_CLIENTS = [
   { full:"深圳素黎服饰有限公司", short:"素黎", cat:"女装", brand:"素黎" },
   { full:"杭州江南布衣时装有限公司", short:"江南布衣", cat:"女装", brand:"JNBY" },
@@ -1351,7 +1347,7 @@ window.submitRecord = () => {
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', customerType:look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客', status:look.isLaoke ? '存量' : '新客',
-    cost:0, zone:'', maturity:'', images:[]
+    cost:0, zone:'', maturity:'', images:pendingImages.map(p => ({id:p.id, dataUrl:p.dataUrl}))
   };
   saveUserRecord(rec);
   closeModal('modalRecord');
@@ -1407,8 +1403,7 @@ function recordFromRow(row) {
   const channel = pickField(row, ['拓客途径','渠道来源']) || (resource ? '服务商转介绍' : '自拓');
   const source = pickField(row, ['客户来源','来源']) || '';
   const date = normalizeExcelDate(pickField(row, ['日期','登记日期']));
-  const manualShort = pickField(row, ['系统识别简称','客户简称','客户简称自动匹配']);
-  const recognizedShort = manualShort || (look.matched ? (look.short || '') : '');
+  const recognizedShort = look.matched ? (look.short || '') : '';
   const finalBrand = pickField(row, ['品牌名称','品牌/店铺名','品牌']) || recognizedShort || name;
   const customerType = look.isOld24 ? '24年老客' : (look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客');
   return {
@@ -1481,7 +1476,7 @@ function handleBulkFile(file) {
 }
 const exportBtn = document.getElementById('btnExportRecords'); if (exportBtn) exportBtn.onclick = exportRecordsCsv;
 document.getElementById('btnBulkImport').onclick = () => document.getElementById('bulkImportFile').click();
-const presetBtn = document.getElementById('btnBulkImportPreset'); if (presetBtn) presetBtn.onclick = importPresetBulkRows;
+document.getElementById('btnBulkImportPreset').onclick = importPresetBulkRows;
 document.getElementById('bulkImportFile').onchange = e => {
   const f = e.target.files && e.target.files[0];
   if (f) handleBulkFile(f);
@@ -1499,7 +1494,6 @@ function renderAll() {
   renderRecords();
 }
 renderAll();
-applyEmbedMode();
 
 window.addEventListener('resize', () => {
   Object.values(charts).forEach(c => c && c.resize());

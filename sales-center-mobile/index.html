@@ -147,7 +147,9 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   .ghost { background: #fff; color: var(--blue); border: 1px solid #bfdbfe !important; }
   .sales-table { display: grid; gap: 8px; }
   .sale-row { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 11px 12px; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
-  .sale-row .sname { font-size: 13px; font-weight: 900; }
+  .sale-row .sname { font-size: 13px; font-weight: 900; display: flex; align-items: center; gap: 6px; }
+  .sale-row .sname .s-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 10px; font-weight: 900; color: #fff; background: var(--red); flex-shrink: 0; line-height: 1; }
+  .sale-row .sname .s-dot.zero { background: var(--muted); opacity: 0.45; }
   .sale-row .snums { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 5px; color: var(--muted); font-size: 11px; }
   .sale-row .scost { font-weight: 900; color: var(--blue); }
   .link-grid { display: grid; grid-template-columns: 1fr; gap: 9px; }
@@ -345,15 +347,25 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   }
 
   function renderSales(){
-    const rows = summary.filter(r => r.quarter === currentQuarter && r.sale !== "合计").sort((a,b) => Number(b.yestCost || 0) - Number(a.yestCost || 0));
-    $("salesList").innerHTML = rows.map(r => `
-      <div class="sale-row">
-        <div><div class="sname">${r.sale}</div><div class="snums"><span>新客 ${r.newCount}</span><span>有效 ${r.validCount}</span><span>新锐 ${r.risingCount}</span><span class="${clsTrend(r.dayCostRate)}">日环比 ${pct(r.dayCostRate)}</span></div></div>
+    const rows = summary.filter(r => r.quarter === currentQuarter && r.sale !== "\u589e\u957f\u7ec4").sort((a,b) => Number(b.yestCost || 0) - Number(a.yestCost || 0));
+    const pendingBySale = {};
+    topRows.forEach(r => {
+      const s = r.sale;
+      if (!pendingBySale[s]) pendingBySale[s] = 0;
+      if (!isDone(r.name)) {
+        const st = statusOf(r);
+        if (st.status === "alarm" || st.status === "focus") pendingBySale[s]++;
+      }
+    });
+    $("salesList").innerHTML = rows.map(r => {
+      const n = pendingBySale[r.sale] || 0;
+      const dotHtml = `<span class="s-dot${n === 0 ? ' zero' : ''}">${n}</span>`;
+      return `<div class="sale-row">
+        <div><div class="sname">${r.sale}${dotHtml}</div><div class="snums"><span>\u65b0\u5ba2 ${r.newCount}</span><span>\u6709\u6548 ${r.validCount}</span><span>\u65b0\u9510 ${r.risingCount}</span><span class="${clsTrend(r.dayCostRate)}">\u6628\u65e5 ${pct(r.dayCostRate)}</span></div></div>
         <div class="scost">${moneyWan(r.yestCost)}</div>
-      </div>
-    `).join("") || `<div class="empty">暂无销售数据</div>`;
+      </div>`;
+    }).join("") || `<div class="empty">\u6682\u65e0\u6570\u636e</div>`;
   }
-
   function statusOf(row){
     const cost = parsePct(row.costRate);
     const roi = parsePct(row.roiRate);
