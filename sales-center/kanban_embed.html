@@ -814,20 +814,24 @@ function renderKPI() {
       {
         label:"新客数", value: row.newCount, cls:"blue",
         deltaQoq: row.newDelta,    deltaDod: row.newDayDelta,
-        sub2: deliveryShareText(row)
+        sub2: deliveryShareText(row),
+        relation: `含 ${row.validCount} 有效 / ${row.risingCount} 新锐`
       },
       {
         label:"有效新客", value: row.validCount, cls:"green",
-        deltaQoq: row.validDelta,  deltaDod: row.validDayDelta
+        deltaQoq: row.validDelta,  deltaDod: row.validDayDelta,
+        relation: `占新客 ${row.newCount > 0 ? (row.validCount/row.newCount*100).toFixed(1) : 0}% · 季耗 >¥1k`
       },
       {
         label:"新锐客户", value: row.risingCount, cls:"gold",
-        deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta
+        deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta,
+        relation: `占有效 ${row.validCount > 0 ? (row.risingCount/row.validCount*100).toFixed(1) : 0}% · 新锐+经销商`
       },
       {
         label:"新客昨耗", value: fmtWan(row.yestCost), cls:"purple",
         deltaQoq: row.costRate,    deltaDod: row.dayCostRate,
-        isPct: true
+        isPct: true,
+        relation: `本季新客昨日 daily`
       },
     ];
     document.getElementById('kpiGrid').innerHTML = wideCard + cards.map(c => `
@@ -836,6 +840,7 @@ function renderKPI() {
         <div class="value-row"><div class="value">${c.value}</div></div>
         <div class="meta"><span class="${deltaCls(c.deltaQoq)}">较上季度 ${c.isPct ? fmtPct(c.deltaQoq) : fmtSigned(c.deltaQoq)}</span></div>
         <div class="meta"><span class="${deltaCls(c.deltaDod)}">较前一天 ${c.isPct ? fmtPct(c.deltaDod) : fmtSigned(c.deltaDod)}</span></div>
+        ${c.relation ? `<div class="meta" style="font-size:11px;color:#9ca3af;border-top:1px dashed #e5e7eb;padding-top:4px;margin-top:2px;"><span>${c.relation}</span></div>` : ''}
         ${c.sub2 ? `<div class="meta"><span>${c.sub2}</span></div>` : ``}
       </div>`).join('');
     return;
