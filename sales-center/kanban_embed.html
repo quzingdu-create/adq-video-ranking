@@ -17,6 +17,8 @@
 <script src="data/center_daily_kpi.js"></script>
 <script src="data/delivery_side_summary.js"></script>
 <script src="data/top80_effective_metrics.js"></script>
+<script src="data/top_status_data.js"></script>
+<script src="data/enough_candidates.js"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -802,13 +804,13 @@ function renderKPI() {
     // 1 张大卡：服饰中心日耗（全行业 daily 整体）
     // 4 张小卡：新客数 / 有效新客 / 新锐客户 / 新客昨耗（拓新组本季度新客口径）
     const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
-    const centerCost = dailyKpi.centerCost || 0;
-    const centerChg = dailyKpi.centerCostChg;
+    const centerCost = dailyKpi.centerYestCost || 0;
+    const centerChg = dailyKpi.centerDayCostRate;
     const wideCard = `
       <div class="kpi-card wide" style="grid-column: 1 / -1;">
-        <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.asOfDate || 'T-1'}</span></div>
+        <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${(centerCost/10000).toFixed(1)}万</div></div>
-        <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + Number(centerChg).toFixed(1) + '%'}</span></div>
+        <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
     const cards = [
       {
