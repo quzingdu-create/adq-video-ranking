@@ -14,6 +14,7 @@
 <script src="data/customer_link_data.js"></script>
 <script src="data/center_sales_summary.js"></script>
 <script src="data/center_quarter_summary.js"></script>
+<script src="data/center_daily_kpi.js"></script>
 <script src="data/delivery_side_summary.js"></script>
 <script src="data/top80_effective_metrics.js"></script>
 <style>
@@ -797,7 +798,18 @@ function renderKPI() {
     const row = state.view === "team"
       ? rows.find(r => r.sale === "合计")
       : (rows.find(r => r.sale === CURRENT_USER) || rows.find(r => r.sale === "合计"));
-    // 同时展示「环比上季度」+「环比前一天」两个维度
+    // 「今日核心盘」5 字段格式（与手机端首页一致）
+    // 1 张大卡：服饰中心日耗（全行业 daily 整体）
+    // 4 张小卡：新客数 / 有效新客 / 新锐客户 / 新客昨耗（拓新组本季度新客口径）
+    const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
+    const centerCost = dailyKpi.centerCost || 0;
+    const centerChg = dailyKpi.centerCostChg;
+    const wideCard = `
+      <div class="kpi-card wide" style="grid-column: 1 / -1;">
+        <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.asOfDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${(centerCost/10000).toFixed(1)}万</div></div>
+        <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + Number(centerChg).toFixed(1) + '%'}</span></div>
+      </div>`;
     const cards = [
       {
         label:"新客数", value: row.newCount, cls:"blue",
@@ -805,20 +817,20 @@ function renderKPI() {
         sub2: deliveryShareText(row)
       },
       {
-        label:"有效新客数", value: row.validCount, cls:"green",
+        label:"有效新客", value: row.validCount, cls:"green",
         deltaQoq: row.validDelta,  deltaDod: row.validDayDelta
       },
       {
-        label:"新锐客户数", value: row.risingCount, cls:"gold",
+        label:"新锐客户", value: row.risingCount, cls:"gold",
         deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta
       },
       {
-        label:"昨日消耗", value: fmtWan(row.yestCost), cls:"purple",
+        label:"新客昨耗", value: fmtWan(row.yestCost), cls:"purple",
         deltaQoq: row.costRate,    deltaDod: row.dayCostRate,
         isPct: true
       },
     ];
-    document.getElementById('kpiGrid').innerHTML = cards.map(c => `
+    document.getElementById('kpiGrid').innerHTML = wideCard + cards.map(c => `
       <div class="kpi-card ${c.cls}">
         <div class="label">${c.label}</div>
         <div class="value-row"><div class="value">${c.value}</div></div>
