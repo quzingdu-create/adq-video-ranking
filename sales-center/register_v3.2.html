@@ -502,6 +502,27 @@ function lookupDuplicates(name) {
 
 /* ===== 数据：localStorage（初始为空）===== */
 const LS_KEY = "apparel_board_v2_20260512_v32seed";
+
+/* 一次性清除子青 5/17 试用导入（在加载 records 前执行，确保内存里也干净） */
+(function cleanTrial_2026_05_17(){
+  const FLAG_KEY = "trial_cleaned_2026_05_17";
+  if (localStorage.getItem(FLAG_KEY)) return;
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      const before = arr.length;
+      const filtered = arr.filter(r => !(r.date === "2026-05-17" && r._batchPaste));
+      const removed = before - filtered.length;
+      if (removed > 0) {
+        localStorage.setItem(LS_KEY, JSON.stringify(filtered));
+        console.info("✅ 已清除子青 5/17 试用导入 " + removed + " 条本地记录");
+      }
+    }
+    localStorage.setItem(FLAG_KEY, "1");
+  } catch(e) { console.warn("清理试用数据失败", e); }
+})();
+
 let records = JSON.parse(localStorage.getItem(LS_KEY) || "null");
 if (!records || !records.length) {
   records = (window.__SEED_RECORDS__ || []).slice();

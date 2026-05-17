@@ -706,6 +706,27 @@ function genRecords() {
   return records;
 }
 const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
+
+/* 一次性清除子青 5/17 试用导入（执行一次后自动跳过） */
+(function cleanTrial_2026_05_17(){
+  const FLAG_KEY = "trial_cleaned_2026_05_17_kanban";
+  if (localStorage.getItem(FLAG_KEY)) return;
+  try {
+    const raw = localStorage.getItem(RECORD_LS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      const before = arr.length;
+      const filtered = arr.filter(r => !(r.date === "2026-05-17" && r._batchPaste));
+      const removed = before - filtered.length;
+      if (removed > 0) {
+        localStorage.setItem(RECORD_LS_KEY, JSON.stringify(filtered));
+        console.info("✅ 已清除子青 5/17 试用导入 " + removed + " 条本地记录");
+      }
+    }
+    localStorage.setItem(FLAG_KEY, "1");
+  } catch(e) { console.warn("清理试用数据失败", e); }
+})();
+
 let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
 const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
 function persistUserRecordsBestEffort() {
