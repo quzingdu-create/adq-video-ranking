@@ -185,8 +185,26 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   }
 
 /* === 5.17 改版：KPI 主次分级 + 销售tab小红点 + 视觉美化 === */
-.kpi-row { display: grid; grid-template-columns: 1fr 1.6fr 1.6fr 1fr 1fr; gap: 8px; align-items: stretch; }
-@media (max-width: 760px){ .kpi-row { grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; } }
+.kpi-row { display: grid; grid-template-columns: 0.85fr 1.4fr 1.4fr 0.95fr 0.95fr; gap: 8px; align-items: stretch; }
+/* 窄屏：主卡同行，mini 三个第二行 */
+@media (max-width: 900px){
+  .kpi-row { grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "hero1 hero1 hero2" "hero1 hero1 hero2" "mini1 mini2 mini3"; gap: 8px; }
+}
+@media (max-width: 600px){
+  .kpi-row { grid-template-columns: 1fr 1fr; grid-template-areas: "hero1 hero2" "mini1 mini1" "mini2 mini3"; gap: 7px; }
+  .kpi-row .kpi.hero .value { font-size: 24px; }
+  .kpi-row .kpi.hero .label { font-size: 11px; }
+}
+/* 给具体卡片打 area 标签（mini1=服饰中心,hero1=新锐,hero2=新客消耗,mini2=新客数,mini3=有效新客） */
+.kpi-row .kpi.mini[data-k="center"] { grid-area: mini1; }
+.kpi-row .kpi.hero[data-k="rising"] { grid-area: hero1; }
+.kpi-row .kpi.hero[data-k="cost"] { grid-area: hero2; }
+.kpi-row .kpi.mini[data-k="new"] { grid-area: mini2; }
+.kpi-row .kpi.mini[data-k="valid"] { grid-area: mini3; }
+@media (min-width: 901px){
+  /* 宽屏不用 area，按列顺序排 */
+  .kpi-row .kpi { grid-area: auto !important; }
+}
 .kpi.hero { background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%, #eff6ff 100%); border: 1px solid #fecaca; padding: 11px 13px; box-shadow: 0 4px 14px rgba(220,38,38,0.06); position: relative; overflow: hidden; }
 .kpi.hero::before { content: ''; position: absolute; top:0; left:0; width: 3px; height: 100%; background: linear-gradient(180deg, #dc2626, #f59e0b); }
 .kpi.hero .label { color: #dc2626; font-size: 12px; font-weight: 800; letter-spacing: 0.2px; }
@@ -386,11 +404,11 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
     };
     $("kpiGrid").innerHTML = `
       <div class="kpi-row">
-        <div class="kpi mini"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div></div>
-        <div class="kpi hero"><div class="label">本季度新锐客户</div><div class="value">${Number(r.risingCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.risingDelta)}">${deltaQ(r.risingDelta)}</span> · 较前日 <span class="${clsTrend(r.risingDayDelta)}">${delta(r.risingDayDelta)}</span> · 占有效 ${r.validCount > 0 ? (r.risingCount/r.validCount*100).toFixed(1) : 0}%</div></div>
-        <div class="kpi hero"><div class="label">本季度新客消耗</div><div class="value">${moneyWan(r.yestCost)}</div><div class="sub">较上季 <span class="${clsTrend(r.costRate)}">${pct(r.costRate)}</span> · 较前日 <span class="${clsTrend(r.dayCostRate)}">${pct(r.dayCostRate)}</span> · 本季新客日耗</div></div>
-        <div class="kpi mini"><div class="label">新客数</div><div class="value">${Number(r.newCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.newDelta)}">${deltaQ(r.newDelta)}</span> · 前日 <span class="${clsTrend(r.newDayDelta)}">${delta(r.newDayDelta)}</span></div></div>
-        <div class="kpi mini"><div class="label">有效新客</div><div class="value">${Number(r.validCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.validDelta)}">${deltaQ(r.validDelta)}</span> · 占新客 ${r.newCount > 0 ? (r.validCount/r.newCount*100).toFixed(1) : 0}%</div></div>
+        <div class="kpi mini" data-k="center"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div></div>
+        <div class="kpi hero" data-k="rising"><div class="label">本季度新锐客户</div><div class="value">${Number(r.risingCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.risingDelta)}">${deltaQ(r.risingDelta)}</span> · 较前日 <span class="${clsTrend(r.risingDayDelta)}">${delta(r.risingDayDelta)}</span> · 占有效 ${r.validCount > 0 ? (r.risingCount/r.validCount*100).toFixed(1) : 0}%</div></div>
+        <div class="kpi hero" data-k="cost"><div class="label">本季度新客消耗</div><div class="value">${moneyWan(r.yestCost)}</div><div class="sub">较上季 <span class="${clsTrend(r.costRate)}">${pct(r.costRate)}</span> · 较前日 <span class="${clsTrend(r.dayCostRate)}">${pct(r.dayCostRate)}</span> · 本季新客日耗</div></div>
+        <div class="kpi mini" data-k="new"><div class="label">新客数</div><div class="value">${Number(r.newCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.newDelta)}">${deltaQ(r.newDelta)}</span> · 前日 <span class="${clsTrend(r.newDayDelta)}">${delta(r.newDayDelta)}</span></div></div>
+        <div class="kpi mini" data-k="valid"><div class="label">有效新客</div><div class="value">${Number(r.validCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.validDelta)}">${deltaQ(r.validDelta)}</span> · 占新客 ${r.newCount > 0 ? (r.validCount/r.newCount*100).toFixed(1) : 0}%</div></div>
       </div>
     `;
   }
