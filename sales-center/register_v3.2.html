@@ -392,8 +392,8 @@ window.__SEED_RECORDS__ = [{"id": 1778598478862, "name": "合肥多莉娅服饰�
       <div style="margin-top:10px;border-top:1px dashed #e5e7eb;padding-top:10px;">
         <div class="text-[13px] text-gray-700 mb-1">📋 或直接从 Excel/腾讯文档复制单元格 → 粘贴到下方文本框（Ctrl+V）：</div>
         <textarea id="bulk-paste-text" rows="5"
-          placeholder="第一行必须是表头（含「客户主体」），后面是数据行。从 Excel/腾讯文档全选 + Ctrl+C 后直接粘贴即可。"
-          style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;"></textarea>
+          placeholder="第一行必须是表头：客户主体名称  类目  销售  拓客途径  资源方  客户来源  登记日期  是否新锐 ...（与单条新增字段一致）。从 Excel/腾讯文档全选 + Ctrl+C 后直接粘贴。"
+          style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;"></textarea></textarea>
         <button class="btn-primary px-3 py-1 rounded text-sm mt-2" onclick="parseBulkPaste()">
           <i class="ri-search-eye-line mr-1"></i>解析并校验
         </button>
@@ -414,13 +414,14 @@ window.__SEED_RECORDS__ = [{"id": 1778598478862, "name": "合肥多莉娅服饰�
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">#</th>
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">状态</th>
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">客户主体名称</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">类目</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">销售</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">拓客途径</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">资源方</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">客户来源</th>
+              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">登记日期</th>
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">是否新锐</th>
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">主营品牌</th>
-              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">销售</th>
-              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">类目</th>
-              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">建联日期</th>
-              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">拓客途径</th>
-              <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">在投链路</th>
               <th class="sticky top-0 bg-gray-50 px-2 py-1.5 text-left">问题说明</th>
             </tr></thead>
             <tbody id="bulk-preview-body"></tbody>
@@ -774,19 +775,20 @@ function submitRecord() {
 }
 
 /* ===== 批量导入 ===== */
+// 批量列定义（与单条新增字段顺序、label 完全一致）
 const BULK_COLS = [
-  { key:"date",     label:"登记日期",               required:true  },
-  { key:"sales",    label:"销售名称",               required:true  },
-  { key:"source",   label:"资源来源",               required:true  },
-  { key:"resource", label:"资源方",                 required:false },
-  { key:"category", label:"类目",                   required:true  },
-  { key:"rising",   label:"是否新锐",               required:true  },
-  { key:"brand",    label:"品牌名称",               required:false },
-  { key:"channel",  label:"客户来源",               required:true  },
-  { key:"region",   label:"产业带区域-必填",        required:true  },
-  { key:"links",    label:"投放链路",               required:true  },
-  { key:"name",     label:"客户主体",               required:true  },
-  { key:"remark",   label:"备注",                   required:false }
+  { key:"name",     label:"客户主体名称",  required:true  },
+  { key:"category", label:"类目",          required:true  },
+  { key:"sales",    label:"销售",          required:true  },
+  { key:"channel",  label:"拓客途径",      required:true  },
+  { key:"resource", label:"资源方",        required:false },
+  { key:"source",   label:"客户来源",      required:true  },
+  { key:"date",     label:"登记日期",      required:true  },
+  { key:"rising",   label:"是否新锐",      required:true  },
+  { key:"brand",    label:"主营品牌",      required:false },
+  { key:"region",   label:"产业带区域",    required:false },
+  { key:"links",    label:"投放链路",      required:false },
+  { key:"remark",   label:"备注",          required:false }
 ];
 const LINK_OPTIONS = ["直播", "小店", "新客"];
 // 产业带区域格式：省-城市，如 广东-广州；校验只看「省-市」结构，不强绑定省市字典
@@ -794,23 +796,24 @@ const REGION_RE = /^[^\s\-]{2,}-[^\s\-]{2,}$/;
 
 function downloadTemplate() {
   const header = BULK_COLS.map(c => c.label + (c.required ? " *" : ""));
+  // hint 顺序对应 BULK_COLS 顺序
   const hint = [
-    "YYYY-MM-DD",
-    "7 选 1：" + SALES.join(" / "),
-    SOURCES.join(" / "),
-    "非自拓时必填",
-    CATEGORIES.join(" / "),
-    "是 / 否（是=新锐需后续补授权书）",
-    "是否新锐=是时必填",
-    CHANNELS.join(" / "),
-    "省-城市，比如 广东-广州",
-    LINK_OPTIONS.join(" / ") + "（多选用英文逗号）",
-    "客户主体全称",
-    "可留空"
+    "客户主体全称",                                 // name
+    CATEGORIES.join(" / "),                         // category
+    "7 选 1：" + SALES.join(" / "),                 // sales
+    CHANNELS.join(" / "),                           // channel  拓客途径
+    "非自拓时必填",                                  // resource
+    SOURCES.join(" / "),                            // source   客户来源
+    "YYYY-MM-DD",                                   // date
+    "是 / 否（是=新锐需后续补授权书）",              // rising
+    "是否新锐=是时必填",                             // brand    主营品牌
+    "省-城市，比如 广东-广州（可留空）",             // region
+    "可留空（系统每日自动从 AData 匹配链路）",      // links
+    "可留空"                                        // remark
   ];
   const example = [
-    todayStr(), "brownfan", "26Q4 清单", "", "女装（童装）", "否", "",
-    "自拓", "广东-广州", "直播,小店", "上海某某科技有限公司", "示例行，导入前请删除"
+    "上海某某科技有限公司", "女装（童装）", "brownfan", "自拓", "",
+    "26年4月后产业带拓客", todayStr(), "否", "", "广东-广州", "", "示例行，导入前请删除"
   ];
   const aoa = [header, hint, example];
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -955,31 +958,32 @@ function validateBulkRow(row, colIdx, lineNo) {
   let level = "ok";
 
   if (!parsed.name) { issues.push("客户主体必填"); level = "err"; }
-  if (!["是","否"].includes(parsed.rising)) { issues.push("是否新锐必须为 是/否"); level = "err"; }
-  if (!parsed.sales) { issues.push("销售名称必填"); level = "err"; }
-  else if (!SALES.includes(parsed.sales)) { issues.push("销售名不在白名单（历史数据已放行）"); if (level === "ok") level = "warn"; }
-  if (!parsed.date) { issues.push("登记日期必填"); level = "err"; }
-  else if (!/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) { issues.push("登记日期格式需 YYYY-MM-DD"); level = "err"; }
-  if (!parsed.channel) { issues.push("客户来源建议填写"); if (level === "ok") level = "warn"; }
-  else if (!CHANNELS.includes(parsed.channel)) { issues.push("客户来源不在候选项（历史数据已放行）"); if (level === "ok") level = "warn"; }
-  if (parsed.channel && parsed.channel !== "自拓" && !parsed.resource) {
-    issues.push("非自拓渠道建议填资源方"); if (level === "ok") level = "warn";
-  }
   if (!parsed.category) { issues.push("类目必填"); level = "err"; }
   else if (!CATEGORIES.includes(parsed.category)) { issues.push("类目不在 9 大类（历史数据已放行）"); if (level === "ok") level = "warn"; }
-  if (!parsed.source) { issues.push("资源来源建议填写"); if (level === "ok") level = "warn"; }
-  else if (!SOURCES.includes(parsed.source)) { issues.push("资源来源不在候选项（历史数据已放行）"); if (level === "ok") level = "warn"; }
-  if (!parsed.region) { issues.push("产业带区域建议填写（省-城市）"); if (level === "ok") level = "warn"; }
-  else if (!REGION_RE.test(parsed.region)) { issues.push("产业带区域格式非「省-城市」，如 广东-广州（历史数据已放行）"); if (level === "ok") level = "warn"; }
-  const linksArr = parsed.links.split(/[,，;；\/\s]+/).map(s => s.trim()).filter(Boolean);
-  if (!linksArr.length) { issues.push("投放链路建议至少 1 项"); if (level === "ok") level = "warn"; }
-  else {
+  if (!parsed.sales) { issues.push("销售必填"); level = "err"; }
+  else if (!SALES.includes(parsed.sales)) { issues.push("销售名不在白名单（历史数据已放行）"); if (level === "ok") level = "warn"; }
+  if (!parsed.channel) { issues.push("拓客途径必填"); level = "err"; }
+  else if (!CHANNELS.includes(parsed.channel)) { issues.push("拓客途径不在候选项（历史数据已放行）"); if (level === "ok") level = "warn"; }
+  if (parsed.channel && parsed.channel !== "自拓" && !parsed.resource) {
+    issues.push("非自拓途径建议填资源方"); if (level === "ok") level = "warn";
+  }
+  if (!parsed.source) { issues.push("客户来源必填"); level = "err"; }
+  else if (!SOURCES.includes(parsed.source)) { issues.push("客户来源不在候选项（历史数据已放行）"); if (level === "ok") level = "warn"; }
+  if (!parsed.date) { issues.push("登记日期必填"); level = "err"; }
+  else if (!/^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) { issues.push("登记日期格式需 YYYY-MM-DD"); level = "err"; }
+  if (!["是","否"].includes(parsed.rising)) { issues.push("是否新锐必须为 是/否"); level = "err"; }
+  if (parsed.region && !REGION_RE.test(parsed.region)) {
+    issues.push("产业带区域格式建议「省-城市」（已放行）"); if (level === "ok") level = "warn";
+  }
+  // 投放链路：登记时不强求，系统每日自动从 AData 匹配
+  const linksArr = (parsed.links || "").split(/[,，;；\/\s]+/).map(s => s.trim()).filter(Boolean);
+  if (linksArr.length) {
     const bad = linksArr.filter(l => !LINK_OPTIONS.includes(l));
     if (bad.length) { issues.push("链路值非候选：" + bad.join(",") + "（历史数据已放行）"); if (level === "ok") level = "warn"; }
   }
   parsed.linksArr = linksArr;
   if (parsed.rising === "是") {
-    if (!parsed.brand) { issues.push("新锐客户需填品牌名称"); level = "err"; }
+    if (!parsed.brand) { issues.push("新锐客户需填主营品牌"); level = "err"; }
     issues.push("⚠ 新锐客户缺授权书，导入后请单条补图");
     if (level === "ok") level = "warn";
   }
@@ -1037,13 +1041,14 @@ function renderBulkPreview() {
       + '<td class="px-2 py-1">' + r.lineNo + '</td>'
       + '<td class="px-2 py-1">' + tag + '</td>'
       + '<td class="px-2 py-1">' + escapeHtml(p.name) + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.category) + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.sales) + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.channel) + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.resource || "") + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.source || "") + '</td>'
+      + '<td class="px-2 py-1">' + escapeHtml(p.date) + '</td>'
       + '<td class="px-2 py-1">' + escapeHtml(p.rising) + '</td>'
       + '<td class="px-2 py-1">' + escapeHtml(p.brand) + '</td>'
-      + '<td class="px-2 py-1">' + escapeHtml(p.sales) + '</td>'
-      + '<td class="px-2 py-1">' + escapeHtml(p.category) + '</td>'
-      + '<td class="px-2 py-1">' + escapeHtml(p.date) + '</td>'
-      + '<td class="px-2 py-1">' + escapeHtml(p.channel) + '</td>'
-      + '<td class="px-2 py-1">' + escapeHtml((p.linksArr||[]).join(",")) + '</td>'
       + '<td class="px-2 py-1 text-[11px] text-gray-600">' + r.issues.map(escapeHtml).join("；") + '</td>'
       + '</tr>';
   }).join("");
