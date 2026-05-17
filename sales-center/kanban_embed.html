@@ -407,6 +407,16 @@
       document.documentElement.dataset.embed = '1';
       document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embed-mode'));
     }
+    // 顶栏显示今日 + 数据日
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const today = new Date();
+        const ymd = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        const dataDate = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || '';
+        const el = document.getElementById('todayInfo');
+        if (el) el.textContent = `📅 今日 ${ymd}${dataDate ? ' · 数据日 ' + dataDate : ''}`;
+      } catch(e){}
+    });
   })();
 </script>
 </head>
@@ -419,8 +429,9 @@
 </div>
 
 <div class="topbar">
-  <h1>拓客作战看板 <span class="ver">v3 原型 · DEMO</span></h1>
+  <h1>拓客作战看板 <span class="ver" id="kanbanVer">v3 原型 · DEMO</span></h1>
   <div class="topbar-right">
+    <span id="todayInfo" style="font-size:12px;color:#6b7280;margin-right:8px;"></span>
     <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
     <select id="quarterSel">
       <option value="2026Q2">2026 Q2（当前）</option>
