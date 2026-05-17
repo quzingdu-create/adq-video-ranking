@@ -186,24 +186,26 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
 
 /* === 5.17 改版：KPI 主次分级 + 销售tab小红点 + 视觉美化 === */
 .kpi-row { display: grid; grid-template-columns: 0.85fr 1.4fr 1.4fr 0.95fr 0.95fr; gap: 8px; align-items: stretch; }
-/* 窄屏：主卡同行，mini 三个第二行 */
+/* 中等屏：3列两行 */
 @media (max-width: 900px){
-  .kpi-row { grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "hero1 hero1 hero2" "hero1 hero1 hero2" "mini1 mini2 mini3"; gap: 8px; }
+  .kpi-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .kpi-row .kpi[data-k="center"] { grid-column: 1 / 4; }   /* 服饰中心通栏第一行 */
+  .kpi-row .kpi[data-k="rising"] { grid-column: 1 / 4; }   /* 新锐通栏第二行 */
+  .kpi-row .kpi[data-k="cost"]   { grid-column: 1 / 4; }   /* 新客消耗通栏第三行 */
+  .kpi-row .kpi[data-k="new"]    { grid-column: 1 / 3; }   /* 新客数 占2/3 */
+  .kpi-row .kpi[data-k="valid"]  { grid-column: 3 / 4; }   /* 有效新客 占1/3 */
 }
+/* 手机：2列堆叠 */
 @media (max-width: 600px){
-  .kpi-row { grid-template-columns: 1fr 1fr; grid-template-areas: "hero1 hero2" "mini1 mini1" "mini2 mini3"; gap: 7px; }
-  .kpi-row .kpi.hero .value { font-size: 24px; }
-  .kpi-row .kpi.hero .label { font-size: 11px; }
-}
-/* 给具体卡片打 area 标签（mini1=服饰中心,hero1=新锐,hero2=新客消耗,mini2=新客数,mini3=有效新客） */
-.kpi-row .kpi.mini[data-k="center"] { grid-area: mini1; }
-.kpi-row .kpi.hero[data-k="rising"] { grid-area: hero1; }
-.kpi-row .kpi.hero[data-k="cost"] { grid-area: hero2; }
-.kpi-row .kpi.mini[data-k="new"] { grid-area: mini2; }
-.kpi-row .kpi.mini[data-k="valid"] { grid-area: mini3; }
-@media (min-width: 901px){
-  /* 宽屏不用 area，按列顺序排 */
-  .kpi-row .kpi { grid-area: auto !important; }
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kpi-row .kpi { grid-column: auto !important; }
+  .kpi-row .kpi[data-k="center"] { grid-column: 1 / -1 !important; }  /* 服饰中心通栏 */
+  .kpi-row .kpi[data-k="rising"] { grid-column: 1 / -1 !important; }  /* 新锐通栏 主指标 */
+  .kpi-row .kpi[data-k="cost"]   { grid-column: 1 / -1 !important; }  /* 新客消耗通栏 主指标 */
+  /* 新客数 + 有效新客 自动并排 */
+  .kpi-row .kpi.hero .value { font-size: 28px; }
+  .kpi-row .kpi.hero .label { font-size: 12px; }
+  .kpi-row .kpi.hero .sub { font-size: 11px; }
 }
 .kpi.hero { background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%, #eff6ff 100%); border: 1px solid #fecaca; padding: 11px 13px; box-shadow: 0 4px 14px rgba(220,38,38,0.06); position: relative; overflow: hidden; }
 .kpi.hero::before { content: ''; position: absolute; top:0; left:0; width: 3px; height: 100%; background: linear-gradient(180deg, #dc2626, #f59e0b); }
