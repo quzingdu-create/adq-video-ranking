@@ -1128,6 +1128,9 @@ document.querySelectorAll('.tab-btn').forEach(b => {
   b.onclick = () => switchTab(b.dataset.tab);
 });
 
+// 用户 2026-05-17 拍板：PC 端默认打开「销售作战中心」(battle tab)
+switchTab('battle');
+
 /* ===========================================================
    三、视图切换（DOM 已删，全部 nullish 保护）
    =========================================================== */
