@@ -109,7 +109,7 @@
   .section-title .right button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
   /* KPI 大卡 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
   .kpi-card {
     background: #fff;
     border: 1px solid var(--border); border-radius: 12px; padding: 18px;
@@ -315,7 +315,7 @@
 
   /* ============= 移动端响应式 ============= */
   @media (max-width: 1024px) {
-    .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
     .grid-2   { grid-template-columns: 1fr !important; }
     .portrait-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .zone-top-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -422,10 +422,6 @@
   <h1>拓客作战看板 <span class="ver">v3 原型 · DEMO</span></h1>
   <div class="topbar-right">
     <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
-    <div class="view-toggle">
-      <button id="viewTeam" class="active">团队视图</button>
-      <button id="viewMine">我的视图</button>
-    </div>
     <select id="quarterSel">
       <option value="2026Q2">2026 Q2（当前）</option>
       <option value="2026Q1">2026 Q1</option>
@@ -776,6 +772,7 @@ function deliveryShareText(row) {
 function fmtSigned(n) {
   if (n === null || n === undefined || n === '') return '—';
   const v = Number(n);
+  if (v === 0) return '—';
   return `${v > 0 ? '+' : ''}${v}`;
 }
 function fmtPct(v) {
@@ -800,40 +797,26 @@ function renderKPI() {
     const row = state.view === "team"
       ? rows.find(r => r.sale === "合计")
       : (rows.find(r => r.sale === CURRENT_USER) || rows.find(r => r.sale === "合计"));
-    // 「今日核心盘」5 字段格式（与手机端首页一致）
-    // 1 张大卡：服饰中心日耗（全行业 daily 整体）
-    // 4 张小卡：新客数 / 有效新客 / 新锐客户 / 新客昨耗（拓新组本季度新客口径）
+    // 「今日核心盘」3 字段一行（用户 2026-05-17 拍板）：
+    // 服饰中心日耗 / 新锐客户 / 新客消耗
     const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
     const centerCost = dailyKpi.centerYestCost || 0;
     const centerChg = dailyKpi.centerDayCostRate;
     const wideCard = `
-      <div class="kpi-card wide" style="grid-column: 1 / -1;">
+      <div class="kpi-card wide">
         <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${(centerCost/10000).toFixed(1)}万</div></div>
         <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
     const cards = [
       {
-        label:"新客数", value: row.newCount, cls:"blue",
-        deltaQoq: row.newDelta,    deltaDod: row.newDayDelta,
-        sub2: deliveryShareText(row),
-        relation: `含 ${row.validCount} 有效 / ${row.risingCount} 新锐`
-      },
-      {
-        label:"有效新客", value: row.validCount, cls:"green",
-        deltaQoq: row.validDelta,  deltaDod: row.validDayDelta,
-        relation: `占新客 ${row.newCount > 0 ? (row.validCount/row.newCount*100).toFixed(1) : 0}% · 季耗 >¥1k`
-      },
-      {
         label:"新锐客户", value: row.risingCount, cls:"gold",
         deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta,
-        relation: `占有效 ${row.validCount > 0 ? (row.risingCount/row.validCount*100).toFixed(1) : 0}% · 新锐+经销商`
       },
       {
-        label:"新客昨耗", value: fmtWan(row.yestCost), cls:"purple",
+        label:"新客消耗", value: fmtWan(row.yestCost), cls:"purple",
         deltaQoq: row.costRate,    deltaDod: row.dayCostRate,
         isPct: true,
-        relation: `本季新客昨日 daily`
       },
     ];
     document.getElementById('kpiGrid').innerHTML = wideCard + cards.map(c => `
@@ -842,8 +825,6 @@ function renderKPI() {
         <div class="value-row"><div class="value">${c.value}</div></div>
         <div class="meta"><span class="${deltaCls(c.deltaQoq)}">较上季度 ${c.isPct ? fmtPct(c.deltaQoq) : fmtSigned(c.deltaQoq)}</span></div>
         <div class="meta"><span class="${deltaCls(c.deltaDod)}">较前一天 ${c.isPct ? fmtPct(c.deltaDod) : fmtSigned(c.deltaDod)}</span></div>
-        ${c.relation ? `<div class="meta" style="font-size:11px;color:#9ca3af;border-top:1px dashed #e5e7eb;padding-top:4px;margin-top:2px;"><span>${c.relation}</span></div>` : ''}
-        ${c.sub2 ? `<div class="meta"><span>${c.sub2}</span></div>` : ``}
       </div>`).join('');
     return;
   }
@@ -868,17 +849,19 @@ function renderSalesProgress() {
     const html = `
       <table class="sales-kpi-table">
         <thead><tr>
-          <th>销售</th><th>新客数</th><th>新客数环比前一天</th><th>有效新客数</th><th>有效新客数环比前一天</th><th>新锐数</th><th>新锐数环比前一天</th><th>昨日消耗</th><th>昨耗环比前一天</th>
+          <th>销售</th>
+          <th>新锐客户数</th>
+          <th>新客数</th>
+          <th>新客数环比前一天</th>
+          <th>新客日耗</th>
+          <th>新客日耗环比前一天</th>
         </tr></thead>
         <tbody>${rows.map(r => `
           <tr class="${r.sale === CURRENT_USER ? 'current-sale' : ''}">
             <td class="name">${r.sale}</td>
+            <td><div class="metric-main" style="color:#dc2626;">${r.risingCount}</div></td>
             <td><div class="metric-main">${r.newCount}</div></td>
             <td><span class="${deltaCls(r.newDayDelta)}">${fmtSigned(r.newDayDelta)}</span></td>
-            <td><div class="metric-main">${r.validCount}</div></td>
-            <td><span class="${deltaCls(r.validDayDelta)}">${fmtSigned(r.validDayDelta)}</span></td>
-            <td><div class="metric-main">${r.risingCount}</div></td>
-            <td><span class="${deltaCls(r.risingDayDelta)}">${fmtSigned(r.risingDayDelta)}</span></td>
             <td><div class="metric-main">${fmtWan(r.yestCost)}</div></td>
             <td><span class="${deltaCls(r.dayCostRate)}">${fmtPct(r.dayCostRate)}</span></td>
           </tr>`).join('')}</tbody>
@@ -1197,20 +1180,10 @@ function renderRecords() {
 /* =========================
    七、交互绑定
    ========================= */
-document.getElementById('viewTeam').onclick = () => switchView('team');
-document.getElementById('viewMine').onclick = () => switchView('mine');
-function switchView(v) {
-  state.view = v;
-  document.getElementById('viewTeam').classList.toggle('active', v==='team');
-  document.getElementById('viewMine').classList.toggle('active', v==='mine');
-  document.getElementById('quarterTag').textContent = (v==='mine'? `${CURRENT_USER} · `:'') + quarterLabel(state.quarter);
-  renderAll();
-applyEmbedMode();
-}
 
 document.getElementById('quarterSel').onchange = (e) => {
   state.quarter = normalizeQuarter(e.target.value) || '2026Q2';
-  document.getElementById('quarterTag').textContent = (state.view==='mine'? `${CURRENT_USER} · `:'') + quarterLabel(state.quarter);
+  document.getElementById('quarterTag').textContent = quarterLabel(state.quarter);
   renderAll();
 };
 document.getElementById('compareSel').onchange = (e) => {
@@ -1571,6 +1544,7 @@ function renderAll() {
   renderRecords();
 }
 renderAll();
+applyEmbedMode();
 
 window.addEventListener('resize', () => {
   Object.values(charts).forEach(c => c && c.resize());
