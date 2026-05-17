@@ -373,11 +373,23 @@ window.__SEED_RECORDS__ = [{"id": 1778598478862, "name": "合肥多莉娅服饰�
         </ol>
       </div>
 
-      <!-- Step 2：选文件 -->
+      <!-- Step 2：选文件 / 直接粘贴 -->
       <div id="bulk-dropzone" class="paste-zone" style="padding:24px">
         <i class="ri-file-excel-2-line text-2xl text-gray-400"></i>
         <div class="mt-1">拖入 .xlsx / .csv 文件，或 <span class="text-blue-600 underline cursor-pointer" onclick="document.getElementById('bulk-file').click()">点击选择</span></div>
         <input id="bulk-file" type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="onBulkFilePicked(event)" />
+      </div>
+
+      <!-- Step 2.5：文本粘贴入口（从 Excel/腾讯文档/任何表格 复制后 Ctrl+V）-->
+      <div style="margin-top:10px;border-top:1px dashed #e5e7eb;padding-top:10px;">
+        <div class="text-[13px] text-gray-700 mb-1">📋 或直接从 Excel/腾讯文档复制单元格 → 粘贴到下方文本框（Ctrl+V）：</div>
+        <textarea id="bulk-paste-text" rows="5"
+          placeholder="第一行必须是表头（含「客户主体」），后面是数据行。从 Excel/腾讯文档全选 + Ctrl+C 后直接粘贴即可。"
+          style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;"></textarea>
+        <button class="btn-primary px-3 py-1 rounded text-sm mt-2" onclick="parseBulkPaste()">
+          <i class="ri-search-eye-line mr-1"></i>解析并校验
+        </button>
+        <span class="text-[11px] text-gray-500 ml-2">支持 TSV/CSV，自动识别表头列名</span>
       </div>
 
       <!-- Step 3：预览区 -->
@@ -822,6 +834,29 @@ function onBulkFilePicked(ev) {
   if (f) parseBulkFile(f);
 }
 
+/* 文本框粘贴解析（Excel/腾讯文档复制粘贴场景）
+ * 自动识别 TSV（制表符）/ CSV（逗号），第一行为表头
+ */
+function parseBulkPaste() {
+  const txt = document.getElementById("bulk-paste-text").value.trim();
+  if (!txt) { alert("请先粘贴数据"); return; }
+  const lines = txt.split(/\r?\n/).filter(l => l.trim() !== "");
+  if (lines.length < 2) { alert("至少需要 1 行表头 + 1 行数据"); return; }
+  // 自动识别分隔符（优先 \t，否则 , 否则 ；）
+  const firstLine = lines[0];
+  let sep = "\t";
+  if (!firstLine.includes("\t")) {
+    sep = firstLine.includes(",") ? "," : (firstLine.includes("，") ? "，" : (firstLine.includes("|") ? "|" : "\t"));
+  }
+  const rows = lines.map(l => l.split(sep).map(c => c.trim()));
+  processBulkRows(rows);
+  // 滚动到预览
+  setTimeout(() => {
+    const el = document.getElementById("bulk-preview");
+    if (el && el.style.display !== "none") el.scrollIntoView({behavior:"smooth"});
+  }, 100);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const dz = document.getElementById("bulk-dropzone");
   if (!dz) return;
@@ -829,6 +864,20 @@ document.addEventListener("DOMContentLoaded", () => {
   ["dragleave","drop"].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove("drag"); }));
   dz.addEventListener("drop", ev => {
     const f = ev.dataTransfer.files && ev.dataTransfer.files[0]; if (f) parseBulkFile(f);
+  });
+  // 批量 modal 打开时，全局 Ctrl+V 自动填到文本框 + 立即解析
+  document.addEventListener("paste", e => {
+    const modal = document.getElementById("bulk-modal");
+    if (!modal || !modal.classList.contains("show")) return;
+    // 如果焦点已在某个输入框/文本框，让原生粘贴处理
+    const ae = document.activeElement;
+    if (ae && (ae.tagName === "TEXTAREA" || ae.tagName === "INPUT")) return;
+    const txt = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+    if (txt.trim() && txt.includes("\t") || txt.includes(",")) {
+      e.preventDefault();
+      document.getElementById("bulk-paste-text").value = txt;
+      parseBulkPaste();
+    }
   });
 });
 
@@ -912,6 +961,33 @@ function validateBulkRow(row, colIdx, lineNo) {
     issues.push("⚠ 新锐客户缺授权书，导入后请单条补图");
     if (level === "ok") level = "warn";
   }
+
+  // ★ 新增：3 层实时校验（mapping / 24老客 / 重复登记）
+  if (parsed.name) {
+    const look = lookupEntity(parsed.name);
+    parsed.shortName = look.short;
+    parsed.matchedMapping = look.matched;
+    parsed.isLaoke24 = look.isLaoke;
+    if (look.matched) {
+      issues.push(`📍 客户简称: ${look.short}`);
+    } else {
+      issues.push("⚠ 主体未命中映射字典（默认以主体作简称）");
+      if (level === "ok") level = "warn";
+    }
+    if (look.isLaoke) {
+      issues.push("⚠ 24年老客（剔除新客统计）");
+      if (level === "ok") level = "warn";
+    }
+    // 重复登记：底表/本次
+    const dup = lookupDuplicates(parsed.name);
+    const hardDup = dup.entries.filter(d => d.src === "底表" || d.src === "本次");
+    if (hardDup.length > 0) {
+      const conflict = hardDup.map(d => `${d.sales}${d.date ? '@'+d.date : ''}`).join("、");
+      issues.push(`❌ 重复登记：已被 ${conflict} 登记（拒绝入库）`);
+      level = "err";
+      parsed._dupReason = conflict;
+    }
+  }
   return { raw: row, parsed, level, issues, lineNo };
 }
 
@@ -979,6 +1055,7 @@ function submitBulk() {
       name: p.name,
       shortName: look.short,
       isLaoke: look.isLaoke,
+      old24: look.isLaoke,  // 24 老客标记
       matched: look.matched,
       customerType: look.isLaoke ? "非本季度新客" : "新客",
       category: p.category || "",
