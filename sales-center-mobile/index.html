@@ -185,27 +185,30 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   }
 
 /* === 5.17 改版：KPI 主次分级 + 销售tab小红点 + 视觉美化 === */
-.kpi-row { display: grid; grid-template-columns: 0.85fr 1.4fr 1.4fr 0.95fr 0.95fr; gap: 8px; align-items: stretch; }
-/* 中等屏：3列两行 */
+.kpi-row { display: grid; grid-template-columns: 0.85fr 1.45fr 1.45fr 0.95fr 0.95fr; gap: 8px; align-items: stretch; }
+/* 中等屏字号微调 */
 @media (max-width: 900px){
-  .kpi-row { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-  .kpi-row .kpi[data-k="center"] { grid-column: 1 / 4; }   /* 服饰中心通栏第一行 */
-  .kpi-row .kpi[data-k="rising"] { grid-column: 1 / 4; }   /* 新锐通栏第二行 */
-  .kpi-row .kpi[data-k="cost"]   { grid-column: 1 / 4; }   /* 新客消耗通栏第三行 */
-  .kpi-row .kpi[data-k="new"]    { grid-column: 1 / 3; }   /* 新客数 占2/3 */
-  .kpi-row .kpi[data-k="valid"]  { grid-column: 3 / 4; }   /* 有效新客 占1/3 */
+  .kpi-row { gap: 6px; }
+  .kpi-row .kpi.hero .value { font-size: 22px; }
+  .kpi-row .kpi.mini .value { font-size: 14px; }
+  .kpi-row .kpi.hero .sub, .kpi-row .kpi.mini .sub { font-size: 10px; line-height: 1.35; }
 }
-/* 手机：2列堆叠 */
+/* 手机：5列必须一行，紧凑模式 */
 @media (max-width: 600px){
-  .kpi-row { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .kpi-row .kpi { grid-column: auto !important; }
-  .kpi-row .kpi[data-k="center"] { grid-column: 1 / -1 !important; }  /* 服饰中心通栏 */
-  .kpi-row .kpi[data-k="rising"] { grid-column: 1 / -1 !important; }  /* 新锐通栏 主指标 */
-  .kpi-row .kpi[data-k="cost"]   { grid-column: 1 / -1 !important; }  /* 新客消耗通栏 主指标 */
-  /* 新客数 + 有效新客 自动并排 */
-  .kpi-row .kpi.hero .value { font-size: 28px; }
-  .kpi-row .kpi.hero .label { font-size: 12px; }
-  .kpi-row .kpi.hero .sub { font-size: 11px; }
+  .kpi-row { gap: 4px; grid-template-columns: 0.75fr 1.5fr 1.5fr 0.85fr 0.85fr; }
+  .kpi-row .kpi { padding: 6px 5px !important; min-width: 0; overflow: hidden; }
+  .kpi-row .kpi .label { font-size: 9px !important; line-height: 1.15; word-break: keep-all; }
+  .kpi-row .kpi.hero .label { font-size: 10px !important; }
+  .kpi-row .kpi .value { font-size: 13px !important; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
+  .kpi-row .kpi.hero .value { font-size: 18px !important; }
+  .kpi-row .kpi .sub { font-size: 9px !important; line-height: 1.25; word-break: break-all; }
+  .kpi-row .kpi.hero::before { width: 2px; }
+}
+@media (max-width: 380px){
+  .kpi-row { gap: 3px; }
+  .kpi-row .kpi { padding: 5px 4px !important; }
+  .kpi-row .kpi.hero .value { font-size: 16px !important; }
+  .kpi-row .kpi .value { font-size: 12px !important; }
 }
 .kpi.hero { background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%, #eff6ff 100%); border: 1px solid #fecaca; padding: 11px 13px; box-shadow: 0 4px 14px rgba(220,38,38,0.06); position: relative; overflow: hidden; }
 .kpi.hero::before { content: ''; position: absolute; top:0; left:0; width: 3px; height: 100%; background: linear-gradient(180deg, #dc2626, #f59e0b); }
