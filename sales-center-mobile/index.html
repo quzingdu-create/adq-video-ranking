@@ -185,30 +185,57 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
   }
 
 /* === 5.17 改版：KPI 主次分级 + 销售tab小红点 + 视觉美化 === */
-.kpi-row { display: grid; grid-template-columns: 0.85fr 1.45fr 1.45fr 0.95fr 0.95fr; gap: 8px; align-items: stretch; }
-/* 中等屏字号微调 */
-@media (max-width: 900px){
-  .kpi-row { gap: 6px; }
-  .kpi-row .kpi.hero .value { font-size: 22px; }
-  .kpi-row .kpi.mini .value { font-size: 14px; }
-  .kpi-row .kpi.hero .sub, .kpi-row .kpi.mini .sub { font-size: 10px; line-height: 1.35; }
+/* === KPI 单卡片指标条 === */
+.kpi-bar {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 50%, #eff6ff 100%);
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 12px 10px;
+  box-shadow: 0 4px 14px rgba(220,38,38,0.06);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-/* 手机：5列必须一行，紧凑模式 */
-@media (max-width: 600px){
-  .kpi-row { gap: 4px; grid-template-columns: 0.75fr 1.5fr 1.5fr 0.85fr 0.85fr; }
-  .kpi-row .kpi { padding: 6px 5px !important; min-width: 0; overflow: hidden; }
-  .kpi-row .kpi .label { font-size: 9px !important; line-height: 1.15; word-break: keep-all; }
-  .kpi-row .kpi.hero .label { font-size: 10px !important; }
-  .kpi-row .kpi .value { font-size: 13px !important; line-height: 1.1; word-break: keep-all; white-space: nowrap; }
-  .kpi-row .kpi.hero .value { font-size: 18px !important; }
-  .kpi-row .kpi .sub { font-size: 9px !important; line-height: 1.25; word-break: break-all; }
-  .kpi-row .kpi.hero::before { width: 2px; }
+.kpi-bar::-webkit-scrollbar { display: none; }
+.kbar-cell {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 10px;
+  text-align: center;
+  border-right: 1px dashed #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-@media (max-width: 380px){
-  .kpi-row { gap: 3px; }
-  .kpi-row .kpi { padding: 5px 4px !important; }
-  .kpi-row .kpi.hero .value { font-size: 16px !important; }
-  .kpi-row .kpi .value { font-size: 12px !important; }
+.kbar-cell:last-child { border-right: none; }
+.kbar-cell.hero { flex: 1.4 1 0; }
+.kbar-label { font-size: 11px; color: #94a3b8; font-weight: 700; line-height: 1.2; margin-bottom: 4px; white-space: nowrap; }
+.kbar-cell.hero .kbar-label { color: #dc2626; font-size: 12px; }
+.kbar-value { font-size: 18px; font-weight: 900; color: #0f172a; line-height: 1.1; letter-spacing: -0.4px; white-space: nowrap; margin-bottom: 4px; }
+.kbar-cell.hero .kbar-value { font-size: 24px; color: #0f172a; }
+.kbar-sub { font-size: 10px; color: #64748b; line-height: 1.35; word-break: break-all; }
+
+/* 手机端紧凑 */
+@media (max-width: 600px) {
+  .kpi-bar { padding: 10px 6px; border-radius: 12px; }
+  .kbar-cell { padding: 0 6px; }
+  .kbar-label { font-size: 9px; margin-bottom: 2px; }
+  .kbar-cell.hero .kbar-label { font-size: 10px; }
+  .kbar-value { font-size: 14px; margin-bottom: 2px; }
+  .kbar-cell.hero .kbar-value { font-size: 19px; }
+  .kbar-sub { font-size: 9px; line-height: 1.25; }
+}
+@media (max-width: 380px) {
+  .kpi-bar { padding: 8px 4px; }
+  .kbar-cell { padding: 0 4px; }
+  .kbar-value { font-size: 12px; }
+  .kbar-cell.hero .kbar-value { font-size: 16px; }
+  .kbar-label { font-size: 8px; }
+  .kbar-cell.hero .kbar-label { font-size: 9px; }
+  .kbar-sub { font-size: 8px; }
 }
 .kpi.hero { background: linear-gradient(135deg, #fff5f5 0%, #ffffff 60%, #eff6ff 100%); border: 1px solid #fecaca; padding: 11px 13px; box-shadow: 0 4px 14px rgba(220,38,38,0.06); position: relative; overflow: hidden; }
 .kpi.hero::before { content: ''; position: absolute; top:0; left:0; width: 3px; height: 100%; background: linear-gradient(180deg, #dc2626, #f59e0b); }
@@ -408,12 +435,32 @@ window.__TUOKE_REAL_RECORDS__ = [{"id":1000000,"date":"2025-07-24","sale":"kinsl
       return (n > 0 ? "+" : "") + n.toFixed(0);
     };
     $("kpiGrid").innerHTML = `
-      <div class="kpi-row">
-        <div class="kpi mini" data-k="center"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div></div>
-        <div class="kpi hero" data-k="rising"><div class="label">本季度新锐客户</div><div class="value">${Number(r.risingCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.risingDelta)}">${deltaQ(r.risingDelta)}</span> · 较前日 <span class="${clsTrend(r.risingDayDelta)}">${delta(r.risingDayDelta)}</span> · 占有效 ${r.validCount > 0 ? (r.risingCount/r.validCount*100).toFixed(1) : 0}%</div></div>
-        <div class="kpi hero" data-k="cost"><div class="label">本季度新客消耗</div><div class="value">${moneyWan(r.yestCost)}</div><div class="sub">较上季 <span class="${clsTrend(r.costRate)}">${pct(r.costRate)}</span> · 较前日 <span class="${clsTrend(r.dayCostRate)}">${pct(r.dayCostRate)}</span> · 本季新客日耗</div></div>
-        <div class="kpi mini" data-k="new"><div class="label">新客数</div><div class="value">${Number(r.newCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.newDelta)}">${deltaQ(r.newDelta)}</span> · 前日 <span class="${clsTrend(r.newDayDelta)}">${delta(r.newDayDelta)}</span></div></div>
-        <div class="kpi mini" data-k="valid"><div class="label">有效新客</div><div class="value">${Number(r.validCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季 <span class="${clsTrend(r.validDelta)}">${deltaQ(r.validDelta)}</span> · 占新客 ${r.newCount > 0 ? (r.validCount/r.newCount*100).toFixed(1) : 0}%</div></div>
+      <div class="kpi-bar">
+        <div class="kbar-cell hero">
+          <div class="kbar-label">本季新锐</div>
+          <div class="kbar-value">${Number(r.risingCount || 0).toLocaleString("zh-CN")}</div>
+          <div class="kbar-sub">较上季 <span class="${clsTrend(r.risingDelta)}">${deltaQ(r.risingDelta)}</span> · 占有效 ${r.validCount > 0 ? (r.risingCount/r.validCount*100).toFixed(1) : 0}%</div>
+        </div>
+        <div class="kbar-cell hero">
+          <div class="kbar-label">本季新客消耗</div>
+          <div class="kbar-value">${moneyWan(r.yestCost)}</div>
+          <div class="kbar-sub">较上季 <span class="${clsTrend(r.costRate)}">${pct(r.costRate)}</span> · 前日 <span class="${clsTrend(r.dayCostRate)}">${pct(r.dayCostRate)}</span></div>
+        </div>
+        <div class="kbar-cell">
+          <div class="kbar-label">中心日耗</div>
+          <div class="kbar-value">${moneyWan(centerCost)}</div>
+          <div class="kbar-sub">环比 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div>
+        </div>
+        <div class="kbar-cell">
+          <div class="kbar-label">新客数</div>
+          <div class="kbar-value">${Number(r.newCount || 0).toLocaleString("zh-CN")}</div>
+          <div class="kbar-sub">较上季 <span class="${clsTrend(r.newDelta)}">${deltaQ(r.newDelta)}</span></div>
+        </div>
+        <div class="kbar-cell">
+          <div class="kbar-label">有效新客</div>
+          <div class="kbar-value">${Number(r.validCount || 0).toLocaleString("zh-CN")}</div>
+          <div class="kbar-sub">较上季 <span class="${clsTrend(r.validDelta)}">${deltaQ(r.validDelta)}</span></div>
+        </div>
       </div>
     `;
   }
