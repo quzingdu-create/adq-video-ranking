@@ -1419,8 +1419,8 @@ function openBatchPasteModal() {
         </div>
         <div style="padding:18px 20px;">
           <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">从 Excel / 腾讯文档复制（含表头）→ 粘贴到下方文本框（支持 Tab/逗号 分隔）：</div>
-          <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">必须列：日期 / 销售 / 客户主体 / 类目 ， 可选列：链路 / 拓客途径 / 资源方 / 客户来源 / 投放状态 / 是否新锐</div>
-          <textarea id="bp-text" rows="6" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;" placeholder="日期&#9;销售&#9;客户主体&#9;类目&#9;链路&#10;2026-05-18&#9;kinsleyjin&#9;广州XX服装&#9;女装&#9;直播"></textarea>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">必填 7 列（与「+ 新增登记」完全一致）：客户主体名称 / 类目 / 销售 / 拓客途径 / 资源方 / 客户来源 / 日期</div>
+          <textarea id="bp-text" rows="6" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;" placeholder="客户主体名称&#9;类目&#9;销售&#9;拓客途径&#9;资源方&#9;客户来源&#9;日期&#10;广州XX服装有限公司&#9;女装&#9;kinsleyjin&#9;广告服务商转介绍&#9;某某传媒&#9;26年4月后产业带拓客&#9;2026-05-18"></textarea>
           <div style="margin-top:8px;display:flex;gap:8px;">
             <button class="btn-sm" onclick="parseBatchPaste()">🔍 解析并校验</button>
             <span style="font-size:11px;color:#6b7280;align-self:center;">解析后下方会显示每行状态</span>
@@ -1437,10 +1437,13 @@ function openBatchPasteModal() {
                   <tr>
                     <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">#</th>
                     <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">状态</th>
-                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户主体</th>
-                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">简称</th>
-                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">销售</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户主体名称</th>
                     <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">类目</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">销售</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">拓客途径</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">资源方</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户来源</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">日期</th>
                     <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">说明</th>
                   </tr>
                 </thead>
@@ -1528,7 +1531,11 @@ function parseBatchPaste() {
       }
     }
     if (!r.sale) { issues.push('销售必填'); level = 'err'; }
-    if (!r.cat) { issues.push('类目必填'); if (level === 'ok') level = 'warn'; }
+    if (!r.cat) { issues.push('类目必填'); level = 'err'; }
+    if (!r.channel) { issues.push('拓客途径必填'); level = 'err'; }
+    if (r.channel && r.channel !== '自拓' && !r.resource) { issues.push('非自拓途径建议填资源方'); if (level === 'ok') level = 'warn'; }
+    if (!r.source) { issues.push('客户来源必填'); level = 'err'; }
+    if (!r.date) { issues.push('日期必填'); level = 'err'; }
     return { ...r, issues, level };
   });
   // 渲染预览
@@ -1548,9 +1555,12 @@ function parseBatchPaste() {
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + r.lineNo + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + tagMap[r.level] + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.name || '') + '</td>'
-      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#2563eb;">' + (r.shortName || '-') + '</td>'
-      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.sale || '') + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.cat || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.sale || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.channel || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.resource || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.source || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.date || '') + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:11px;">' + r.issues.join('；') + '</td>'
       + '</tr>';
   }).join('');
