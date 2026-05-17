@@ -447,6 +447,8 @@
     </select>
     <button id="btnTarget">⚙️ 目标管理</button>
     <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
+    <button id="btnBatchPaste" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="一次粘贴多行客户（从 Excel/腾讯文档复制）">📋 批量粘贴</button>
+    <button id="btnExportToday" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="导出今日新登记 JSON 给数据合并">📤 导出今日</button>
     <button id="btnBulkImport">📥 上传导入</button>
     <input id="bulkImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" />
   </div>
@@ -553,7 +555,7 @@
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;position:sticky;bottom:0;background:#fff;">
       <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
-      <button class="btn-sm" onclick="submitRecord()">提交</button>
+      <button class="btn-sm" id="m-submit" onclick="submitRecord()">提交</button>
     </div>
   </div>
 </div>
@@ -1299,7 +1301,15 @@ function lookupDuplicates(name) {
   const n = (name || "").trim();
   if (!n) return { total:0, entries:[] };
   const entries = [];
+  // 1. 拓新组底表（最新，每天重建）
+  const REGISTERED_SUBJECTS = window.__REGISTERED_SUBJECTS__ || {};
+  if (Object.prototype.hasOwnProperty.call(REGISTERED_SUBJECTS, n)) {
+    const r = REGISTERED_SUBJECTS[n];
+    entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+  }
+  // 2. 历史表（兼容旧种子）
   if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) (HISTORY_MAP[n] || []).forEach(s => entries.push({ sales:s, date:"", src:"历史" }));
+  // 3. 本地 records
   if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) RECORDS.forEach(r => { if (r.name === n) entries.push({ sales:r.sale, date:r.date || "", src:"本地" }); });
   return { total:entries.length, entries };
 }
@@ -1319,29 +1329,277 @@ function initRegisterModal() {
   onChannelChange();
 }
 document.getElementById('btnAddRecord').onclick = () => { initRegisterModal(); openModal('modalRecord'); };
+
+// 「📋 批量粘贴」打开粘贴 modal
+const _btnBatchPaste = document.getElementById('btnBatchPaste');
+if (_btnBatchPaste) _btnBatchPaste.onclick = () => openBatchPasteModal();
+
+// 「📤 导出今日」一键导出今日新登记 JSON
+const _btnExportToday = document.getElementById('btnExportToday');
+if (_btnExportToday) _btnExportToday.onclick = () => exportTodayJson();
+
+function exportTodayJson() {
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const list = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+  const todayRows = list.filter(r => r.date === todayStr);
+  if (!todayRows.length) {
+    alert('今日（' + todayStr + '）暂无新登记。');
+    return;
+  }
+  const sales = [...new Set(todayRows.map(r => r.sale).filter(Boolean))];
+  const saleTag = sales.length === 1 ? sales[0] : (sales.length === 0 ? 'unknown' : 'mixed');
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    saleTag,
+    date: todayStr,
+    count: todayRows.length,
+    records: todayRows
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'register_' + saleTag + '_' + todayStr + '_' + todayRows.length + '条.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('✅ 已导出今日 ' + todayRows.length + ' 条新登记。请把 JSON 文件发给数据合并人员。');
+}
+
+// 批量粘贴 modal（动态创建一次）
+function openBatchPasteModal() {
+  let modal = document.getElementById('modalBatchPaste');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modalBatchPaste';
+    modal.className = 'modal-mask';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:12px;width:780px;max-height:92vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:15px;font-weight:600;">📋 批量粘贴登记</div>
+          <button onclick="closeModal('modalBatchPaste')" style="color:#bfbfbf;font-size:20px;border:none;background:transparent;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:18px 20px;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">从 Excel / 腾讯文档复制（含表头）→ 粘贴到下方文本框（支持 Tab/逗号 分隔）：</div>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">必须列：日期 / 销售 / 客户主体 / 类目 ， 可选列：链路 / 拓客途径 / 资源方 / 客户来源 / 投放状态 / 是否新锐</div>
+          <textarea id="bp-text" rows="6" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;" placeholder="日期&#9;销售&#9;客户主体&#9;类目&#9;链路&#10;2026-05-18&#9;kinsleyjin&#9;广州XX服装&#9;女装&#9;直播"></textarea>
+          <div style="margin-top:8px;display:flex;gap:8px;">
+            <button class="btn-sm" onclick="parseBatchPaste()">🔍 解析并校验</button>
+            <span style="font-size:11px;color:#6b7280;align-self:center;">解析后下方会显示每行状态</span>
+          </div>
+          <div id="bp-preview" style="margin-top:12px;display:none;">
+            <div style="font-size:13px;margin-bottom:6px;">
+              <span id="bp-stat-total">0</span> 行：<span style="color:#16a34a;" id="bp-stat-ok">0</span> 通过 · 
+              <span style="color:#d97706;" id="bp-stat-warn">0</span> 老客 · 
+              <span style="color:#dc2626;" id="bp-stat-err">0</span> 重复/错误
+            </div>
+            <div style="max-height:280px;overflow:auto;border:1px solid #e5e7eb;border-radius:6px;">
+              <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead style="position:sticky;top:0;background:#f9fafb;">
+                  <tr>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">#</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">状态</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户主体</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">简称</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">销售</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">类目</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">说明</th>
+                  </tr>
+                </thead>
+                <tbody id="bp-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;">
+          <button class="btn-sm ghost" onclick="closeModal('modalBatchPaste')">取消</button>
+          <button class="btn-sm" id="bp-submit" disabled onclick="submitBatchPaste()" style="background:var(--primary);color:#fff;">✅ 一键入库</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('bp-text').value = '';
+  document.getElementById('bp-preview').style.display = 'none';
+  document.getElementById('bp-submit').disabled = true;
+  openModal('modalBatchPaste');
+}
+
+let _bpRows = [];
+function parseBatchPaste() {
+  const txt = document.getElementById('bp-text').value.trim();
+  if (!txt) { alert('请先粘贴数据'); return; }
+  const lines = txt.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { alert('至少需要 1 行表头 + 1 行数据'); return; }
+  // 自动识别分隔符
+  let sep = '\t';
+  if (!lines[0].includes('\t')) sep = lines[0].includes(',') ? ',' : (lines[0].includes('，') ? '，' : '\t');
+  const header = lines[0].split(sep).map(c => c.trim());
+  // 列识别：宽松匹配
+  const findCol = (keys) => {
+    for (let i = 0; i < header.length; i++) {
+      for (const k of keys) if (header[i].includes(k)) return i;
+    }
+    return -1;
+  };
+  const idx = {
+    name: findCol(['客户主体', '主体名']),
+    sale: findCol(['销售', '归属']),
+    date: findCol(['日期', '登记']),
+    cat: findCol(['类目', '行业']),
+    link: findCol(['链路']),
+    channel: findCol(['拓客途径', '途径', '渠道']),
+    resource: findCol(['资源方', '资源']),
+    source: findCol(['来源']),
+    status: findCol(['状态', '投放状态']),
+    rising: findCol(['新锐', '是否新锐']),
+  };
+  if (idx.name < 0) { alert('未识别到「客户主体」列'); return; }
+  const today = new Date(); const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  _bpRows = lines.slice(1).map((line, i) => {
+    const cells = line.split(sep).map(c => c.trim());
+    const r = {
+      lineNo: i + 1,
+      name: cells[idx.name] || '',
+      sale: idx.sale >= 0 ? (cells[idx.sale] || '') : (typeof CURRENT_USER !== 'undefined' ? CURRENT_USER : ''),
+      date: idx.date >= 0 ? (cells[idx.date] || todayStr) : todayStr,
+      cat: idx.cat >= 0 ? (cells[idx.cat] || '') : '',
+      link: idx.link >= 0 ? (cells[idx.link] || '') : '',
+      channel: idx.channel >= 0 ? (cells[idx.channel] || '') : '',
+      resource: idx.resource >= 0 ? (cells[idx.resource] || '') : '',
+      source: idx.source >= 0 ? (cells[idx.source] || '') : '',
+      status: idx.status >= 0 ? (cells[idx.status] || '') : '',
+      rising: idx.rising >= 0 ? (cells[idx.rising] || '否') : '否',
+    };
+    // 校验
+    const issues = [];
+    let level = 'ok';
+    if (!r.name) { issues.push('客户主体必填'); level = 'err'; }
+    else {
+      const look = lookupEntity(r.name);
+      r.shortName = look.short;
+      r.isLaoke = look.isLaoke;
+      r.isOld24 = look.isOld24;
+      r.matched = look.matched;
+      if (look.isOld24) { issues.push('24年老客（不算新客）'); if (level === 'ok') level = 'warn'; }
+      else if (!look.matched) { issues.push('未命中映射字典'); if (level === 'ok') level = 'warn'; }
+      const dup = lookupDuplicates(r.name);
+      const hard = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
+      if (hard.length > 0) {
+        issues.push('已被 ' + hard.map(d => d.sales).join('、') + ' 登记（拒绝入库）');
+        level = 'err';
+      }
+    }
+    if (!r.sale) { issues.push('销售必填'); level = 'err'; }
+    if (!r.cat) { issues.push('类目必填'); if (level === 'ok') level = 'warn'; }
+    return { ...r, issues, level };
+  });
+  // 渲染预览
+  const total = _bpRows.length;
+  const ok = _bpRows.filter(r => r.level === 'ok').length;
+  const warn = _bpRows.filter(r => r.level === 'warn').length;
+  const err = _bpRows.filter(r => r.level === 'err').length;
+  document.getElementById('bp-stat-total').textContent = total;
+  document.getElementById('bp-stat-ok').textContent = ok;
+  document.getElementById('bp-stat-warn').textContent = warn;
+  document.getElementById('bp-stat-err').textContent = err;
+  document.getElementById('bp-preview').style.display = 'block';
+  const tagMap = { ok: '<span style="color:#16a34a;">✅ 通过</span>', warn: '<span style="color:#d97706;">⚠ 老客</span>', err: '<span style="color:#dc2626;">❌ 拒绝</span>' };
+  document.getElementById('bp-tbody').innerHTML = _bpRows.map(r => {
+    const bg = r.level === 'err' ? 'background:#fef2f2;' : (r.level === 'warn' ? 'background:#fefce8;' : '');
+    return '<tr style="' + bg + '">'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + r.lineNo + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + tagMap[r.level] + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.name || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#2563eb;">' + (r.shortName || '-') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.sale || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.cat || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:11px;">' + r.issues.join('；') + '</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('bp-submit').disabled = (ok + warn) === 0;
+}
+
+function submitBatchPaste() {
+  const valid = _bpRows.filter(r => r.level === 'ok' || r.level === 'warn');
+  if (!valid.length) { alert('没有可入库的行'); return; }
+  if (!confirm('即将入库 ' + valid.length + ' 条（错误行已跳过）。确认？')) return;
+  const baseId = Date.now();
+  if (typeof RECORDS === 'undefined' || !Array.isArray(RECORDS)) {
+    alert('当前看板未加载 RECORDS 数组，请刷新页面再试');
+    return;
+  }
+  valid.forEach((r, i) => {
+    RECORDS.unshift({
+      id: baseId + i,
+      name: r.name,
+      shortName: r.shortName || r.name,
+      sale: r.sale,
+      date: r.date,
+      cat: r.cat,
+      link: r.link,
+      channel: r.channel,
+      resource: r.resource,
+      source: r.source,
+      status: r.status || (r.isLaoke ? '存量' : '新客'),
+      rising: r.rising,
+      isLaoke: !!r.isLaoke,
+      old24: !!r.isOld24,
+      matched: !!r.matched,
+      _batchPaste: true,
+      images: '[]',
+      links: r.link ? '["' + r.link + '"]' : '[]',
+    });
+  });
+  // 持久化（如果有 saveRecords 函数就调）
+  if (typeof saveRecords === 'function') saveRecords();
+  if (typeof renderAll === 'function') renderAll();
+  closeModal('modalBatchPaste');
+  alert('✅ 已入库 ' + valid.length + ' 条');
+}
 function onNameInput() {
   const raw = document.getElementById('m-name').value.trim();
   const hintEl = document.getElementById('m-name-hint');
-  if (!raw) { hintEl.innerHTML = ''; return; }
+  const submitBtn = document.getElementById('m-submit');
+  if (!raw) { 
+    hintEl.innerHTML = '';
+    if (submitBtn) submitBtn.disabled = false;
+    return; 
+  }
   const look = lookupEntity(raw);
   const shortName = look.short || raw;
   const dup = lookupDuplicates(raw);
   let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
-  hint += look.isOld24 ? `<span class="badge-laoke">24年老客</span>` : (look.isLaoke ? `<span class="badge-laoke">非本季度新客 ${look.firstQuarter || ''}老客</span>` : `<span class="badge-newk">新客</span>`);
-  // 投放端识别
+  hint += look.isOld24 ? `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">⚠️ 24年老客</span>` : (look.isLaoke ? `<span class="badge-laoke">非本季度新客 ${look.firstQuarter || ''}老客</span>` : `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 新客</span>`);
   const DSM = window.__DELIVERY_SIDE_MAP__ || {};
   const ds = DSM[shortName] || DSM[raw] || '';
   if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
   if (!look.matched) hint += `<span style="font-size:11px;color:#bfbfbf;">（未命中字典，默认以主体作为简称）</span>`;
   hint += `</div>`;
+  // 重复登记：底表/本地 = 强重复，禁用提交
+  let hasHardDup = false;
   if (dup.total) {
+    const hardDups = dup.entries.filter(d => d.src === "底表" || d.src === "本地");
+    hasHardDup = hardDups.length > 0;
     const salesList = dup.entries.map(d => {
-      const tag = d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>' : `<span style="font-size:11px;color:#bfbfbf;">[${d.date}]</span>`;
+      const tag = d.src === "底表" ? '<span style="font-size:11px;color:#6b7280;">[底表]</span>'
+                : d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>' 
+                : `<span style="font-size:11px;color:#bfbfbf;">[${d.date}]</span>`;
       return `<b>${d.sales}</b>${tag}`;
     }).join('、');
-    hint += `<div class="hint-dup">该主体已被登记 <b>${dup.total}</b> 次：${salesList}。如确为同一客户，请确认是否继续提交。</div>`;
+    if (hasHardDup) {
+      hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
+        ❌ <b>主体重复</b>：已被 ${salesList} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。
+      </div>`;
+    } else {
+      hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
+        ⚠️ 该主体在历史表出现 <b>${dup.total}</b> 次：${salesList}。如确为同一客户请确认是否继续。
+      </div>`;
+    }
   }
   hintEl.innerHTML = hint;
+  if (submitBtn) submitBtn.disabled = hasHardDup;
 }
 function onChannelChange() {
   const v = document.getElementById('m-channel').value;
@@ -1394,9 +1652,15 @@ window.submitRecord = () => {
   const look = lookupEntity(name);
   const shortName = look.short || name;
   const dup = lookupDuplicates(name);
+  // 「先登记先归属」硬卡：底表/本地命中即拒绝
+  const hardDup = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
+  if (hardDup.length > 0) {
+    const list = hardDup.map(d => d.sales + (d.date ? '@' + d.date : '')).join('、');
+    return alert('❌ 主体重复：已被 ' + list + ' 登记。\n按「先登记先归属」规则拒绝提交。');
+  }
   if (dup.total) {
     const salesList = dup.entries.map(d => d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`).join('、');
-    if (!confirm(`客户主体「${name}」已被登记 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
+    if (!confirm(`客户主体「${name}」在历史表出现 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
   }
   const finalBrand = shortName;
   // 自动匹配投放端（基于今晚的字典；查不到 = 未匹配投放）
