@@ -422,6 +422,14 @@
 </head>
 <body>
 
+<!-- 销售导出提醒横幅 -->
+<div id="exportReminderBanner" style="background:linear-gradient(90deg,#fef3c7,#fde68a);border-bottom:2px solid #d97706;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#78350f;">
+  <div>
+    📌 <b>每天登记完别忘了</b>：点上面红色按钮 <b style="color:#dc2626;">「📤 导出今日 JSON」</b> → 把文件发给 <b>子青</b>（不发的话明天看板上不会显示你登记的客户）
+  </div>
+  <div id="banner-today-count-pc" style="background:#fff;padding:3px 10px;border-radius:12px;font-weight:600;color:#92400e;">今日 0 条</div>
+</div>
+
 <!-- Demo 提示条 -->
 <div id="demoBanner" style="background:linear-gradient(90deg,#fef3c7,#fde68a);color:#78350f;padding:8px 28px;font-size:13px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f59e0b;">
   <div><strong>Demo 演示版</strong> · 图表数据为模拟数据 · <span style="color:#92400e;">请回 <a href="index.html" style="color:#78350f;">作战中心首页</a> 提交建议</span></div>
@@ -448,7 +456,7 @@
     <button id="btnTarget">⚙️ 目标管理</button>
     <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
     <button id="btnBatchPaste" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="一次粘贴多行客户（从 Excel/腾讯文档复制）">📋 批量粘贴</button>
-    <button id="btnExportToday" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="导出今日新登记 JSON 给数据合并">📤 导出今日</button>
+    <button id="btnExportToday" style="background:#dc2626;color:#fff;border:1px solid #dc2626;font-weight:600;" title="登记完点这个！下载今日 JSON 文件，发给子青，明天数据才能上看板">📤 导出今日 JSON（发子青）</button>
     <button id="btnBulkImport">📥 上传导入</button>
     <input id="bulkImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" />
   </div>
@@ -1350,6 +1358,21 @@ if (_btnBatchPaste) _btnBatchPaste.onclick = () => openBatchPasteModal();
 // 「📤 导出今日」一键导出今日新登记 JSON
 const _btnExportToday = document.getElementById('btnExportToday');
 if (_btnExportToday) _btnExportToday.onclick = () => exportTodayJson();
+
+// 顶部红黄横幅"今日 N 条"实时计数
+function updateExportBannerCount(){
+  const el = document.getElementById('banner-today-count-pc');
+  if (!el) return;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const list = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+  const todayCount = list.filter(r => r.date === todayStr).length;
+  el.textContent = '今日 ' + todayCount + ' 条';
+  el.style.color = todayCount > 0 ? '#dc2626' : '#92400e';
+  el.style.background = todayCount > 0 ? '#fee2e2' : '#fff';
+}
+window.addEventListener('DOMContentLoaded', function(){ try{ updateExportBannerCount(); }catch(e){} });
+window.updateExportBannerCount = updateExportBannerCount;
 
 function exportTodayJson() {
   const today = new Date();

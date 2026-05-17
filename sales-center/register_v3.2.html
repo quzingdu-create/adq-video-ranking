@@ -82,6 +82,14 @@ window.__SEED_RECORDS__ = [{"id": 1778598478862, "name": "合肥多莉娅服饰�
 </head>
 <body class="min-h-screen">
 
+<!-- 上线提示横幅：销售必读 -->
+<div id="banner-export-reminder" style="background:linear-gradient(90deg,#fef3c7,#fde68a);border-bottom:2px solid #d97706;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#78350f;">
+  <div>
+    📌 <b>每天登记结束</b> → 点右上角 <b style="color:#dc2626;">「📤 导出今日 JSON」</b> → 把文件发给 <b>子青</b>（不发的话明天看板上不会显示你登记的客户）
+  </div>
+  <div id="banner-today-count" style="background:#fff;padding:3px 10px;border-radius:12px;font-weight:600;color:#92400e;">今日 0 条</div>
+</div>
+
 <!-- Header -->
 <div class="bg-white border-b border-gray-200">
   <div class="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -89,7 +97,7 @@ window.__SEED_RECORDS__ = [{"id": 1778598478862, "name": "合肥多莉娅服饰�
       <div class="text-[18px] font-semibold text-gray-900">服饰中心增长组 · 拓客登记看板</div>
     </div>
     <div class="flex items-center gap-2">
-      <button class="btn-ghost px-3 py-1.5 rounded-md text-sm" onclick="exportTodayJson()" title="导出今日新登记 JSON 给数据合并使用"><i class="ri-share-forward-line mr-1"></i>导出今日 JSON</button>
+      <button class="px-3 py-1.5 rounded-md text-sm" style="background:#dc2626;color:#fff;font-weight:600;" onclick="exportTodayJson()" title="导出今日新登记 JSON 给数据合并使用"><i class="ri-share-forward-line mr-1"></i>📤 导出今日 JSON</button>
       <button class="btn-ghost px-3 py-1.5 rounded-md text-sm" onclick="exportXlsx()"><i class="ri-download-line mr-1"></i>导出</button>
       <button class="btn-ghost px-3 py-1.5 rounded-md text-sm" onclick="copyJSON()"><i class="ri-file-copy-line mr-1"></i>复制JSON</button>
       <button class="btn-ghost px-3 py-1.5 rounded-md text-sm" onclick="downloadTemplate()"><i class="ri-file-excel-2-line mr-1"></i>下载模版</button>
@@ -502,6 +510,20 @@ if (!records || !records.length) {
 }
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(records)); }
 
+/* 更新顶部红黄横幅的"今日 N 条"角标 */
+function updateBannerCount(){
+  const el = document.getElementById('banner-today-count');
+  if (!el) return;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const todayCount = (records || []).filter(r => r.date === todayStr).length;
+  el.textContent = '今日 ' + todayCount + ' 条';
+  el.style.color = todayCount > 0 ? '#dc2626' : '#92400e';
+  el.style.background = todayCount > 0 ? '#fee2e2' : '#fff';
+}
+// 页面加载即更新一次
+window.addEventListener('DOMContentLoaded', function(){ try{ updateBannerCount(); }catch(e){} });
+
 /* ===== 状态：时间范围 & 对比 ===== */
 let state = {
   range: "today",          // today / week / month / custom
@@ -748,7 +770,7 @@ function submitRecord() {
     authImages: pendingAuth.map(p => ({ id:p.id, dataUrl:p.dataUrl })),
     images: pendingImages.map(p => ({ id:p.id, dataUrl:p.dataUrl }))
   });
-  save(); closeModal(); render();
+  save(); closeModal(); render(); updateBannerCount();
 }
 
 /* ===== 批量导入 ===== */
@@ -1076,7 +1098,7 @@ function submitBulk() {
       _needAuth: (p.rising === "是")
     });
   });
-  save(); closeBulkModal(); render();
+  save(); closeBulkModal(); render(); updateBannerCount();
   alert("已导入 " + pending.length + " 条记录。"
     + (pending.some(r => r.parsed.rising === "是") ? "\n⚠ 新锐客户需在列表中单条补传品牌授权书。" : ""));
 }
