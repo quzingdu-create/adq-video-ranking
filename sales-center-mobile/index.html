@@ -246,12 +246,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
         </div>
         <div class="chips" id="growthChips">
           <button class="chip active" data-filter="all">全部 <span class="chip-count" id="gCntAll">0</span></button>
-          <button class="chip" data-filter="expired">⏰ 冷却到期 <span class="chip-count" id="gCntExpired">0</span></button>
-          <button class="chip" data-filter="fresh">🆕 新冒头 <span class="chip-count" id="gCntFresh">0</span></button>
-          <button class="chip" data-filter="t1">🔥 一档 <span class="chip-count" id="gCntT1">0</span></button>
-          <button class="chip" data-filter="t2">⚡ 二档 <span class="chip-count" id="gCntT2">0</span></button>
-          <button class="chip" data-filter="t3">💤 三档 <span class="chip-count" id="gCntT3">0</span></button>
-          <button class="chip" data-filter="cooling">😴 冷却中 <span class="chip-count" id="gCntCooling">0</span></button>
+          <button class="chip" data-filter="todo">📞 待 push <span class="chip-count" id="gCntTodo">0</span></button>
           <button class="chip" data-filter="landed">✅ 已上岸 <span class="chip-count" id="gCntLanded">0</span></button>
         </div>
         <div class="card-list" id="growthList"></div>
@@ -661,24 +656,15 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
       $("growthSuccess").style.display = "none";
     }
     $("growthCount").innerHTML = `${rows.length} 候选`;
-    // 更新 chip 角标
+    // 更新 chip 角标（简化：全部/待push/已上岸）
+    const todoCount = rows.filter(r => !r._cooling).length;
     $("gCntAll") && ($("gCntAll").textContent = rows.length);
-    $("gCntExpired") && ($("gCntExpired").textContent = stats.expired);
-    $("gCntFresh") && ($("gCntFresh").textContent = stats.fresh);
-    $("gCntT1") && ($("gCntT1").textContent = stats[1]);
-    $("gCntT2") && ($("gCntT2").textContent = stats[2]);
-    $("gCntT3") && ($("gCntT3").textContent = stats[3]);
-    $("gCntCooling") && ($("gCntCooling").textContent = stats.cooling);
+    $("gCntTodo") && ($("gCntTodo").textContent = todoCount);
     $("gCntLanded") && ($("gCntLanded").textContent = totalLanded);
     // 应用 chip 过滤
     let viewRows = rows;
     let viewLanded = false;
-    if (growthFilter === "expired") viewRows = rows.filter(r => r._cooldownExpired);
-    else if (growthFilter === "fresh") viewRows = rows.filter(r => !r._cooling && !r._cooldownExpired && (r._nudge.count || 0) === 0);
-    else if (growthFilter === "t1") viewRows = rows.filter(r => r._tier.tier === 1);
-    else if (growthFilter === "t2") viewRows = rows.filter(r => r._tier.tier === 2);
-    else if (growthFilter === "t3") viewRows = rows.filter(r => r._tier.tier === 3);
-    else if (growthFilter === "cooling") viewRows = rows.filter(r => r._cooling);
+    if (growthFilter === "todo") viewRows = rows.filter(r => !r._cooling);
     else if (growthFilter === "landed") { viewRows = []; viewLanded = true; }
 
     if (viewLanded) {
