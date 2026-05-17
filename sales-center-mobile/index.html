@@ -140,12 +140,6 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   .badge.stable { background: var(--green2); color: var(--green); }
   .badge.blue { background: var(--blue2); color: var(--blue); }
   .badge.purple { background: var(--purple2); color: var(--purple); }
-  .badge.gray { background: #f1f5f9; color: #64748b; }
-  .badge.red { background: #fee2e2; color: #dc2626; }
-  .badge.green { background: #d1fae5; color: #059669; }
-  .btn-mini { padding: 5px 10px; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--blue); color: #fff; cursor: pointer; }
-  .btn-mini.ghost { background: #fff; color: var(--text-2); }
-  .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
   .meta-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; margin-top: 10px; }
   .meta { background: #f8fafc; border-radius: 12px; padding: 8px; min-width: 0; }
   .meta b { display: block; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -240,14 +234,13 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
 
       <div class="section">
         <div class="section-head"><h2>🔥 冲击季度有效新客名单</h2><span class="more" id="growthCount">0 个候选</span></div>
-        <div id="growthSuccess" style="background:linear-gradient(90deg,#ecfdf5,#f0fdfa);border:1px solid #d1fae5;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:12px;color:#065f46;display:none;"></div>
         <div style="margin-bottom:8px;">
           <select id="growthSaleSel" style="width:100%; border:1px solid var(--line); background:#fff; border-radius:10px; padding:9px 10px; font-size:13px; font-weight:700; color:var(--text);"></select>
         </div>
         <div class="chips" id="growthChips">
-          <button class="chip active" data-filter="all">全部 <span class="chip-count" id="gCntAll">0</span></button>
-          <button class="chip" data-filter="todo">📞 待 push <span class="chip-count" id="gCntTodo">0</span></button>
-          <button class="chip" data-filter="landed">✅ 已上岸 <span class="chip-count" id="gCntLanded">0</span></button>
+          <button class="chip active" data-limit="20">Top20</button>
+          <button class="chip" data-limit="50">Top50</button>
+          <button class="chip" data-limit="9999">全部</button>
         </div>
         <div class="card-list" id="growthList"></div>
       </div>
@@ -267,8 +260,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   let topFilter = "all";
   let topSaleTab = "all";
   let growthSale = localStorage.getItem("mobile_growth_sale") || "all";
-  let growthLimit = 9999;
-  let growthFilter = "all"; // all / expired / fresh / t1 / t2 / t3 / cooling
+  let growthLimit = 20;
 
   const $ = id => document.getElementById(id);
   const moneyWan = yuan => {
@@ -340,7 +332,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
       renderTop();
     }));
     document.querySelectorAll("#todoChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#todoChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); topFilter = btn.dataset.filter; renderTop(); }));
-    document.querySelectorAll("#growthChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#growthChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); growthFilter = btn.dataset.filter; renderGrowth(); }));
+    document.querySelectorAll("#growthChips .chip").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll("#growthChips .chip").forEach(x => x.classList.remove("active")); btn.classList.add("active"); growthLimit = Number(btn.dataset.limit); renderGrowth(); }));
   }
 
   function renderKpis(){
@@ -525,221 +517,25 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
 
   function escapeAttr(s){ return String(s || "").replace(/"/g, "&quot;"); }
 
-  // ======= 冲击有效新客 - nudge log + 冷却 + 放弃机制 =======
-  // 状态流转考虑：客户季累会变化
-  //   <500: 不在名单（客户没投或回落）
-  //   500-1000: 冲击中（要 push）
-  //   ≥1000: 已上岸（自动归档，giveup 自动撤销）
-  const NUDGE_COOLDOWN_DAYS = 3;
-  const GIVE_UP_THRESHOLD = 3;
-  function nudgeKey(name){ return "nudge_" + name; }
-  function giveUpKey(name){ return "giveup_" + name; }
-  function landedKey(name){ return "landed_" + name; } // 已上岸标记（用于成功率统计）
-  function getNudge(name){
-    try { return JSON.parse(localStorage.getItem(nudgeKey(name))) || {count:0, lastTs:0, untilTs:0}; }
-    catch { return {count:0, lastTs:0, untilTs:0}; }
-  }
-  function setNudge(name, obj){ localStorage.setItem(nudgeKey(name), JSON.stringify(obj)); }
-  function isGivenUp(name){ return localStorage.getItem(giveUpKey(name)) === "1"; }
-  function setGiveUp(name, val){ if(val) localStorage.setItem(giveUpKey(name),"1"); else localStorage.removeItem(giveUpKey(name)); }
-  function getLanded(name){
-    try { return JSON.parse(localStorage.getItem(landedKey(name))) || null; }
-    catch { return null; }
-  }
-  function setLanded(name, obj){ if(obj) localStorage.setItem(landedKey(name), JSON.stringify(obj)); else localStorage.removeItem(landedKey(name)); }
-  function nudgeOnce(name){
-    const n = getNudge(name);
-    n.count = (n.count || 0) + 1;
-    n.lastTs = Date.now();
-    n.untilTs = Date.now() + NUDGE_COOLDOWN_DAYS * 86400000;
-    setNudge(name, n);
-  }
-  function rollbackNudge(name){
-    const n = getNudge(name);
-    n.count = Math.max(0, (n.count || 0) - 1);
-    n.untilTs = 0;
-    setNudge(name, n);
-  }
-  function tierOf(qcost){
-    if (qcost >= 800) return {tier:1, label:"🔥 一档", cls:"tier-1", desc:"距 1000 ≤200"};
-    if (qcost >= 600) return {tier:2, label:"⚡ 二档", cls:"tier-2", desc:"距 1000 ≤400"};
-    return {tier:3, label:"💤 三档", cls:"tier-3", desc:"距 1000 >400"};
-  }
-
   function renderGrowth(){
-    // 状态校准：先扫所有有 nudge log 的客户，按当下季累分流
-    // ≥1000 → 自动归档为「已上岸」+ 撤销 giveup
-    // <500  → 暂时隐藏（不删 nudge log，季累回到 500-1000 时自动恢复）
-    const allBySh = {};
-    records.forEach(r => { allBySh[r.shortName || r.name] = r; });
-    Object.keys(localStorage).filter(k => k.startsWith("nudge_") || k.startsWith("giveup_")).forEach(k => {
-      const name = k.replace(/^(nudge_|giveup_)/, "");
-      const rec = allBySh[name];
-      if (!rec) return;
-      const qc = Number(rec.quarterCost || 0);
-      if (qc >= 1000) {
-        // 已上岸：写 landed 标记（如未写），撤销 giveup
-        const n = getNudge(name);
-        if (!getLanded(name)) {
-          setLanded(name, {
-            sale: rec.sale || "—",
-            shortName: rec.shortName || rec.name,
-            landedTs: Date.now(),
-            landedQcost: qc,
-            pushedTimes: n.count || 0,
-            wasNudged: (n.count || 0) > 0,
-          });
-        }
-        if (isGivenUp(name)) setGiveUp(name, false);
-      }
-    });
-
-    let rows = records.filter(r => normQ(r.firstQuarter) === currentQuarter && Number(r.quarterCost || 0) >= 500 && Number(r.quarterCost || 0) < 1000 && !r.isLaoke && !r.old24);
+    let rows = records.filter(r => normQ(r.firstQuarter) === currentQuarter && Number(r.quarterCost || 0) > 0 && Number(r.quarterCost || 0) < 1000 && !r.isLaoke && !r.old24);
+    // 销售下拉：all=全部、否则按销售筛
     if (growthSale !== "all") rows = rows.filter(r => r.sale === growthSale);
-    const now = Date.now();
-    // 注入 nudge 状态
-    rows = rows.map(r => {
-      const name = r.shortName || r.name;
-      const n = getNudge(name);
-      const cooling = n.untilTs > now;
-      const cooldownLeft = cooling ? Math.ceil((n.untilTs - now)/86400000) : 0;
-      const cooldownExpired = !cooling && n.untilTs > 0 && n.lastTs > 0;
-      const giveUp = isGivenUp(name);
-      const tier = tierOf(Number(r.quarterCost || 0));
-      const stuck = (n.count || 0) >= GIVE_UP_THRESHOLD;
-      return {...r, _name:name, _nudge:n, _cooling:cooling, _cooldownLeft:cooldownLeft, _cooldownExpired:cooldownExpired, _giveUp:giveUp, _tier:tier, _stuck:stuck, gap:1000 - Number(r.quarterCost || 0)};
-    });
-    // 已放弃过滤掉
-    rows = rows.filter(r => !r._giveUp);
-    // 排序：冷却到期未上岸 > 新冒头(从未push) > 一档 > 二档 > 三档；冷却中沉底
-    rows.sort((a,b) => {
-      const score = r => {
-        if (r._cooling) return 100 + r._cooldownLeft; // 沉底
-        if (r._cooldownExpired) return -10; // 顶部红字
-        if ((r._nudge.count || 0) === 0) return -5 + r._tier.tier * 0.1; // 新冒头
-        return r._tier.tier;
-      };
-      const sa = score(a), sb = score(b);
-      if (sa !== sb) return sa - sb;
-      return a.gap - b.gap;
-    });
-    // 各档统计 + 总数
-    const stats = {1:0, 2:0, 3:0, cooling:0, expired:0, fresh:0, stuck:0};
-    rows.forEach(r => {
-      stats[r._tier.tier]++;
-      if (r._cooling) stats.cooling++;
-      else if (r._cooldownExpired) stats.expired++;
-      else if ((r._nudge.count || 0) === 0) stats.fresh++;
-      if (r._stuck) stats.stuck++;
-    });
-    // 已上岸列表（按销售筛过滤）
-    let landedRows = [];
-    Object.keys(localStorage).filter(k => k.startsWith("landed_")).forEach(k => {
-      const name = k.replace(/^landed_/, "");
-      const info = getLanded(name);
-      if (!info) return;
-      if (growthSale !== "all" && info.sale !== growthSale) return;
-      landedRows.push(info);
-    });
-    landedRows.sort((a,b) => (b.landedTs||0) - (a.landedTs||0));
-    const pushedAndLanded = landedRows.filter(x => x.wasNudged).length;
-    const totalLanded = landedRows.length;
-    // 冲击成功率：成功上岸的 / (上岸 + 在名单 + 已放弃)
-    const giveUpCount = Object.keys(localStorage).filter(k => k.startsWith("giveup_")).length;
-    const denominator = totalLanded + rows.length + giveUpCount;
-    const successRate = denominator > 0 ? (totalLanded / denominator * 100).toFixed(1) : "—";
-    // 战绩条
-    if (totalLanded > 0) {
-      $("growthSuccess").style.display = "block";
-      $("growthSuccess").innerHTML = `🏆 本季已上岸 <b style="color:#059669;font-size:14px;">${totalLanded}</b> 家（其中 ${pushedAndLanded} 家曾经 push 过）· 冲击成功率 <b style="color:#059669;font-size:14px;">${successRate}%</b>`;
-    } else {
-      $("growthSuccess").style.display = "none";
-    }
-    $("growthCount").innerHTML = `${rows.length} 候选`;
-    // 更新 chip 角标（简化：全部/待push/已上岸）
-    const todoCount = rows.filter(r => !r._cooling).length;
-    $("gCntAll") && ($("gCntAll").textContent = rows.length);
-    $("gCntTodo") && ($("gCntTodo").textContent = todoCount);
-    $("gCntLanded") && ($("gCntLanded").textContent = totalLanded);
-    // 应用 chip 过滤
-    let viewRows = rows;
-    let viewLanded = false;
-    if (growthFilter === "todo") viewRows = rows.filter(r => !r._cooling);
-    else if (growthFilter === "landed") { viewRows = []; viewLanded = true; }
-
-    if (viewLanded) {
-      $("growthList").innerHTML = landedRows.map(info => {
-        const date = info.landedTs ? new Date(info.landedTs).toISOString().slice(0,10) : "—";
-        return `
-        <div class="work-card done">
-          <div class="work-top">
-            <div class="name">✅ ${info.shortName}</div>
-            <span class="badge green">已上岸 ¥${Math.round(info.landedQcost||0).toLocaleString("zh-CN")}</span>
-          </div>
-          <div class="meta-grid">
-            <div class="meta"><b>${info.sale || "—"}</b><span>销售</span></div>
-            <div class="meta"><b>${info.pushedTimes || 0} 次</b><span>曾 push</span></div>
-            <div class="meta"><b>${date}</b><span>上岸日</span></div>
-          </div>
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <button class="btn-mini ghost" data-unland="${escapeAttr(info.shortName)}">↩️ 撤销上岸</button>
-          </div>
-        </div>`;
-      }).join("") || `<div class="empty">本季尚无客户从冲击名单上岸</div>`;
-      // 撤销上岸事件
-      $("growthList").querySelectorAll("[data-unland]").forEach(b => b.onclick = () => {
-        setLanded(b.dataset.unland, null);
-        renderGrowth();
-      });
-      return;
-    }
-
-    $("growthList").innerHTML = viewRows.slice(0, growthLimit).map(r => {
-      const stateChip = r._cooling
-        ? `<span class="badge gray">😴 冷却中 ${r._cooldownLeft}d</span>`
-        : r._cooldownExpired
-          ? `<span class="badge red">⏰ 冷却到期</span>`
-          : (r._nudge.count || 0) === 0
-            ? `<span class="badge green">🆕 新冒头</span>`
-            : `<span class="badge blue">已 push ${r._nudge.count}次</span>`;
-      const stuckChip = r._stuck ? `<span class="badge red">⚠️ 投不动</span>` : "";
-      return `
-      <div class="work-card${r._cooling?' done':''}" data-growth="${escapeAttr(r._name)}">
-        <div class="work-top">
-          <div class="name">${r._tier.label} · ${r.shortName || r.name}</div>
-          <span class="badge blue">还差 ¥${Math.ceil(r.gap).toLocaleString("zh-CN")}</span>
-        </div>
-        <div style="margin:6px 0;display:flex;flex-wrap:wrap;gap:6px;">${stateChip}${stuckChip}</div>
+    rows = rows.map(r => ({...r, gap: 1000 - Number(r.quarterCost || 0)})).sort((a,b) => a.gap - b.gap || Number(b.yestCost || 0) - Number(a.yestCost || 0));
+    $("growthCount").textContent = `${rows.length} 个候选`;
+    $("growthList").innerHTML = rows.slice(0, growthLimit).map(r => `
+      <div class="work-card">
+        <div class="work-top"><div class="name">${r.shortName || r.name}</div><span class="badge blue">还差 ¥${Math.ceil(r.gap).toLocaleString("zh-CN")}</span></div>
         <div class="meta-grid">
           <div class="meta"><b>${r.sale || "—"}</b><span>销售</span></div>
           <div class="meta"><b>¥${Math.round(Number(r.quarterCost || 0)).toLocaleString("zh-CN")}</b><span>季累消耗</span></div>
           <div class="meta"><b>${moneyWan(r.yestCost)}</b><span>昨日消耗</span></div>
           <div class="meta"><b>${r.cat || "—"}</b><span>类目</span></div>
+          <div class="meta"><b>${r.deliverySide || "—"}</b><span>投放端</span></div>
+          <div class="meta"><b>${r.source || "—"}</b><span>来源</span></div>
         </div>
-        <div style="display:flex;gap:6px;margin-top:8px;">
-          <button class="btn-mini" data-nudge="${escapeAttr(r._name)}">📞 已 push</button>
-          <button class="btn-mini ghost" data-undo-nudge="${escapeAttr(r._name)}" ${(r._nudge.count||0)===0?'disabled':''}>撤销</button>
-          <button class="btn-mini ghost" style="margin-left:auto;color:#dc2626;" data-giveup="${escapeAttr(r._name)}">🚫 放弃</button>
-        </div>
-      </div>`;
-    }).join("") || `<div class="empty">当前筛选下暂无候选</div>`;
-
-    // 绑事件
-    $("growthList").querySelectorAll("[data-nudge]").forEach(b => b.onclick = () => {
-      nudgeOnce(b.dataset.nudge);
-      renderGrowth();
-    });
-    $("growthList").querySelectorAll("[data-undo-nudge]").forEach(b => b.onclick = () => {
-      rollbackNudge(b.dataset.undoNudge);
-      renderGrowth();
-    });
-    $("growthList").querySelectorAll("[data-giveup]").forEach(b => b.onclick = () => {
-      const name = b.dataset.giveup;
-      if (confirm(`确认把"${name}"标为已放弃？\n（永久从冲击名单移除，可在控制台用 localStorage.removeItem("giveup_${name}") 撤销）`)) {
-        setGiveUp(name, true);
-        renderGrowth();
-      }
-    });
+      </div>
+    `).join("") || `<div class="empty">当前筛选下暂无够一够客户</div>`;
   }
 
   function renderTop_OLD(){
