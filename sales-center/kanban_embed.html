@@ -904,14 +904,27 @@ function renderTop80Metrics() {
   }
   const sale = sel ? sel.value : '';
   const list = sale ? rows.filter(r => r.sale === sale) : rows;
-  const cls = v => String(v || '').includes('-') ? 'delta-down' : (String(v || '').includes('+') ? 'delta-up' : 'delta-flat');
+  // rate 字段都是小数(0.168 = +16.8%)，显示为 +16.8%
+  const fmtRate = v => {
+    if (v === null || v === undefined || v === '') return '';
+    let n = Number(v);
+    if (!isFinite(n)) return '';
+    if (Math.abs(n) <= 1) n = n * 100;
+    const sign = n >= 0 ? '+' : '';
+    return `${sign}${n.toFixed(1)}%`;
+  };
+  const cls = v => {
+    const n = Number(v);
+    if (!isFinite(n) || n === 0) return 'delta-flat';
+    return n > 0 ? 'delta-up' : 'delta-down';
+  };
   const body = list.map(r => `<tr>
     <td>${r.sale}</td><td>${r.rank}</td><td class="name">${r.name}</td><td>${r.deliverySide || ''}</td>
-    <td>${Number(r.yestCostWan || 0).toFixed(1)}万</td>
-    <td>${r.bidCost || ''}</td><td><span class="${cls(r.costRate)}">${r.costRate || ''}</span></td>
-    <td>${r.roi || ''}</td><td><span class="${cls(r.roiRate)}">${r.roiRate || ''}</span></td>
-    <td>${r.ctr || ''}</td><td><span class="${cls(r.ctrRate)}">${r.ctrRate || ''}</span></td>
-    <td>${r.cvr || ''}</td><td><span class="${cls(r.cvrRate)}">${r.cvrRate || ''}</span></td>
+    <td>${Number(r.yestCostWan || 0).toFixed(2)}万</td>
+    <td>${Number(r.bidCost || 0).toFixed(0)}</td><td><span class="${cls(r.costRate)}">${fmtRate(r.costRate)}</span></td>
+    <td>${Number(r.roi || 0).toFixed(2)}</td><td><span class="${cls(r.roiRate)}">${fmtRate(r.roiRate)}</span></td>
+    <td>${Number(r.ctr || 0).toFixed(2)}%</td><td><span class="${cls(r.ctrRate)}">${fmtRate(r.ctrRate)}</span></td>
+    <td>${Number(r.cvr || 0).toFixed(2)}%</td><td><span class="${cls(r.cvrRate)}">${fmtRate(r.cvrRate)}</span></td>
     <td><span class="${r.matchStatus === '已匹配' ? 'status-ok' : 'status-miss'}">${r.matchStatus || ''}</span></td>
   </tr>`).join('');
   const tbody = document.querySelector('#top80Table tbody');

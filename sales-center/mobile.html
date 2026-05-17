@@ -233,7 +233,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
       </div>
 
       <div class="section">
-        <div class="section-head"><h2>🔥 够一够冲新客</h2><span class="more" id="growthCount">0 个候选</span></div>
+        <div class="section-head"><h2>🔥 冲击季度有效新客名单</h2><span class="more" id="growthCount">0 个候选</span></div>
         <div style="margin-bottom:8px;">
           <select id="growthSaleSel" style="width:100%; border:1px solid var(--line); background:#fff; border-radius:10px; padding:9px 10px; font-size:13px; font-weight:700; color:var(--text);"></select>
         </div>
@@ -481,11 +481,13 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   }
 
   function rateChip(rateStr){
-    const n = parsePct(rateStr);
+    let n = parsePct(rateStr);
     if (n === null) return `<span class="rate-flat">~</span>`;
+    // 如果是小数(|n|<=1)则乘100；如果已是百分比形式直接用
+    if (Math.abs(n) <= 1) n = n * 100;
     const cls = n > 0 ? "rate-up" : n < 0 ? "rate-down" : "rate-flat";
-    const sign = n > 0 ? "+" : "";
-    return `<span class="${cls}">${sign}${n.toFixed(0)}%</span>`;
+    const sign = n >= 0 ? "+" : "";
+    return `<span class="${cls}">${sign}${n.toFixed(1)}%</span>`;
   }
 
   function cardTop(r, idx){
