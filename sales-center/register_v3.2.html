@@ -442,36 +442,42 @@ const SALES = ["brownfan", "Jonzhu", "kaikaigenli", "kinsleyjin", "lijunwu", "ru
 const CHANNELS = ["自拓", "小店服务商转介绍", "广告服务商转介绍", "二代转介绍", "客户转介绍", "同事转介绍", "其他"];
 const SOURCES = ["26年4月后产业带拓客", "26年4月后CID专项引入", "26年4月后竞媒靶向名单", "全域通反向拓客", "竞媒top靶向名单", "小店高GMV", "小店动销客户"];
 
-/* ===== 实体字典 =====
+/* ===== 实体字典 ===== (v2 2026-05-19 修)
  * 优先用 register_lookup_data.js（每日重建，含最新 mapping/24老客/已登记主体）
  * 兜底用 __ENTITY_DATA__（旧种子，5/12 版本）
  */
-const ENTITY_MAP  = window.__MAPPING_DATA__ || (window.__ENTITY_DATA__ && window.__ENTITY_DATA__.m) || {};   // 主体 -> 简称
+function getCurrentQuarter() {
+  const d = new Date();
+  return d.getFullYear() + 'Q' + (Math.floor(d.getMonth() / 3) + 1);
+}
+const CURRENT_QUARTER = getCurrentQuarter();
+const ENTITY_MAP  = window.__MAPPING_DATA__ || (window.__ENTITY_DATA__ && window.__ENTITY_DATA__.m) || {};   // 33408 主体→简称大字典
 const OLD24_SET   = new Set(window.__OLD24_SET__ || []);                                                      // 24 年老客客户简称（1624 个）
 const LAOKE_SET   = new Set((window.__ENTITY_DATA__ && window.__ENTITY_DATA__.k) || []);                      // 兜底老客主体（旧）
+const SHORT_FIRST_QUARTER_MAP = window.__SHORT_FIRST_QUARTER_MAP__ || {};
+const OLD_SUBJECT_QUARTER_MAP = window.__OLD_SUBJECT_QUARTER_MAP__ || {};
 // 已登记主体：{主体名: {sale, date, shortName}} 来自 tuoke_real_records
 const REGISTERED_SUBJECTS = window.__REGISTERED_SUBJECTS__ || {};
 const HISTORY_MAP = (window.__HISTORY_DATA__) || {};                              // 兼容：主体 -> [历史销售, ...]
 const ENTITY_META = { loaded: !!window.__ENTITY_DATA__, entityCount: Object.keys(ENTITY_MAP).length, laokeCount: LAOKE_SET.size, historyLoaded: !!window.__HISTORY_DATA__, historyCount: Object.keys(HISTORY_MAP).length };
 /**
- * 命中规则：完全相等
- * 返回 { short, isLaoke, matched }
- *  - matched=true 命中字典：short=映射简称，isLaoke 来自老客集合
- *  - matched=false 未命中：short=主体本身（默认），isLaoke=false
+ * 命中规则：完全相等 + 空格归一
+ * 返回 { short, isLaoke, matched, firstQuarter, isOld24, needReconcile }
+ *  - matched=true：精确命中 33408 大字典
+ *  - matched=false：未命中，short=主体本身（默认），needReconcile=true 等次日回扫
+ *  - isLaoke 口径：isOld24 || (firstQuarter < CURRENT_QUARTER)，本季度首投不算老客
  */
 function lookupEntity(name) {
-  if (!name) return { short:"", isLaoke:false, matched:false };
-  const n = name.trim();
-  // 1. 精确匹配 mapping 拿简称
-  if (Object.prototype.hasOwnProperty.call(ENTITY_MAP, n)) {
-    const short = ENTITY_MAP[n];
-    // 2. 24 年老客判定：客户简称 ∈ OLD24_SET（1624 名单）
-    const isOld24 = OLD24_SET.has(short);
-    // 3. 兜底：旧 LAOKE_SET（按主体名判定）
-    const isLaokeOld = LAOKE_SET.has(n);
-    return { short, isLaoke: isOld24 || isLaokeOld, matched: true };
-  }
-  return { short: n, isLaoke: false, matched: false };
+  if (!name) return { short:"", isLaoke:false, matched:false, firstQuarter:"", isOld24:false, needReconcile:false };
+  const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
+  const mappedShort = Object.prototype.hasOwnProperty.call(ENTITY_MAP, n) ? ENTITY_MAP[n] : "";
+  const matched = !!mappedShort;
+  const short = mappedShort || n;
+  const isOld24 = OLD24_SET.has(n) || OLD24_SET.has(short) || LAOKE_SET.has(n);
+  if (isOld24) return { short, isLaoke:true, matched:true, firstQuarter:"2024", isOld24:true, needReconcile:false };
+  const firstQuarter = OLD_SUBJECT_QUARTER_MAP[n] || SHORT_FIRST_QUARTER_MAP[short] || SHORT_FIRST_QUARTER_MAP[n] || "";
+  const isLaokeNonCurrent = !!(firstQuarter && firstQuarter < CURRENT_QUARTER);
+  return { short, isLaoke: isLaokeNonCurrent, matched, firstQuarter, isOld24:false, needReconcile: !matched };
 }
 
 /**

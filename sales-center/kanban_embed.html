@@ -1298,49 +1298,48 @@ window.saveGoals = () => {
   renderAll();
 };
 
-/* ===== 新增拓客登记：精简口径（客户主体/类目/销售/链路/拓客途径/资源方/客户来源/日期/建联截图） ===== */
-const PRESET_CLIENTS = [
-  { full:"深圳素黎服饰有限公司", short:"素黎", cat:"女装", brand:"素黎" },
-  { full:"杭州江南布衣时装有限公司", short:"江南布衣", cat:"女装", brand:"JNBY" },
-  { full:"深圳欧时力服装有限公司", short:"欧时力", cat:"女装", brand:"欧时力" },
-  { full:"上海太平鸟服装有限公司", short:"太平鸟", cat:"女装", brand:"太平鸟" },
-  { full:"杭州艺之卉时尚集团", short:"艺之卉", cat:"女装", brand:"艺之卉" },
-  { full:"广州海澜之家服饰", short:"海澜之家", cat:"男装", brand:"海澜之家" },
-  { full:"福建七匹狼实业股份", short:"七匹狼", cat:"男装", brand:"七匹狼" },
-  { full:"晋江安踏体育用品", short:"安踏", cat:"运动户外", brand:"安踏" },
-  { full:"泉州特步国际", short:"特步", cat:"运动户外", brand:"特步" },
-  { full:"深圳Ubras内衣科技", short:"Ubras", cat:"贴身衣物", brand:"Ubras" },
-  { full:"上海内外NEIWAI服饰", short:"内外NEIWAI", cat:"贴身衣物", brand:"内外NEIWAI" },
-  { full:"广州六福珠宝有限公司", short:"六福", cat:"珠宝文玩", brand:"六福" }
-];
-const ENTITY_MAP  = (window.__ENTITY_DATA__ && window.__ENTITY_DATA__.m) || {};
-const LAOKE_SET   = new Set((window.__ENTITY_DATA__ && window.__ENTITY_DATA__.k) || []);
+/* ===== 新增拓客登记：lookupEntity 重构 v2 (2026-05-19) =====
+ * 修复：
+ *  1. 字典走错：33408 大字典 __MAPPING_DATA__（精确命中），不再用 969 小字典
+ *  2. 老客判定口径：isOld24 || firstQuarter < CURRENT_QUARTER（不是 !!firstQuarter）
+ *  3. CURRENT_QUARTER 按今日自动算（2026-05 → 2026Q2）
+ *  4. 删 PRESET_CLIENTS 12 条 includes 模糊匹配（大字典已覆盖）
+ *  5. 主体名兜底（matched=false）逻辑保留，等回扫脚本第二天补回
+ *  6. 字段去空格归一
+ */
+function getCurrentQuarter() {
+  const d = new Date();
+  return d.getFullYear() + 'Q' + (Math.floor(d.getMonth() / 3) + 1);
+}
+const CURRENT_QUARTER = getCurrentQuarter();
+const ENTITY_MAP  = window.__MAPPING_DATA__ || (window.__ENTITY_DATA__ && window.__ENTITY_DATA__.m) || {};   // 33408 主体→简称大字典
+const LAOKE_SET   = new Set((window.__ENTITY_DATA__ && window.__ENTITY_DATA__.k) || []);                      // 兼容旧种子
 const HISTORY_MAP = (window.__HISTORY_DATA__) || {};
-const SUBJECT_SHORT_MAP = window.__SUBJECT_SHORT_MAP__ || {};
 const SHORT_FIRST_QUARTER_MAP = window.__SHORT_FIRST_QUARTER_MAP__ || {};
 const OLD_SUBJECT_QUARTER_MAP = window.__OLD_SUBJECT_QUARTER_MAP__ || {};
-const OLD24_CUSTOMER_SET = window.__OLD24_CUSTOMER_SET__ || new Set();
+const OLD24_CUSTOMER_SET = window.__OLD24_CUSTOMER_SET__ || (window.__OLD24_SET__ ? new Set(window.__OLD24_SET__) : new Set());
 const OLD24_CUSTOMER_SPEND_MAP = window.__OLD24_CUSTOMER_SPEND_MAP__ || {};
 function lookupEntity(name) {
-  if (!name) return { short:"", isLaoke:false, matched:false, firstQuarter:"", isOld24:false };
-  const n = name.trim();
-  const mappedShort = SUBJECT_SHORT_MAP[n];
-  const old24Hit = OLD24_CUSTOMER_SET.has(n) || (mappedShort && OLD24_CUSTOMER_SET.has(mappedShort));
-  if (old24Hit) return { short:mappedShort || n, isLaoke:true, matched:true, firstQuarter:"2024", isOld24:true };
-  const firstQuarter = OLD_SUBJECT_QUARTER_MAP[n] || (mappedShort && SHORT_FIRST_QUARTER_MAP[mappedShort]) || SHORT_FIRST_QUARTER_MAP[n] || "";
-  if (mappedShort) return { short:mappedShort, isLaoke:!!firstQuarter, matched:true, firstQuarter, isOld24:false };
-  if (Object.prototype.hasOwnProperty.call(ENTITY_MAP, n)) {
-    const short = ENTITY_MAP[n];
-    if (OLD24_CUSTOMER_SET.has(short)) return { short, isLaoke:true, matched:true, firstQuarter:"2024", isOld24:true };
-    const q = firstQuarter || SHORT_FIRST_QUARTER_MAP[short] || "";
-    return { short, isLaoke:LAOKE_SET.has(n) || !!q, matched:true, firstQuarter:q, isOld24:false };
+  if (!name) return { short:"", isLaoke:false, matched:false, firstQuarter:"", isOld24:false, needReconcile:false };
+  const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
+  // Step 1: 33408 大字典精确命中拿简称（如未命中则 short=主体名兜底）
+  const mappedShort = Object.prototype.hasOwnProperty.call(ENTITY_MAP, n) ? ENTITY_MAP[n] : "";
+  const matched = !!mappedShort;
+  const short = mappedShort || n;  // 兜底：用主体名当简称
+  // Step 2: 24 年老客判定（主体名 OR 简称命中 1624 名单）
+  const isOld24 = OLD24_CUSTOMER_SET.has(n) || OLD24_CUSTOMER_SET.has(short) || LAOKE_SET.has(n);
+  if (isOld24) {
+    return { short, isLaoke:true, matched:true, firstQuarter:"2024", isOld24:true, needReconcile:false };
   }
-  const hit = PRESET_CLIENTS.find(c => c.full === n || n.includes(c.brand));
-  if (hit) return { short:hit.short, isLaoke:false, matched:true, firstQuarter:"", isOld24:false };
-  return { short:n, isLaoke:false, matched:false, firstQuarter:"", isOld24:false };
+  // Step 3: 首投季度查询（主体优先 → 简称兜底）
+  const firstQuarter = OLD_SUBJECT_QUARTER_MAP[n] || SHORT_FIRST_QUARTER_MAP[short] || SHORT_FIRST_QUARTER_MAP[n] || "";
+  // Step 4: 老客 = 首投季度 < 当前季度（本季度首投属新客，不是老客）
+  const isLaokeNonCurrent = !!(firstQuarter && firstQuarter < CURRENT_QUARTER);
+  // Step 5: matched=false 时标记 needReconcile=true，等次日回扫脚本补回
+  return { short, isLaoke:isLaokeNonCurrent, matched, firstQuarter, isOld24:false, needReconcile: !matched };
 }
 function lookupDuplicates(name) {
-  const n = (name || "").trim();
+  const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
   if (!n) return { total:0, entries:[] };
   const entries = [];
   // 1. 拓新组底表（最新，每天重建）
@@ -1352,7 +1351,7 @@ function lookupDuplicates(name) {
   // 2. 历史表（兼容旧种子）
   if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) (HISTORY_MAP[n] || []).forEach(s => entries.push({ sales:s, date:"", src:"历史" }));
   // 3. 本地 records
-  if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) RECORDS.forEach(r => { if (r.name === n) entries.push({ sales:r.sale, date:r.date || "", src:"本地" }); });
+  if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) RECORDS.forEach(r => { if ((r.name || "").trim().replace(/\s+/g,'') === n) entries.push({ sales:r.sale, date:r.date || "", src:"本地" }); });
   return { total:entries.length, entries };
 }
 let pendingImages = [];
@@ -1614,13 +1613,19 @@ function submitBatchPaste() {
       isLaoke: !!r.isLaoke,
       old24: !!r.isOld24,
       matched: !!r.matched,
+      firstQuarter: r.firstQuarter || "",
+      needReconcile: !r.matched,         // 主体兜底待回扫
+      matchedAt: r.matched ? r.date : "", // 命中字典的日期，便于回扫追溯
       _batchPaste: true,
       images: '[]',
       links: r.link ? '["' + r.link + '"]' : '[]',
     });
   });
-  // 持久化（如果有 saveRecords 函数就调）
-  if (typeof saveRecords === 'function') saveRecords();
+  // 持久化：批量必须用 saveUserRecordsBulk（暴露在 window）
+  const newRecs = valid.map((r, i) => RECORDS[i]).filter(Boolean);
+  if (typeof saveUserRecordsBulk === 'function') saveUserRecordsBulk([]);  // 仅触发持久化，RECORDS 已 unshift
+  else if (typeof persistUserRecordsBestEffort === 'function') persistUserRecordsBestEffort();
+  else if (typeof saveRecords === 'function') saveRecords();
   if (typeof renderAll === 'function') renderAll();
   closeModal('modalBatchPaste');
   alert('✅ 已入库 ' + valid.length + ' 条');
@@ -1638,7 +1643,16 @@ function onNameInput() {
   const shortName = look.short || raw;
   const dup = lookupDuplicates(raw);
   let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
-  hint += look.isOld24 ? `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">⚠️ 24年老客</span>` : (look.isLaoke ? `<span class="badge-laoke">非本季度新客 ${look.firstQuarter || ''}老客</span>` : `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 新客</span>`);
+  // badge 三态：24老客（红）/ 非本季度新客（黄）/ 本季度新客（绿）/ 主体兜底待回扫（灰）
+  if (look.isOld24) {
+    hint += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">⚠️ 24年老客</span>`;
+  } else if (look.isLaoke) {
+    hint += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">非本季度新客（首投 ${look.firstQuarter || '-'}）</span>`;
+  } else if (look.needReconcile) {
+    hint += `<span class="badge-newk" style="background:#f3f4f6;color:#6b7280;">⏳ 主体兜底（次日回扫补简称）</span>`;
+  } else {
+    hint += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客</span>`;
+  }
   const DSM = window.__DELIVERY_SIDE_MAP__ || {};
   const ds = DSM[shortName] || DSM[raw] || '';
   if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
