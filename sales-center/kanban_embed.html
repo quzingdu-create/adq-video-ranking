@@ -1777,11 +1777,16 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态三档（用户 2026-05-19 拍板）：24年老客 / 当前季度新客 / 新增未投放
+    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
+    const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
+    } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
+      // 历史季度老客（含 isLaoke=true 或 firstQuarter < 本季度）
+      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}存量` : '历史老客';
+      stateCls = 'gray';
     } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
       stateLabel = customerType; // 例如 "2026Q2 新客"
       stateCls = 'green';
