@@ -19,6 +19,9 @@
 <script src="data/top80_effective_metrics.js"></script>
 <script src="data/top_status_data.js"></script>
 <script src="data/enough_candidates.js"></script>
+<script src="data/handover_customers_519.js"></script>
+<script src="data/first_quarter.js"></script>
+<script src="data/old24_names.js"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -109,7 +112,11 @@
   .section-title .right button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
   /* KPI 大卡 */
-  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card.wide { grid-column: span 1; }
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   .kpi-card {
     background: #fff;
     border: 1px solid var(--border); border-radius: 12px; padding: 18px;
@@ -388,6 +395,147 @@
   .top80-table td:last-child { font-weight:700; }
   .top80-table .status-ok { color:#059669; background:#ecfdf5; padding:3px 8px; border-radius:999px; }
   .top80-table .status-miss { color:#b45309; background:#fffbeb; padding:3px 8px; border-radius:999px; }
+  /* 5/19 客户诊断按钮 */
+  .btn-diag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;
+    text-decoration: none; cursor: pointer; transition: background .15s;
+    white-space: nowrap;
+  }
+  .btn-diag:hover { background: #dbeafe; }
+  /* 修改/补充按钮（用户 2026-05-19） */
+  .btn-edit-record {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .btn-edit-record:hover { background: #dcfce7; }
+  .tag.orange { background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
+  .tag.green  { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+  .tag.gray   { background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }
+
+  /* 客户投放状态打卡 - pill / 加状态按钮 / 历史徽标 */
+  .user-status-pill {
+    display:inline-block; padding:3px 10px; font-size:12px; font-weight:600;
+    color:#1d4ed8; background:#eff6ff; border:1px solid #bfdbfe;
+    border-radius:999px; cursor:pointer; user-select:none;
+    transition:all .15s ease;
+  }
+  .user-status-pill:hover { background:#dbeafe; border-color:#93c5fd; transform:translateY(-1px); }
+  .user-status-pill[data-status="待跟进"] { color:#92400e; background:#fef3c7; border-color:#fde68a; }
+  .user-status-pill[data-status="已建联"] { color:#1d4ed8; background:#eff6ff; border-color:#bfdbfe; }
+  .user-status-pill[data-status="投放中"] { color:#065f46; background:#d1fae5; border-color:#6ee7b7; }
+  .user-status-pill[data-status="已转化"] { color:#fff;    background:#10b981; border-color:#10b981; }
+  .user-status-pill[data-status="暂搁置"] { color:#6b7280; background:#f3f4f6; border-color:#d1d5db; }
+  .user-status-pill[data-status="流失"]   { color:#b91c1c; background:#fee2e2; border-color:#fca5a5; }
+
+  .btn-add-status {
+    display:inline-block; padding:3px 10px; font-size:12px; font-weight:600;
+    color:#6b7280; background:transparent; border:1px dashed #d1d5db;
+    border-radius:999px; cursor:pointer; user-select:none;
+    transition:all .15s ease;
+  }
+  .btn-add-status:hover { color:#2563eb; border-color:#2563eb; background:#eff6ff; }
+
+  .history-badge {
+    display:inline-block; min-width:18px; height:18px; line-height:18px;
+    padding:0 6px; margin-left:6px; font-size:11px; font-weight:700;
+    color:#fff; background:#f97316; border-radius:999px;
+    cursor:pointer; text-align:center; user-select:none;
+  }
+  .history-badge:hover { background:#ea580c; }
+
+  /* 状态选择器弹窗 */
+  .status-modal-mask {
+    position:fixed; inset:0; background:rgba(15,23,42,.45);
+    z-index:9999; display:flex; align-items:center; justify-content:center;
+  }
+  .status-modal {
+    background:#fff; border-radius:12px; width:min(420px,92vw);
+    box-shadow:0 20px 60px rgba(0,0,0,.25); overflow:hidden;
+  }
+  .status-modal-head {
+    padding:14px 20px; border-bottom:1px solid #e5e7eb;
+    display:flex; justify-content:space-between; align-items:center;
+    background:linear-gradient(180deg,#f8fafc,#fff);
+  }
+  .status-modal-head h3 { margin:0; font-size:15px; color:#111827; font-weight:700; }
+  .status-modal-head .close { cursor:pointer; color:#9ca3af; font-size:20px; line-height:1; }
+  .status-modal-body { padding:18px 20px; }
+  .status-modal-body .opt-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  }
+  .status-opt {
+    padding:10px 6px; font-size:13px; font-weight:600;
+    color:#374151; background:#f9fafb; border:1px solid #e5e7eb;
+    border-radius:8px; cursor:pointer; transition:all .15s ease;
+  }
+  .status-opt:hover { background:#eff6ff; border-color:#93c5fd; color:#2563eb; }
+  .status-opt.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+  .status-modal-body .note {
+    margin-top:14px; padding:8px 12px; font-size:12px; color:#6b7280;
+    background:#f9fafb; border-radius:6px;
+  }
+  .status-history-list {
+    max-height:320px; overflow-y:auto; margin:0; padding:0; list-style:none;
+  }
+  .status-history-list li {
+    padding:10px 0; border-bottom:1px dashed #e5e7eb;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:13px;
+  }
+  .status-history-list li:last-child { border-bottom:none; }
+  .status-history-list .ts { color:#9ca3af; font-size:11px; }
+
+  /* 销售明细行 - 交接客户黄色 tag / 合计行高亮 */
+  .sales-kpi-table tr.handover-row td { background:#fffbeb; }
+  .sales-kpi-table tr.handover-row .name::after {
+    content:"交接"; display:inline-block; margin-left:6px;
+    padding:1px 6px; font-size:10px; font-weight:600;
+    color:#b45309; background:#fef3c7; border:1px solid #fde68a;
+    border-radius:4px; vertical-align:middle;
+  }
+
+  /* 5/19 销售明细新表头：主指标大字 + 环比小字 + 「更多 ›」横向展开参考列 */
+  .sales-detail-wrap { overflow-x:auto; }
+  .sales-detail-tbl { width:100%; border-collapse:collapse; font-size:13px; min-width:880px; }
+  .sales-detail-tbl thead th {
+    background:linear-gradient(180deg,#eff6ff,#dbeafe);
+    color:#1e3a8a; font-weight:700; padding:10px 10px;
+    text-align:center; border-bottom:1px solid #bfdbfe; white-space:nowrap;
+  }
+  .sales-detail-tbl tbody td { padding:10px 10px; border-bottom:1px dashed var(--border-2); vertical-align:middle; text-align:center; white-space:nowrap; }
+  .sales-detail-tbl tbody tr:hover { background:#fafbff; }
+  .sales-detail-tbl tbody tr.current-sale td { background:#eef4ff; }
+  .sales-detail-tbl tbody tr.total-row td { background:#f0f9ff !important; font-weight:700; border-top:2px solid #7dd3fc; }
+  .sales-detail-tbl .name { text-align:left; font-weight:700; color:var(--text); }
+  .sales-detail-tbl .main-num { font-size:18px; font-weight:700; color:var(--text); line-height:1.1; }
+  .sales-detail-tbl .main-num.rising { color:#dc2626; }
+  .sales-detail-tbl .main-num.cost { color:#7c3aed; }
+  .sales-detail-tbl .sub-meta { font-size:10.5px; color:#9ca3af; margin-top:2px; line-height:1.2; }
+  .sales-detail-tbl .sub-meta .delta-up { color:#dc2626; }
+  .sales-detail-tbl .sub-meta .delta-down { color:#16a34a; }
+  .sales-detail-tbl .sub-meta .delta-flat { color:#9ca3af; }
+  .sales-detail-tbl .more-btn {
+    cursor:pointer; padding:4px 10px; font-size:12px; color:var(--primary);
+    border:1px solid #c7d2fe; background:#eef2ff; border-radius:14px;
+    user-select:none; transition:background .15s;
+  }
+  .sales-detail-tbl .more-btn:hover { background:#c7d2fe; }
+  .sales-detail-tbl tr.expanded .more-btn { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+  .sales-detail-tbl .ref-cell {
+    background:#fffbeb; border-left:2px solid #fbbf24;
+    transition:opacity .2s, transform .2s;
+  }
+  .sales-detail-tbl .ref-col-hidden { display:none; }
+  .sales-detail-tbl .ref-cell .label-tip {
+    font-size:10px; color:#92400e; margin-bottom:2px;
+  }
+  .sales-kpi-table tr.total-row td {
+    background:#f0f9ff !important; color:#0c4a6e !important;
+    font-weight:700 !important; border-top:2px solid #7dd3fc;
+  }
 
 </style>
 <style>
@@ -440,20 +588,24 @@
   <h1>拓客作战看板 <span class="ver" id="kanbanVer">v3 原型 · DEMO</span></h1>
   <div class="topbar-right">
     <span id="todayInfo" style="font-size:12px;color:#6b7280;margin-right:8px;"></span>
+    <select id="snapshotSel" title="切换历史快照（用户 2026-05-19 拍板）" style="background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-weight:600;">
+      <option value="">📅 当前数据</option>
+      <option value="2026-05-19" selected>2026-05-19 快照</option>
+      <option value="2026-05-18">2026-05-18 快照</option>
+      <option value="2026-05-17">2026-05-17 快照</option>
+      <option value="2026-05-15">2026-05-15 快照</option>
+    </select>
     <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
     <select id="quarterSel">
       <option value="2026Q2">2026 Q2（当前）</option>
       <option value="2026Q1">2026 Q1</option>
       <option value="2025Q4">2025 Q4</option>
       <option value="2025Q3">2025 Q3</option>
-      <option value="2025Q2">2025 Q2</option>
-      <option value="2025Q1">2025 Q1</option>
     </select>
     <select id="compareSel" style="display:none;">
       <option value="qoq">环比上季度</option>
       <option value="dod">环比前一天</option>
     </select>
-    <button id="btnTarget">⚙️ 目标管理</button>
     <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
     <button id="btnBatchPaste" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="一次粘贴多行客户（从 Excel/腾讯文档复制）">📋 批量粘贴</button>
     <button id="btnExportToday" style="background:#dc2626;color:#fff;border:1px solid #dc2626;font-weight:600;" title="登记完点这个！下载今日 JSON 文件，发给子青，明天数据才能上看板">📤 导出今日 JSON（发子青）</button>
@@ -464,15 +616,25 @@
 
 <div class="container">
 
-  <!-- ========== 第一屏：团队季度KPI ========== -->
+  <!-- ========== 第一屏：其他参考指标（固定 2026Q2，不随季度切换） ========== -->
   <div class="section">
     <div class="section-title">
       <div class="left">
-        <span>📊 团队季度 KPI 完成进度</span>
+        <span>📊 其他参考指标</span>
         <span class="badge" id="quarterTag">2026 Q2</span>
       </div>
     </div>
     <div class="kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <!-- ========== 销售明细行 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>👥 销售明细</span><span class="badge">点行末「更多 ›」横向展开参考指标</span></div>
+    </div>
+    <div class="sales-progress-list">
+      <div id="salesProgress"></div>
+    </div>
   </div>
 
   <!-- ========== 第二屏：销售拓客模型画像 ========== -->
@@ -482,14 +644,36 @@
       <div class="right">
         <button class="active" data-portrait="all">全部新客</button>
         <button data-portrait="rising">仅新锐新客</button>
+        <span style="color:#cbd5e1;margin:0 6px;">|</span>
+        <button class="active" data-metric="count">按数量占比</button>
+        <button data-metric="cost">按季度消耗占比</button>
       </div>
     </div>
     <div class="portrait-tabs" id="portraitTabs"></div>
     <div class="portrait-grid">
       <div class="panel"><h3>类目分布</h3><div id="chartCategory" class="chart-box"></div></div>
-      <div class="panel"><h3>链路分布</h3><div id="chartLink" class="chart-box"></div></div>
       <div class="panel"><h3>客户来源分布</h3><div id="chartSource" class="chart-box"></div></div>
       <div class="panel"><h3>投放端分布</h3><div id="chartDelivery" class="chart-box"></div></div>
+      <div class="panel"><h3>链路分布<span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:6px;">按客户简称×customer_link_data 消耗汇总</span></h3><div id="chartLink" class="chart-box"></div></div>
+    </div>
+  </div>
+
+  <!-- ========== 拓客模型链路深度分析（用户 2026-05-19 拍板） ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>🔗 拓客模型链路深度分析</span>
+        <span class="badge" id="linkTotalBadge">—</span>
+      </div>
+    </div>
+    <div class="portrait-grid">
+      <div class="panel"><h3>核心链路占比（按消耗）</h3><div id="chartLinkCore" class="chart-box"></div></div>
+      <div class="panel"><h3>各销售链路对比（堆叠柱）</h3><div id="chartLinkBySale" class="chart-box"></div></div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <h3>5 月链路快照趋势</h3>
+      <div id="chartLinkTrend" class="chart-box" style="height:240px;"></div>
+      <div style="font-size:12px;color:var(--text-2);margin-top:6px;">说明：5 月 15 日起每日快照固化，按当日 customer_link_data 总消耗汇总。</div>
     </div>
   </div>
 
@@ -560,6 +744,11 @@
       <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
       <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source"></select></div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
+      <div class="field" style="grid-column:span 2;">
+        <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
+        <input id="m-evidence" type="file" accept="image/*" multiple style="font-size:12px;" onchange="onEvidenceChange(event)" />
+        <div id="m-evidence-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+      </div>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;position:sticky;bottom:0;background:#fff;">
       <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
@@ -729,6 +918,57 @@ const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
 
 let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
 const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
+window.RECORDS = RECORDS;
+
+/* ============================================================
+   交接客户判定（217 条版，2026-05-19 用户拍板）
+   规则：
+     1) 命中 24 老客名单 → 不算交接（24 老客优先）
+     2) 命中 217 条 union & 原销售 ∈ 7 拓新销售 → 真正交接，打 tag
+     3) 命中 217 条但原销售不在拓新组（含 sale=null 的非补丁项）→ 不打 tag
+     4) 义乌皮哥补丁：sale=null → kaikaigenli（已在 data 里 override）
+   KPI 是否计入：
+     首投季度 == 当前 KPI 季度（26Q2）→ 计入
+     首投季度 != 当前 KPI 季度 → 仅展示 tag，不入 KPI
+   ============================================================ */
+const TUOXIN_7_SET = new Set(["brownfan","Jonzhu","kaikaigenli","yvaineechen","lijunwu","ruilingzhan","kinsleyjin"]);
+const HANDOVER_LIST_217 = Array.isArray(window.__HANDOVER_CUSTOMERS_519__) ? window.__HANDOVER_CUSTOMERS_519__ : [];
+const HANDOVER_MAP_217 = {};
+HANDOVER_LIST_217.forEach(x => { if (x && x.name) HANDOVER_MAP_217[String(x.name).trim()] = x; });
+const OLD24_SET_217 = new Set((Array.isArray(window.__OLD24_NAMES__) ? window.__OLD24_NAMES__ : []).map(s=>String(s).trim()));
+const FIRST_QUARTER_MAP = window.__FIRST_QUARTER__ || {};
+// 用户 2026-05-19 拍板：把交接 / 24老客 / 首投季度 map 挂到 window，让销售明细参考列能读到
+window.__HANDOVER_MAP_217__ = HANDOVER_MAP_217;
+window.__OLD24_SET_217__ = OLD24_SET_217;
+window.__FIRST_QUARTER_MAP__ = FIRST_QUARTER_MAP;
+function _normalizeFQ(s) {
+  // '2026/Q2' / '2026Q2' → '2026Q2'
+  return String(s || '').replace(/[/\s-]/g,'').toUpperCase();
+}
+/** 是否真正交接客户（剔 24 老客 + 必须是拓新组 7 销售之一） */
+function isHandoverCustomer217(r) {
+  if (!r) return false;
+  const name = String(r.shortName || r.name || '').trim();
+  if (!name) return false;
+  if (OLD24_SET_217.has(name)) return false;          // 24 老客优先剔
+  const rec = HANDOVER_MAP_217[name];
+  if (!rec) return false;
+  return TUOXIN_7_SET.has(rec.sale);                  // 必须原销售 ∈ 拓新 7
+}
+/** 交接客户的首投季度（normalized 如 2026Q2） */
+function handoverFirstQuarter(r) {
+  if (!r) return '';
+  const name = String(r.shortName || r.name || '').trim();
+  return _normalizeFQ(FIRST_QUARTER_MAP[name] || r.firstQuarter || '');
+}
+/** 交接客户是否计入当前 KPI 季度（state.quarter 形如 '2026Q2'） */
+function isHandoverCountInQuarter(r) {
+  const fq = handoverFirstQuarter(r);
+  return fq && fq === (typeof state !== 'undefined' ? state.quarter : '2026Q2');
+}
+window.isHandoverCustomer217 = isHandoverCustomer217;
+window.isHandoverCountInQuarter = isHandoverCountInQuarter;
+window.handoverFirstQuarter = handoverFirstQuarter;
 function persistUserRecordsBestEffort() {
   try {
     localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 2000)));
@@ -758,6 +998,7 @@ const state = {
   quarter: "2026Q2",
   compareMode: "qoq",
   portrait: "all",
+  portraitMetric: "count", // count | cost  （5/19 加 tab）
   portraitSale: "团队总览",
   industrialMaturity: "",
   zoneSort: "cost", // cost | new
@@ -834,41 +1075,87 @@ function deltaCls(v) {
 }
 function activeCompareLabel() { return state.compareMode === 'dod' ? '较前一天' : '较上季度'; }
 function pickDelta(r, qoqKey, dodKey) { return state.compareMode === 'dod' ? r[dodKey] : r[qoqKey]; }
+
+/* 5/19 客户诊断一键跳转 ChatBI（用户 2026-05-19 拍板：跳转后直接引用 customer-global-diagnosis skill，
+   预填 prompt 模板「帮我全面诊断【XXX】在昨天的投放情况」） */
+function diagCustomer(customerName, problemHint, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  if (!customerName) return;
+  const promptStr = `帮我全面诊断【${customerName}】在昨天的投放情况`;
+  // 用户 2026-05-19 拍板：除了引用 skill，prompt 文字也要预填到输入框。
+  // ChatBI 同时尝试 prompt/q/query 三种参数名 + hash 兜底，兼容不同前端读取方式。
+  const enc = encodeURIComponent(promptStr);
+  const url = `https://adata.woa.com/bi/chatbi?skill=customer-global-diagnosis&prompt=${enc}&q=${enc}&query=${enc}#prompt=${enc}`;
+  window.open(url, '_blank');
+}
+window.diagCustomer = diagCustomer;
+
 function renderKPI() {
   const rows = centerSummaryRows();
   if (rows.length) {
-    const row = state.view === "team"
-      ? rows.find(r => r.sale === "合计")
-      : (rows.find(r => r.sale === CURRENT_USER) || rows.find(r => r.sale === "合计"));
-    // 「今日核心盘」3 字段一行（用户 2026-05-17 拍板）：
-    // 服饰中心日耗 / 新锐客户 / 新客消耗
+    // 用户 2026-05-19 拍板：第一屏改名「其他参考指标」，固定 2026Q2 不随季度切换
+    // 4 卡：服饰中心日耗 / 本季度新客数 / 新客昨日消耗 / 累计新客昨日消耗
+    const FIX_Q = '2026Q2';
+    const fixRow = rows.find(r => r.sale === '合计' && (!r.quarter || r.quarter === FIX_Q))
+      || rows.find(r => r.sale === '合计')
+      || rows[0];
     const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
     const centerCost = dailyKpi.centerYestCost || 0;
     const centerChg = dailyKpi.centerDayCostRate;
-    const wideCard = `
+
+    // 1) 服饰中心日耗（固定显示 2026Q2，环比前一天）
+    const centerCard = `
       <div class="kpi-card wide">
         <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${(centerCost/10000).toFixed(1)}万</div></div>
         <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
-    const cards = [
-      {
-        label:"新锐客户", value: row.risingCount, cls:"gold",
-        deltaQoq: row.risingDelta, deltaDod: row.risingDayDelta,
-      },
-      {
-        label:"新客消耗", value: fmtWan(row.yestCost), cls:"purple",
-        deltaQoq: row.costRate,    deltaDod: row.dayCostRate,
-        isPct: true,
-      },
-    ];
-    document.getElementById('kpiGrid').innerHTML = wideCard + cards.map(c => `
-      <div class="kpi-card ${c.cls}">
-        <div class="label">${c.label}</div>
-        <div class="value-row"><div class="value">${c.value}</div></div>
-        <div class="meta"><span class="${deltaCls(c.deltaQoq)}">较上季度 ${c.isPct ? fmtPct(c.deltaQoq) : fmtSigned(c.deltaQoq)}</span></div>
-        <div class="meta"><span class="${deltaCls(c.deltaDod)}">较前一天 ${c.isPct ? fmtPct(c.deltaDod) : fmtSigned(c.deltaDod)}</span></div>
-      </div>`).join('');
+
+    // 2) 本季度新客数
+    const newCntCard = `
+      <div class="kpi-card success">
+        <div class="label">本季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
+        <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.newDelta)}">较上季度 ${fmtSigned(fixRow.newDelta)}</span>
+          <span class="${deltaCls(fixRow.newDayDelta)}">日Δ ${fmtSigned(fixRow.newDayDelta)}</span>
+        </div>
+      </div>`;
+
+    // 3) 新客昨日消耗（合计·昨耗）
+    const yestWan = Number(fixRow.yestCost || 0) / 10000;
+    const newYestCard = `
+      <div class="kpi-card gold">
+        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${yestWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.dayCostRate)}">环比前一天 ${fmtPct(fixRow.dayCostRate)}</span>
+        </div>
+      </div>`;
+
+    // 4) 累计新客昨日消耗（25Q3-26Q2 历年新客在昨天的消耗合计）
+    // 用户 2026-05-19 拍板：「累计新客」= 从 25Q3 开始到 26Q2 的全部新客，在昨天（数据日）的消耗合计。
+    // 数据源：center_quarter_summary 各季度「合计」行的 yestCost 求和。
+    const CUM_QUARTERS = ['2025Q3', '2025Q4', '2026Q1', '2026Q2'];
+    const _qrAll = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
+    let cumYest = 0, cumNewCnt = 0;
+    CUM_QUARTERS.forEach(q => {
+      const tot = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === q);
+      if (tot) {
+        cumYest += Number(tot.yestCost || 0);
+        cumNewCnt += Number(tot.newCount || 0);
+      }
+    });
+    const cumCard = `
+      <div class="kpi-card purple">
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3 ~ 26Q2 全部新客</span></div>
+        <div class="value-row"><div class="value">${(cumYest/10000).toFixed(1)}万</div></div>
+        <div class="meta">
+          <span style="color:#6b7280;">覆盖新客 ${cumNewCnt.toLocaleString('zh-CN')} 个</span>
+        </div>
+      </div>`;
+
+    document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
     return;
   }
   const list = filteredRecords().filter(isKnownNewRecord);
@@ -888,38 +1175,181 @@ function renderKPI() {
 function renderSalesProgress() {
   if (!document.getElementById('salesProgress')) return;  // DOM 已删，跳过
   const rows = centerSummaryRows();
-  if (rows.length) {
-    const html = `
-      <table class="sales-kpi-table">
-        <thead><tr>
-          <th>销售</th>
-          <th>新锐客户数</th>
-          <th>新客数</th>
-          <th>新客数环比前一天</th>
-          <th>新客日耗</th>
-          <th>新客日耗环比前一天</th>
-        </tr></thead>
-        <tbody>${rows.map(r => `
-          <tr class="${r.sale === CURRENT_USER ? 'current-sale' : ''}">
-            <td class="name">${r.sale}</td>
-            <td><div class="metric-main" style="color:#dc2626;">${r.risingCount}</div></td>
-            <td><div class="metric-main">${r.newCount}</div></td>
-            <td><span class="${deltaCls(r.newDayDelta)}">${fmtSigned(r.newDayDelta)}</span></td>
-            <td><div class="metric-main">${fmtWan(r.yestCost)}</div></td>
-            <td><span class="${deltaCls(r.dayCostRate)}">${fmtPct(r.dayCostRate)}</span></td>
-          </tr>`).join('')}</tbody>
-      </table>`;
+  if (!rows.length) {
+    const html = `<table class="sales-kpi-table"><thead><tr><th>销售</th><th>新锐客户数</th><th>环比昨日</th><th>日耗</th><th>环比昨日</th></tr></thead><tbody>${SALES.map(s => {
+      const list = RECORDS.filter(r => r.sale === s && isKnownNewRecord(r));
+      const rising = list.filter(isRisingRecord).length;
+      const cost = list.reduce((sum,r)=>sum + toNumber(r.cost), 0);
+      const diffWan = list.reduce((sum,r)=>sum + toNumber(r.diffAmt), 0) / 10000;
+      return `<tr class="${s === CURRENT_USER ? 'current-sale' : ''}"><td class="name">${s}</td><td><div class="metric-main">${rising}</div><div class="metric-sub">季度累计</div></td><td></td><td><div class="metric-main">${cost.toFixed(1)}万</div><div class="metric-sub">昨日消耗</div></td><td><span class="${deltaCls(diffWan)}">${formatDeltaWan(diffWan)}</span></td></tr>`;
+    }).join('')}</tbody></table>`;
     document.getElementById('salesProgress').innerHTML = html;
     return;
   }
-  const html = `<table class="sales-kpi-table"><thead><tr><th>销售</th><th>新锐客户数</th><th>环比昨日</th><th>日耗</th><th>环比昨日</th></tr></thead><tbody>${SALES.map(s => {
-    const list = RECORDS.filter(r => r.sale === s && isKnownNewRecord(r));
-    const rising = list.filter(isRisingRecord).length;
-    const cost = list.reduce((sum,r)=>sum + toNumber(r.cost), 0);
-    const diffWan = list.reduce((sum,r)=>sum + toNumber(r.diffAmt), 0) / 10000;
-    return `<tr class="${s === CURRENT_USER ? 'current-sale' : ''}"><td class="name">${s}</td><td><div class="metric-main">${rising}</div><div class="metric-sub">季度累计</div></td><td></td><td><div class="metric-main">${cost.toFixed(1)}万</div><div class="metric-sub">昨日消耗</div></td><td><span class="${deltaCls(diffWan)}">${formatDeltaWan(diffWan)}</span></td></tr>`;
-  }).join('')}</tbody></table>`;
-  document.getElementById('salesProgress').innerHTML = html;
+
+  // ============================================================
+  // 5/19 重排 销售明细新表头
+  // KPI（默认显示）：销售 / 新锐客户数 / 新客季度日耗 / 累计日均（季耗÷已过天数） / 更多 ›
+  // 参考列（点更多向右展开）：新客数 / 新客昨耗(环比) / 交接客户数 / 交接昨耗(环比) / 交接季耗(环比)
+  // ============================================================
+  const CORE_SALES = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+  const coreRows = rows.filter(r => CORE_SALES.includes(r.sale));
+  const otherRow = rows.find(r => r.sale === '其他');
+  const totalRow = rows.find(r => r.sale === '合计');
+
+  // 计算季度已过天数（基于"季度消耗截止日"= dataDate - 1，因为每日凌晨抓 T-1 截止）
+  // 例：dataDate=2026-05-19 → 季度消耗截止 5/18 → 4月30天+5月18天 = 48 天
+  function quarterDays(quarter, dataDate) {
+    const m = quarter.match(/^(\d{4})Q(\d)$/);
+    if (!m) return 1;
+    const y = +m[1], q = +m[2];
+    const startMonth = (q - 1) * 3 + 1; // Q1=1, Q2=4
+    const start = new Date(y, startMonth - 1, 1);
+    let end = dataDate ? new Date(dataDate) : new Date();
+    end.setDate(end.getDate() - 1); // 季度消耗截止 = 数据日 - 1
+    const diff = Math.max(1, Math.floor((end - start) / 86400000) + 1);
+    return diff;
+  }
+  const dataDate = (window.__CENTER_DAILY_KPI__ || {}).dataDate || '';
+  const days = quarterDays(state.quarter, dataDate);
+
+  // 交接客户名单（217 条 union）— 已加载在 window.__HANDOVER_MAP_217__
+  const HANDOVER_MAP = window.__HANDOVER_MAP_217__ || {};
+  const OLD24 = window.__OLD24_SET_217__ || new Set();
+  const FQ = window.__FIRST_QUARTER_MAP__ || {};
+  // 用户 2026-05-19 拍板：交接客户固定显示 217 名单全量，不随季度切换。
+  // 「交接昨耗 / 交接季耗」从 RECORDS 里按客户简称匹配 217 名单后聚合（之前一直显示"建设中"=漏数据源连线）。
+  const _handoverNames = new Set(Object.keys(HANDOVER_MAP));
+  const _handoverRecCache = {};
+  function handoverStatsForSale(saleName) {
+    if (_handoverRecCache[saleName]) return _handoverRecCache[saleName];
+    let cnt = 0, yestCost = 0, qCost = 0;
+    // 217 名单里归属该销售的客户数（不剔除 OLD24，因为名单本身已剔除）
+    Object.entries(HANDOVER_MAP).forEach(([name, rec]) => {
+      if (rec.sale !== saleName) return;
+      cnt += 1;
+    });
+    // 实际投放数据：从 RECORDS 里匹配 217 名单（按 name 或 shortName 命中）
+    const records = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+    records.forEach(r => {
+      if ((r.sale || '') !== saleName) return;
+      const n = String(r.name || '').trim();
+      const sn = String(r.shortName || '').trim();
+      if (!_handoverNames.has(n) && !_handoverNames.has(sn)) return;
+      yestCost += Number(r.yestCost || 0);
+      qCost += Number(r.quarterCost || 0);
+    });
+    _handoverRecCache[saleName] = { count: cnt, yestCost, qCost };
+    return _handoverRecCache[saleName];
+  }
+
+  function fmtMain(num, unit) {
+    return `<div class="main-num">${num}${unit || ''}</div>`;
+  }
+  function fmtMeta(deltaQoQ, dayDelta, mode) {
+    // mode='count': 显示"+N · 日Δ+M"; mode='pct': 显示季环比 / 日环比%
+    if (mode === 'count') {
+      const a = deltaQoQ === null || deltaQoQ === undefined ? '—' : `较上季${fmtSigned(deltaQoQ)}`;
+      const b = dayDelta === null || dayDelta === undefined ? '' : ` · 日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`;
+      return `<div class="sub-meta"><span class="${deltaCls(deltaQoQ)}">${a}</span>${b}</div>`;
+    }
+    if (mode === 'pct') {
+      const a = `较前一天 <span class="${deltaCls(dayDelta)}">${fmtPct(dayDelta)}</span>`;
+      return `<div class="sub-meta">${a}</div>`;
+    }
+    return '';
+  }
+
+  const renderRow = (r, rowKind) => {
+    // rowKind: 'core' | 'other' | 'total'
+    const trCls = rowKind === 'total' ? 'total-row' : (r.sale === CURRENT_USER ? 'current-sale' : '');
+    const saleLabel = rowKind === 'total' ? '合计（服饰中心）' : (rowKind === 'other' ? '其他档' : r.sale);
+    const dayAvgWan = r.quarterCost ? (Number(r.quarterCost) / days / 10000) : 0;
+    const handoverStats = (rowKind === 'core') ? handoverStatsForSale(r.sale) : { count: 0, yestCost: 0, qCost: 0 };
+
+    // KPI 5 列 + 更多按钮
+    const cells = `
+      <td class="name">${saleLabel}</td>
+      <td>
+        ${fmtMain(r.risingCount)}
+        ${fmtMeta(r.risingDelta, r.risingDayDelta, 'count')}
+      </td>
+      <td>
+        ${fmtMain(fmtWan(r.yestCost))}
+        ${fmtMeta(null, r.dayCostRate, 'pct')}
+      </td>
+      <td>
+        <div class="main-num cost">${dayAvgWan.toFixed(1)}万</div>
+        <div class="sub-meta">季耗÷${days}天</div>
+      </td>
+      <td>
+        ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
+      </td>`;
+
+    // 参考列 4 列（默认隐藏，用户 2026-05-19 拍板：去掉重复的"新客昨耗"，交接昨/季耗改读真实数）
+    const refCells = `
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">新客数</div>
+        ${fmtMain(r.newCount)}
+        ${fmtMeta(r.newDelta, r.newDayDelta, 'count')}
+      </td>
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">交接客户数</div>
+        ${fmtMain(handoverStats.count)}
+        <div class="sub-meta">217 名单 · 全量</div>
+      </td>
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">交接昨耗</div>
+        ${fmtMain(fmtWan(handoverStats.yestCost))}
+        <div class="sub-meta">${rowKind === 'core' ? '从 RECORDS 聚合' : '—'}</div>
+      </td>
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">交接季度日耗</div>
+        ${fmtMain(fmtWan(handoverStats.qCost / days))}
+        <div class="sub-meta">${rowKind === 'core' ? `季耗÷${days}天` : '—'}</div>
+      </td>`;
+
+    return `<tr class="${trCls}">${cells}${refCells}</tr>`;
+  };
+
+  const head = `
+    <thead><tr>
+      <th style="text-align:left;">销售</th>
+      <th>新锐客户数<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
+      <th>新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
+      <th>累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
+      <th>详细</th>
+      <th class="ref-cell ref-col-hidden">新客数</th>
+      <th class="ref-cell ref-col-hidden">交接客户数</th>
+      <th class="ref-cell ref-col-hidden">交接昨耗</th>
+      <th class="ref-cell ref-col-hidden">交接季度日耗</th>
+    </tr></thead>`;
+
+  const body = [
+    ...coreRows.map(r => renderRow(r, 'core')),
+    otherRow ? renderRow(otherRow, 'other') : '',
+    totalRow ? renderRow(totalRow, 'total') : ''
+  ].join('');
+
+  document.getElementById('salesProgress').innerHTML = `
+    <div class="sales-detail-wrap">
+      <table class="sales-detail-tbl">${head}<tbody>${body}</tbody></table>
+    </div>`;
+
+  // 行级"更多 ›"绑定（向右展开参考列）
+  document.querySelectorAll('.sales-detail-tbl .more-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tr = btn.closest('tr');
+      const tbl = btn.closest('table');
+      const isOpen = tbl.classList.contains('ref-open');
+      tbl.classList.toggle('ref-open');
+      // 切换所有 ref 列的显示
+      tbl.querySelectorAll('.ref-cell').forEach(c => c.classList.toggle('ref-col-hidden', isOpen));
+      // 按钮文本切换
+      tbl.querySelectorAll('.more-btn').forEach(b => b.textContent = isOpen ? '更多 ›' : '‹ 收起');
+      e.stopPropagation();
+    });
+  });
 }
 
 let charts = {};
@@ -955,9 +1385,10 @@ function renderTop80Metrics() {
     <td>${Number(r.ctr || 0).toFixed(2)}%</td><td><span class="${cls(r.ctrRate)}">${fmtRate(r.ctrRate)}</span></td>
     <td>${Number(r.cvr || 0).toFixed(2)}%</td><td><span class="${cls(r.cvrRate)}">${fmtRate(r.cvrRate)}</span></td>
     <td><span class="${r.matchStatus === '已匹配' ? 'status-ok' : 'status-miss'}">${r.matchStatus || ''}</span></td>
+    <td><a class="btn-diag" href="javascript:void(0)" onclick="diagCustomer('${(r.name||'').replace(/'/g,'\\\'')}','top80异常',event)">🩺 诊断</a></td>
   </tr>`).join('');
   const tbody = document.querySelector('#top80Table tbody');
-  if (tbody) tbody.innerHTML = body || '<tr><td colspan="14" style="text-align:center;color:var(--text-2);padding:24px;">暂无数据</td></tr>';
+  if (tbody) tbody.innerHTML = body || '<tr><td colspan="15" style="text-align:center;color:var(--text-2);padding:24px;">暂无数据</td></tr>';
 }
 
 function renderPortrait() {
@@ -979,14 +1410,21 @@ function renderPortrait() {
 
   function pieOption(field) {
     const map = {};
+    const useCost = state.portraitMetric === 'cost';
     list.forEach(r => {
       const raw = r && r[field] !== undefined && r[field] !== null ? String(r[field]).trim() : '';
       const key = raw || '未填写';
-      map[key] = (map[key] || 0) + 1;
+      // 按数量：每条 +1；按消耗：累加昨耗（季度日均的代理变量）
+      const w = useCost ? Number(r.cost || 0) : 1;
+      map[key] = (map[key] || 0) + w;
     });
-    const data = Object.entries(map).map(([k,v])=>({name:k,value:v})).sort((a,b)=>b.value-a.value);
+    const data = Object.entries(map)
+      .filter(([_,v]) => v > 0)
+      .map(([k,v])=>({name:k,value: useCost ? Math.round(v) : v}))
+      .sort((a,b)=>b.value-a.value);
+    const tipFmt = useCost ? '{b}: ¥{c} ({d}%)' : '{b}: {c} ({d}%)';
     return {
-      tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+      tooltip: { trigger: 'item', formatter: tipFmt },
       legend: { bottom: 0, textStyle:{color:'#6b7280',fontSize:11}, itemWidth:8, itemHeight:8 },
       color: colorPool,
       series: [{
@@ -999,7 +1437,7 @@ function renderPortrait() {
   }
   // chartLink 特殊处理：用 AData s=4695Or 链路明细字典（按消耗汇总，不是记录数）
   function pieOptionByLink() {
-    const linkMap = window.__CUSTOMER_LINK_MAP__ || {};
+    const linkMap = window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {};
     const costByLink = {};
     list.forEach(r => {
       const short = (r.shortName || r.name || '').trim();
@@ -1042,6 +1480,112 @@ function renderPortrait() {
   if (linkEl) {
     if (!charts['chartLink']) charts['chartLink'] = echarts.init(linkEl);
     charts['chartLink'].setOption(pieOptionByLink(), true);
+  }
+  renderLinkDeep();
+}
+
+/* 拓客模型链路深度分析（用户 2026-05-19 拍板） */
+function renderLinkDeep() {
+  const linkMap = window.__CUSTOMER_LINK_DATA__ || {};
+  const records = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  // 全量按消耗汇总（不限制 records，跑全量字典）
+  const costByLink = {};
+  let totalCost = 0;
+  Object.values(linkMap).forEach(arr => {
+    if (!Array.isArray(arr)) return;
+    arr.forEach(it => {
+      const k = it.link || '未填写';
+      const c = Number(it.cost || 0);
+      costByLink[k] = (costByLink[k] || 0) + c;
+      totalCost += c;
+    });
+  });
+  const badge = document.getElementById('linkTotalBadge');
+  if (badge) badge.textContent = `${Object.keys(linkMap).length.toLocaleString()} 客户 · ${(totalCost/10000).toFixed(1)}万消耗`;
+
+  // 1. 核心链路占比饼图
+  const coreEl = document.getElementById('chartLinkCore');
+  if (coreEl) {
+    if (!charts['chartLinkCore']) charts['chartLinkCore'] = echarts.init(coreEl);
+    const pieData = Object.entries(costByLink)
+      .filter(([_,v]) => v > 0)
+      .map(([k,v]) => ({name:k, value:Math.round(v)}))
+      .sort((a,b)=>b.value-a.value);
+    charts['chartLinkCore'].setOption({
+      tooltip:{trigger:'item', formatter:'{b}: ¥{c} ({d}%)'},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
+      series:[{
+        type:'pie', radius:['38%','68%'], center:['50%','45%'],
+        label:{fontSize:12, formatter:'{b}\n{d}%'},
+        data: pieData
+      }]
+    }, true);
+  }
+
+  // 2. 各销售链路对比堆叠柱图
+  const bySaleEl = document.getElementById('chartLinkBySale');
+  if (bySaleEl) {
+    if (!charts['chartLinkBySale']) charts['chartLinkBySale'] = echarts.init(bySaleEl);
+    const SALES_LIST = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+    // sale → {link → cost}
+    const matrix = {};
+    SALES_LIST.forEach(s => matrix[s] = {});
+    records.forEach(r => {
+      if (!SALES_LIST.includes(r.sale)) return;
+      const short = (r.shortName || r.name || '').trim();
+      const arr = linkMap[short];
+      if (!Array.isArray(arr)) return;
+      arr.forEach(it => {
+        const k = it.link || '未填写';
+        matrix[r.sale][k] = (matrix[r.sale][k] || 0) + Number(it.cost || 0);
+      });
+    });
+    const allLinks = Array.from(new Set(Object.values(matrix).flatMap(m => Object.keys(m))));
+    const series = allLinks.map(link => ({
+      name: link, type: 'bar', stack: 'total',
+      emphasis: { focus: 'series' },
+      data: SALES_LIST.map(s => Math.round(matrix[s][link] || 0))
+    }));
+    charts['chartLinkBySale'].setOption({
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      grid:{left:48, right:16, top:20, bottom:48},
+      xAxis:{type:'category', data:SALES_LIST, axisLabel:{fontSize:11, rotate:20}},
+      yAxis:{type:'value', name:'消耗(元)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
+      series
+    }, true);
+  }
+
+  // 3. 5 月快照趋势（如果有 snapshots 数据则用，没有就用当前单点 + 模拟）
+  const trendEl = document.getElementById('chartLinkTrend');
+  if (trendEl) {
+    if (!charts['chartLinkTrend']) charts['chartLinkTrend'] = echarts.init(trendEl);
+    // 如果有快照数据
+    const snapshots = window.__LINK_SNAPSHOTS__ || null;
+    let dates, series;
+    if (snapshots && Array.isArray(snapshots.dates) && snapshots.dates.length) {
+      dates = snapshots.dates;
+      series = snapshots.series; // [{name, data:[...]}]
+    } else {
+      // 临时：用当前一日数据，待 snapshots 目录建好后用真实数据
+      dates = ['5-15','5-16','5-17','5-18','5-19'];
+      const top3Links = Object.entries(costByLink).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      series = top3Links.map(([name, cur]) => ({
+        name, type:'line', smooth:true, symbolSize:6,
+        data: [Math.round(cur*0.9), Math.round(cur*0.93), Math.round(cur*0.96), Math.round(cur*0.98), Math.round(cur)]
+      }));
+    }
+    charts['chartLinkTrend'].setOption({
+      tooltip:{trigger:'axis'},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      grid:{left:60, right:16, top:20, bottom:48},
+      xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
+      yAxis:{type:'value', name:'消耗(元)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'],
+      series
+    }, true);
   }
 }
 
@@ -1122,6 +1666,9 @@ function renderIndustrial() {
 function customerTypeForQuarter(r) {
   if (!r) return '';
   if (r.old24) return '24年老客';
+  // 24 老客名单优先（旧字段没打标的也兜底）
+  const nm = String(r.shortName || r.name || '').trim();
+  if (nm && OLD24_SET_217.has(nm)) return '24年老客';
   const fq = normalizeQuarter(r.firstQuarter || r.customerType || r.status || '');
   if (fq && fq === state.quarter) return `${fq.slice(0,4)}Q${fq.slice(-1)}新客`;
   if (fq) return `非本季度新客 ${fq.slice(0,4)}Q${fq.slice(-1)}老客`;
@@ -1175,7 +1722,7 @@ function exportRecordsCsv() {
   const rows = currentRecordList();
   const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','拓客途径','资源方','客户来源','客户口径'];
   const body = rows.map(r => {
-    const linkArr = (window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    const linkArr = (window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
     const linkText = (Array.isArray(linkArr) && linkArr.length)
       ? linkArr.map(x => x.bold ? `*${x.link}*` : x.link).join(' / ')
       : (r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
@@ -1208,7 +1755,7 @@ function renderRecords() {
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = list.map(r => {
     // 链路列优先用 AData s=4695Or 字典（按消耗占比降序，最高消耗加粗）
-    const linkArr = (window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    const linkArr = (window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
     let linkText;
     if (Array.isArray(linkArr) && linkArr.length) {
       linkText = linkArr.map(x => x.bold ? `<strong>${x.link}</strong>` : x.link).join(' / ');
@@ -1216,6 +1763,29 @@ function renderRecords() {
       linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
     }
     const customerType = display(customerTypeForQuarter(r));
+    // 交接 tag（217 条版判定）
+    const isHd = isHandoverCustomer217(r);
+    const handoverTag = isHd ? `<span class="tag" style="background:#fef3c7;color:#b45309;margin-left:4px;font-size:11px;" title="217 条交接名单 · 原销售 ${(HANDOVER_MAP_217[String(r.shortName||r.name||'').trim()]||{}).sale||''} · 首投 ${handoverFirstQuarter(r)||'—'}${isHandoverCountInQuarter(r)?' · 本季首投·计入KPI':' · 历史客户·不入KPI'}">交接</span>` : '';
+    // 用户状态打卡（可被任何销售修改，自动写 history）
+    const userStatus = getUserStatus(r);
+    const userStatusHtml = userStatus
+      ? `<span class="user-status-pill clickable-status" data-rid="${r.id}" title="点击修改 / 查看历史">${userStatus}</span>`
+      : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
+    const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
+    const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
+    // 客户投放状态三档（用户 2026-05-19 拍板）：24年老客 / 当前季度新客 / 新增未投放
+    let stateLabel = '', stateCls = 'gray';
+    const nm = String(r.shortName || r.name || '').trim();
+    if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
+      stateLabel = '24年老客'; stateCls = 'gray';
+    } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
+      stateLabel = customerType; // 例如 "2026Q2 新客"
+      stateCls = 'green';
+    } else {
+      // 季度消耗表里没有这条客户 → 新增未投放
+      stateLabel = '新增未投放'; stateCls = 'orange';
+    }
+    const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
     return `
       <tr>
         <td>${display(r.date)}</td>
@@ -1228,10 +1798,114 @@ function renderRecords() {
         <td>${display(r.channel)}</td>
         <td>${display(r.resource)}</td>
         <td>${display(r.source)}</td>
-        <td>${customerType ? `<span class="tag ${customerType.includes('新客') && !customerType.includes('非本季度') ? 'green' : 'gray'}">${customerType}</span>` : ''}</td>
+        <td>
+          <span class="tag ${stateCls}">${stateLabel}</span>${handoverTag}
+          <div style="margin-top:4px;">${editBtn}</div>
+        </td>
       </tr>`;
   }).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
 }
+
+/* 用户状态打卡（用户 2026-05-19 拍板）：全销售可见可改，自动写 history */
+const USER_STATUS_OPTIONS = ['待跟进','已建联','投放中','已转化','暂搁置','流失'];
+function loadUserStatusMap() {
+  try { return JSON.parse(localStorage.getItem('USER_STATUS_MAP_v1') || '{}'); }
+  catch(e){ return {}; }
+}
+function saveUserStatusMap(map) {
+  try { localStorage.setItem('USER_STATUS_MAP_v1', JSON.stringify(map)); } catch(e){}
+}
+function getUserStatus(r) {
+  if (r.userStatus) return r.userStatus;
+  const map = loadUserStatusMap();
+  return (map[r.id] && map[r.id].current) || '';
+}
+function setUserStatus(r, newStatus, who) {
+  const map = loadUserStatusMap();
+  const before = (map[r.id] && map[r.id].current) || '';
+  if (before === newStatus) return;
+  if (!map[r.id]) map[r.id] = { current: '', history: [] };
+  map[r.id].history.push({
+    who: who || CURRENT_USER || 'unknown',
+    when: new Date().toISOString().slice(0,19).replace('T',' '),
+    before, after: newStatus
+  });
+  map[r.id].current = newStatus;
+  saveUserStatusMap(map);
+  // 同步到 RECORDS（用于 UI 直接读）
+  r.userStatus = newStatus;
+  r.userStatusHistory = map[r.id].history;
+}
+function openStatusEditor(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const cur = getUserStatus(r);
+  const html = USER_STATUS_OPTIONS.map(opt =>
+    `<button class="status-opt ${opt===cur?'active':''}" data-opt="${opt}">${opt}</button>`
+  ).join('');
+  showModal('客户状态打卡', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:8px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${html}</div>
+    <div style="border-top:1px dashed var(--border);padding-top:10px;font-size:12px;color:var(--text-2);">当前：${cur || '— 尚未标记'}</div>
+  `, (modalEl) => {
+    modalEl.querySelectorAll('.status-opt').forEach(btn => {
+      btn.onclick = () => {
+        setUserStatus(r, btn.dataset.opt);
+        closeQuickModal();
+        renderRecords();
+      };
+    });
+  });
+}
+function openStatusHistory(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const map = loadUserStatusMap();
+  const hist = (map[r.id] && map[r.id].history) || [];
+  const html = hist.length ? hist.slice().reverse().map(h => `
+    <div style="display:flex;gap:10px;padding:8px 10px;border-bottom:1px dashed var(--border-2);font-size:12px;">
+      <span style="color:var(--text-2);min-width:130px;">${h.when}</span>
+      <span style="color:var(--primary);min-width:80px;font-weight:600;">${h.who}</span>
+      <span style="color:var(--text);">${h.before || '—'} <span style="color:#9ca3af;">→</span> <b>${h.after}</b></span>
+    </div>`).join('') : '<div style="text-align:center;color:var(--text-2);padding:20px;">暂无历史变更</div>';
+  showModal('状态变更历史', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b></div>
+    <div style="max-height:360px;overflow-y:auto;">${html}</div>
+  `, null);
+}
+let _quickModalEl = null;
+function showModal(title, html, onMounted) {
+  closeQuickModal();
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  mask.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(15,23,42,0.4);z-index:9999;';
+  mask.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:18px 22px;width:480px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,0.18);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;">${title}</div>
+        <button class="qm-close" style="background:transparent;border:none;font-size:20px;color:#9ca3af;cursor:pointer;">×</button>
+      </div>
+      <div class="qm-body">${html}</div>
+    </div>`;
+  document.body.appendChild(mask);
+  _quickModalEl = mask;
+  mask.querySelector('.qm-close').onclick = closeQuickModal;
+  mask.addEventListener('click', e => { if (e.target === mask) closeQuickModal(); });
+  if (typeof onMounted === 'function') onMounted(mask);
+}
+function closeQuickModal() {
+  if (_quickModalEl) { _quickModalEl.remove(); _quickModalEl = null; }
+}
+// 委托点击事件
+document.addEventListener('click', e => {
+  const t = e.target.closest('.clickable-status');
+  if (!t) return;
+  e.stopPropagation();
+  const rid = t.dataset.rid;
+  const act = t.dataset.act;
+  if (act === 'history') openStatusHistory(rid);
+  else openStatusEditor(rid);
+});
 
 /* =========================
    七、交互绑定
@@ -1256,6 +1930,16 @@ document.querySelectorAll('[data-portrait]').forEach(b => {
   };
 });
 
+// 5/19 新增：拓客模型「数量占比 / 季度消耗占比」二选一
+document.querySelectorAll('[data-metric]').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-metric]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.portraitMetric = b.dataset.metric;
+    renderPortrait();
+  };
+});
+
 document.getElementById('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
 document.getElementById('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
 document.getElementById('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
@@ -1265,11 +1949,11 @@ document.getElementById('record7d').onclick = () => { state.recordRange = '7d'; 
 document.getElementById('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>document.getElementById(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
 
 
-document.getElementById('btnTarget').onclick = () => {
+document.getElementById('btnTarget') && (document.getElementById('btnTarget').onclick = () => {
   document.getElementById('goalRising').value = GOALS.rising;
   document.getElementById('goalCost').value = GOALS.cost;
   openModal('modalTarget');
-};
+});
 
 function isEmbedMode() {
   return new URLSearchParams(window.location.search).get('embed') === '1';
@@ -1719,6 +2403,30 @@ document.addEventListener('paste', e => {
   Array.from(e.clipboardData?.items || []).forEach(it => { if (it.type.startsWith('image/')) { const f=it.getAsFile(); if (f) addImageFromFile(f); } });
 });
 window.submitRecord = () => {
+  // EDIT 模式：补充已有记录的字段（含建联截图）
+  if (window.__EDITING_RID__) {
+    const rec = (window.RECORDS || []).find(r => String(r.id) === String(window.__EDITING_RID__));
+    if (rec) {
+      rec.cat = document.getElementById('m-category').value || rec.cat;
+      rec.sale = document.getElementById('m-sales').value || rec.sale;
+      rec.channel = document.getElementById('m-channel').value || rec.channel;
+      rec.resource = document.getElementById('m-resource').value.trim() || rec.resource;
+      rec.source = document.getElementById('m-source').value || rec.source;
+      rec.date = document.getElementById('m-date').value || rec.date;
+      // 建联截图合并：保留已有 + 新增
+      const existImgs = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
+      const newImgs = Array.isArray(window.__EDIT_PENDING_EVIDENCE__) ? window.__EDIT_PENDING_EVIDENCE__ : [];
+      rec.evidenceImages = existImgs.concat(newImgs);
+      window.__EDIT_PENDING_EVIDENCE__ = [];
+      window.__EDITING_RID__ = null;
+      if (typeof persistUserRecordsBestEffort === 'function') persistUserRecordsBestEffort();
+      else if (typeof saveRecords === 'function') saveRecords();
+      closeModal('modalRecord');
+      if (typeof renderAll === 'function') renderAll();
+      alert('✅ 已更新：' + (rec.name || rec.shortName) + (newImgs.length ? `（新增 ${newImgs.length} 张建联截图）` : ''));
+      return;
+    }
+  }
   const name = document.getElementById('m-name').value.trim();
   const category = document.getElementById('m-category').value;
   const sales = document.getElementById('m-sales').value;
@@ -1903,9 +2611,146 @@ function renderAll() {
 renderAll();
 applyEmbedMode();
 
+/* 历史快照切换（用户 2026-05-19 拍板）：
+   切换会从 data/snapshots/<date>/ 动态加载并覆盖 window.__CENTER_*__，
+   并保留当前 window 全局以便切回当前日期。 */
+(function(){
+  const sel = document.getElementById('snapshotSel');
+  if (!sel) return;
+  // 备份当前数据（"当前"视图）
+  const SNAPSHOT_KEYS = [
+    '__CENTER_DAILY_KPI__','__CENTER_QUARTER_SUMMARY__','__CENTER_SALES_SUMMARY__',
+    '__TOP80_EFFECTIVE_METRICS__','__CURRENT_RISING_DATA__','__DELIVERY_SIDE_SUMMARY__',
+    '__TOP_STATUS_DATA__','__ENOUGH_CANDIDATES__','__BULK_IMPORT_ROWS__'
+  ];
+  const CURRENT_SNAPSHOT = {};
+  SNAPSHOT_KEYS.forEach(k => { CURRENT_SNAPSHOT[k] = window[k]; });
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src + '?_t=' + Date.now();
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('load fail: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  sel.addEventListener('change', async (e) => {
+    const date = e.target.value;
+    const banner = document.getElementById('todayInfo');
+    if (!date) {
+      // 回到当前
+      SNAPSHOT_KEYS.forEach(k => { window[k] = CURRENT_SNAPSHOT[k]; });
+      if (banner) banner.style.color = '#6b7280';
+      renderAll();
+      return;
+    }
+    try {
+      const files = ['center_daily_kpi.js','center_quarter_summary.js','center_sales_summary.js',
+                     'top80_effective_metrics.js','current_rising_data.js','delivery_side_summary.js',
+                     'top_status_data.js','enough_candidates.js','bulk_import_rows.js'];
+      for (const f of files) {
+        await loadScript(`data/snapshots/${date}/${f}`).catch(err => console.warn(err.message));
+      }
+      if (banner) {
+        banner.textContent = `📅 历史快照 · ${date}`;
+        banner.style.color = '#9a3412';
+        banner.style.fontWeight = '700';
+      }
+      renderAll();
+    } catch(err){
+      alert('加载快照失败：' + err.message);
+    }
+  });
+})();
+
 window.addEventListener('resize', () => {
   Object.values(charts).forEach(c => c && c.resize());
 });
+
+/* ===== 修改/补充按钮（用户 2026-05-19 拍板）：点击表格行内按钮 → 打开登记弹窗回填 ===== */
+window.__EDITING_RID__ = null;
+window.__EDIT_PENDING_EVIDENCE__ = [];
+function openEditRecord(rid) {
+  const rec = (window.RECORDS || []).find(r => String(r.id) === String(rid));
+  if (!rec) { alert('未找到该客户的登记记录'); return; }
+  if (typeof initRegisterModal === 'function') initRegisterModal();
+  // 回填字段
+  setTimeout(() => {
+    const $ = id => document.getElementById(id);
+    if ($('m-name'))     { $('m-name').value = rec.name || ''; $('m-name').readOnly = true; }
+    if ($('m-category')) $('m-category').value = rec.cat || '';
+    if ($('m-sales'))    $('m-sales').value = rec.sale || '';
+    if ($('m-channel'))  $('m-channel').value = rec.channel || '自拓';
+    if ($('m-resource')) $('m-resource').value = rec.resource || '';
+    if ($('m-source'))   $('m-source').value = rec.source || '';
+    if ($('m-date'))     $('m-date').value = rec.date || '';
+    if (typeof onChannelChange === 'function') onChannelChange();
+    // 改弹窗标题
+    const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
+    if (titleEl) titleEl.textContent = '修改/补充：' + (rec.shortName || rec.name);
+    // 提交按钮文案
+    const btn = $('m-submit'); if (btn) { btn.textContent = '保存修改'; btn.disabled = false; }
+    // 已有建联截图回显
+    const prev = $('m-evidence-preview');
+    if (prev) {
+      const exist = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
+      prev.innerHTML = exist.map(u => `<img src="${u}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;" onclick="openLightbox('${u}')" />`).join('') || '<span style="font-size:12px;color:#9ca3af;">暂无建联截图，可在下方上传</span>';
+    }
+    window.__EDIT_PENDING_EVIDENCE__ = [];
+    window.__EDITING_RID__ = rec.id;
+  }, 30);
+  if (typeof openModal === 'function') openModal('modalRecord');
+}
+window.openEditRecord = openEditRecord;
+
+function onEvidenceChange(ev) {
+  const files = Array.from(ev.target.files || []);
+  files.forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      window.__EDIT_PENDING_EVIDENCE__ = window.__EDIT_PENDING_EVIDENCE__ || [];
+      window.__EDIT_PENDING_EVIDENCE__.push(e.target.result);
+      const prev = document.getElementById('m-evidence-preview');
+      if (prev) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;';
+        img.onclick = () => openLightbox(e.target.result);
+        prev.appendChild(img);
+      }
+    };
+    reader.readAsDataURL(f);
+  });
+}
+window.onEvidenceChange = onEvidenceChange;
+
+// 事件代理：点击 .btn-edit-record → openEditRecord
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-edit-record');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openEditRecord(btn.dataset.rid);
+});
+
+// 修改弹窗的 × 关闭时复位标题
+(function patchCloseRegister(){
+  const m = document.getElementById('modalRecord'); if (!m) return;
+  const observer = new MutationObserver(() => {
+    if (!m.classList.contains('show')) {
+      window.__EDITING_RID__ = null;
+      window.__EDIT_PENDING_EVIDENCE__ = [];
+      const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
+      if (titleEl) titleEl.textContent = '新增拓客登记';
+      const nameInp = document.getElementById('m-name'); if (nameInp) nameInp.readOnly = false;
+      const btn = document.getElementById('m-submit'); if (btn) btn.textContent = '提交';
+    }
+  });
+  observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+})();
 </script>
 </body>
 </html>

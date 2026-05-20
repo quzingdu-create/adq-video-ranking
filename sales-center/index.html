@@ -6,6 +6,10 @@
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
+<!-- PC 总入口卡片所需数据 -->
+<script src="data/center_quarter_summary.js"></script>
+<script src="data/center_daily_kpi.js"></script>
+<script src="data/tuoke_real_records.js"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -753,12 +757,214 @@
 
 <!-- ========== 拓客作战看板 Tab（直接展示深度页）========== -->
 <div class="tab-page" id="page-battle">
-  <div class="container" style="max-width:1400px;padding:0;">
-    <div class="section" style="padding:0;overflow:hidden;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin" style="width:100%;height:calc(100vh - 120px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+  <div class="container" style="max-width:1400px;padding:14px 28px 0;">
+    <!-- PC 销售作战中心总入口（用户 2026-05-19 拍板：精简 2 大卡 + 季度双标签） -->
+    <div id="battlePortal" class="battle-portal">
+      <!-- 顶栏：季度双标签 -->
+      <div class="bp-topbar">
+        <div class="bp-title">
+          <span class="bp-title-icon">📊</span>
+          <span class="bp-title-text">团队季度 KPI 完成进度</span>
+        </div>
+        <div class="bp-tags">
+          <span class="bp-tag kpi-tag" id="bpKpiQuarter">KPI 季度 · 2026Q2</span>
+          <span class="bp-tag time-tag" id="bpTimeQuarter">时间季度 · 第 — / 91 天</span>
+          <span class="bp-tag date-tag" id="bpDataDate">数据日 · —</span>
+        </div>
+      </div>
+
+      <div class="bp-grid">
+        <div class="big-card primary" data-anchor="kpiGrid">
+          <div class="big-icon">🌟</div>
+          <div class="big-body">
+            <div class="big-label">季度新锐客户数</div>
+            <div class="big-row">
+              <span class="big-num" id="portalKpiVal">—</span>
+              <span class="big-unit">/ 207 个</span>
+            </div>
+            <div class="big-bar"><div class="big-fill" id="portalKpiFill" style="width:0%"></div></div>
+            <div class="big-meta">
+              <span class="big-sub" id="portalKpiSub">本季目标进度</span>
+              <span class="big-pct" id="portalKpiPct">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="big-card violet" data-anchor="kpiGrid">
+          <div class="big-icon">💰</div>
+          <div class="big-body">
+            <div class="big-label">新客季度日耗</div>
+            <div class="big-row">
+              <span class="big-num" id="portalCostVal">—</span>
+              <span class="big-unit">/ 121 万</span>
+            </div>
+            <div class="big-bar"><div class="big-fill" id="portalCostFill" style="width:0%"></div></div>
+            <div class="big-meta">
+              <span class="big-sub" id="portalCostSub">本季目标进度</span>
+              <span class="big-pct" id="portalCostPct">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
+<style>
+  /* 团队季度 KPI 完成进度（用户 2026-05-19 二次拍板：2 大卡 + 双标签 + 美化） */
+  .battle-portal {
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #f8fbff 0%, #eff6ff 100%);
+    border: 1px solid #dbeafe;
+    border-radius: 16px;
+    padding: 16px 18px 18px;
+    box-shadow: 0 4px 20px rgba(37,99,235,0.06);
+  }
+  .bp-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+  }
+  .bp-title { display: flex; align-items: center; gap: 8px; }
+  .bp-title-icon { font-size: 22px; }
+  .bp-title-text { font-size: 16px; font-weight: 700; color: #0f172a; letter-spacing: 0.3px; }
+  .bp-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .bp-tag {
+    display: inline-flex; align-items: center;
+    padding: 4px 12px; font-size: 12px; font-weight: 600;
+    border-radius: 999px; border: 1px solid;
+  }
+  .bp-tag.kpi-tag  { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+  .bp-tag.time-tag { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
+  .bp-tag.date-tag { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+
+  .bp-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  @media (max-width: 720px) { .bp-grid { grid-template-columns: 1fr; } }
+
+  .big-card {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; border-radius: 14px; cursor: pointer;
+    color: #fff; box-shadow: 0 6px 20px rgba(15,23,42,0.10);
+    transition: transform .25s ease, box-shadow .25s ease;
+    position: relative; overflow: hidden;
+  }
+  .big-card::before {
+    content: ''; position: absolute; right: -30px; top: -30px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,255,255,0.10); pointer-events: none;
+  }
+  .big-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(15,23,42,0.16); }
+  .big-card.primary { background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); }
+  .big-card.violet  { background: linear-gradient(135deg, #c084fc 0%, #7c3aed 100%); }
+  .big-icon {
+    width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.22); font-size: 28px;
+    backdrop-filter: blur(4px);
+  }
+  .big-body { flex: 1; min-width: 0; }
+  .big-label { font-size: 13px; opacity: 0.92; margin-bottom: 6px; font-weight: 500; }
+  .big-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 8px; }
+  .big-num { font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
+  .big-unit { font-size: 13px; opacity: 0.85; font-weight: 500; }
+  .big-bar {
+    height: 6px; background: rgba(255,255,255,0.26); border-radius: 999px;
+    overflow: hidden; margin-bottom: 6px;
+  }
+  .big-fill {
+    height: 100%; background: linear-gradient(90deg, #fff, rgba(255,255,255,0.85));
+    border-radius: 999px; transition: width .8s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  }
+  .big-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .big-sub { opacity: 0.85; }
+  .big-pct { font-weight: 700; font-size: 14px; }
+</style>
+<script>
+  // PC 总入口卡片：KPI 数字回填 + 锚点跳转
+  (function(){
+    // 季度起止日期映射（2025Q3 ~ 2026Q2）
+    const QUARTER_RANGE = {
+      '2025Q3': ['2025-07-01','2025-09-30'],
+      '2025Q4': ['2025-10-01','2025-12-31'],
+      '2026Q1': ['2026-01-01','2026-03-31'],
+      '2026Q2': ['2026-04-01','2026-06-30'],
+    };
+    function calcQuarterDay(q) {
+      const today = new Date();
+      const range = QUARTER_RANGE[q]; if (!range) return null;
+      const [s, e] = range;
+      const start = new Date(s + 'T00:00:00');
+      const end   = new Date(e + 'T23:59:59');
+      const total = Math.round((end - start) / 86400000) + 1;
+      let day = Math.floor((today - start) / 86400000) + 1;
+      if (day < 0) day = 0; if (day > total) day = total;
+      return { day, total };
+    }
+    function refresh() {
+      try {
+        const summary = window.__CENTER_QUARTER_SUMMARY__ || [];
+        const total = summary.find(r => r.quarter === '2026Q2' && r.sale === '合计');
+        const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        const setStyle = (id, prop, v) => { const el = document.getElementById(id); if (el) el.style[prop] = v; };
+        if (total) {
+          // 计算季度已过天数（截止数据日 - 1，与 kanban_embed.html KPI 卡一致）
+          const dailyKpiTmp = window.__CENTER_DAILY_KPI__ || {};
+          const _qDays = (function(){
+            const m = (total.quarter || '2026Q2').match(/^(\d{4})Q(\d)$/);
+            if (!m) return 1;
+            const y = +m[1], q = +m[2];
+            const startMonth = (q - 1) * 3 + 1;
+            const start = new Date(y, startMonth - 1, 1);
+            let end = dailyKpiTmp.dataDate ? new Date(dailyKpiTmp.dataDate) : new Date();
+            end.setDate(end.getDate() - 1); // 截止 = 数据日 - 1
+            return Math.max(1, Math.floor((end - start) / 86400000) + 1);
+          })();
+          const rising = Number(total.risingCount || 0);
+          // 新客累计日均消耗 = 季度消耗 ÷ 已过天数（与 kanban_embed.html 67.4 万口径一致）
+          const dayCostWan = Number(total.quarterCost || 0) / _qDays / 10000;
+          const yestCostWan = Number(total.yestCost || 0) / 10000;
+          const risingPct = Math.min(100, Math.round(rising / 207 * 100));
+          const costPct = Math.min(100, Math.round(dayCostWan / 121 * 100));
+          setText('portalKpiVal', String(rising));
+          setText('portalKpiPct', risingPct + '%');
+          setText('portalKpiSub', `本季目标 207 个`);
+          setStyle('portalKpiFill', 'width', risingPct + '%');
+          setText('portalCostVal', dayCostWan.toFixed(1) + ' 万');
+          setText('portalCostPct', costPct + '%');
+          setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
+          setStyle('portalCostFill', 'width', costPct + '%');
+        }
+        // KPI 季度 + 时间季度 + 数据日
+        setText('bpKpiQuarter', 'KPI 季度 · 2026Q2');
+        const tq = calcQuarterDay('2026Q2');
+        if (tq) setText('bpTimeQuarter', `时间季度 · 第 ${tq.day} / ${tq.total} 天`);
+        const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
+        const dataDate = dailyKpi.dataDate || dailyKpi.dataDay || '—';
+        setText('bpDataDate', `数据日 · ${dataDate}`);
+      } catch(e){ console.warn('portal refresh fail', e); }
+    }
+    // 等数据加载后
+    if (window.__CENTER_QUARTER_SUMMARY__) refresh();
+    else window.addEventListener('load', refresh);
+
+    // 入口卡点击 → iframe 内锚点滚动
+    document.addEventListener('click', e => {
+      const card = e.target.closest('.portal-card');
+      if (!card) return;
+      const anchor = card.dataset.anchor;
+      const frame = document.getElementById('battleFrame');
+      if (!frame || !frame.contentWindow) return;
+      try {
+        const target = frame.contentWindow.document.getElementById(anchor);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch(err){ console.warn('anchor jump fail', err); }
+    });
+  })();
+</script>
 
 <!-- ========== 信息详情弹窗（适用客户清单） ========== -->
 <div class="modal-mask" id="modalInfo">
