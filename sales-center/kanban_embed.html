@@ -22,6 +22,8 @@
 <script src="data/handover_customers_519.js"></script>
 <script src="data/first_quarter.js"></script>
 <script src="data/old24_names.js"></script>
+<!-- 🦞 云端同步层（橘橘有500w加，2026-05-20 19:55） -->
+<script src="cloud_sync.js"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -981,11 +983,34 @@ function saveUserRecord(rec) {
   USER_RECORDS.unshift(rec);
   persistUserRecordsBestEffort();
   RECORDS.unshift(rec);
+  // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55）：本地写完立即推一条到后端
+  // 失败不阻塞用户，仅静默 console.warn，下次手动「☁️同步到云端」可补
+  try {
+    if (window.cloud && window.cloud.isLoggedIn()) {
+      window.cloud.upload([rec]).then(function(d){
+        console.info('[cloud] saved single ok created=' + d.created + ' updated=' + d.updated);
+      }).catch(function(e){
+        console.warn('[cloud] save single fail:', e.message);
+        if (window.cloud.toast) window.cloud.toast('云端保存失败：' + e.message + '（已本地保存）', true);
+      });
+    }
+  } catch(_){}
 }
 function saveUserRecordsBulk(records) {
   USER_RECORDS = [...records, ...USER_RECORDS];
   persistUserRecordsBestEffort();
   RECORDS.unshift(...records);
+  // 🦞 云端双写
+  try {
+    if (records && records.length && window.cloud && window.cloud.isLoggedIn()) {
+      window.cloud.upload(records).then(function(d){
+        console.info('[cloud] saved bulk ok n=' + records.length + ' created=' + d.created);
+      }).catch(function(e){
+        console.warn('[cloud] save bulk fail:', e.message);
+        if (window.cloud.toast) window.cloud.toast('云端批量保存失败（已本地保存）', true);
+      });
+    }
+  } catch(_){}
 }
 
 </script>
@@ -2779,6 +2804,31 @@ document.addEventListener('click', e => {
     }
   });
   observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+})();
+
+/* 🦞 云端同步顶栏（橘橘有500w加，2026-05-20 19:55） */
+(function initCloudToolbar(){
+  if (!window.cloud) return;
+  window.cloud.injectToolbar({
+    getLocalRecords: function(){
+      try { return JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]'); }
+      catch(e){ return []; }
+    },
+    applyRemoteRecords: function(list){
+      // 把云端记录覆盖到本地 + 立即重渲染
+      try {
+        localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
+      } catch(e){
+        try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 500))); } catch(_){}
+      }
+      USER_RECORDS = list;
+      // 重建 RECORDS：云端 + tuoke_real_records
+      const real = (window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : [];
+      window.RECORDS.length = 0;
+      window.RECORDS.push(...USER_RECORDS, ...real);
+      if (typeof renderAll === 'function') renderAll();
+    }
+  });
 })();
 </script>
 </body>
