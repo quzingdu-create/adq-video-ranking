@@ -67,12 +67,16 @@
     if (_readyPromise) return _readyPromise;
     var targetRtx = rtx || getRtx();
     _readyPromise = new Promise(function (resolve, reject) {
-      if (typeof cloudbase === 'undefined') {
+      // 兼容两种全局名：tcb.js (1.7.x) 暴露 window.tcb；@cloudbase/js-sdk 暴露 window.cloudbase
+      var SDK = (typeof cloudbase !== 'undefined') ? cloudbase
+              : (typeof tcb !== 'undefined') ? tcb
+              : null;
+      if (!SDK) {
         reject(new Error('CloudBase SDK 未加载，HTML 缺少 <script src="https://imgcache.qq.com/qcloud/tcbjs/1.7.2/tcb.js"></script>'));
         return;
       }
       try {
-        _app = cloudbase.init({ env: ENV_ID });
+        _app = SDK.init({ env: ENV_ID });
         _auth = _app.auth({ persistence: 'local' });
         // 路径 1：已有有效 token（同 rtx）→ 直接走
         if (_auth.hasLoginState && _auth.hasLoginState() && targetRtx === _currentRtx) {
@@ -454,11 +458,14 @@
 
   // 静默预热（仅当 localStorage 有 rtx + CloudBase token 时复用 token；否则等用户输密码）
   function autoInit() {
-    if (typeof cloudbase === 'undefined') return;
+    var SDK = (typeof cloudbase !== 'undefined') ? cloudbase
+            : (typeof tcb !== 'undefined') ? tcb
+            : null;
+    if (!SDK) return;
     var rtx = getRtx();
     if (!rtx) return;  // 没选过身份 → 等用户点登录
     try {
-      var tmpApp = cloudbase.init({ env: ENV_ID });
+      var tmpApp = SDK.init({ env: ENV_ID });
       var tmpAuth = tmpApp.auth({ persistence: 'local' });
       if (tmpAuth.hasLoginState && tmpAuth.hasLoginState()) {
         // 有 token → 走「路径 2」复用，无需密码
