@@ -85,17 +85,36 @@
       }
       try {
         _app = SDK.init({ env: ENV_ID });
-        _auth = _app.auth({ persistence: 'local' });
+        // 关键修复（2026-05-21 19:30）：cloudbase v2 SDK 里 app.auth 是属性而不是函数
+        // v1 (tcb.js 1.7.x): _app.auth({persistence:'local'}) - 调用得到 auth 对象
+        // v2 (cloudbase-js-sdk latest): _app.auth - 直接是 auth 对象，方法是 signInWithPassword 且返回 {data, error}
+        var authProp = _app.auth;
+        var isV2 = (typeof authProp === 'object' && authProp && typeof authProp.signInWithPassword === 'function');
+        if (isV2) {
+          _auth = authProp;
+          _isV2 = true;
+        } else {
+          _auth = _app.auth({ persistence: 'local' });
+          _isV2 = false;
+        }
         // 路径 1：已有有效 token（同 rtx）→ 直接走
-        if (_auth.hasLoginState && _auth.hasLoginState() && targetRtx === _currentRtx) {
-          _db = _app.database();
+        var hasState = false;
+        try {
+          if (_isV2) {
+            // v2 用 getLoginState 异步检查；这里粗暴判断 localStorage 里有没有 token 标记
+            hasState = !!localStorage.getItem('TCB_AUTH_STATE');
+          } else if (_auth.hasLoginState) {
+            hasState = !!_auth.hasLoginState();
+          }
+        } catch(_) { hasState = false; }
+        if (hasState && targetRtx === _currentRtx) {
+          _db = _isV2 ? (_app.database ? _app.database() : null) : _app.database();
           resolve();
           return;
         }
-        // 路径 2：已有 CloudBase token 但 _currentRtx 没初始化（页面刚刷新）→ 信任 localStorage 的 rtx
-        if (_auth.hasLoginState && _auth.hasLoginState() && targetRtx && !_currentRtx) {
+        if (hasState && targetRtx && !_currentRtx) {
           _currentRtx = targetRtx;
-          _db = _app.database();
+          _db = _isV2 ? (_app.database ? _app.database() : null) : _app.database();
           resolve();
           return;
         }
@@ -111,12 +130,28 @@
           return;
         }
         var email = buildEmail(targetRtx);
-        var loginP = _auth.signIn
-          ? _auth.signIn({ username: email, password: password })
-          : _auth.signInWithEmailAndPassword(email, password);
+        var loginP;
+        if (_isV2) {
+          // v2: signInWithPassword 返回 {data, error} 不抛错
+          loginP = _auth.signInWithPassword({ username: email, password: password })
+            .then(function (res) {
+              if (res && res.error) {
+                var er = new Error(res.error.message || res.error.errMsg || JSON.stringify(res.error));
+                er.code = res.error.code || res.error.errCode || 'V2_LOGIN_ERROR';
+                er.detail = res.error;
+                throw er;
+              }
+              return res && res.data;
+            });
+        } else {
+          loginP = _auth.signIn
+            ? _auth.signIn({ username: email, password: password })
+            : _auth.signInWithEmailAndPassword(email, password);
+        }
         loginP.then(function () {
           _currentRtx = targetRtx;
-          _db = _app.database();
+          try { localStorage.setItem('TCB_AUTH_STATE', '1'); } catch(_) {}
+          _db = _isV2 ? (_app.database ? _app.database() : null) : _app.database();
           resolve();
         }).catch(reject);
       } catch (e) {
@@ -126,6 +161,7 @@
     return _readyPromise;
   }
   var _currentRtx = null;
+  var _isV2 = false;
 
   // ============== rtx 身份（不依赖密码，前端选择持久化） ==============
   function getRtx() { return localStorage.getItem(RTX_KEY) || ''; }
@@ -208,24 +244,52 @@
         // 失败也要重置，下次点击才能重试
         _readyPromise = null; _app = null; _auth = null; _db = null; _currentRtx = null;
         clearRtx();
-        var raw = e && e.message ? e.message : '';
-        var code = e && e.code ? e.code : '';
-        var hay = (code + ' ' + raw).toLowerCase();
+        // 强力 debug：把 error 对象所有可见字段都序列化出来
+        var rawMsg = (e && e.message) || '';
+        var rawCode = (e && e.code) || (e && e.errCode) || (e && e.errorCode) || '';
+        var rawName = (e && e.name) || '';
+        var rawType = typeof e;
+        var rawStr = '';
+        try {
+          // 把 error 对象的所有自有属性 + 原型链上的 message/name 都提出来
+          var dump = {};
+          if (e && typeof e === 'object') {
+            Object.getOwnPropertyNames(e).forEach(function (k) {
+              try { dump[k] = String(e[k]).slice(0, 200); } catch (_) {}
+            });
+            if (e.message) dump.message = String(e.message).slice(0, 200);
+            if (e.name) dump.name = String(e.name);
+          } else {
+            dump.value = String(e);
+          }
+          rawStr = JSON.stringify(dump);
+        } catch (_) {
+          rawStr = String(e);
+        }
+        var hay = (rawCode + ' ' + rawMsg + ' ' + rawStr).toLowerCase();
         var msg = '账号未注册或密码错误';
-        if (hay.indexOf('user_not_found') >= 0 || hay.indexOf('not found') >= 0 || hay.indexOf('user-not-found') >= 0) {
-          msg = '账号还没在 CloudBase 后台建立，找管理员开通';
-        } else if (hay.indexOf('password') >= 0 || hay.indexOf('credentials') >= 0) {
-          msg = '密码错误，请重输（首次登录密码：Fszxdm1234）';
+        if (hay.indexOf('login mode is not supported') >= 0 || hay.indexOf('not_support') >= 0 || hay.indexOf('not enabled') >= 0 || hay.indexOf('未开启') >= 0) {
+          msg = '⚠️ CloudBase 后台没开启"用户名密码登录"功能！请管理员去 console.cloud.tencent.com → 云开发 → 身份认证 → 登录方式 → 开启"用户名密码登录"';
+        } else if (hay.indexOf('user_not_found') >= 0 || hay.indexOf('not found') >= 0 || hay.indexOf('user-not-found') >= 0 || hay.indexOf('username does not exist') >= 0 || hay.indexOf('账号不存在') >= 0) {
+          msg = '⚠️ 账号还没在 CloudBase 后台建立。CloudBase 不支持直接"用户名+密码"注册，必须先用手机号/邮箱注册再绑定用户名';
+        } else if (hay.indexOf('password') >= 0 || hay.indexOf('credentials') >= 0 || hay.indexOf('密码') >= 0) {
+          msg = '密码错误，请重输';
         } else if (hay.indexOf('invalid') >= 0 || hay.indexOf('incorrect') >= 0) {
-          msg = '账号或密码不正确（如确认无误，请联系管理员检查 CloudBase 是否已建账号）';
+          msg = '账号或密码不正确';
         } else if (hay.indexOf('network') >= 0 || hay.indexOf('timeout') >= 0 || hay.indexOf('fetch') >= 0) {
           msg = '网络异常，请检查 VPN/代理后重试';
-        } else if (raw) {
-          msg = raw;
+        } else if (rawMsg) {
+          msg = rawMsg;
         }
-        err.innerHTML = '登录失败：' + msg + '<br><span style="font-size:11px;color:#999;">debug: code=' + (code || 'N/A') + ' / raw=' + (raw || 'N/A').slice(0, 120) + '</span>';
+        err.innerHTML = '登录失败：' + msg
+          + '<br><span style="font-size:11px;color:#999;display:block;margin-top:4px;word-break:break-all;">debug: type=' + rawType
+          + ' | name=' + (rawName || 'N/A')
+          + ' | code=' + (rawCode || 'N/A')
+          + ' | msg=' + (rawMsg || 'N/A').slice(0, 80)
+          + '<br>raw=' + (rawStr || 'N/A').slice(0, 250)
+          + '</span>';
         err.style.display = 'block';
-        try { console.error('[cloud] login failed code=' + code + ' raw=' + raw, e); } catch(_) {}
+        try { console.error('[cloud] login failed', { code: rawCode, msg: rawMsg, name: rawName, dump: rawStr, originalError: e }); } catch(_) {}
       });
     };
     var lastRtx = getRtx();
