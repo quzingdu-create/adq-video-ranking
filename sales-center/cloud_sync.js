@@ -268,7 +268,9 @@
         }
         var hay = (rawCode + ' ' + rawMsg + ' ' + rawStr).toLowerCase();
         var msg = '账号未注册或密码错误';
-        if (hay.indexOf('login mode is not supported') >= 0 || hay.indexOf('not_support') >= 0 || hay.indexOf('not enabled') >= 0 || hay.indexOf('未开启') >= 0) {
+        if (hay.indexOf('invalid_host') >= 0 || hay.indexOf('invalid http host') >= 0) {
+          msg = '⚠️ CloudBase 后台没把 ' + location.host + ' 加入「Web 安全来源」白名单！\n请管理员去 console.cloud.tencent.com → 云开发 → 环境 → 环境设置 → 安全配置 → Web 应用安全域名，添加：' + location.origin;
+        } else if (hay.indexOf('login mode is not supported') >= 0 || hay.indexOf('not_support') >= 0 || hay.indexOf('not enabled') >= 0 || hay.indexOf('未开启') >= 0) {
           msg = '⚠️ CloudBase 后台没开启"用户名密码登录"功能！请管理员去 console.cloud.tencent.com → 云开发 → 身份认证 → 登录方式 → 开启"用户名密码登录"';
         } else if (hay.indexOf('user_not_found') >= 0 || hay.indexOf('not found') >= 0 || hay.indexOf('user-not-found') >= 0 || hay.indexOf('username does not exist') >= 0 || hay.indexOf('账号不存在') >= 0) {
           msg = '⚠️ 账号还没在 CloudBase 后台建立。CloudBase 不支持直接"用户名+密码"注册，必须先用手机号/邮箱注册再绑定用户名';
@@ -277,7 +279,8 @@
         } else if (hay.indexOf('invalid') >= 0 || hay.indexOf('incorrect') >= 0) {
           msg = '账号或密码不正确';
         } else if (hay.indexOf('network') >= 0 || hay.indexOf('timeout') >= 0 || hay.indexOf('fetch') >= 0) {
-          msg = '网络异常，请检查 VPN/代理后重试';
+          // 网络异常时主动 ping 一次后台，区分是 VPN 问题还是 INVALID_HOST 被包装
+          msg = '⚠️ 网络异常或后台域名白名单未放行。请先确认：\n1) 网络畅通（CloudBase API 域名: tcb-api.tencentcloudapi.com）\n2) 当前域名 ' + location.origin + ' 已加入 CloudBase 后台「Web 应用安全域名」白名单';
         } else if (rawMsg) {
           msg = rawMsg;
         }
