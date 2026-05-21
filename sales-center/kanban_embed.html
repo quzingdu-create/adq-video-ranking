@@ -1134,10 +1134,10 @@ function renderKPI() {
         <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
 
-    // 2) 本季度新客数
+    // 2) 季度新客数
     const newCntCard = `
       <div class="kpi-card success">
-        <div class="label">本季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
+        <div class="label">季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
         <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
         <div class="meta">
           <span class="${deltaCls(fixRow.newDelta)}">较上季度 ${fmtSigned(fixRow.newDelta)}</span>
@@ -1145,36 +1145,37 @@ function renderKPI() {
         </div>
       </div>`;
 
-    // 3) 新客昨日消耗（合计·昨耗）
-    const yestWan = Number(fixRow.yestCost || 0) / 10000;
-    const newYestCard = `
-      <div class="kpi-card gold">
-        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">${dailyKpi.dataDate || 'T-1'}</span></div>
-        <div class="value-row"><div class="value">${yestWan.toFixed(1)}万</div></div>
-        <div class="meta">
-          <span class="${deltaCls(fixRow.dayCostRate)}">环比前一天 ${fmtPct(fixRow.dayCostRate)}</span>
-        </div>
-      </div>`;
-
-    // 4) 累计新客昨日消耗（25Q3-26Q2 历年新客在昨天的消耗合计）
-    // 用户 2026-05-19 拍板：「累计新客」= 从 25Q3 开始到 26Q2 的全部新客，在昨天（数据日）的消耗合计。
-    // 数据源：center_quarter_summary 各季度「合计」行的 yestCost 求和。
+    // 3) 累计新客昨日消耗（25Q3~26Q2 历年新客在昨天的消耗合计）
+    // 用户 2026-05-21 拍板：第二、第三卡都展示「累计新客」，覆盖 25Q3-26Q2
     const CUM_QUARTERS = ['2025Q3', '2025Q4', '2026Q1', '2026Q2'];
     const _qrAll = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
-    let cumYest = 0, cumNewCnt = 0;
+    let cumYest = 0, cumNewCnt = 0, cumQCost = 0;
     CUM_QUARTERS.forEach(q => {
       const tot = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === q);
       if (tot) {
         cumYest += Number(tot.yestCost || 0);
         cumNewCnt += Number(tot.newCount || 0);
+        cumQCost += Number(tot.quarterCost || 0);
       }
     });
-    const cumCard = `
-      <div class="kpi-card purple">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3 ~ 26Q2 全部新客</span></div>
+    const newYestCard = `
+      <div class="kpi-card gold">
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${(cumYest/10000).toFixed(1)}万</div></div>
         <div class="meta">
           <span style="color:#6b7280;">覆盖新客 ${cumNewCnt.toLocaleString('zh-CN')} 个</span>
+        </div>
+      </div>`;
+
+    // 4) 累计新客本季度日耗（25Q3~26Q2 季度消耗合计 ÷ 累计 4 个季度的天数）
+    // 用一个稳定基准：4 季 ≈ 365 天 -> 这里更简洁直接展示"季度消耗合计"
+    const cumCostWan = (cumQCost / 10000).toFixed(0);
+    const cumCard = `
+      <div class="kpi-card purple">
+        <div class="label">累计新客季度消耗合计 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 历年新客</span></div>
+        <div class="value-row"><div class="value">${Number(cumCostWan).toLocaleString('zh-CN')}万</div></div>
+        <div class="meta">
+          <span style="color:#6b7280;">4 季合计</span>
         </div>
       </div>`;
 
@@ -1343,13 +1344,13 @@ function renderSalesProgress() {
   const head = `
     <thead><tr>
       <th style="text-align:left;">销售</th>
-      <th>新锐客户数<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
-      <th>新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
-      <th>累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
+      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
+      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
+      <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
-      <th class="ref-cell ref-col-hidden">新客数</th>
-      <th class="ref-cell ref-col-hidden">累计新客昨日消耗</th>
-      <th class="ref-cell ref-col-hidden">累计新客本季度日耗</th>
+      <th class="ref-cell ref-col-hidden">累计新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
+      <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
+      <th class="ref-cell ref-col-hidden">累计新客本季度日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
     </tr></thead>`;
 
   const body = [
