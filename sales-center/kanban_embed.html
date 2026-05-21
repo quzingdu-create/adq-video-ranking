@@ -1135,12 +1135,21 @@ function renderKPI() {
       </div>`;
 
     // 2) 季度新客数
+    // 修复 2026-05-21 19:55：原"较上季度 -2362"会让人误解"减少了"，
+    // 实际是 26Q2 还在进行中（只过了 51/91 天），与 Q1 全季 7160 比少 2362 是必然。
+    // 改为非负展示「上季全季 N · 本季 X/91 天」+ 日Δ
+    const _q2 = (window.__CENTER_QUARTER_SUMMARY__ || []).find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q2');
+    const _q1 = (window.__CENTER_QUARTER_SUMMARY__ || []).find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q1');
+    const lastQNew = _q1 ? Number(_q1.newCount || 0) : 0;
+    const _q2Start = new Date('2026-04-01');
+    const _today = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
+    const _q2DaysPassed = Math.max(1, Math.round((_today - _q2Start) / 86400000) + 1);
     const newCntCard = `
       <div class="kpi-card success">
-        <div class="label">季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
+        <div class="label">季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2 · 已过 ${_q2DaysPassed}/91 天</span></div>
         <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
         <div class="meta">
-          <span class="${deltaCls(fixRow.newDelta)}">较上季度 ${fmtSigned(fixRow.newDelta)}</span>
+          <span style="color:#6b7280;">上季全季 ${lastQNew.toLocaleString('zh-CN')}</span>
           <span class="${deltaCls(fixRow.newDayDelta)}">日Δ ${fmtSigned(fixRow.newDayDelta)}</span>
         </div>
       </div>`;
@@ -1278,11 +1287,12 @@ function renderSalesProgress() {
     return `<div class="main-num">${num}${unit || ''}</div>`;
   }
   function fmtMeta(deltaQoQ, dayDelta, mode) {
-    // mode='count': 显示"+N · 日Δ+M"; mode='pct': 显示季环比 / 日环比%
+    // mode='count': 显示"上季全季 N · 日Δ+M"（不再用'较上季-N'，避免误解）
     if (mode === 'count') {
-      const a = deltaQoQ === null || deltaQoQ === undefined ? '—' : `较上季${fmtSigned(deltaQoQ)}`;
-      const b = dayDelta === null || dayDelta === undefined ? '' : ` · 日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`;
-      return `<div class="sub-meta"><span class="${deltaCls(deltaQoQ)}">${a}</span>${b}</div>`;
+      // deltaQoQ 这里实际我们传的是 newDelta = 本季新客 - 上季新客；用它反推上季总数
+      // 但调用方拿不到上季总数，简化：负数视为"季度未过完"，统一展示日Δ
+      const b = dayDelta === null || dayDelta === undefined ? '' : `日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`;
+      return `<div class="sub-meta">${b || '—'}</div>`;
     }
     if (mode === 'pct') {
       const a = `较前一天 <span class="${deltaCls(dayDelta)}">${fmtPct(dayDelta)}</span>`;
@@ -1344,7 +1354,7 @@ function renderSalesProgress() {
   const head = `
     <thead><tr>
       <th style="text-align:left;">销售</th>
-      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
+      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">26Q2 至今 · 日Δ</div></th>
       <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
@@ -2102,7 +2112,21 @@ function initRegisterModal() {
   fillModalSelect('m-sales', SALES);
   fillModalSelect('m-channel', CHANNELS);
   fillModalSelect('m-source', CUSTOMER_SOURCES);
-  document.getElementById('m-sales').value = CURRENT_USER;
+  // 销售身份优先从 CloudBase 登录态读，URL 参数次之，否则 fallback CURRENT_USER
+  // 修复 2026-05-21 19:50：解决"顶栏 Jonzhu 但销售锁 kinsleyjin"的矛盾
+  let actualUser = CURRENT_USER;
+  try {
+    if (window.cloud && cloud.rtx) {
+      const r = cloud.rtx();
+      if (r) {
+        // SALES 数组里大小写敏感，逐一匹配
+        const matched = SALES.find(s => s.toLowerCase() === r.toLowerCase());
+        if (matched) actualUser = matched;
+        // ziqingdu 是管理员，不在 SALES 里，保持 CURRENT_USER 兜底
+      }
+    }
+  } catch(e){}
+  document.getElementById('m-sales').value = actualUser;
   document.getElementById('m-date').value = new Date().toISOString().slice(0,10);
   ['m-name','m-resource'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   // 链路已改为系统自动匹配，无需重置
@@ -2129,7 +2153,7 @@ function initRegisterModal() {
     if (hint) {
       hint.innerHTML = isAdmin
         ? '🔓 <b style="color:#7c3aed;">管理员模式</b> · 可替任意销售补登（系统会自动记录是你操作的）'
-        : '🔒 已锁定为 <b>' + CURRENT_USER + '</b>，如需替别人登记请联系子青/Kinsley';
+        : '🔒 已锁定为 <b>' + actualUser + '</b>，如需替别人登记请联系子青/Kinsley';
       hint.style.cssText = 'font-size:11px;color:#6b7280;margin-top:4px;';
     }
   } catch(e){}
