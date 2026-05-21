@@ -80,7 +80,7 @@
               : (typeof tcb !== 'undefined') ? tcb
               : null;
       if (!SDK) {
-        reject(new Error('CloudBase SDK 未加载，HTML 缺少 <script src="https://imgcache.qq.com/qcloud/tcbjs/1.7.2/tcb.js"></script>'));
+        reject(new Error('CloudBase SDK 未加载（可能是 CDN 被劫持/被防火墙拦截/被腾讯下架）。当前已改用 tcbjs/1.8.0；如仍失败，请检查浏览器 Network 面板里 tcb.js 是否 404/被拦截。'));
         return;
       }
       try {
