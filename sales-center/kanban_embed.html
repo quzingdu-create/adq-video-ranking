@@ -24,7 +24,7 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260521k"></script>
+<script src="cloud_sync.js?v=20260521n"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -2371,12 +2371,21 @@ function parseBatchPaste() {
   document.getElementById('bp-stat-warn').textContent = warn;
   document.getElementById('bp-stat-err').textContent = err;
   document.getElementById('bp-preview').style.display = 'block';
-  const tagMap = { ok: '<span style="color:#16a34a;">✅ 通过</span>', warn: '<span style="color:#d97706;">⚠ 老客</span>', err: '<span style="color:#dc2626;">❌ 拒绝</span>' };
+  // 状态标签：根据真实原因展示，不再把所有 warn 都写成"老客"
+  function bpWarnTag(row) {
+    if (row.isOld24) return '<span style="color:#d97706;">⚠ 24年老客</span>';
+    if (row.isLaoke) return '<span style="color:#d97706;">⚠ 非本季度新客</span>';
+    if (row.matched === false) return '<span style="color:#0891b2;">ⓘ 未命中字典</span>';
+    return '<span style="color:#d97706;">⚠ 警告</span>';
+  }
+  const okTag  = '<span style="color:#16a34a;">✅ 通过</span>';
+  const errTag = '<span style="color:#dc2626;">❌ 拒绝</span>';
   document.getElementById('bp-tbody').innerHTML = _bpRows.map(r => {
     const bg = r.level === 'err' ? 'background:#fef2f2;' : (r.level === 'warn' ? 'background:#fefce8;' : '');
+    const tag = r.level === 'err' ? errTag : (r.level === 'warn' ? bpWarnTag(r) : okTag);
     return '<tr style="' + bg + '">'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + r.lineNo + '</td>'
-      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + tagMap[r.level] + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + tag + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.name || '') + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.cat || '') + '</td>'
       + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.sale || '') + '</td>'

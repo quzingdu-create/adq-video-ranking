@@ -557,16 +557,133 @@
     btnDownload.onclick = function () {
       menu.style.display = 'none';
       cloud.requireLogin(function () {
-        if (!confirm('确认从云端拉取所有客户记录？\n会覆盖本地新登记但还没同步的数据，建议先点"同步本地到云端"再拉取。')) return;
+        if (!confirm('确认从云端下载全量登记名单？\n会下载到本地为 .xlsx 文件，同时刷新页面登记列表。')) return;
         showToast('拉取中...');
         cloud.download().then(function (data) {
           var list = data.list || [];
+          // Step 1: 应用到页面记忆
           if (typeof opts.applyRemoteRecords === 'function') opts.applyRemoteRecords(list);
-          showToast('✅ 已拉取 ' + list.length + ' 条');
+          // Step 2: 直接导出 .xlsx 文件给用户
+          try {
+            exportRecordsToXlsx(list);
+            showToast('✅ 已拉取 ' + list.length + ' 条 + 已下载 .xlsx');
+          } catch (err) {
+            console.error('导出失败', err);
+            // 兜底：csv 下载
+            exportRecordsToCsv(list);
+            showToast('✅ 已拉取 ' + list.length + ' 条（.xlsx 库未加载，已降级为 .csv）');
+          }
           refreshStatus();
         }).catch(function (e) { showToast('拉取失败：' + e.message, true); });
       });
     };
+
+    function exportRecordsToXlsx(list) {
+      if (typeof XLSX === 'undefined') throw new Error('XLSX 库未加载');
+      var headers = [
+        '序号','登记日期','销售','客户主体','客户简称',
+        '新老客身份','客户标签','是否新锐',
+        '类目','在投链路','拓客途径','资源方','客户来源',
+        '产业带区域','主营品牌',
+        '是否在投','首投日期',
+        '字典命中','数据来源',
+        '授权书(张)','建联截图(张)','备注','记录ID'
+      ];
+      var sorted = list.slice().sort(function (a, b) {
+        return ((a.date || '') + '').localeCompare((b.date || '') + '')
+            || ((a.sales || '') + '').localeCompare((b.sales || '') + '');
+      });
+      var aoa = [headers];
+      sorted.forEach(function (r, idx) {
+        var isLaoke = (r.isLaoke !== undefined) ? r.isLaoke
+                      : (r.old24 === true);
+        var rising = (r.rising === '是' || r.status === '新锐') ? '是' : '否';
+        var xinlao = isLaoke ? '非本季度新客' : '新客';
+        var tag    = r.status || (rising === '是' ? '新锐' : (isLaoke ? '存量' : '新客'));
+        var matched= (r.matched === true) ? '命中' : (r.matched === false ? '未命中(待回扫)' : '');
+        var invested = r.invested === '是' ? '是' : (r.invested === '否' ? '否' : '');
+        var src    = r._preloaded ? '历史登记(种子)' : (r._bulkImport ? '批量导入' : (r._cloud ? '云端' : '页面新增'));
+        aoa.push([
+          idx + 1,
+          r.date || '',
+          r.sales || '',
+          r.name || '',
+          r.shortName || '',
+          xinlao,
+          tag,
+          rising,
+          r.category || '',
+          Array.isArray(r.links) ? r.links.join('+') : '',
+          r.channel || '',
+          r.resource || '',
+          r.source || '',
+          r.region || '',
+          r.brand || '',
+          invested,
+          r.firstDate || '',
+          matched,
+          src,
+          (r.authImages || []).length,
+          (r.images || []).length,
+          r.remark || '',
+          r.id || ''
+        ]);
+      });
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = [
+        {wch:5},{wch:12},{wch:14},{wch:34},{wch:20},
+        {wch:14},{wch:8},{wch:8},
+        {wch:12},{wch:14},{wch:14},{wch:14},{wch:18},
+        {wch:14},{wch:18},
+        {wch:8},{wch:12},
+        {wch:14},{wch:16},
+        {wch:10},{wch:10},{wch:24},{wch:14}
+      ];
+      ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+      var lastCol = String.fromCharCode(64 + headers.length);
+      ws['!autofilter'] = { ref: 'A1:' + lastCol + '1' };
+
+      // 概览 sheet
+      var salesAgg = {};
+      sorted.forEach(function (r) {
+        var k = r.sales || '(未分配)';
+        salesAgg[k] = (salesAgg[k] || 0) + 1;
+      });
+      var ovRows = [['统计项','数值'],
+        ['导出时间', new Date().toLocaleString('zh-CN', {hour12:false})],
+        ['全量记录数', sorted.length],
+        ['——','——']];
+      Object.keys(salesAgg).sort().forEach(function (s) { ovRows.push(['销售-' + s, salesAgg[s]]); });
+      var wsOv = XLSX.utils.aoa_to_sheet(ovRows);
+      wsOv['!cols'] = [{wch:24},{wch:14}];
+
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '拓客全量登记');
+      XLSX.utils.book_append_sheet(wb, wsOv, '概览');
+      var ts = new Date().toISOString().slice(0,10);
+      XLSX.writeFile(wb, '拓客全量登记_' + ts + '_' + sorted.length + '条.xlsx');
+    }
+
+    function exportRecordsToCsv(list) {
+      var headers = ['序号','登记日期','销售','客户主体','客户简称','新老客','类目','拓客途径','资源方','客户来源','是否新锐','备注'];
+      var rows = list.map(function (r, idx) {
+        var isLaoke = !!(r.isLaoke || r.old24);
+        var rising = (r.rising === '是' || r.status === '新锐') ? '是' : '否';
+        return [
+          idx + 1, r.date || '', r.sales || '', r.name || '', r.shortName || '',
+          isLaoke ? '非本季度新客' : '新客', r.category || '', r.channel || '',
+          r.resource || '', r.source || '', rising, r.remark || ''
+        ];
+      });
+      var csv = '\ufeff' + [headers].concat(rows).map(function (row) {
+        return row.map(function (v) { return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+      }).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '拓客全量登记_' + new Date().toISOString().slice(0,10) + '_' + list.length + '条.csv';
+      a.click();
+    }
 
     if (btnExport) btnExport.onclick = function () {
       menu.style.display = 'none';
