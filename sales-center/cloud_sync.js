@@ -40,14 +40,23 @@
   // CloudBase token 持久化到 localStorage，之后免登录直到 token 过期（默认 30 天）
   function buildEmail(rtx) { return rtx; }  // 直接用 rtx 当 username 登录
   var SALES_LIST = [
+    { rtx: 'ziqingdu',     name: '子青',        is_admin: true },
+    { rtx: 'kinsleyjin',   name: 'Kinsley',     is_admin: true },
     { rtx: 'jonzhu',       name: 'Jonzhu' },
-    { rtx: 'brownfan',     name: 'brownfan' },
-    { rtx: 'kaikaigenli',  name: 'kaikaigenli' },
-    { rtx: 'yvaineechen',  name: 'yvaineechen' },
-    { rtx: 'lijunwu',      name: 'lijunwu' },
-    { rtx: 'ruilingzhan',  name: 'ruilingzhan' },
-    { rtx: 'kinsleyjin',   name: 'kinsleyjin', is_admin: true }
+    { rtx: 'brownfan',     name: 'Brownfan' },
+    { rtx: 'kaikaigenli',  name: 'Kaikai' },
+    { rtx: 'yvaineechen',  name: 'Yvaine' },
+    { rtx: 'lijunwu',      name: 'Lijun' },
+    { rtx: 'ruilingzhan',  name: 'Ruiling' }
   ];
+  function isAdmin(rtx) {
+    rtx = rtx || getRtx();
+    for (var i = 0; i < SALES_LIST.length; i++) {
+      if (SALES_LIST[i].rtx === rtx) return !!SALES_LIST[i].is_admin;
+    }
+    return false;
+  }
+  function getSalesList() { return SALES_LIST.slice(); }
 
   // ============== CloudBase 初始化 ==============
   var _app = null;
@@ -147,7 +156,7 @@
     modal.id = 'cloud-login-modal';
     modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99999;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;';
     var optionsHtml = SALES_LIST.map(function (s) {
-      return '<option value="' + s.rtx + '">' + s.name + (s.is_admin ? '（管理员）' : '') + ' · ' + s.rtx + '</option>';
+      return '<option value="' + s.rtx + '">' + s.name + (s.is_admin ? '（管理员）' : '') + '</option>';
     }).join('');
     modal.innerHTML = '<div style="position:relative;background:#fff;border-radius:16px;padding:32px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);">' +
       '<div style="font-size:42px;text-align:center;margin-bottom:8px;">🦞</div>' +
@@ -214,8 +223,14 @@
   function upsertOne(rec) {
     return ensureReady().then(function () {
       var coll = _db.collection(COLL_RECORDS);
-      var data = Object.assign({}, rec, { _rtx: getRtx() || '', _updatedAt: Date.now() });
-      // 用 rec.id 当业务主键。先 where(id).get → 有则 update，无则 add
+      var loginRtx = getRtx() || '';
+      // _rtx 写"实际销售"（rec.sale 优先），_recorded_by 写当前登录账号
+      var actualSale = rec.sale || loginRtx;
+      var data = Object.assign({}, rec, {
+        _rtx: actualSale,
+        _recorded_by: loginRtx,
+        _updatedAt: Date.now()
+      });
       if (!data.id) {
         data.id = 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
       }
@@ -369,51 +384,75 @@
       query: kpiQuery
     },
 
+    isAdmin: isAdmin,
+    getSalesList: getSalesList,
     toast: showToast
   };
 
-  // ============== 顶栏按钮注入 ==============
+  // ============== 顶栏按钮注入（合并下拉版） ==============
   function injectToolbar(opts) {
     opts = opts || {};
     var bar = document.getElementById('cloud-sync-toolbar');
     if (bar) return bar;
     bar = document.createElement('div');
     bar.id = 'cloud-sync-toolbar';
-    bar.style.cssText = 'position:fixed;top:10px;right:10px;z-index:99998;display:flex;gap:8px;align-items:center;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;';
+    bar.style.cssText = 'position:fixed;top:10px;right:10px;z-index:99998;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;';
     bar.innerHTML =
-      '<span id="cloud-status" style="font-size:12px;color:#888;background:#fff;padding:5px 9px;border-radius:6px;border:1px solid #e5e5e5;"></span>' +
-      '<button id="cloud-btn-upload"  style="padding:6px 12px;background:#FF6B35;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">☁️ 同步到云端</button>' +
-      '<button id="cloud-btn-download" style="padding:6px 12px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">⬇️ 从云端拉取</button>' +
-      '<button id="cloud-btn-login" style="padding:6px 10px;background:#fff;color:#555;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;cursor:pointer;">🔐</button>';
+      '<div style="position:relative;">' +
+        '<button id="cloud-main-btn" style="padding:7px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;align-items:center;gap:6px;">🔐 登录云端</button>' +
+        '<div id="cloud-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;overflow:hidden;">' +
+          '<div id="cloud-menu-info" style="padding:10px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#f9fafb;"></div>' +
+          '<button id="cloud-menu-upload" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬆️ 同步本地到云端</button>' +
+          '<button id="cloud-menu-download" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬇️ 从云端拉取最新</button>' +
+          '<button id="cloud-menu-export" class="cloud-menu-item" style="display:none;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">💾 导出全量备份（管理员）</button>' +
+          '<button id="cloud-menu-logout" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;font-size:13px;cursor:pointer;color:#dc2626;">🚪 退出登录</button>' +
+        '</div>' +
+      '</div>';
     document.body.appendChild(bar);
 
+    var mainBtn = document.getElementById('cloud-main-btn');
+    var menu = document.getElementById('cloud-menu');
+    var menuInfo = document.getElementById('cloud-menu-info');
+    var btnUpload = document.getElementById('cloud-menu-upload');
+    var btnDownload = document.getElementById('cloud-menu-download');
+    var btnExport = document.getElementById('cloud-menu-export');
+    var btnLogout = document.getElementById('cloud-menu-logout');
+
     function refreshStatus() {
-      var el = document.getElementById('cloud-status');
-      if (!el) return;
       if (cloud.isLoggedIn()) {
-        el.textContent = '☁️ ' + getRtx();
-        el.style.color = '#166534';
-        el.style.background = '#dcfce7';
+        var rtx = getRtx();
+        var s = null;
+        for (var i = 0; i < SALES_LIST.length; i++) { if (SALES_LIST[i].rtx === rtx) { s = SALES_LIST[i]; break; } }
+        var label = s ? (s.name + (s.is_admin ? '（管理员）' : '')) : rtx;
+        mainBtn.innerHTML = '☁️ ' + label + ' <span style="font-size:10px;opacity:.7;">▾</span>';
+        mainBtn.style.background = s && s.is_admin ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'linear-gradient(135deg,#059669,#047857)';
+        mainBtn.style.color = '#fff';
+        menuInfo.textContent = '当前身份：' + label;
+        if (btnExport) btnExport.style.display = (s && s.is_admin) ? 'block' : 'none';
       } else {
-        el.textContent = '⚠️ 未连接';
-        el.style.color = '#991b1b';
-        el.style.background = '#fee2e2';
+        mainBtn.innerHTML = '🔐 登录云端';
+        mainBtn.style.background = 'linear-gradient(135deg,#FF6B35,#F7931E)';
+        mainBtn.style.color = '#fff';
+        menuInfo.textContent = '未登录';
+        if (btnExport) btnExport.style.display = 'none';
       }
     }
     refreshStatus();
 
-    document.getElementById('cloud-btn-login').onclick = function () {
-      if (cloud.isLoggedIn()) {
-        if (confirm('当前已选 ' + getRtx() + '，是否切换/退出？')) {
-          cloud.logout();
-          refreshStatus();
-        }
-      } else {
+    mainBtn.onclick = function (e) {
+      e.stopPropagation();
+      if (!cloud.isLoggedIn()) {
         showLoginModal(refreshStatus);
+        return;
       }
+      menu.style.display = (menu.style.display === 'none') ? 'block' : 'none';
     };
+    document.addEventListener('click', function (e) {
+      if (!bar.contains(e.target)) menu.style.display = 'none';
+    });
 
-    document.getElementById('cloud-btn-upload').onclick = function () {
+    btnUpload.onclick = function () {
+      menu.style.display = 'none';
       cloud.requireLogin(function () {
         var records = (typeof opts.getLocalRecords === 'function') ? opts.getLocalRecords() : [];
         if (!records.length) { showToast('本地没有要同步的记录', true); return; }
@@ -422,27 +461,48 @@
         cloud.upload(records).then(function (data) {
           showToast('✅ 已同步 created=' + data.created + ' updated=' + data.updated);
           refreshStatus();
-        }).catch(function (e) {
-          showToast('上传失败：' + e.message, true);
-        });
+        }).catch(function (e) { showToast('上传失败：' + e.message, true); });
       });
     };
 
-    document.getElementById('cloud-btn-download').onclick = function () {
+    btnDownload.onclick = function () {
+      menu.style.display = 'none';
       cloud.requireLogin(function () {
-        if (!confirm('确认从云端拉取所有客户记录？\n会覆盖本地新登记但还没同步的数据，建议先点☁️同步到云端再拉取。')) return;
+        if (!confirm('确认从云端拉取所有客户记录？\n会覆盖本地新登记但还没同步的数据，建议先点"同步本地到云端"再拉取。')) return;
         showToast('拉取中...');
         cloud.download().then(function (data) {
           var list = data.list || [];
-          if (typeof opts.applyRemoteRecords === 'function') {
-            opts.applyRemoteRecords(list);
-          }
+          if (typeof opts.applyRemoteRecords === 'function') opts.applyRemoteRecords(list);
           showToast('✅ 已拉取 ' + list.length + ' 条');
           refreshStatus();
-        }).catch(function (e) {
-          showToast('拉取失败：' + e.message, true);
-        });
+        }).catch(function (e) { showToast('拉取失败：' + e.message, true); });
       });
+    };
+
+    if (btnExport) btnExport.onclick = function () {
+      menu.style.display = 'none';
+      cloud.requireLogin(function () {
+        showToast('导出中...');
+        cloud.download().then(function (data) {
+          var list = data.list || [];
+          var blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'cloud_backup_' + new Date().toISOString().slice(0, 10) + '_' + list.length + '条.json';
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast('✅ 已导出 ' + list.length + ' 条云端记录');
+        }).catch(function (e) { showToast('导出失败：' + e.message, true); });
+      });
+    };
+
+    btnLogout.onclick = function () {
+      menu.style.display = 'none';
+      if (confirm('退出登录？\n（30 天免登的 token 将被清除，下次需要重新输密码）')) {
+        cloud.logout();
+        refreshStatus();
+      }
     };
 
     cloud._refreshStatus = refreshStatus;
