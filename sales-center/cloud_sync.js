@@ -208,13 +208,24 @@
         // 失败也要重置，下次点击才能重试
         _readyPromise = null; _app = null; _auth = null; _db = null; _currentRtx = null;
         clearRtx();
-        var msg = e && e.message ? e.message : '账号未注册或密码错误';
-        if (msg.indexOf('USER_NOT_FOUND') >= 0 || msg.indexOf('not found') >= 0) msg = '账号还没建，找管理员开通';
-        else if (msg.indexOf('PASSWORD') >= 0 || msg.indexOf('password') >= 0) msg = '密码错误，请重输';
-        else if (msg.indexOf('NETWORK') >= 0 || msg.indexOf('Network') >= 0 || msg.indexOf('timeout') >= 0) msg = '网络异常，请检查 VPN/代理后重试';
+        var raw = e && e.message ? e.message : '';
+        var code = e && e.code ? e.code : '';
+        var hay = (code + ' ' + raw).toLowerCase();
+        var msg = '账号未注册或密码错误';
+        if (hay.indexOf('user_not_found') >= 0 || hay.indexOf('not found') >= 0 || hay.indexOf('user-not-found') >= 0) {
+          msg = '账号还没在 CloudBase 后台建立，找管理员开通';
+        } else if (hay.indexOf('password') >= 0 || hay.indexOf('credentials') >= 0) {
+          msg = '密码错误，请重输（首次登录密码：Fszxdm1234）';
+        } else if (hay.indexOf('invalid') >= 0 || hay.indexOf('incorrect') >= 0) {
+          msg = '账号或密码不正确（如确认无误，请联系管理员检查 CloudBase 是否已建账号）';
+        } else if (hay.indexOf('network') >= 0 || hay.indexOf('timeout') >= 0 || hay.indexOf('fetch') >= 0) {
+          msg = '网络异常，请检查 VPN/代理后重试';
+        } else if (raw) {
+          msg = raw;
+        }
         err.textContent = '登录失败：' + msg;
         err.style.display = 'block';
-        try { console.error('[cloud] login failed:', e); } catch(_) {}
+        try { console.error('[cloud] login failed code=' + code + ' raw=' + raw, e); } catch(_) {}
       });
     };
     var lastRtx = getRtx();

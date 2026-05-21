@@ -1811,9 +1811,9 @@ function renderRecords() {
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
     } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
-      // 历史季度老客（含 isLaoke=true 或 firstQuarter < 本季度）
-      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}存量` : '历史老客';
-      stateCls = 'gray';
+      // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
+      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
+      stateCls = 'red';
     } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
       stateLabel = customerType; // 例如 "2026Q2 新客"
       stateCls = 'green';
