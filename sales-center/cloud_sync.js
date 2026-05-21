@@ -359,13 +359,16 @@
       if (opts && opts.sale) {
         query = coll.where({ sale: opts.sale });
       }
-      // CloudBase 单次最多 1000 条，分页拉
+      // 修复 2026-05-21 21:30：CloudBase JS SDK 客户端 limit 上限 = 100，不是 1000
+      // 之前写 limit(1000) 会被静默截断为 100；实际云端可能只返 N 条但用户看到的"全量"包含本地 RECORDS
+      var PAGE_SIZE = 100;
       var all = [];
       function page(skip) {
-        return query.skip(skip).limit(1000).get().then(function (res) {
-          all = all.concat(res.data || []);
-          if (res.data && res.data.length === 1000) {
-            return page(skip + 1000);
+        return query.skip(skip).limit(PAGE_SIZE).get().then(function (res) {
+          var got = (res.data || []);
+          all = all.concat(got);
+          if (got.length === PAGE_SIZE) {
+            return page(skip + PAGE_SIZE);
           }
           return { list: all };
         });
@@ -557,21 +560,37 @@
     btnDownload.onclick = function () {
       menu.style.display = 'none';
       cloud.requireLogin(function () {
-        if (!confirm('确认从云端下载全量登记名单？\n会下载到本地为 .xlsx 文件，同时刷新页面登记列表。')) return;
+        if (!confirm('确认下载全量登记名单？\n= 云端记录 ∪ 页面已加载的拓客底表（5900+），按 id 去重\n会下载到本地为 .xlsx 文件，同时刷新页面登记列表。')) return;
         showToast('拉取中...');
         cloud.download().then(function (data) {
-          var list = data.list || [];
+          var cloudList = data.list || [];
           // Step 1: 应用到页面记忆
-          if (typeof opts.applyRemoteRecords === 'function') opts.applyRemoteRecords(list);
-          // Step 2: 直接导出 .xlsx 文件给用户
+          if (typeof opts.applyRemoteRecords === 'function') opts.applyRemoteRecords(cloudList);
+          // Step 2: 合并云端 + 本地 RECORDS（页面已加载的全量底表 5900+）
+          var localRecs = [];
           try {
-            exportRecordsToXlsx(list);
-            showToast('✅ 已拉取 ' + list.length + ' 条 + 已下载 .xlsx');
+            if (typeof opts.getLocalRecords === 'function') {
+              localRecs = opts.getLocalRecords() || [];
+            } else if (typeof window.RECORDS !== 'undefined' && Array.isArray(window.RECORDS)) {
+              localRecs = window.RECORDS;
+            }
+          } catch (_) { localRecs = []; }
+          // 去重：以 id 为 key，云端优先（云端是最新的），本地兜底（云端没的本地有）
+          var byId = {};
+          cloudList.forEach(function (r) { if (r && r.id != null) byId[r.id] = r; });
+          var added = 0;
+          localRecs.forEach(function (r) {
+            if (r && r.id != null && !byId[r.id]) { byId[r.id] = r; added++; }
+          });
+          var merged = Object.keys(byId).map(function (k) { return byId[k]; });
+          // Step 3: 直接导出 .xlsx 文件给用户
+          try {
+            exportRecordsToXlsx(merged);
+            showToast('✅ 云端 ' + cloudList.length + ' + 本地补 ' + added + ' = 全量 ' + merged.length + ' 条已下载');
           } catch (err) {
             console.error('导出失败', err);
-            // 兜底：csv 下载
-            exportRecordsToCsv(list);
-            showToast('✅ 已拉取 ' + list.length + ' 条（.xlsx 库未加载，已降级为 .csv）');
+            exportRecordsToCsv(merged);
+            showToast('✅ 全量 ' + merged.length + ' 条（.xlsx 库未加载，降级 .csv）');
           }
           refreshStatus();
         }).catch(function (e) { showToast('拉取失败：' + e.message, true); });

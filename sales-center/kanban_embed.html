@@ -24,7 +24,7 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260521n"></script>
+<script src="cloud_sync.js?v=20260521o"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -1829,21 +1829,25 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
+    // 客户投放状态四档（用户 2026-05-20 拍板，2026-05-21 21:26 强归一）：
+    //   ① 24年老客 (灰)  ② 历史季度新客如 2025Q2新客 (红)
+    //   ③ 当前季度新客 2026Q2新客 (绿)  ④ 新增未投放 (橙)
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
     const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
+    const CUR_Q = window.CURRENT_QUARTER || '2026Q2';
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
-    } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
-      // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
+    } else if (r.isLaoke === true || (fq && fq < CUR_Q)) {
+      // 历史季度新客（红）
       stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
       stateCls = 'red';
-    } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
-      stateLabel = customerType; // 例如 "2026Q2 新客"
+    } else if (Number(r.quarterCost || 0) > 0 || (fq && fq === CUR_Q)) {
+      // 本季度有消耗 或 首投季度=本季度 → 当前季度新客（绿）
+      stateLabel = `${CUR_Q.slice(0,4)}Q${CUR_Q.slice(-1)}新客`;
       stateCls = 'green';
     } else {
-      // 季度消耗表里没有这条客户 → 新增未投放
+      // 季度消耗表里没这条客户、也无首投记录 → 新增未投放（橙）
       stateLabel = '新增未投放'; stateCls = 'orange';
     }
     const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
@@ -2345,7 +2349,11 @@ function parseBatchPaste() {
       r.isOld24 = look.isOld24;
       r.matched = look.matched;
       if (look.isOld24) { issues.push('24年老客（不算新客）'); if (level === 'ok') level = 'warn'; }
-      else if (!look.matched) { issues.push('未命中映射字典'); if (level === 'ok') level = 'warn'; }
+      else if (!look.matched) {
+        // 用户 2026-05-21 21:26 拍板：未命中字典不升 warn，按"主体兜底次日回扫"原则保持 ok
+        // 仅在 issues 备注里写一条提示，状态 chip 仍走 ✅ 通过
+        issues.push('未命中字典（用主体兜底·次日 02:00 回扫补简称）');
+      }
       const dup = lookupDuplicates(r.name);
       const hard = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
       if (hard.length > 0) {
@@ -2371,11 +2379,12 @@ function parseBatchPaste() {
   document.getElementById('bp-stat-warn').textContent = warn;
   document.getElementById('bp-stat-err').textContent = err;
   document.getElementById('bp-preview').style.display = 'block';
-  // 状态标签：根据真实原因展示，不再把所有 warn 都写成"老客"
+  // 状态标签：根据真实原因展示
+  // 用户 2026-05-21 21:26 拍板：未命中字典 = 主体兜底次日回扫 = ✅ 通过（不升 warn）
+  // warn 只剩两类：24年老客 / 非本季度新客 / 资源方缺失
   function bpWarnTag(row) {
     if (row.isOld24) return '<span style="color:#d97706;">⚠ 24年老客</span>';
     if (row.isLaoke) return '<span style="color:#d97706;">⚠ 非本季度新客</span>';
-    if (row.matched === false) return '<span style="color:#0891b2;">ⓘ 未命中字典</span>';
     return '<span style="color:#d97706;">⚠ 警告</span>';
   }
   const okTag  = '<span style="color:#16a34a;">✅ 通过</span>';
