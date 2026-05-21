@@ -187,23 +187,34 @@
       var rtx = document.getElementById('cloud-login-rtx').value;
       var pwd = document.getElementById('cloud-login-pwd').value;
       var err = document.getElementById('cloud-login-err');
+      var btn = document.getElementById('cloud-login-submit');
       err.style.display = 'none';
       if (!rtx) { err.textContent = '请选择您的姓名'; err.style.display = 'block'; return; }
       if (!pwd) { err.textContent = '请输入密码'; err.style.display = 'block'; return; }
-      // 关键：先 setRtx，再 ensureReady（带 rtx + 密码做首次登录）
+      // 修复：每次点击都强制重置已 reject 的 _readyPromise（之前一次失败后再点没反应）
+      _readyPromise = null;
+      _app = null; _auth = null; _db = null; _currentRtx = null;
+      // 按钮 loading
+      btn.disabled = true; btn.textContent = '正在登录…';
       setRtx(rtx);
       ensureReady(rtx, pwd).then(function () {
+        btn.disabled = false; btn.textContent = '进入';
         document.getElementById('cloud-login-pwd').value = '';
         modal.style.display = 'none';
         showToast('☁️ 已连接云端，rtx=' + rtx);
         if (cloud._afterLogin) { var cb = cloud._afterLogin; cloud._afterLogin = null; cb(); }
       }).catch(function (e) {
+        btn.disabled = false; btn.textContent = '进入';
+        // 失败也要重置，下次点击才能重试
+        _readyPromise = null; _app = null; _auth = null; _db = null; _currentRtx = null;
         clearRtx();
-        var msg = e.message || '账号未注册或密码错误';
+        var msg = e && e.message ? e.message : '账号未注册或密码错误';
         if (msg.indexOf('USER_NOT_FOUND') >= 0 || msg.indexOf('not found') >= 0) msg = '账号还没建，找管理员开通';
         else if (msg.indexOf('PASSWORD') >= 0 || msg.indexOf('password') >= 0) msg = '密码错误，请重输';
+        else if (msg.indexOf('NETWORK') >= 0 || msg.indexOf('Network') >= 0 || msg.indexOf('timeout') >= 0) msg = '网络异常，请检查 VPN/代理后重试';
         err.textContent = '登录失败：' + msg;
         err.style.display = 'block';
+        try { console.error('[cloud] login failed:', e); } catch(_) {}
       });
     };
     var lastRtx = getRtx();

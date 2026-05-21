@@ -24,7 +24,7 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（橘橘有500w加，2026-05-21 14:20 切到 CloudBase） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260521h"></script>
+<script src="cloud_sync.js?v=20260521i"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -768,7 +768,7 @@
 const SALES = ["brownfan","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
 let CURRENT_USER = new URLSearchParams(window.location.search).get("user") || "kinsleyjin";
 const CATEGORIES = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
-const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店直购","视频号橱窗"];
+const LINKS = ["直播", "小店", "直播+小店"];
 const AGENTS = ["蓝色光标","利欧数字","引力传媒","华扬联众","天与空","直接对接"];
 const SOURCES = ["沙龙拓客","1v1走访","全域通电销","服务商转介绍","客户转介绍","主动来询"]; // 兼容旧字段（实际是「拓客途径」）
 const TUOKE_WAYS = SOURCES; // v3.2 别名：拓客途径
@@ -1309,7 +1309,11 @@ function renderSalesProgress() {
         ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
       </td>`;
 
-    // 参考列 4 列（默认隐藏，用户 2026-05-19 拍板：去掉重复的"新客昨耗"，交接昨/季耗改读真实数）
+    // 参考列 3 列（默认隐藏，用户 2026-05-21 拍板：删交接3列、加累计新客2列）
+    // 累计新客 = 新客（已剔交接） + 交接客户 → 把两类的昨耗/季耗相加
+    const cumYestCost = Number(r.yestCost || 0) + Number(handoverStats.yestCost || 0);
+    const cumQCost    = Number(r.quarterCost || 0) + Number(handoverStats.qCost || 0);
+    const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
     const refCells = `
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">新客数</div>
@@ -1317,19 +1321,14 @@ function renderSalesProgress() {
         ${fmtMeta(r.newDelta, r.newDayDelta, 'count')}
       </td>
       <td class="ref-cell ref-col-hidden">
-        <div class="label-tip">交接客户数</div>
-        ${fmtMain(handoverStats.count)}
-        <div class="sub-meta">217 名单 · 全量</div>
+        <div class="label-tip">累计新客昨日消耗</div>
+        ${fmtMain(fmtWan(cumYestCost))}
+        <div class="sub-meta">${rowKind === 'core' ? '新客 + 交接' : '—'}</div>
       </td>
       <td class="ref-cell ref-col-hidden">
-        <div class="label-tip">交接昨耗</div>
-        ${fmtMain(fmtWan(handoverStats.yestCost))}
-        <div class="sub-meta">${rowKind === 'core' ? '从 RECORDS 聚合' : '—'}</div>
-      </td>
-      <td class="ref-cell ref-col-hidden">
-        <div class="label-tip">交接季度日耗</div>
-        ${fmtMain(fmtWan(handoverStats.qCost / days))}
-        <div class="sub-meta">${rowKind === 'core' ? `季耗÷${days}天` : '—'}</div>
+        <div class="label-tip">累计新客本季度日耗</div>
+        <div class="main-num cost">${cumDayAvgWan.toFixed(1)}万</div>
+        <div class="sub-meta">${rowKind === 'core' ? `(新客+交接季耗)÷${days}天` : '—'}</div>
       </td>`;
 
     return `<tr class="${trCls}">${cells}${refCells}</tr>`;
@@ -1343,9 +1342,8 @@ function renderSalesProgress() {
       <th>累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
       <th class="ref-cell ref-col-hidden">新客数</th>
-      <th class="ref-cell ref-col-hidden">交接客户数</th>
-      <th class="ref-cell ref-col-hidden">交接昨耗</th>
-      <th class="ref-cell ref-col-hidden">交接季度日耗</th>
+      <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">含交接</div></th>
+      <th class="ref-cell ref-col-hidden">累计新客本季度日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">含交接</div></th>
     </tr></thead>`;
 
   const body = [
@@ -1800,16 +1798,16 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
+    // 客户投放状态四档（用户 2026-05-21 拍板）：24年老客 / 历史季度新客（标红）/ 当前季度新客 / 新增未投放
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
     const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
     } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
-      // 历史季度老客（含 isLaoke=true 或 firstQuarter < 本季度）
-      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}存量` : '历史老客';
-      stateCls = 'gray';
+      // 历史季度新客（首投在过去某季度，对当前不算新客但要标红警示）
+      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史季度新客';
+      stateCls = 'red';
     } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
       stateLabel = customerType; // 例如 "2026Q2 新客"
       stateCls = 'green';
