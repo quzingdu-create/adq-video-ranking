@@ -35,11 +35,10 @@
   var COLL_RECORDS = 'tuoke_records';
   var COLL_KPI = 'sales_kpi_daily';
   var RTX_KEY = 'cloud_rtx_v2';
-  // B1 鉴权：每个销售一个 CloudBase 账号（邮箱+用户自定义密码）
-  // 邮箱固定为 rtx@adq.tuoke；密码由销售首次输入，CloudBase token 持久化到 localStorage
-  // 之后免登录直到 token 过期（默认 30 天）
-  var AUTH_EMAIL_DOMAIN = '@adq.tuoke';
-  function buildEmail(rtx) { return rtx + AUTH_EMAIL_DOMAIN; }
+  // B1 鉴权：每个销售一个 CloudBase 账号（用户名+用户自定义密码）
+  // CloudBase 用户名 = rtx 本身（如 jonzhu），密码由销售首次输入
+  // CloudBase token 持久化到 localStorage，之后免登录直到 token 过期（默认 30 天）
+  function buildEmail(rtx) { return rtx; }  // 直接用 rtx 当 username 登录
   var SALES_LIST = [
     { rtx: 'jonzhu',       name: 'Jonzhu' },
     { rtx: 'brownfan',     name: 'brownfan' },
