@@ -24,7 +24,7 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260521o"></script>
+<script src="cloud_sync.js?v=20260521n"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -667,8 +667,8 @@
       </div>
     </div>
     <div class="portrait-grid">
-      <div class="panel"><h3>核心链路占比（按消耗）</h3><div id="chartLinkCore" class="chart-box"></div></div>
-      <div class="panel"><h3>各销售链路对比（堆叠柱）</h3><div id="chartLinkBySale" class="chart-box"></div></div>
+      <div class="panel"><h3>核心链路占比（按本季度日均消耗）</h3><div id="chartLinkCore" class="chart-box"></div></div>
+      <div class="panel"><h3>各销售链路对比（按本季度日均消耗，堆叠柱）</h3><div id="chartLinkBySale" class="chart-box"></div></div>
     </div>
     <div class="panel" style="margin-top:14px;">
       <h3>5 月链路快照趋势</h3>
@@ -1536,10 +1536,20 @@ function renderPortrait() {
   renderLinkDeep();
 }
 
-/* 拓客模型链路深度分析（用户 2026-05-19 拍板） */
+/* 拓客模型链路深度分析（用户 2026-05-19 拍板，2026-05-21 改口径=本季度日均消耗） */
 function renderLinkDeep() {
   const linkMap = window.__CUSTOMER_LINK_DATA__ || {};
   const records = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  // —— 本季度日均口径：cost(本季度累计) / Q2 至今天数 ——
+  // Q2 起始 = 2026-04-01；分母 = (dataDate - 2026-04-01) + 1
+  const dataDateStr = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || '';
+  let q2Days = 0;
+  if (dataDateStr) {
+    const dd = new Date(dataDateStr + 'T00:00:00');
+    const q2Start = new Date('2026-04-01T00:00:00');
+    q2Days = Math.max(1, Math.round((dd - q2Start) / 86400000) + 1);
+  }
+  if (q2Days <= 0) q2Days = 1; // 兜底
   // 全量按消耗汇总（不限制 records，跑全量字典）
   const costByLink = {};
   let totalCost = 0;
@@ -1552,19 +1562,23 @@ function renderLinkDeep() {
       totalCost += c;
     });
   });
+  // 转成日均
+  const avgByLink = {};
+  Object.entries(costByLink).forEach(([k,v]) => { avgByLink[k] = v / q2Days; });
+  const totalAvg = totalCost / q2Days;
   const badge = document.getElementById('linkTotalBadge');
-  if (badge) badge.textContent = `${Object.keys(linkMap).length.toLocaleString()} 客户 · ${(totalCost/10000).toFixed(1)}万消耗`;
+  if (badge) badge.textContent = `${Object.keys(linkMap).length.toLocaleString()} 客户 · ${(totalAvg/10000).toFixed(1)}万/日（本季度日均）`;
 
-  // 1. 核心链路占比饼图
+  // 1. 核心链路占比饼图（按本季度日均消耗）
   const coreEl = document.getElementById('chartLinkCore');
   if (coreEl) {
     if (!charts['chartLinkCore']) charts['chartLinkCore'] = echarts.init(coreEl);
-    const pieData = Object.entries(costByLink)
+    const pieData = Object.entries(avgByLink)
       .filter(([_,v]) => v > 0)
       .map(([k,v]) => ({name:k, value:Math.round(v)}))
       .sort((a,b)=>b.value-a.value);
     charts['chartLinkCore'].setOption({
-      tooltip:{trigger:'item', formatter:'{b}: ¥{c} ({d}%)'},
+      tooltip:{trigger:'item', formatter:p => `${p.name}: ¥${p.value.toLocaleString()}/日 (${p.percent}%)`},
       legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
       color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
       series:[{
@@ -1575,7 +1589,7 @@ function renderLinkDeep() {
     }, true);
   }
 
-  // 2. 各销售链路对比堆叠柱图
+  // 2. 各销售链路对比堆叠柱图（按本季度日均消耗）
   const bySaleEl = document.getElementById('chartLinkBySale');
   if (bySaleEl) {
     if (!charts['chartLinkBySale']) charts['chartLinkBySale'] = echarts.init(bySaleEl);
@@ -1593,6 +1607,10 @@ function renderLinkDeep() {
         matrix[r.sale][k] = (matrix[r.sale][k] || 0) + Number(it.cost || 0);
       });
     });
+    // 转日均
+    SALES_LIST.forEach(s => {
+      Object.keys(matrix[s]).forEach(k => { matrix[s][k] = matrix[s][k] / q2Days; });
+    });
     const allLinks = Array.from(new Set(Object.values(matrix).flatMap(m => Object.keys(m))));
     const series = allLinks.map(link => ({
       name: link, type: 'bar', stack: 'total',
@@ -1600,11 +1618,11 @@ function renderLinkDeep() {
       data: SALES_LIST.map(s => Math.round(matrix[s][link] || 0))
     }));
     charts['chartLinkBySale'].setOption({
-      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, valueFormatter:v => `¥${Number(v).toLocaleString()}/日`},
       legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
       grid:{left:48, right:16, top:20, bottom:48},
       xAxis:{type:'category', data:SALES_LIST, axisLabel:{fontSize:11, rotate:20}},
-      yAxis:{type:'value', name:'消耗(元)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      yAxis:{type:'value', name:'日均消耗(元/日)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
       color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
       series
     }, true);
@@ -1623,18 +1641,18 @@ function renderLinkDeep() {
     } else {
       // 临时：用当前一日数据，待 snapshots 目录建好后用真实数据
       dates = ['5-15','5-16','5-17','5-18','5-19'];
-      const top3Links = Object.entries(costByLink).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      const top3Links = Object.entries(avgByLink).sort((a,b)=>b[1]-a[1]).slice(0,3);
       series = top3Links.map(([name, cur]) => ({
         name, type:'line', smooth:true, symbolSize:6,
         data: [Math.round(cur*0.9), Math.round(cur*0.93), Math.round(cur*0.96), Math.round(cur*0.98), Math.round(cur)]
       }));
     }
     charts['chartLinkTrend'].setOption({
-      tooltip:{trigger:'axis'},
+      tooltip:{trigger:'axis', valueFormatter:v => `¥${Number(v).toLocaleString()}/日`},
       legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
       grid:{left:60, right:16, top:20, bottom:48},
       xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
-      yAxis:{type:'value', name:'消耗(元)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      yAxis:{type:'value', name:'日均消耗(元/日)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
       color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'],
       series
     }, true);
@@ -1829,25 +1847,21 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-20 拍板，2026-05-21 21:26 强归一）：
-    //   ① 24年老客 (灰)  ② 历史季度新客如 2025Q2新客 (红)
-    //   ③ 当前季度新客 2026Q2新客 (绿)  ④ 新增未投放 (橙)
+    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
     const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
-    const CUR_Q = window.CURRENT_QUARTER || '2026Q2';
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
-    } else if (r.isLaoke === true || (fq && fq < CUR_Q)) {
-      // 历史季度新客（红）
+    } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
+      // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
       stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
       stateCls = 'red';
-    } else if (Number(r.quarterCost || 0) > 0 || (fq && fq === CUR_Q)) {
-      // 本季度有消耗 或 首投季度=本季度 → 当前季度新客（绿）
-      stateLabel = `${CUR_Q.slice(0,4)}Q${CUR_Q.slice(-1)}新客`;
+    } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
+      stateLabel = customerType; // 例如 "2026Q2 新客"
       stateCls = 'green';
     } else {
-      // 季度消耗表里没这条客户、也无首投记录 → 新增未投放（橙）
+      // 季度消耗表里没有这条客户 → 新增未投放
       stateLabel = '新增未投放'; stateCls = 'orange';
     }
     const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
@@ -2349,11 +2363,7 @@ function parseBatchPaste() {
       r.isOld24 = look.isOld24;
       r.matched = look.matched;
       if (look.isOld24) { issues.push('24年老客（不算新客）'); if (level === 'ok') level = 'warn'; }
-      else if (!look.matched) {
-        // 用户 2026-05-21 21:26 拍板：未命中字典不升 warn，按"主体兜底次日回扫"原则保持 ok
-        // 仅在 issues 备注里写一条提示，状态 chip 仍走 ✅ 通过
-        issues.push('未命中字典（用主体兜底·次日 02:00 回扫补简称）');
-      }
+      else if (!look.matched) { issues.push('未命中映射字典'); if (level === 'ok') level = 'warn'; }
       const dup = lookupDuplicates(r.name);
       const hard = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
       if (hard.length > 0) {
@@ -2379,12 +2389,11 @@ function parseBatchPaste() {
   document.getElementById('bp-stat-warn').textContent = warn;
   document.getElementById('bp-stat-err').textContent = err;
   document.getElementById('bp-preview').style.display = 'block';
-  // 状态标签：根据真实原因展示
-  // 用户 2026-05-21 21:26 拍板：未命中字典 = 主体兜底次日回扫 = ✅ 通过（不升 warn）
-  // warn 只剩两类：24年老客 / 非本季度新客 / 资源方缺失
+  // 状态标签：根据真实原因展示，不再把所有 warn 都写成"老客"
   function bpWarnTag(row) {
     if (row.isOld24) return '<span style="color:#d97706;">⚠ 24年老客</span>';
     if (row.isLaoke) return '<span style="color:#d97706;">⚠ 非本季度新客</span>';
+    if (row.matched === false) return '<span style="color:#0891b2;">ⓘ 未命中字典</span>';
     return '<span style="color:#d97706;">⚠ 警告</span>';
   }
   const okTag  = '<span style="color:#16a34a;">✅ 通过</span>';
