@@ -403,7 +403,7 @@
         '<div id="cloud-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;overflow:hidden;">' +
           '<div id="cloud-menu-info" style="padding:10px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#f9fafb;"></div>' +
           '<button id="cloud-menu-upload" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬆️ 同步本地到云端</button>' +
-          '<button id="cloud-menu-download" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬇️ 从云端拉取最新</button>' +
+          '<button id="cloud-menu-download" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬇️ 下载拓新组全量登记名单</button>' +
           '<button id="cloud-menu-export" class="cloud-menu-item" style="display:none;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">💾 导出全量备份（管理员）</button>' +
           '<button id="cloud-menu-logout" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;font-size:13px;cursor:pointer;color:#dc2626;">🚪 退出登录</button>' +
         '</div>' +
