@@ -223,7 +223,7 @@
         } else if (raw) {
           msg = raw;
         }
-        err.textContent = '登录失败：' + msg;
+        err.innerHTML = '登录失败：' + msg + '<br><span style="font-size:11px;color:#999;">debug: code=' + (code || 'N/A') + ' / raw=' + (raw || 'N/A').slice(0, 120) + '</span>';
         err.style.display = 'block';
         try { console.error('[cloud] login failed code=' + code + ' raw=' + raw, e); } catch(_) {}
       });
