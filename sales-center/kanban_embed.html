@@ -654,7 +654,7 @@
       <div class="panel"><h3>类目分布</h3><div id="chartCategory" class="chart-box"></div></div>
       <div class="panel"><h3>客户来源分布</h3><div id="chartSource" class="chart-box"></div></div>
       <div class="panel"><h3>投放端分布</h3><div id="chartDelivery" class="chart-box"></div></div>
-      <div class="panel"><h3>链路分布<span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:6px;">按客户简称×customer_link_data 消耗汇总</span></h3><div id="chartLink" class="chart-box"></div></div>
+      <div class="panel"><h3>链路分布<span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:6px;">跟随上方"按数量/按消耗"切换</span></h3><div id="chartLink" class="chart-box"></div></div>
     </div>
   </div>
 
@@ -1287,12 +1287,16 @@ function renderSalesProgress() {
     return `<div class="main-num">${num}${unit || ''}</div>`;
   }
   function fmtMeta(deltaQoQ, dayDelta, mode) {
-    // mode='count': 显示"上季全季 N · 日Δ+M"（不再用'较上季-N'，避免误解）
+    // mode='count': 显示"较上季 +N · 日Δ +M"（用户 2026-05-21 拍板：销售明细新锐/新客列保留）
     if (mode === 'count') {
-      // deltaQoQ 这里实际我们传的是 newDelta = 本季新客 - 上季新客；用它反推上季总数
-      // 但调用方拿不到上季总数，简化：负数视为"季度未过完"，统一展示日Δ
-      const b = dayDelta === null || dayDelta === undefined ? '' : `日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`;
-      return `<div class="sub-meta">${b || '—'}</div>`;
+      const parts = [];
+      if (deltaQoQ !== null && deltaQoQ !== undefined) {
+        parts.push(`较上季<span class="${deltaCls(deltaQoQ)}">${fmtSigned(deltaQoQ)}</span>`);
+      }
+      if (dayDelta !== null && dayDelta !== undefined) {
+        parts.push(`日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`);
+      }
+      return `<div class="sub-meta">${parts.join(' · ') || '—'}</div>`;
     }
     if (mode === 'pct') {
       const a = `较前一天 <span class="${deltaCls(dayDelta)}">${fmtPct(dayDelta)}</span>`;
@@ -1354,7 +1358,7 @@ function renderSalesProgress() {
   const head = `
     <thead><tr>
       <th style="text-align:left;">销售</th>
-      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">26Q2 至今 · 日Δ</div></th>
+      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
       <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
@@ -1476,25 +1480,35 @@ function renderPortrait() {
   // chartLink 特殊处理：用 AData s=4695Or 链路明细字典（按消耗汇总，不是记录数）
   function pieOptionByLink() {
     const linkMap = window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {};
-    const costByLink = {};
+    // 用户 2026-05-21 拍板：链路分布跟随上方"按数量占比/按季度消耗占比"切换
+    const useCost = state.portraitMetric === 'cost';
+    const aggByLink = {};   // 按消耗累计
+    const cntByLink = {};   // 按客户数累计（同一客户在同一链路上只算一次）
     list.forEach(r => {
       const short = (r.shortName || r.name || '').trim();
       const arr = linkMap[short];
       if (Array.isArray(arr) && arr.length) {
+        const seen = new Set();
         arr.forEach(item => {
           const k = item.link || '未填写';
-          costByLink[k] = (costByLink[k] || 0) + Number(item.cost || 0);
+          aggByLink[k] = (aggByLink[k] || 0) + Number(item.cost || 0);
+          if (!seen.has(k)) {
+            cntByLink[k] = (cntByLink[k] || 0) + 1;
+            seen.add(k);
+          }
         });
       }
     });
-    const data = Object.entries(costByLink)
+    const src = useCost ? aggByLink : cntByLink;
+    const data = Object.entries(src)
       .filter(([_, v]) => v > 0)
-      .map(([k, v]) => ({ name: k, value: Math.round(v) }))
+      .map(([k, v]) => ({ name: k, value: useCost ? Math.round(v) : v }))
       .sort((a, b) => b.value - a.value);
-    // 给最高消耗链路加粗（echarts label.fontWeight=bold）
+    // 给最高占比链路加粗（echarts label.fontWeight=bold）
     if (data.length) data[0].label = { fontWeight: 'bold', fontSize: 12, color: '#111' };
+    const tipFmt = useCost ? '{b}: ¥{c} ({d}%)' : '{b}: {c} 个 ({d}%)';
     return {
-      tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
+      tooltip: { trigger: 'item', formatter: tipFmt },
       legend: { bottom: 0, textStyle: { color: '#6b7280', fontSize: 11 }, itemWidth: 8, itemHeight: 8 },
       color: colorPool,
       series: [{
