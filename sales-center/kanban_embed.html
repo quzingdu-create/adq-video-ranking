@@ -1142,20 +1142,18 @@ function renderKPI() {
         </div>
       </div>`;
 
-    // 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
-    const _qDaysCard = (function(){
-      const start = new Date(2026, 3, 1); // 2026-04-01
-      let end = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
-      end.setDate(end.getDate() - 1);
-      return Math.max(1, Math.floor((end - start) / 86400000) + 1);
-    })();
-    const dayAvgWan = Number(fixRow.quarterCost || 0) / _qDaysCard / 10000;
+    // 4) 累计新客昨日消耗（用户 2026-05-22 14:34 拍板：25Q3+25Q4+26Q1+26Q2 四个季度新客在昨天的烧量合计，不随季度切换）
+    const HISTORY_QS = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const _summaryAll = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const cumYestSum = _summaryAll
+      .filter(s => s.sale === '合计' && HISTORY_QS.includes(s.quarter))
+      .reduce((sum, s) => sum + Number(s.yestCost || 0), 0);
     const cumCard = `
       <div class="kpi-card purple">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷${_qDaysCard}天</span></div>
-        <div class="value-row"><div class="value">${dayAvgWan.toFixed(1)}万</div></div>
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3+25Q4+26Q1+26Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${(cumYestSum/10000).toFixed(1)}万</div></div>
         <div class="meta">
-          <span style="color:#6b7280;">2026Q2 季度累计 ${(Number(fixRow.quarterCost||0)/10000).toFixed(1)}万</span>
+          <span style="color:#6b7280;">四季度历史新客昨日合计</span>
         </div>
       </div>`;
 
@@ -1302,10 +1300,13 @@ function renderSalesProgress() {
         ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
       </td>`;
 
-    // 参考列（默认隐藏，2026-05-21 拍板：删交接3列、加 2 列累计新客 = 现有新客 + 交接客户中的新客）
-    const cumYestCost = Number(r.yestCost || 0) + Number(handoverStats.newYestCost || 0);
-    const cumQCost    = Number(r.quarterCost || 0) + Number(handoverStats.newQCost || 0);
-    const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
+    // 参考列（默认隐藏，2026-05-22 14:34 拍板：累计新客昨日消耗 = 25Q3+25Q4+26Q1+26Q2 四季度新客在昨日烧量合计，不随季度切换）
+    const HISTORY_QS_ROW = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const _summaryAllRow = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const _saleKey = (rowKind === 'total') ? '合计' : (rowKind === 'other' ? '其他' : r.sale);
+    const cumYestCost = _summaryAllRow
+      .filter(s => s.sale === _saleKey && HISTORY_QS_ROW.includes(s.quarter))
+      .reduce((sum, s) => sum + Number(s.yestCost || 0), 0);
     const refCells = `
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">本季度新客数</div>
@@ -1315,7 +1316,7 @@ function renderSalesProgress() {
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">累计新客昨日消耗</div>
         ${fmtMain(fmtWan(cumYestCost))}
-        <div class="sub-meta">现有新客 + 交接中新客</div>
+        <div class="sub-meta">25Q3+25Q4+26Q1+26Q2 历史新客</div>
       </td>`;
 
     return `<tr class="${trCls}">${cells}${refCells}</tr>`;
@@ -1329,7 +1330,7 @@ function renderSalesProgress() {
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
       <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
-      <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
+      <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3+25Q4+26Q1+26Q2</div></th>
     </tr></thead>`;
 
   const body = [
