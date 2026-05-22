@@ -1100,8 +1100,9 @@ window.diagCustomer = diagCustomer;
 function renderKPI() {
   const rows = centerSummaryRows();
   if (rows.length) {
-    // 用户 2026-05-19 拍板：第一屏改名「其他参考指标」，固定 2026Q2 不随季度切换
-    // 4 卡：服饰中心日耗 / 本季度新客数 / 新客昨日消耗 / 累计新客昨日消耗
+    // 用户 2026-05-22 拍板：日报快报核心 6 卡
+    // 1) 服饰中心日耗 2) 本季度新锐客户数 3) 新客昨日消耗(本季) 4) 新客本季度日均消耗
+    // 5) 累计新客昨日消耗(25Q3~26Q2) 6) Top 客户预警/关注（小红点）
     const FIX_Q = '2026Q2';
     const fixRow = rows.find(r => r.sale === '合计' && (!r.quarter || r.quarter === FIX_Q))
       || rows.find(r => r.sale === '合计')
@@ -1110,7 +1111,20 @@ function renderKPI() {
     const centerCost = dailyKpi.centerYestCost || 0;
     const centerChg = dailyKpi.centerDayCostRate;
 
-    // 1) 服饰中心日耗（固定显示 2026Q2，环比前一天）
+    // 本季已过天数（用 dataDate 当今日）
+    const _q2Start = new Date('2026-04-01');
+    const _today = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
+    const _q2DaysPassed = Math.max(1, Math.round((_today - _q2Start) / 86400000) + 1);
+
+    const _qrAll = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
+    const _q2 = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q2');
+    const q2Rising = _q2 ? Number(_q2.risingCount || 0) : Number(fixRow.risingCount || 0);
+    const q2RisingDayDelta = _q2 ? _q2.risingDayDelta : fixRow.risingDayDelta;
+    const q2NewYest = _q2 ? Number(_q2.yestCost || 0) : Number(fixRow.yestCost || 0);
+    const q2NewQCost = _q2 ? Number(_q2.quarterCost || 0) : Number(fixRow.quarterCost || 0);
+    const q2DayAvg = q2NewQCost / _q2DaysPassed;
+
+    // 卡 1：服饰中心日耗
     const centerCard = `
       <div class="kpi-card wide">
         <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
@@ -1118,61 +1132,77 @@ function renderKPI() {
         <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
 
-    // 2) 季度新客数
-    // 修复 2026-05-21 19:55：原"较上季度 -2362"会让人误解"减少了"，
-    // 实际是 26Q2 还在进行中（只过了 51/91 天），与 Q1 全季 7160 比少 2362 是必然。
-    // 改为非负展示「上季全季 N · 本季 X/91 天」+ 日Δ
-    const _q2 = (window.__CENTER_QUARTER_SUMMARY__ || []).find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q2');
-    const _q1 = (window.__CENTER_QUARTER_SUMMARY__ || []).find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q1');
-    const lastQNew = _q1 ? Number(_q1.newCount || 0) : 0;
-    const _q2Start = new Date('2026-04-01');
-    const _today = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
-    const _q2DaysPassed = Math.max(1, Math.round((_today - _q2Start) / 86400000) + 1);
-    const newCntCard = `
-      <div class="kpi-card success">
-        <div class="label">季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2 · 已过 ${_q2DaysPassed}/91 天</span></div>
-        <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
-        <div class="meta">
-          <span style="color:#6b7280;">上季全季 ${lastQNew.toLocaleString('zh-CN')}</span>
-          <span class="${deltaCls(fixRow.newDayDelta)}">日Δ ${fmtSigned(fixRow.newDayDelta)}</span>
-        </div>
+    // 卡 2：本季度新锐客户数
+    const risingCard = `
+      <div class="kpi-card gold">
+        <div class="label">本季度新锐客户数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2</span></div>
+        <div class="value-row"><div class="value">${q2Rising}</div></div>
+        <div class="meta"><span class="${deltaCls(q2RisingDayDelta)}">日Δ ${fmtSigned(q2RisingDayDelta)}</span></div>
       </div>`;
 
-    // 3) 累计新客昨日消耗（25Q3~26Q2 历年新客在昨天的消耗合计）
-    // 用户 2026-05-21 拍板：第二、第三卡都展示「累计新客」，覆盖 25Q3-26Q2
+    // 卡 3：新客昨日消耗（本季度）
+    const newYestCard = `
+      <div class="kpi-card success">
+        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${(q2NewYest/10000).toFixed(1)}万</div></div>
+        <div class="meta"><span style="color:#6b7280;">本季新客 ${(_q2 ? _q2.newCount : fixRow.newCount || 0).toLocaleString('zh-CN')} 个</span></div>
+      </div>`;
+
+    // 卡 4：新客本季度日均消耗
+    const dayAvgCard = `
+      <div class="kpi-card purple">
+        <div class="label">新客本季度日均消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷已过 ${_q2DaysPassed} 天</span></div>
+        <div class="value-row"><div class="value">${(q2DayAvg/10000).toFixed(1)}万</div></div>
+        <div class="meta"><span style="color:#6b7280;">季耗合计 ${(q2NewQCost/10000).toFixed(0)}万</span></div>
+      </div>`;
+
+    // 卡 5：累计新客昨日消耗（25Q3~26Q2）
     const CUM_QUARTERS = ['2025Q3', '2025Q4', '2026Q1', '2026Q2'];
-    const _qrAll = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
-    let cumYest = 0, cumNewCnt = 0, cumQCost = 0;
+    let cumYest = 0, cumNewCnt = 0;
     CUM_QUARTERS.forEach(q => {
       const tot = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === q);
       if (tot) {
         cumYest += Number(tot.yestCost || 0);
         cumNewCnt += Number(tot.newCount || 0);
-        cumQCost += Number(tot.quarterCost || 0);
       }
     });
-    const newYestCard = `
+    const cumYestCard = `
       <div class="kpi-card gold">
         <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${(cumYest/10000).toFixed(1)}万</div></div>
-        <div class="meta">
-          <span style="color:#6b7280;">覆盖新客 ${cumNewCnt.toLocaleString('zh-CN')} 个</span>
+        <div class="meta"><span style="color:#6b7280;">覆盖新客 ${cumNewCnt.toLocaleString('zh-CN')} 个</span></div>
+      </div>`;
+
+    // 卡 6：Top 客户预警 / 关注（小红点系统）
+    const topStatus = window.__TOP_STATUS_DATA__ || {};
+    let cntWarn = 0, cntWatch = 0, cntStable = 0;
+    Object.values(topStatus).forEach(v => {
+      const s = v.status || '';
+      if (s === '需告警') cntWarn++;
+      else if (s === '需关注') cntWatch++;
+      else if (s === '基本稳定') cntStable++;
+    });
+    const totalDot = cntWarn + cntWatch + cntStable;
+    const dotCard = `
+      <div class="kpi-card" style="background:linear-gradient(135deg,#fff,#fef2f2);border:1px solid #fecaca;">
+        <div class="label">Top 客户小红点 <span style="color:#9ca3af;font-size:11px;font-weight:400;">本季有效新客 Top · 共 ${totalDot}</span></div>
+        <div class="value-row" style="gap:14px;align-items:flex-end;">
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:22px;font-weight:800;color:#b91c1c;">${cntWarn}</div>
+            <div style="font-size:11px;color:#b91c1c;">需告警</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:22px;font-weight:800;color:#b45309;">${cntWatch}</div>
+            <div style="font-size:11px;color:#b45309;">需关注</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:22px;font-weight:800;color:#059669;">${cntStable}</div>
+            <div style="font-size:11px;color:#059669;">基本稳定</div>
+          </div>
         </div>
       </div>`;
 
-    // 4) 累计新客本季度日耗（25Q3~26Q2 季度消耗合计 ÷ 累计 4 个季度的天数）
-    // 用一个稳定基准：4 季 ≈ 365 天 -> 这里更简洁直接展示"季度消耗合计"
-    const cumCostWan = (cumQCost / 10000).toFixed(0);
-    const cumCard = `
-      <div class="kpi-card purple">
-        <div class="label">累计新客季度消耗合计 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 历年新客</span></div>
-        <div class="value-row"><div class="value">${Number(cumCostWan).toLocaleString('zh-CN')}万</div></div>
-        <div class="meta">
-          <span style="color:#6b7280;">4 季合计</span>
-        </div>
-      </div>`;
-
-    document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
+    document.getElementById('kpiGrid').innerHTML = centerCard + risingCard + newYestCard + dayAvgCard + cumYestCard + dotCard;
     return;
   }
   const list = filteredRecords().filter(isKnownNewRecord);
@@ -1329,11 +1359,6 @@ function renderSalesProgress() {
         <div class="label-tip">累计新客昨日消耗</div>
         ${fmtMain(fmtWan(cumYestCost))}
         <div class="sub-meta">现有新客 + 交接中新客</div>
-      </td>
-      <td class="ref-cell ref-col-hidden">
-        <div class="label-tip">累计新客本季度日耗</div>
-        <div class="main-num cost">${cumDayAvgWan.toFixed(1)}万</div>
-        <div class="sub-meta">${rowKind === 'core' ? `(新客+交接新客)÷${days}天` : '—'}</div>
       </td>`;
 
     return `<tr class="${trCls}">${cells}${refCells}</tr>`;
@@ -1348,7 +1373,6 @@ function renderSalesProgress() {
       <th>详细</th>
       <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
       <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
-      <th class="ref-cell ref-col-hidden">累计新客本季度日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
     </tr></thead>`;
 
   const body = [
