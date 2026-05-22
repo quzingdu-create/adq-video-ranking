@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>服饰拓新作战看板 v3.2 · 拓新组</title>
-<script src="auth-guard.js?v=20260522j"></script>
+<script src="auth-guard.js?v=20260522k"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
 <!-- PC 总入口卡片所需数据 -->
@@ -801,7 +801,7 @@
       </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522j" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522k" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -953,22 +953,15 @@
           setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
           setStyle('portalCostFill', 'width', costPct + '%');
 
-          // ============ 完成% / 时间% / 达成节奏比（2026-05-22 v2） ============
+          // ============ 完成% / 时间%（2026-05-22 v3 · 删达成节奏比，0.5 取整） ============
           // 季度总长度 91 天（2026Q2: 4/1~6/30），剩余 = 91 - 已过
           const Q_TOTAL_DAYS = 91;
           const remainDays = Math.max(0, Q_TOTAL_DAYS - _qDays);
           const timeProgPct = Math.min(100, Math.round(_qDays / Q_TOTAL_DAYS * 100));
+          // 0.5 向上取整：4.39 → 4.5，4.6 → 5
+          const ceilHalf = (x) => Math.ceil(x * 2) / 2;
 
-          // 达成节奏比 Pacing Ratio = 完成% / 时间% （业内 DSP/Ad Ops 标配）
-          // 分档：≥1.05 领先 / 0.95~1.05 健康 / 0.85~0.95 警戒 / <0.85 严重落后
-          function pacingMeta(ratio) {
-            if (ratio >= 1.05) return { cls: 'pace-ok',   tag: '🟢 领先' };
-            if (ratio >= 0.95) return { cls: 'pace-ok',   tag: '🟡 健康' };
-            if (ratio >= 0.85) return { cls: 'pace-warn', tag: '🟠 警戒' };
-            return                   { cls: 'pace-bad',  tag: '🔴 严重落后' };
-          }
-
-          // 1) 新锐：缺口 / 剩余天数（向上取整，保证达成）
+          // 1) 新锐：缺口 / 剩余天数（0.5 向上取整）
           const risingTarget = 207;
           const risingGap = Math.max(0, risingTarget - rising);
           let risingPaceHTML;
@@ -980,42 +973,39 @@
           } else if (remainDays === 0) {
             risingPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 缺 ${risingGap} 个未达成</span></div>`;
           } else {
-            const needPerDay = Math.ceil(risingGap / remainDays); // 整数，向上取
-            const ratio = timeProgPct > 0 ? (risingPct / timeProgPct) : 0;
-            const meta = pacingMeta(ratio);
+            const needPerDay = ceilHalf(risingGap / remainDays); // 0.5 向上取
             risingPaceHTML =
               `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天还需新增 <b>+${needPerDay}</b> 个新锐</div>` +
               `<div class="pace-row">` +
                 `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${risingPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">达成节奏比</span><span class="seg-val ${meta.cls}">${ratio.toFixed(2)}</span><span class="seg-tag ${meta.cls}">${meta.tag}</span></span>` +
+                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span>` +
               `</div>`;
           }
           setHTML('portalKpiPace', risingPaceHTML);
 
-          // 2) 日均消耗：要拉到 121 万的累积总耗 = 121 × 91 万 = 11011 万
-          const costTargetWan = 121;
-          const totalCostTarget = costTargetWan * Q_TOTAL_DAYS; // 11011 万
-          const currentCumCost = dayCostWan * _qDays;
-          const costGapWan = Math.max(0, totalCostTarget - currentCumCost);
+          // 2) 新客季度累计消耗（KPI 考核口径）：
+          //    完成% = 累计新客消耗 / 1.1 亿（11000 万）
+          //    每天日均要拉到 = (11000 - 累计) / 剩余天数  万（0.5 向上取）
+          //    （上面 66.7/121 万 卡保持原口径不变）
+          const COST_TOTAL_TARGET_WAN = 11000;       // 1.1 亿
+          const currentCumCostWan = dayCostWan * _qDays;          // 当前累计（万）
+          const costCumPct = Math.min(100, Math.round(currentCumCostWan / COST_TOTAL_TARGET_WAN * 100));
+          const costGapWan = Math.max(0, COST_TOTAL_TARGET_WAN - currentCumCostWan);
           let costPaceHTML;
-          if (dayCostWan >= costTargetWan) {
+          if (currentCumCostWan >= COST_TOTAL_TARGET_WAN) {
             costPaceHTML =
-              `<div class="pace-row"><span class="pace-done">🎉 已达成日均 ${costTargetWan} 万目标</span></div>` +
-              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costPct}%</span></span><span class="sep">·</span>` +
+              `<div class="pace-row"><span class="pace-done">🎉 已达成本季新客累计消耗 1.1 亿目标</span></div>` +
+              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costCumPct}%</span></span><span class="sep">·</span>` +
               `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span></div>`;
           } else if (remainDays === 0) {
-            costPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 日均 ${dayCostWan.toFixed(1)} 万未达 ${costTargetWan} 万</span></div>`;
+            costPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 累计 ${currentCumCostWan.toFixed(0)} 万未达 ${COST_TOTAL_TARGET_WAN} 万</span></div>`;
           } else {
-            const needDailyAvg = Math.ceil(costGapWan / remainDays); // 万，向上取整
-            const ratio = timeProgPct > 0 ? (costPct / timeProgPct) : 0;
-            const meta = pacingMeta(ratio);
+            const needDailyAvg = ceilHalf(costGapWan / remainDays); // 万，0.5 向上取
             costPaceHTML =
               `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天日均要拉到 <b>${needDailyAvg} 万</b></div>` +
               `<div class="pace-row">` +
-                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">达成节奏比</span><span class="seg-val ${meta.cls}">${ratio.toFixed(2)}</span><span class="seg-tag ${meta.cls}">${meta.tag}</span></span>` +
+                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costCumPct}%</span></span><span class="sep">·</span>` +
+                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span>` +
               `</div>`;
           }
           setHTML('portalCostPace', costPaceHTML);
