@@ -1,10 +1,19 @@
-/* 销售作战中心 · 权限门 v1（前端密码门，2026-05-22 上线）
+/* 销售作战中心 · 权限门 v1.1（前端密码门，2026-05-22 修复）
  * 用法：在 <head> 里第一行 <script src="auth-guard.js"></script>
  * 校验通过后 7 天免登；失败 5 次锁 5 分钟。
+ * v1.1: 仅在顶层窗口校验，iframe 内直接放行（避免切 tab 重复弹密码）。
  * 注：前端密码门只挡随手点入的外人，安全要求高时升级 CloudBase 鉴权（方案 B）。
  */
 (function () {
   'use strict';
+
+  // 仅顶层窗口校验，iframe 嵌套页面直接放行（外层已经守过门了）
+  try {
+    if (window.top !== window.self) return;
+  } catch (e) {
+    // 同源策略异常时也跳过（保守放行，不打断 iframe 内的页面）
+    return;
+  }
 
   // SHA256 of password "Fszxdm1234"
   var PASS_HASH = '0011c14d6b19751f709388bde9bf25abb725a4326bf01886e104225cd18c939d';
