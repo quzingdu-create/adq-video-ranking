@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>服饰拓新作战看板 v3.2 · 拓新组</title>
-<script src="auth-guard.js?v=20260522i"></script>
+<script src="auth-guard.js?v=20260522j"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
 <!-- PC 总入口卡片所需数据 -->
@@ -801,7 +801,7 @@
       </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522i" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522j" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -875,17 +875,27 @@
   .big-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
   .big-sub { opacity: 0.85; }
   .big-pct { font-weight: 700; font-size: 14px; }
-  /* 2026-05-22 新增：时间进度 + 未来每天还需做多少（落后橙、领先绿、达成 ✓） */
+  /* 2026-05-22 新增：完成% / 时间% / 达成节奏比 三段式（v2） */
   .big-pace {
-    margin-top: 8px; padding: 6px 10px;
+    margin-top: 10px; padding: 8px 12px;
     background: rgba(255,255,255,0.18);
     border-radius: 8px; font-size: 12px;
-    line-height: 1.5; opacity: 0.95;
-    border-left: 3px solid rgba(255,255,255,0.6);
+    line-height: 1.55; opacity: 0.97;
+    border-left: 3px solid rgba(255,255,255,0.65);
   }
-  .big-pace .pace-warn   { color: #fde68a; font-weight: 700; }
-  .big-pace .pace-ok     { color: #d1fae5; font-weight: 700; }
+  .big-pace .pace-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
+  .big-pace .pace-row + .pace-row { margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.22); }
+  .big-pace .seg { display: inline-flex; align-items: baseline; gap: 4px; }
+  .big-pace .seg-label { opacity: 0.72; font-weight: 400; font-size: 11px; }
+  .big-pace .seg-val { font-weight: 700; font-size: 13px; letter-spacing: 0.2px; }
+  .big-pace .seg-tag { font-size: 11px; opacity: 0.85; margin-left: 2px; }
+  .big-pace .sep { opacity: 0.4; font-weight: 300; }
+  .big-pace .pace-warn   { color: #fde68a; }
+  .big-pace .pace-ok     { color: #d1fae5; }
+  .big-pace .pace-bad    { color: #fecaca; }
   .big-pace .pace-done   { color: #fff; font-weight: 700; }
+  .big-pace .pace-action { font-size: 12px; }
+  .big-pace .pace-action b { font-size: 14px; font-weight: 800; color: #fff; }
 </style>
 <script>
   // PC 总入口卡片：KPI 数字回填 + 锚点跳转
@@ -943,47 +953,70 @@
           setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
           setStyle('portalCostFill', 'width', costPct + '%');
 
-          // ============ 时间进度 + 未来每天还需做多少（2026-05-22 新增） ============
+          // ============ 完成% / 时间% / 达成节奏比（2026-05-22 v2） ============
           // 季度总长度 91 天（2026Q2: 4/1~6/30），剩余 = 91 - 已过
           const Q_TOTAL_DAYS = 91;
           const remainDays = Math.max(0, Q_TOTAL_DAYS - _qDays);
           const timeProgPct = Math.min(100, Math.round(_qDays / Q_TOTAL_DAYS * 100));
 
-          // 1) 新锐：缺口 / 剩余天数
+          // 达成节奏比 Pacing Ratio = 完成% / 时间% （业内 DSP/Ad Ops 标配）
+          // 分档：≥1.05 领先 / 0.95~1.05 健康 / 0.85~0.95 警戒 / <0.85 严重落后
+          function pacingMeta(ratio) {
+            if (ratio >= 1.05) return { cls: 'pace-ok',   tag: '🟢 领先' };
+            if (ratio >= 0.95) return { cls: 'pace-ok',   tag: '🟡 健康' };
+            if (ratio >= 0.85) return { cls: 'pace-warn', tag: '🟠 警戒' };
+            return                   { cls: 'pace-bad',  tag: '🔴 严重落后' };
+          }
+
+          // 1) 新锐：缺口 / 剩余天数（向上取整，保证达成）
           const risingTarget = 207;
           const risingGap = Math.max(0, risingTarget - rising);
-          const risingDelta = risingPct - timeProgPct; // 完成进度 - 时间进度
           let risingPaceHTML;
           if (rising >= risingTarget) {
-            risingPaceHTML = `<span class="pace-done">🎉 已达成</span> · 时间进度 ${timeProgPct}% · 完成 ${risingPct}%`;
+            risingPaceHTML =
+              `<div class="pace-row"><span class="pace-done">🎉 已达成本季新锐 ${risingTarget} 个目标</span></div>` +
+              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${risingPct}%</span></span><span class="sep">·</span>` +
+              `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span></div>`;
           } else if (remainDays === 0) {
-            risingPaceHTML = `<span class="pace-warn">⚠️ 季度结束 · 缺 ${risingGap} 个未达成</span>`;
+            risingPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 缺 ${risingGap} 个未达成</span></div>`;
           } else {
-            const needPerDay = (risingGap / remainDays).toFixed(2);
-            const cls = risingDelta >= 0 ? 'pace-ok' : 'pace-warn';
-            const tag = risingDelta >= 0 ? `✓ 领先 ${risingDelta}pp` : `⚠️ 落后 ${Math.abs(risingDelta)}pp`;
-            risingPaceHTML = `时间进度 ${timeProgPct}% · <span class="${cls}">${tag}</span> · 剩 ${remainDays} 天每天还需 <b>+${needPerDay}</b> 个`;
+            const needPerDay = Math.ceil(risingGap / remainDays); // 整数，向上取
+            const ratio = timeProgPct > 0 ? (risingPct / timeProgPct) : 0;
+            const meta = pacingMeta(ratio);
+            risingPaceHTML =
+              `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天还需新增 <b>+${needPerDay}</b> 个新锐</div>` +
+              `<div class="pace-row">` +
+                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${risingPct}%</span></span><span class="sep">·</span>` +
+                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span><span class="sep">·</span>` +
+                `<span class="seg"><span class="seg-label">达成节奏比</span><span class="seg-val ${meta.cls}">${ratio.toFixed(2)}</span><span class="seg-tag ${meta.cls}">${meta.tag}</span></span>` +
+              `</div>`;
           }
           setHTML('portalKpiPace', risingPaceHTML);
 
           // 2) 日均消耗：要拉到 121 万的累积总耗 = 121 × 91 万 = 11011 万
-          // 当前已耗 = 日均 × 已过天数；缺口万 = 11011 - 当前已耗；未来每天日均 = 缺口 / 剩余
-          // 但用户更易理解的口径：未来每天日均要拉到多少 = (目标日均×总天数 - 当前累计) / 剩余天数
           const costTargetWan = 121;
           const totalCostTarget = costTargetWan * Q_TOTAL_DAYS; // 11011 万
           const currentCumCost = dayCostWan * _qDays;
           const costGapWan = Math.max(0, totalCostTarget - currentCumCost);
-          const costDelta = costPct - timeProgPct;
           let costPaceHTML;
           if (dayCostWan >= costTargetWan) {
-            costPaceHTML = `<span class="pace-done">🎉 已达成日均 ${costTargetWan} 万</span> · 时间进度 ${timeProgPct}%`;
+            costPaceHTML =
+              `<div class="pace-row"><span class="pace-done">🎉 已达成日均 ${costTargetWan} 万目标</span></div>` +
+              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costPct}%</span></span><span class="sep">·</span>` +
+              `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span></div>`;
           } else if (remainDays === 0) {
-            costPaceHTML = `<span class="pace-warn">⚠️ 季度结束 · 日均 ${dayCostWan.toFixed(1)} 万未达 ${costTargetWan} 万</span>`;
+            costPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 日均 ${dayCostWan.toFixed(1)} 万未达 ${costTargetWan} 万</span></div>`;
           } else {
-            const needDailyAvg = (costGapWan / remainDays).toFixed(1);
-            const cls = costDelta >= 0 ? 'pace-ok' : 'pace-warn';
-            const tag = costDelta >= 0 ? `✓ 领先 ${costDelta}pp` : `⚠️ 落后 ${Math.abs(costDelta)}pp`;
-            costPaceHTML = `时间进度 ${timeProgPct}% · <span class="${cls}">${tag}</span> · 剩 ${remainDays} 天每天日均要拉到 <b>${needDailyAvg} 万</b>`;
+            const needDailyAvg = Math.ceil(costGapWan / remainDays); // 万，向上取整
+            const ratio = timeProgPct > 0 ? (costPct / timeProgPct) : 0;
+            const meta = pacingMeta(ratio);
+            costPaceHTML =
+              `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天日均要拉到 <b>${needDailyAvg} 万</b></div>` +
+              `<div class="pace-row">` +
+                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costPct}%</span></span><span class="sep">·</span>` +
+                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span><span class="sep">·</span>` +
+                `<span class="seg"><span class="seg-label">达成节奏比</span><span class="seg-val ${meta.cls}">${ratio.toFixed(2)}</span><span class="seg-tag ${meta.cls}">${meta.tag}</span></span>` +
+              `</div>`;
           }
           setHTML('portalCostPace', costPaceHTML);
         }
