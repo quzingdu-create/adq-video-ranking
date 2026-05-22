@@ -1102,9 +1102,8 @@ window.diagCustomer = diagCustomer;
 function renderKPI() {
   const rows = centerSummaryRows();
   if (rows.length) {
-    // 用户 2026-05-22 拍板：日报快报核心 6 卡
-    // 1) 服饰中心日耗 2) 本季度新锐客户数 3) 新客昨日消耗(本季) 4) 新客本季度日均消耗
-    // 5) 累计新客昨日消耗(25Q3~26Q2) 6) Top 客户预警/关注（小红点）
+    // 用户 2026-05-22 11:31 拍板：恢复周一基线 4 卡（撤销 11:00 加的"新锐 + 小红点"两卡）
+    // 1) 服饰中心日耗 2) 本季度新客数 3) 新客昨日消耗 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
     const FIX_Q = '2026Q2';
     const fixRow = rows.find(r => r.sale === '合计' && (!r.quarter || r.quarter === FIX_Q))
       || rows.find(r => r.sale === '合计')
@@ -1113,20 +1112,7 @@ function renderKPI() {
     const centerCost = dailyKpi.centerYestCost || 0;
     const centerChg = dailyKpi.centerDayCostRate;
 
-    // 本季已过天数（用 dataDate 当今日）
-    const _q2Start = new Date('2026-04-01');
-    const _today = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
-    const _q2DaysPassed = Math.max(1, Math.round((_today - _q2Start) / 86400000) + 1);
-
-    const _qrAll = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
-    const _q2 = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === '2026Q2');
-    const q2Rising = _q2 ? Number(_q2.risingCount || 0) : Number(fixRow.risingCount || 0);
-    const q2RisingDayDelta = _q2 ? _q2.risingDayDelta : fixRow.risingDayDelta;
-    const q2NewYest = _q2 ? Number(_q2.yestCost || 0) : Number(fixRow.yestCost || 0);
-    const q2NewQCost = _q2 ? Number(_q2.quarterCost || 0) : Number(fixRow.quarterCost || 0);
-    const q2DayAvg = q2NewQCost / _q2DaysPassed;
-
-    // 卡 1：服饰中心日耗
+    // 1) 服饰中心日耗（固定显示 2026Q2，环比前一天）
     const centerCard = `
       <div class="kpi-card wide">
         <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
@@ -1134,77 +1120,46 @@ function renderKPI() {
         <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
       </div>`;
 
-    // 卡 2：本季度新锐客户数
-    const risingCard = `
-      <div class="kpi-card gold">
-        <div class="label">本季度新锐客户数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2</span></div>
-        <div class="value-row"><div class="value">${q2Rising}</div></div>
-        <div class="meta"><span class="${deltaCls(q2RisingDayDelta)}">日Δ ${fmtSigned(q2RisingDayDelta)}</span></div>
-      </div>`;
-
-    // 卡 3：新客昨日消耗（本季度）
-    const newYestCard = `
+    // 2) 本季度新客数
+    const newCntCard = `
       <div class="kpi-card success">
-        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
-        <div class="value-row"><div class="value">${(q2NewYest/10000).toFixed(1)}万</div></div>
-        <div class="meta"><span style="color:#6b7280;">本季新客 ${(_q2 ? _q2.newCount : fixRow.newCount || 0).toLocaleString('zh-CN')} 个</span></div>
-      </div>`;
-
-    // 卡 4：新客本季度日均消耗
-    const dayAvgCard = `
-      <div class="kpi-card purple">
-        <div class="label">新客本季度日均消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷已过 ${_q2DaysPassed} 天</span></div>
-        <div class="value-row"><div class="value">${(q2DayAvg/10000).toFixed(1)}万</div></div>
-        <div class="meta"><span style="color:#6b7280;">季耗合计 ${(q2NewQCost/10000).toFixed(0)}万</span></div>
-      </div>`;
-
-    // 卡 5：累计新客昨日消耗（25Q3~26Q2）
-    const CUM_QUARTERS = ['2025Q3', '2025Q4', '2026Q1', '2026Q2'];
-    let cumYest = 0, cumNewCnt = 0;
-    CUM_QUARTERS.forEach(q => {
-      const tot = _qrAll.find(x => x.sale === '合计' && normalizeQuarter(x.quarter) === q);
-      if (tot) {
-        cumYest += Number(tot.yestCost || 0);
-        cumNewCnt += Number(tot.newCount || 0);
-      }
-    });
-    const cumYestCard = `
-      <div class="kpi-card gold">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 · ${dailyKpi.dataDate || 'T-1'}</span></div>
-        <div class="value-row"><div class="value">${(cumYest/10000).toFixed(1)}万</div></div>
-        <div class="meta"><span style="color:#6b7280;">覆盖新客 ${cumNewCnt.toLocaleString('zh-CN')} 个</span></div>
-      </div>`;
-
-    // 卡 6：Top 客户预警 / 关注（小红点系统）
-    const topStatus = window.__TOP_STATUS_DATA__ || {};
-    let cntWarn = 0, cntWatch = 0, cntStable = 0;
-    Object.values(topStatus).forEach(v => {
-      const s = v.status || '';
-      if (s === '需告警') cntWarn++;
-      else if (s === '需关注') cntWatch++;
-      else if (s === '基本稳定') cntStable++;
-    });
-    const totalDot = cntWarn + cntWatch + cntStable;
-    const dotCard = `
-      <div class="kpi-card" style="background:linear-gradient(135deg,#fff,#fef2f2);border:1px solid #fecaca;">
-        <div class="label">Top 客户小红点 <span style="color:#9ca3af;font-size:11px;font-weight:400;">本季有效新客 Top · 共 ${totalDot}</span></div>
-        <div class="value-row" style="gap:14px;align-items:flex-end;">
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div style="font-size:22px;font-weight:800;color:#b91c1c;">${cntWarn}</div>
-            <div style="font-size:11px;color:#b91c1c;">需告警</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div style="font-size:22px;font-weight:800;color:#b45309;">${cntWatch}</div>
-            <div style="font-size:11px;color:#b45309;">需关注</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div style="font-size:22px;font-weight:800;color:#059669;">${cntStable}</div>
-            <div style="font-size:11px;color:#059669;">基本稳定</div>
-          </div>
+        <div class="label">本季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
+        <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.newDelta)}">较上季度 ${fmtSigned(fixRow.newDelta)}</span>
+          <span class="${deltaCls(fixRow.newDayDelta)}">日Δ ${fmtSigned(fixRow.newDayDelta)}</span>
         </div>
       </div>`;
 
-    document.getElementById('kpiGrid').innerHTML = centerCard + risingCard + newYestCard + dayAvgCard + cumYestCard + dotCard;
+    // 3) 新客昨日消耗（合计·昨耗）
+    const yestWan = Number(fixRow.yestCost || 0) / 10000;
+    const newYestCard = `
+      <div class="kpi-card gold">
+        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${yestWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.dayCostRate)}">环比前一天 ${fmtPct(fixRow.dayCostRate)}</span>
+        </div>
+      </div>`;
+
+    // 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
+    const _qDaysCard = (function(){
+      const start = new Date(2026, 3, 1); // 2026-04-01
+      let end = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
+      end.setDate(end.getDate() - 1);
+      return Math.max(1, Math.floor((end - start) / 86400000) + 1);
+    })();
+    const dayAvgWan = Number(fixRow.quarterCost || 0) / _qDaysCard / 10000;
+    const cumCard = `
+      <div class="kpi-card purple">
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷${_qDaysCard}天</span></div>
+        <div class="value-row"><div class="value">${dayAvgWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span style="color:#6b7280;">2026Q2 季度累计 ${(Number(fixRow.quarterCost||0)/10000).toFixed(1)}万</span>
+        </div>
+      </div>`;
+
+    document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
     return;
   }
   const list = filteredRecords().filter(isKnownNewRecord);
@@ -1860,18 +1815,21 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
+    // 客户投放状态四档（用户 2026-05-22 11:31 拍板：文案统一 = ${当前季度}新客，不读销售登记字段）
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
     const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
+    const curQ = window.CURRENT_QUARTER || '2026Q2';
+    const curQDisp = `${curQ.slice(0,4)}Q${curQ.slice(-1)}新客`; // "2026Q2新客"
     if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
-    } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
+    } else if (r.isLaoke === true || (fq && fq < curQ)) {
       // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
       stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
       stateCls = 'red';
-    } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
-      stateLabel = customerType; // 例如 "2026Q2 新客"
+    } else if (fq && fq === curQ) {
+      // AData 命中本季度首投 → 文案强制 "2026Q2新客"，不读销售登记字段
+      stateLabel = curQDisp;
       stateCls = 'green';
     } else {
       // 季度消耗表里没有这条客户 → 新增未投放
