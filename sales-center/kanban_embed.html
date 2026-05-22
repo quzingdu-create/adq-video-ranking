@@ -1321,7 +1321,7 @@ function renderSalesProgress() {
     const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
     const refCells = `
       <td class="ref-cell ref-col-hidden">
-        <div class="label-tip">新客数</div>
+        <div class="label-tip">本季度新客数</div>
         ${fmtMain(r.newCount)}
         ${fmtMeta(r.newDelta, r.newDayDelta, 'count')}
       </td>
@@ -1346,7 +1346,7 @@ function renderSalesProgress() {
       <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
       <th>详细</th>
-      <th class="ref-cell ref-col-hidden">累计新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
+      <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
       <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
       <th class="ref-cell ref-col-hidden">累计新客本季度日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
     </tr></thead>`;
@@ -1834,27 +1834,21 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-20 拍板，2026-05-22 修复判定根因）：
-    //   24年老客（灰）/ 历史季度新客=存量(红) / 2026Q2新客(绿) / 新增未投放(橙)
-    // ⚠️ 死规矩：判定必须依据 AData 命中状态(fq)，不能用销售登记字段(customerType)
-    //   否则销售填"新客"会被错归绿档（实际 AData 没命中）
+    // 客户投放状态四档（用户 2026-05-20 拍板）：24年老客 / 历史老客(存量) / 当前季度新客 / 新增未投放
     let stateLabel = '', stateCls = 'gray';
     const nm = String(r.shortName || r.name || '').trim();
     const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
-    const curQ = window.CURRENT_QUARTER || '2026Q2';
-    if ((window.__OLD24_SET_217__ || new Set()).has(nm) || r.old24 === true) {
+    if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
       stateLabel = '24年老客'; stateCls = 'gray';
-    } else if (r.isLaoke === true || (fq && fq < curQ)) {
+    } else if (r.isLaoke === true || (fq && fq < (window.CURRENT_QUARTER || '2026Q2'))) {
       // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
       stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
       stateCls = 'red';
-    } else if (fq && fq === curQ) {
-      // ✅ AData 季度消耗里命中本季度首投 → 当前季度新客（绿）
-      // 文案统一：2026Q2新客（不再用销售登记字段的"新客"）
-      stateLabel = `${curQ.slice(0,4)}Q${curQ.slice(-1)}新客`;
+    } else if (customerType && customerType.includes('新客') && !customerType.includes('非本季度')) {
+      stateLabel = customerType; // 例如 "2026Q2 新客"
       stateCls = 'green';
     } else {
-      // AData 没命中（既无 fq 也未在 24老客名单里）→ 新增未投放（橙）
+      // 季度消耗表里没有这条客户 → 新增未投放
       stateLabel = '新增未投放'; stateCls = 'orange';
     }
     const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
@@ -2894,55 +2888,26 @@ document.addEventListener('click', e => {
 /* 🦞 云端同步顶栏（橘橘有500w加，2026-05-20 19:55） */
 (function initCloudToolbar(){
   if (!window.cloud) return;
-  const _applyRemote = function(list){
-    // 把云端记录覆盖到本地 + 立即重渲染
-    try {
-      localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
-    } catch(e){
-      try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 500))); } catch(_){}
-    }
-    USER_RECORDS = list;
-    // 重建 RECORDS：云端 + tuoke_real_records
-    const real = (window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : [];
-    window.RECORDS.length = 0;
-    window.RECORDS.push(...USER_RECORDS, ...real);
-    if (typeof renderAll === 'function') renderAll();
-  };
   window.cloud.injectToolbar({
     getLocalRecords: function(){
       try { return JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]'); }
       catch(e){ return []; }
     },
-    applyRemoteRecords: _applyRemote
-  });
-
-  /* ===========================================================
-     页面打开时自动拉云端最新记录（用户 2026-05-22 拍板）
-     - 已登录 → 静默拉一次 cloud.download() → 合并到本地 RECORDS
-     - 未登录 → 跳过（保持现有本地展示）
-     - 失败 → 控制台提示，不弹窗打扰
-     这样：销售 A 在自己端登记 → 销售 B 打开看板 → 自动看到 A 的最新登记
-     不再依赖手动「同步云端」按钮，云端真正变成「实时同步」
-  =========================================================== */
-  (async function autoSyncOnLoad(){
-    try {
-      if (!window.cloud || !cloud.isLoggedIn || !cloud.isLoggedIn()) {
-        console.info('[CloudAutoSync] 未登录，跳过自动拉取');
-        return;
+    applyRemoteRecords: function(list){
+      // 把云端记录覆盖到本地 + 立即重渲染
+      try {
+        localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
+      } catch(e){
+        try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 500))); } catch(_){}
       }
-      console.info('[CloudAutoSync] 启动自动拉取云端数据...');
-      const startAt = Date.now();
-      const remote = await cloud.download();
-      const list = Array.isArray(remote) ? remote : [];
-      console.info('[CloudAutoSync] ✅ 拉到 ' + list.length + ' 条云端记录，耗时 ' + (Date.now()-startAt) + 'ms');
-      if (list.length > 0) {
-        _applyRemote(list);
-        if (cloud.toast) cloud.toast('☁️ 已同步 ' + list.length + ' 条云端登记');
-      }
-    } catch (e) {
-      console.warn('[CloudAutoSync] 自动拉取失败（不影响本地展示）:', e);
+      USER_RECORDS = list;
+      // 重建 RECORDS：云端 + tuoke_real_records
+      const real = (window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : [];
+      window.RECORDS.length = 0;
+      window.RECORDS.push(...USER_RECORDS, ...real);
+      if (typeof renderAll === 'function') renderAll();
     }
-  })();
+  });
 })();
 </script>
 </body>
