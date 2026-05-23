@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>服饰拓新作战看板 v3.2 · 拓新组</title>
-<script src="auth-guard.js?v=20260522k"></script>
+<title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
 <!-- PC 总入口卡片所需数据 -->
@@ -552,7 +551,7 @@
 
 <!-- ========== 顶栏 ========== -->
 <div class="topbar">
-  <h1>📊 服饰拓新作战看板 <span class="ver" id="verLabel">v3.2</span></h1>
+  <h1>🦞 销售作战中心 <span class="ver" id="verLabel">v3.2</span></h1>
   <div class="topbar-right" id="topbarRight"></div>
 </div>
 <script>
@@ -778,14 +777,13 @@
               <span class="big-sub" id="portalKpiSub">本季目标进度</span>
               <span class="big-pct" id="portalKpiPct">—</span>
             </div>
-            <div class="big-pace" id="portalKpiPace">时间进度 — · 未来每天还需 —</div>
           </div>
         </div>
 
         <div class="big-card violet" data-anchor="kpiGrid">
           <div class="big-icon">💰</div>
           <div class="big-body">
-            <div class="big-label">新客季度日均消耗</div>
+            <div class="big-label">新客季度日耗</div>
             <div class="big-row">
               <span class="big-num" id="portalCostVal">—</span>
               <span class="big-unit">/ 121 万</span>
@@ -795,13 +793,12 @@
               <span class="big-sub" id="portalCostSub">本季目标进度</span>
               <span class="big-pct" id="portalCostPct">—</span>
             </div>
-            <div class="big-pace" id="portalCostPace">时间进度 — · 未来每天还需 —</div>
           </div>
         </div>
       </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522k" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522e" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -875,27 +872,6 @@
   .big-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
   .big-sub { opacity: 0.85; }
   .big-pct { font-weight: 700; font-size: 14px; }
-  /* 2026-05-22 新增：完成% / 时间% / 达成节奏比 三段式（v2） */
-  .big-pace {
-    margin-top: 10px; padding: 8px 12px;
-    background: rgba(255,255,255,0.18);
-    border-radius: 8px; font-size: 12px;
-    line-height: 1.55; opacity: 0.97;
-    border-left: 3px solid rgba(255,255,255,0.65);
-  }
-  .big-pace .pace-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
-  .big-pace .pace-row + .pace-row { margin-top: 4px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.22); }
-  .big-pace .seg { display: inline-flex; align-items: baseline; gap: 4px; }
-  .big-pace .seg-label { opacity: 0.72; font-weight: 400; font-size: 11px; }
-  .big-pace .seg-val { font-weight: 700; font-size: 13px; letter-spacing: 0.2px; }
-  .big-pace .seg-tag { font-size: 11px; opacity: 0.85; margin-left: 2px; }
-  .big-pace .sep { opacity: 0.4; font-weight: 300; }
-  .big-pace .pace-warn   { color: #fde68a; }
-  .big-pace .pace-ok     { color: #d1fae5; }
-  .big-pace .pace-bad    { color: #fecaca; }
-  .big-pace .pace-done   { color: #fff; font-weight: 700; }
-  .big-pace .pace-action { font-size: 12px; }
-  .big-pace .pace-action b { font-size: 14px; font-weight: 800; color: #fff; }
 </style>
 <script>
   // PC 总入口卡片：KPI 数字回填 + 锚点跳转
@@ -923,7 +899,6 @@
         const summary = window.__CENTER_QUARTER_SUMMARY__ || [];
         const total = summary.find(r => r.quarter === '2026Q2' && r.sale === '合计');
         const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-        const setHTML = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
         const setStyle = (id, prop, v) => { const el = document.getElementById(id); if (el) el.style[prop] = v; };
         if (total) {
           // 计算季度已过天数（截止数据日 - 1，与 kanban_embed.html KPI 卡一致）
@@ -952,63 +927,6 @@
           setText('portalCostPct', costPct + '%');
           setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
           setStyle('portalCostFill', 'width', costPct + '%');
-
-          // ============ 完成% / 时间%（2026-05-22 v3 · 删达成节奏比，0.5 取整） ============
-          // 季度总长度 91 天（2026Q2: 4/1~6/30），剩余 = 91 - 已过
-          const Q_TOTAL_DAYS = 91;
-          const remainDays = Math.max(0, Q_TOTAL_DAYS - _qDays);
-          const timeProgPct = Math.min(100, Math.round(_qDays / Q_TOTAL_DAYS * 100));
-          // 0.5 向上取整：4.39 → 4.5，4.6 → 5
-          const ceilHalf = (x) => Math.ceil(x * 2) / 2;
-
-          // 1) 新锐：缺口 / 剩余天数（0.5 向上取整）
-          const risingTarget = 207;
-          const risingGap = Math.max(0, risingTarget - rising);
-          let risingPaceHTML;
-          if (rising >= risingTarget) {
-            risingPaceHTML =
-              `<div class="pace-row"><span class="pace-done">🎉 已达成本季新锐 ${risingTarget} 个目标</span></div>` +
-              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${risingPct}%</span></span><span class="sep">·</span>` +
-              `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span></div>`;
-          } else if (remainDays === 0) {
-            risingPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 缺 ${risingGap} 个未达成</span></div>`;
-          } else {
-            const needPerDay = ceilHalf(risingGap / remainDays); // 0.5 向上取
-            risingPaceHTML =
-              `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天还需新增 <b>+${needPerDay}</b> 个新锐</div>` +
-              `<div class="pace-row">` +
-                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${risingPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span>` +
-              `</div>`;
-          }
-          setHTML('portalKpiPace', risingPaceHTML);
-
-          // 2) 新客季度累计消耗（KPI 考核口径）：
-          //    完成% = 累计新客消耗 / 1.1 亿（11000 万）
-          //    每天日均要拉到 = (11000 - 累计) / 剩余天数  万（0.5 向上取）
-          //    （上面 66.7/121 万 卡保持原口径不变）
-          const COST_TOTAL_TARGET_WAN = 11000;       // 1.1 亿
-          const currentCumCostWan = dayCostWan * _qDays;          // 当前累计（万）
-          const costCumPct = Math.min(100, Math.round(currentCumCostWan / COST_TOTAL_TARGET_WAN * 100));
-          const costGapWan = Math.max(0, COST_TOTAL_TARGET_WAN - currentCumCostWan);
-          let costPaceHTML;
-          if (currentCumCostWan >= COST_TOTAL_TARGET_WAN) {
-            costPaceHTML =
-              `<div class="pace-row"><span class="pace-done">🎉 已达成本季新客累计消耗 1.1 亿目标</span></div>` +
-              `<div class="pace-row"><span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costCumPct}%</span></span><span class="sep">·</span>` +
-              `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span></div>`;
-          } else if (remainDays === 0) {
-            costPaceHTML = `<div class="pace-row"><span class="pace-warn">⚠️ 季度结束 · 累计 ${currentCumCostWan.toFixed(0)} 万未达 ${COST_TOTAL_TARGET_WAN} 万</span></div>`;
-          } else {
-            const needDailyAvg = ceilHalf(costGapWan / remainDays); // 万，0.5 向上取
-            costPaceHTML =
-              `<div class="pace-row pace-action">剩 <b>${remainDays}</b> 天，每天日均要拉到 <b>${needDailyAvg} 万</b></div>` +
-              `<div class="pace-row">` +
-                `<span class="seg"><span class="seg-label">完成</span><span class="seg-val">${costCumPct}%</span></span><span class="sep">·</span>` +
-                `<span class="seg"><span class="seg-label">时间</span><span class="seg-val">${timeProgPct}%</span></span>` +
-              `</div>`;
-          }
-          setHTML('portalCostPace', costPaceHTML);
         }
         // KPI 季度 + 时间季度 + 数据日
         setText('bpKpiQuarter', 'KPI 季度 · 2026Q2');
