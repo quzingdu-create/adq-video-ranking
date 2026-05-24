@@ -334,21 +334,37 @@
     });
   }
 
-  function uploadBatch(records) {
+  function uploadBatch(records, opts) {
     if (!records || !records.length) return Promise.resolve({ created: 0, updated: 0 });
+    opts = opts || {};
+    var concurrency = opts.concurrency || 10;
+    var onProgress = opts.onProgress || null;
     return ensureReady().then(function () {
-      var created = 0, updated = 0;
+      var created = 0, updated = 0, failed = 0, done = 0;
       var queue = records.slice();
-      function step() {
-        if (!queue.length) return { created: created, updated: updated };
+      var total = queue.length;
+      function worker() {
+        if (!queue.length) return Promise.resolve();
         var r = queue.shift();
         return upsertOne(r).then(function (x) {
           created += x.created || 0;
           updated += x.updated || 0;
-          return step();
+        }).catch(function (err) {
+          failed++;
+          console.warn('[cloud] upsert fail id=' + (r && r.id), err && err.message);
+        }).then(function () {
+          done++;
+          if (onProgress && (done % 50 === 0 || done === total)) {
+            try { onProgress({ done: done, total: total, created: created, updated: updated, failed: failed }); } catch(_){}
+          }
+          return worker();
         });
       }
-      return step();
+      var workers = [];
+      for (var i = 0; i < concurrency; i++) workers.push(worker());
+      return Promise.all(workers).then(function () {
+        return { created: created, updated: updated, failed: failed, total: total };
+      });
     });
   }
 
@@ -548,10 +564,32 @@
       cloud.requireLogin(function () {
         var records = (typeof opts.getLocalRecords === 'function') ? opts.getLocalRecords() : [];
         if (!records.length) { showToast('本地没有要同步的记录', true); return; }
-        if (!confirm('确认上传 ' + records.length + ' 条本地记录到云端？(同 id 会被覆盖)')) return;
-        showToast('上传中...');
-        cloud.upload(records).then(function (data) {
-          showToast('✅ 已同步 created=' + data.created + ' updated=' + data.updated);
+        // 跳过已成功上云的 id（避免每次重推 5900+）
+        var SYNCED_KEY = 'cloud_synced_ids_v1';
+        var syncedIds = {};
+        try { syncedIds = JSON.parse(localStorage.getItem(SYNCED_KEY) || '{}') || {}; } catch(_){ syncedIds = {}; }
+        var pending = records.filter(function(r){ return r && r.id != null && !syncedIds[r.id]; });
+        var skipCount = records.length - pending.length;
+        var msg = '本地共 ' + records.length + ' 条，已上云 ' + skipCount + ' 条，待同步 ' + pending.length + ' 条。\n确认开始上传？(同 id 会被覆盖，10 并发，约 ' + Math.ceil(pending.length / 30) + ' 秒)';
+        if (!pending.length) {
+          if (!confirm('本地全部 ' + records.length + ' 条都已上云。\n点确定将强制重推（耗时较长）。')) return;
+          pending = records;
+        } else if (!confirm(msg)) return;
+
+        showToast('上传中 0 / ' + pending.length);
+        var startTime = Date.now();
+        cloud.upload(pending, {
+          concurrency: 10,
+          onProgress: function(p){
+            showToast('上传中 ' + p.done + ' / ' + p.total + ' (✓' + (p.created + p.updated) + ' ✗' + p.failed + ')');
+          }
+        }).then(function (data) {
+          // 写回成功 id 缓存
+          var newSynced = Object.assign({}, syncedIds);
+          pending.forEach(function(r){ if (r && r.id != null) newSynced[r.id] = 1; });
+          try { localStorage.setItem(SYNCED_KEY, JSON.stringify(newSynced)); } catch(_){}
+          var sec = Math.round((Date.now() - startTime) / 1000);
+          showToast('✅ 完成 created=' + data.created + ' updated=' + data.updated + (data.failed ? ' 失败=' + data.failed : '') + ' 耗时 ' + sec + 's');
           refreshStatus();
         }).catch(function (e) { showToast('上传失败：' + e.message, true); });
       });
