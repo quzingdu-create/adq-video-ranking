@@ -550,10 +550,72 @@
 </script>
 
 <!-- ========== 顶栏 ========== -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <div class="topbar">
   <h1>🦞 销售作战中心 <span class="ver" id="verLabel">v3.2</span></h1>
   <div class="topbar-right" id="topbarRight"></div>
+  <button id="btnExportTuokeAll" style="position:absolute;right:16px;top:14px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(37,99,235,0.3);">⬇️ 下载拓客全量登记</button>
 </div>
+<script>
+(function(){
+  var btn = document.getElementById('btnExportTuokeAll');
+  if (!btn) return;
+  btn.onclick = function(){
+    var recs = window.__TUOKE_REAL_RECORDS__ || [];
+    if (!recs.length) { alert('数据还没加载完，请刷新页面后重试'); return; }
+    if (typeof XLSX === 'undefined') { alert('xlsx 库未加载，请刷新页面'); return; }
+    btn.disabled = true; btn.innerText = '导出中…';
+    try {
+      var headers = ['序号','登记日期','销售','客户主体','客户简称','类目','在投链路','品牌','是否新客','是否有效','是否新锐','是否24老客','首投季度','客户身份','季度消耗','昨日消耗','环比金额','环比%','档位','成熟度','投放端','数据来源'];
+      var sorted = recs.slice().sort(function(a,b){
+        return ((a.date||'')+'').localeCompare((b.date||'')+'') || ((a.sale||'')+'').localeCompare((b.sale||'')+'');
+      });
+      var aoa = [headers];
+      sorted.forEach(function(r, i){
+        aoa.push([
+          i+1,
+          r.date || '',
+          r.sale || '',
+          r.name || '',
+          r.shortName || '',
+          r.cat || '',
+          r.link || r.links || '',
+          r.brand || '',
+          r.isNew ? '是' : '否',
+          r.isValid ? '是' : '否',
+          (r.isRising === '是' || r.status === '新锐') ? '是' : '否',
+          r.old24 ? '是' : '否',
+          r.firstQuarter || '',
+          r.customerType || r.status || '',
+          (typeof r.quarterCost === 'number') ? r.quarterCost : (r.quarterCost || 0),
+          (typeof r.yestCost === 'number') ? r.yestCost : (r.yestCost || 0),
+          (typeof r.diffAmt === 'number') ? r.diffAmt : '',
+          r.costChg || '',
+          r.centerGroup || '',
+          r.maturity || '',
+          r.deliverySide || '',
+          (r.id >= 1000000 ? '看板底表(rebuild)' : (r._cloud ? '云端' : '本地'))
+        ]);
+      });
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!cols'] = headers.map(function(){ return { wch: 14 }; });
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '拓客全量登记');
+      // meta sheet
+      var meta = [['指标','值'],['导出时间', new Date().toLocaleString()],['总记录数', recs.length],['来源','看板首页 __TUOKE_REAL_RECORDS__'],['数据日',(window.__CENTER_DAILY_KPI__&&window.__CENTER_DAILY_KPI__.dataDate)||'']];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
+      var ymd = new Date().toISOString().slice(0,10);
+      XLSX.writeFile(wb, '拓客全量登记_看板_' + ymd + '_' + recs.length + '条.xlsx');
+      btn.innerText = '✅ 已下载 ' + recs.length + ' 条';
+      setTimeout(function(){ btn.disabled = false; btn.innerText = '⬇️ 下载拓客全量登记'; }, 3000);
+    } catch(err){
+      console.error(err);
+      alert('导出失败：' + err.message);
+      btn.disabled = false; btn.innerText = '⬇️ 下载拓客全量登记';
+    }
+  };
+})();
+</script>
 <script>
 (function(){
   try {
