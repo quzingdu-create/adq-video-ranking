@@ -889,7 +889,7 @@
       const [s, e] = range;
       const start = new Date(s + 'T00:00:00');
       const end   = new Date(e + 'T23:59:59');
-      const total = Math.round((end - start) / 86400000) + 1;
+      const total = Math.floor((end - start) / 86400000) + 1;
       let day = Math.floor((today - start) / 86400000) + 1;
       if (day < 0) day = 0; if (day > total) day = total;
       return { day, total };
