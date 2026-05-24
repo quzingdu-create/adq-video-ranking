@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
+<!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
+<script src="auth-guard.js?v=20260524k"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="data/current_rising_data.js"></script>
 <!-- PC 总入口卡片所需数据 -->
@@ -12,7 +14,9 @@
 <script src="data/tuoke_real_records.js"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260524p"></script>
+<script src="cloud_sync.js?v=20260524q"></script>
+<!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
+<script src="export_tuoke.js?v=20260524a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -563,111 +567,7 @@
     <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
   </div>
 </div>
-<script>
-(function(){
-  // 统一 13 列表头
-  var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路','投放端','类目','拓客途径','拓客来源'];
-
-  function parseLinks(r){
-    // 优先 links（JSON 字符串数组），否则单 link
-    var s = r.links;
-    if (s && s !== '[]'){
-      try {
-        var arr = JSON.parse(s);
-        if (Array.isArray(arr) && arr.length){
-          return arr.map(function(x){
-            if (typeof x === 'string') return x;
-            if (x && typeof x === 'object') return x.type || x.name || x.label || JSON.stringify(x);
-            return String(x);
-          }).join(' / ');
-        }
-      } catch(e){}
-    }
-    return r.link || '';
-  }
-
-  function rowOf(r){
-    return [
-      r.date || '',
-      r.sale || '',
-      r.name || '',
-      r.shortName || '',
-      r.firstQuarter || '',
-      r.isNew ? '是' : '否',
-      r.isValid ? '是' : '否',
-      (r.isRising === '是' || r.status === '新锐') ? '是' : '否',
-      parseLinks(r),
-      r.deliverySide || '',
-      r.cat || '',
-      r.channel || '',
-      r.source || ''
-    ];
-  }
-
-  function exportXlsx(records, sheetName, filenamePrefix){
-    if (!records.length) { alert('没有命中数据'); return; }
-    if (typeof XLSX === 'undefined') { alert('xlsx 库未加载，请刷新页面'); return; }
-    var sorted = records.slice().sort(function(a,b){
-      return ((a.date||'')+'').localeCompare((b.date||'')+'') || ((a.sale||'')+'').localeCompare((b.sale||'')+'');
-    });
-    var aoa = [HEADERS];
-    sorted.forEach(function(r){ aoa.push(rowOf(r)); });
-    var ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [
-      {wch:12},{wch:12},{wch:30},{wch:24},{wch:10},{wch:8},{wch:8},{wch:8},
-      {wch:18},{wch:10},{wch:12},{wch:18},{wch:18}
-    ];
-    var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    var meta = [
-      ['指标','值'],
-      ['导出时间', new Date().toLocaleString()],
-      ['Sheet名称', sheetName],
-      ['总记录数', records.length],
-      ['来源','看板首页 __TUOKE_REAL_RECORDS__'],
-      ['数据日',(window.__CENTER_DAILY_KPI__&&window.__CENTER_DAILY_KPI__.dataDate)||'']
-    ];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
-    var ymd = new Date().toISOString().slice(0,10);
-    XLSX.writeFile(wb, filenamePrefix + '_' + ymd + '_' + records.length + '条.xlsx');
-  }
-
-  function bindBtn(btnId, getRecords, label, filePrefix, sheetName){
-    var btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.onclick = function(){
-      var all = window.__TUOKE_REAL_RECORDS__ || [];
-      if (!all.length) { alert('数据还没加载完，请刷新页面后重试'); return; }
-      var recs = getRecords(all);
-      btn.disabled = true; btn.innerText = '导出中…';
-      try {
-        exportXlsx(recs, sheetName, filePrefix);
-        btn.innerText = '✅ 已下载 ' + recs.length + ' 条';
-        setTimeout(function(){ btn.disabled = false; btn.innerText = label; }, 3000);
-      } catch(err){
-        console.error(err);
-        alert('导出失败：' + err.message);
-        btn.disabled = false; btn.innerText = label;
-      }
-    };
-  }
-
-  // 按钮 1：全量
-  bindBtn('btnExportTuokeAll',
-    function(all){ return all; },
-    '⬇️ 拓新组登记客户明细',
-    '拓新组登记客户明细',
-    '全量登记');
-
-  // 按钮 2：25Q3-26Q2 新客（用户口径：首投在 25Q3-26Q2 的全部客户，不依赖看板 isNew 标签）
-  var Q_SET = {'2025/Q3':1,'2025Q3':1,'2025/Q4':1,'2025Q4':1,'2026/Q1':1,'2026Q1':1,'2026/Q2':1,'2026Q2':1};
-  bindBtn('btnExportTuokeNew',
-    function(all){ return all.filter(function(r){ return Q_SET[r.firstQuarter || '']; }); },
-    '⬇️ 25Q3-26Q2新客明细',
-    '25Q3-26Q2新客明细',
-    '新客明细');
-})();
-</script>
+<!-- 内联 bindBtn IIFE 已抽到 export_tuoke.js -->
 <!-- 🦞 右上角云端同步下拉菜单（合并双导出按钮 / 方案 B） -->
 <script>
 (function initCloudToolbar(){

@@ -638,20 +638,22 @@
       });
     });
 
-    // 新增：拓新组登记客户明细（全量）— 代理点击 #btnExportTuokeAll（看板首页隐藏按钮）
+    // 新增：拓新组登记客户明细（全量）— 优先点击 DOM 按钮，回退到 window.__exec_*
     if (btnExportAll) btnExportAll.onclick = function () {
       menu.style.display = 'none';
       var hiddenBtn = document.getElementById('btnExportTuokeAll');
-      if (!hiddenBtn) { showToast('看板首页导出按钮未加载', true); return; }
-      hiddenBtn.click();
+      if (hiddenBtn) { hiddenBtn.click(); return; }
+      if (typeof window.__exec_btnExportTuokeAll === 'function') { window.__exec_btnExportTuokeAll(); return; }
+      showToast('export_tuoke.js 未加载，请刷新页面', true);
     };
 
-    // 新增：25Q3-26Q2 新客明细 — 代理点击 #btnExportTuokeNew
+    // 新增：25Q3-26Q2 新客明细 — 同上
     if (btnExportNew) btnExportNew.onclick = function () {
       menu.style.display = 'none';
       var hiddenBtn = document.getElementById('btnExportTuokeNew');
-      if (!hiddenBtn) { showToast('看板首页导出按钮未加载', true); return; }
-      hiddenBtn.click();
+      if (hiddenBtn) { hiddenBtn.click(); return; }
+      if (typeof window.__exec_btnExportTuokeNew === 'function') { window.__exec_btnExportTuokeNew(); return; }
+      showToast('export_tuoke.js 未加载，请刷新页面', true);
     };
 
     function exportRecordsToXlsx(list) {

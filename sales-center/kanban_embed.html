@@ -4,6 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
+<!-- 密码门 v1.1（iframe 内嵌时自动跳过，独立访问时锁页） -->
+<script src="auth-guard.js?v=20260524k"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
@@ -24,7 +26,9 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260521n"></script>
+<script src="cloud_sync.js?v=20260524q"></script>
+<!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
+<script src="export_tuoke.js?v=20260524a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -2894,5 +2898,11 @@ document.addEventListener('click', e => {
   });
 })();
 </script>
+
+<!-- 隐藏触发器：cloud_sync 下拉菜单点击会代理到这里 -->
+<div id="exportBtnGroup" style="display:none;">
+  <button id="btnExportTuokeAll">⬇️ 拓新组登记客户明细</button>
+  <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
+</div>
 </body>
 </html>
