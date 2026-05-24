@@ -14,7 +14,7 @@
 <script src="data/tuoke_real_records.js"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260524r"></script>
+<script src="cloud_sync.js?v=20260524s"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
 <script src="export_tuoke.js?v=20260524b"></script>
 <style>
@@ -813,6 +813,7 @@
               <span class="big-sub" id="portalKpiSub">本季目标进度</span>
               <span class="big-pct" id="portalKpiPct">—</span>
             </div>
+            <div class="big-pace" id="portalKpiPace">—</div>
           </div>
         </div>
 
@@ -829,6 +830,7 @@
               <span class="big-sub" id="portalCostSub">本季目标进度</span>
               <span class="big-pct" id="portalCostPct">—</span>
             </div>
+            <div class="big-pace" id="portalCostPace">—</div>
           </div>
         </div>
       </div>
@@ -908,6 +910,15 @@
   .big-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
   .big-sub { opacity: 0.85; }
   .big-pct { font-weight: 700; font-size: 14px; }
+  .big-pace {
+    margin-top: 8px; padding: 6px 10px;
+    background: rgba(255,255,255,0.18); border-radius: 8px;
+    font-size: 11.5px; line-height: 1.5; font-weight: 500;
+    backdrop-filter: blur(2px);
+  }
+  .big-pace b { font-weight: 800; font-size: 13px; }
+  .big-pace .pace-warn { color: #fef08a; }
+  .big-pace .pace-ok { color: #bef264; }
 </style>
 <script>
   // PC 总入口卡片：KPI 数字回填 + 锚点跳转
@@ -963,6 +974,42 @@
           setText('portalCostPct', costPct + '%');
           setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
           setStyle('portalCostFill', 'width', costPct + '%');
+
+          // ===== 时间进度 vs 完成进度 + 剩余每天需要多少 =====
+          // 用户死规矩（2026-05-22 周五拍板）：必须展示
+          // 1) 时间进度 X% vs 完成进度 Y%（落后/领先）
+          // 2) 剩余 N 天，每天还需 M（量/万）
+          // 3) 数值按 0.5 向上取整
+          const tqInfo = calcQuarterDay('2026Q2');
+          if (tqInfo) {
+            const timePct = Math.round(tqInfo.day / tqInfo.total * 100);
+            const remainDays = Math.max(1, tqInfo.total - tqInfo.day);
+            const ceilHalf = (n) => Math.ceil(n * 2) / 2; // 0.5 向上取整
+
+            // 季度新锐：剩余每天需要新增 = (207 - rising) / remainDays
+            const risingGap = Math.max(0, 207 - rising);
+            const risingDailyNeed = ceilHalf(risingGap / remainDays);
+            const risingLag = risingPct - timePct; // 正=领先，负=落后
+            const risingTag = risingLag >= 0
+              ? `<span class="pace-ok">领先 ${risingLag}pp</span>`
+              : `<span class="pace-warn">落后 ${-risingLag}pp</span>`;
+            document.getElementById('portalKpiPace').innerHTML =
+              `时间 ${timePct}% / 完成 ${risingPct}% · ${risingTag}<br>` +
+              `剩余 ${remainDays} 天 · 每天还需 <b>${risingDailyNeed} 个</b>新锐`;
+
+            // 新客季度日耗：累计需达 11000 万，已累计 = quarterCost/10000，剩余每天需达到的【日均】
+            // 口径：(11000 - 已累计) / 剩余天数 = 剩余每天需消耗（万）
+            const totalCostWan = Number(total.quarterCost || 0) / 10000;
+            const costGap = Math.max(0, 11000 - totalCostWan);
+            const costDailyNeed = ceilHalf(costGap / remainDays);
+            const costLag = costPct - timePct;
+            const costTag = costLag >= 0
+              ? `<span class="pace-ok">领先 ${costLag}pp</span>`
+              : `<span class="pace-warn">落后 ${-costLag}pp</span>`;
+            document.getElementById('portalCostPace').innerHTML =
+              `时间 ${timePct}% / 完成 ${costPct}% · ${costTag}<br>` +
+              `已累计 ${totalCostWan.toFixed(1)}万 / 1.1亿 · 剩余 ${remainDays} 天 · 每天还需 <b>${costDailyNeed} 万</b>`;
+          }
         }
         // KPI 季度 + 时间季度 + 数据日
         setText('bpKpiQuarter', 'KPI 季度 · 2026Q2');
