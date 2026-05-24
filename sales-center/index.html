@@ -964,8 +964,10 @@
           // 新客累计日均消耗 = 季度消耗 ÷ 已过天数（与 kanban_embed.html 67.4 万口径一致）
           const dayCostWan = Number(total.quarterCost || 0) / _qDays / 10000;
           const yestCostWan = Number(total.yestCost || 0) / 10000;
+          // 用户 2026-05-24 21:06 拍板：完成进度统一按 totalCostWan / 11000（按 1.1 亿算）
+          const totalCostWan = Number(total.quarterCost || 0) / 10000;
           const risingPct = Math.min(100, Math.round(rising / 207 * 100));
-          const costPct = Math.min(100, Math.round(dayCostWan / 121 * 100));
+          const costPct = Math.min(100, Math.round(totalCostWan / 11000 * 100));
           setText('portalKpiVal', String(rising));
           setText('portalKpiPct', risingPct + '%');
           setText('portalKpiSub', `本季目标 207 个`);
@@ -991,9 +993,8 @@
             document.getElementById('portalKpiPace').innerHTML =
               `时间进度 <b>${timePct}%</b> · 完成进度 <b>${risingPct}%</b><br>剩余 <b>${remainDays}</b> 天 · 每天还需 <b>${risingDailyNeed} 个</b>新锐`;
 
-            // 新客季度日耗：与主指标口径一致（日均/121 万），剩余每天需达到的日均
-            // 数学上等价：(11000 - 累计) / 剩余天数 = 把日均拉到 121 万还需多少
-            const totalCostWan = Number(total.quarterCost || 0) / 10000;
+            // 新客季度日耗：完成进度统一按 totalCostWan/11000（按 1.1 亿算）
+            // 用户 2026-05-24 21:06 拍板
             const costGap = Math.max(0, 11000 - totalCostWan);
             const costDailyNeed = ceilHalf(costGap / remainDays);
             document.getElementById('portalCostPace').innerHTML =
