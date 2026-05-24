@@ -13,7 +13,7 @@
 <script src="data/register_lookup_data.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260524q"></script>
+<script src="cloud_sync.js?v=20260524r"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
 <script src="data/tuoke_real_records.js"></script>
 <script src="export_tuoke.js?v=20260524b"></script>
@@ -542,23 +542,37 @@ if (!records || !records.length) {
   records = (window.__SEED_RECORDS__ || []).slice();
   localStorage.setItem(LS_KEY, JSON.stringify(records));
 }
-function save() {
+function save(opts) {
+  // opts.bulkCount: 批量场景下指定推送条数（默认 1，单条新增场景）
   localStorage.setItem(LS_KEY, JSON.stringify(records));
-  // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55）
-  // 销售保存登记后，自动把本地全部 records 推送到后端（按 id upsert）
-  // 失败不阻塞用户，仅 console.warn，下次手动「☁️同步到云端」可补
+  // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55，2026-05-24 20:14 修复批量场景）
+  // 单条 unshift → 推 records[0]；批量 unshift n 条 → 推 records.slice(0, n)
+  // 失败不阻塞用户，仅 console.warn + toast
   try {
     if (window.cloud && window.cloud.isLoggedIn()) {
-      // 性能：每次保存只推最新 1 条（按 records[0]，因为新增是 unshift 在头部）
-      // 这避免了每次保存都全量上传带来的延迟
-      var head = (records && records.length) ? records.slice(0, 1) : [];
+      var pushCount = (opts && opts.bulkCount) ? opts.bulkCount : 1;
+      var head = (records && records.length) ? records.slice(0, pushCount) : [];
       if (head.length) {
         window.cloud.upload(head).then(function(d){
           console.info('[cloud] register save ok created=' + d.created + ' updated=' + d.updated);
+          // 写回 synced_ids 缓存，供顶栏「补推」按钮跳过
+          try {
+            var SYNCED_KEY = 'cloud_synced_ids_v1';
+            var syncedIds = JSON.parse(localStorage.getItem(SYNCED_KEY) || '{}') || {};
+            head.forEach(function(r){ if (r && r.id != null) syncedIds[r.id] = 1; });
+            localStorage.setItem(SYNCED_KEY, JSON.stringify(syncedIds));
+          } catch(_){}
+          if (window.cloud.toast) window.cloud.toast('☁️ 已上传 ' + head.length + ' 条到云端');
         }).catch(function(e){
           console.warn('[cloud] register save fail:', e.message);
-          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + e.message + '（已本地保存）', true);
+          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + e.message + '（已本地保存，可顶栏「同步」补推）', true);
         });
+      }
+    } else {
+      // 未登录提示一次（避免每次都弹）
+      if (!window.__cloudWarned) {
+        window.__cloudWarned = true;
+        if (window.cloud && window.cloud.toast) window.cloud.toast('未登录云端，仅本地保存。登录后顶栏点「同步本地到云端」可补推', true);
       }
     }
   } catch(_){}
@@ -1133,7 +1147,7 @@ function submitBulk() {
       _needAuth: (p.rising === "是")
     });
   });
-  save(); closeBulkModal(); render(); updateBannerCount();
+  save({ bulkCount: pending.length }); closeBulkModal(); render(); updateBannerCount();
   alert("已导入 " + pending.length + " 条记录。"
     + (pending.some(r => r.parsed.rising === "是") ? "\n⚠ 新锐客户需在列表中单条补传品牌授权书。" : ""));
 }
