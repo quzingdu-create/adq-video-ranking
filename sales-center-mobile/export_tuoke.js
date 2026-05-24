@@ -33,16 +33,24 @@
     return r.link || '';
   }
 
+  // 是否新客口径：firstQuarter ∈ {25Q3-26Q2} 即视为本季度滚动新客（与导出筛选条件保持一致）
+  // 兼容历史脏数据带斜杠 '2025/Q3'
+  var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1,'2025/Q3':1,'2025/Q4':1,'2026/Q1':1,'2026/Q2':1 };
+  function isNewByFq(r) {
+    return !!NEW_QSET[(r.firstQuarter || '').replace('/', '')] || !!NEW_QSET[r.firstQuarter || ''];
+  }
+
   function rowOf(r) {
+    var isNewFlag = (r.isNew === true || r.isNewCustomer === true) ? true : isNewByFq(r);
     return [
       r.date || '',
       r.sale || '',
       r.name || '',
       r.shortName || '',
-      r.firstQuarter || '',
-      r.isNew ? '是' : '否',
-      r.isValid ? '是' : '否',
-      (r.isRising === '是' || r.status === '新锐') ? '是' : '否',
+      (r.firstQuarter || '').replace('/', ''),
+      isNewFlag ? '是' : '否',
+      (r.isValid === true || r.isValidNew === true) ? '是' : '否',
+      (r.isRising === '是' || r.status === '新锐' || r.isXinrui === true) ? '是' : '否',
       parseLinks(r),
       r.deliverySide || '',
       r.cat || '',

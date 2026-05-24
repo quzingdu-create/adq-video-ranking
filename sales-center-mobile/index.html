@@ -186,6 +186,11 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
     .card-list { grid-template-columns: repeat(3, minmax(0,1fr)); }
   }
 </style>
+  <!-- ☁️ 云端同步 + 拓新组双导出按钮（v3.2 死规矩三件套） -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+  <script src="cloud_sync.js?v=20260524q"></script>
+  <script src="export_tuoke.js?v=20260524b"></script>
 </head>
 <body>
   <header class="hero">
@@ -570,6 +575,26 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
 
   initFilters();
   renderAll();
+})();
+</script>
+
+<!-- 隐藏触发器：cloud_sync 下拉菜单点击会代理到这里 -->
+<div id="exportBtnGroup" style="display:none;">
+  <button id="btnExportTuokeAll">⬇️ 拓新组登记客户明细</button>
+  <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
+</div>
+
+<script>
+(function initCloudToolbar(){
+  function tryInit(){
+    if (!window.cloud || !window.cloud.injectToolbar) { setTimeout(tryInit, 200); return; }
+    window.cloud.injectToolbar({
+      getLocalRecords: function(){ return []; },
+      applyRemoteRecords: function(list){}
+    });
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(tryInit, 0);
+  else document.addEventListener('DOMContentLoaded', tryInit);
 })();
 </script>
 </body>
