@@ -500,6 +500,8 @@
   // ============== 顶栏按钮注入（合并下拉版） ==============
   function injectToolbar(opts) {
     opts = opts || {};
+    // 🦞 修复 2026-05-24：iframe 子页跳过注入，避免主页 + 子页各注入一个 → 出现两个管理员按钮
+    try { if (window !== window.top) return null; } catch (e) { /* 跨域 frame：当作子页，跳过 */ return null; }
     var bar = document.getElementById('cloud-sync-toolbar');
     if (bar) return bar;
     bar = document.createElement('div');
