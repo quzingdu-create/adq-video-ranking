@@ -948,7 +948,8 @@
         const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         const setStyle = (id, prop, v) => { const el = document.getElementById(id); if (el) el.style[prop] = v; };
         if (total) {
-          // 计算季度已过天数（截止数据日 - 1，与 kanban_embed.html KPI 卡一致）
+          // 计算季度已过天数（用户 2026-05-24 20:27 拍板：按数据日当天算，不再 -1）
+          // dataDate=5-22 → 4-1 至 5-22 含两端 = 52 天
           const dailyKpiTmp = window.__CENTER_DAILY_KPI__ || {};
           const _qDays = (function(){
             const m = (total.quarter || '2026Q2').match(/^(\d{4})Q(\d)$/);
@@ -957,7 +958,6 @@
             const startMonth = (q - 1) * 3 + 1;
             const start = new Date(y, startMonth - 1, 1);
             let end = dailyKpiTmp.dataDate ? new Date(dailyKpiTmp.dataDate) : new Date();
-            end.setDate(end.getDate() - 1); // 截止 = 数据日 - 1
             return Math.max(1, Math.floor((end - start) / 86400000) + 1);
           })();
           const rising = Number(total.risingCount || 0);
