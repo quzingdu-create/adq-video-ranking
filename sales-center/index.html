@@ -10,6 +10,9 @@
 <script src="data/center_quarter_summary.js"></script>
 <script src="data/center_daily_kpi.js"></script>
 <script src="data/tuoke_real_records.js"></script>
+<!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_sync.js?v=20260524p"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -554,7 +557,7 @@
 <div class="topbar">
   <h1>🦞 销售作战中心 <span class="ver" id="verLabel">v3.2</span></h1>
   <div class="topbar-right" id="topbarRight"></div>
-  <!-- 双按钮已合并到右上角 cloud-menu 下拉里（方案 B / commit 待 push）。这里保留 hidden 触发器仅供下拉点击代理 -->
+  <!-- 双按钮已合并到右上角 cloud-menu 下拉里（方案 B / commit d818db4 + 加载 fix）。隐藏触发器供下拉点击代理 -->
   <div id="exportBtnGroup" style="display:none;">
     <button id="btnExportTuokeAll">⬇️ 拓新组登记客户明细</button>
     <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
@@ -663,6 +666,28 @@
     '⬇️ 25Q3-26Q2新客明细',
     '25Q3-26Q2新客明细',
     '新客明细');
+})();
+</script>
+<!-- 🦞 右上角云端同步下拉菜单（合并双导出按钮 / 方案 B） -->
+<script>
+(function initCloudToolbar(){
+  function tryInit(){
+    if (!window.cloud || !window.cloud.injectToolbar) { setTimeout(tryInit, 200); return; }
+    window.cloud.injectToolbar({
+      getLocalRecords: function(){
+        // index.html 不维护 localStorage 登记表，返回空数组
+        return [];
+      },
+      applyRemoteRecords: function(list){
+        // index.html 不写回 localStorage；如需查看登记表请进 register_v3.2 子页
+      }
+    });
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(tryInit, 0);
+  } else {
+    document.addEventListener('DOMContentLoaded', tryInit);
+  }
 })();
 </script>
 <script>
