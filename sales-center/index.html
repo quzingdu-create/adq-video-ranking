@@ -975,40 +975,27 @@
           setText('portalCostSub', `季耗÷${_qDays}天 · 昨耗 ${yestCostWan.toFixed(1)}万`);
           setStyle('portalCostFill', 'width', costPct + '%');
 
-          // ===== 时间进度 vs 完成进度 + 剩余每天需要多少 =====
-          // 用户死规矩（2026-05-22 周五拍板）：必须展示
-          // 1) 时间进度 X% vs 完成进度 Y%（落后/领先）
-          // 2) 剩余 N 天，每天还需 M（量/万）
-          // 3) 数值按 0.5 向上取整
+          // ===== 剩余每天还需多少 =====
+          // 用户死规矩（2026-05-22 周五拍板，2026-05-24 20:23 拍板删掉时间进度对比）：
+          // - 只保留「剩余 N 天 · 每天还需 M」，不再展示「时间 X% / 完成 Y% · 领先/落后」
+          // - 数值按 0.5 向上取整
           const tqInfo = calcQuarterDay('2026Q2');
           if (tqInfo) {
-            const timePct = Math.round(tqInfo.day / tqInfo.total * 100);
             const remainDays = Math.max(1, tqInfo.total - tqInfo.day);
             const ceilHalf = (n) => Math.ceil(n * 2) / 2; // 0.5 向上取整
 
             // 季度新锐：剩余每天需要新增 = (207 - rising) / remainDays
             const risingGap = Math.max(0, 207 - rising);
             const risingDailyNeed = ceilHalf(risingGap / remainDays);
-            const risingLag = risingPct - timePct; // 正=领先，负=落后
-            const risingTag = risingLag >= 0
-              ? `<span class="pace-ok">领先 ${risingLag}pp</span>`
-              : `<span class="pace-warn">落后 ${-risingLag}pp</span>`;
             document.getElementById('portalKpiPace').innerHTML =
-              `时间 ${timePct}% / 完成 ${risingPct}% · ${risingTag}<br>` +
-              `剩余 ${remainDays} 天 · 每天还需 <b>${risingDailyNeed} 个</b>新锐`;
+              `剩余 <b>${remainDays}</b> 天 · 每天还需 <b>${risingDailyNeed} 个</b>新锐`;
 
-            // 新客季度日耗：累计需达 11000 万，已累计 = quarterCost/10000，剩余每天需达到的【日均】
-            // 口径：(11000 - 已累计) / 剩余天数 = 剩余每天需消耗（万）
+            // 新客季度日耗：累计需达 11000 万，剩余每天需消耗（万）
             const totalCostWan = Number(total.quarterCost || 0) / 10000;
             const costGap = Math.max(0, 11000 - totalCostWan);
             const costDailyNeed = ceilHalf(costGap / remainDays);
-            const costLag = costPct - timePct;
-            const costTag = costLag >= 0
-              ? `<span class="pace-ok">领先 ${costLag}pp</span>`
-              : `<span class="pace-warn">落后 ${-costLag}pp</span>`;
             document.getElementById('portalCostPace').innerHTML =
-              `时间 ${timePct}% / 完成 ${costPct}% · ${costTag}<br>` +
-              `已累计 ${totalCostWan.toFixed(1)}万 / 1.1亿 · 剩余 ${remainDays} 天 · 每天还需 <b>${costDailyNeed} 万</b>`;
+              `已累计 ${totalCostWan.toFixed(1)}万 / 1.1亿 · 剩余 <b>${remainDays}</b> 天 · 每天还需 <b>${costDailyNeed} 万</b>`;
           }
         }
         // KPI 季度 + 时间季度 + 数据日
