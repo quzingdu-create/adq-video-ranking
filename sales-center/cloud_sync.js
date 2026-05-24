@@ -511,7 +511,8 @@
         '<div id="cloud-menu" style="display:none;position:absolute;top:38px;right:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;overflow:hidden;">' +
           '<div id="cloud-menu-info" style="padding:10px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#f9fafb;"></div>' +
           '<button id="cloud-menu-upload" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬆️ 同步本地到云端</button>' +
-          '<button id="cloud-menu-download" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬇️ 下载拓新组全量登记名单</button>' +
+          '<button id="cloud-menu-export-all" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#2563eb;font-weight:600;">⬇️ 拓新组登记客户明细（全量）</button>' +
+          '<button id="cloud-menu-export-new" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#10b981;font-weight:600;">⬇️ 25Q3-26Q2新客明细</button>' +
           '<button id="cloud-menu-export" class="cloud-menu-item" style="display:none;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">💾 导出全量备份（管理员）</button>' +
           '<button id="cloud-menu-logout" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;font-size:13px;cursor:pointer;color:#dc2626;">🚪 退出登录</button>' +
         '</div>' +
@@ -522,7 +523,9 @@
     var menu = document.getElementById('cloud-menu');
     var menuInfo = document.getElementById('cloud-menu-info');
     var btnUpload = document.getElementById('cloud-menu-upload');
-    var btnDownload = document.getElementById('cloud-menu-download');
+    var btnDownload = null; // 已删除「下载云端登记名单 (33 条)」入口；用 btnExportAll/btnExportNew 替代
+    var btnExportAll = document.getElementById('cloud-menu-export-all');
+    var btnExportNew = document.getElementById('cloud-menu-export-new');
     var btnExport = document.getElementById('cloud-menu-export');
     var btnLogout = document.getElementById('cloud-menu-logout');
 
@@ -595,7 +598,7 @@
       });
     };
 
-    btnDownload.onclick = function () {
+    btnDownload && (btnDownload.onclick = function () {
       menu.style.display = 'none';
       cloud.requireLogin(function () {
         if (!confirm('确认下载全量登记名单？\n= 云端记录 ∪ 页面已加载的拓客底表（5900+），按 id 去重\n会下载到本地为 .xlsx 文件，同时刷新页面登记列表。')) return;
@@ -633,6 +636,22 @@
           refreshStatus();
         }).catch(function (e) { showToast('拉取失败：' + e.message, true); });
       });
+    });
+
+    // 新增：拓新组登记客户明细（全量）— 代理点击 #btnExportTuokeAll（看板首页隐藏按钮）
+    if (btnExportAll) btnExportAll.onclick = function () {
+      menu.style.display = 'none';
+      var hiddenBtn = document.getElementById('btnExportTuokeAll');
+      if (!hiddenBtn) { showToast('看板首页导出按钮未加载', true); return; }
+      hiddenBtn.click();
+    };
+
+    // 新增：25Q3-26Q2 新客明细 — 代理点击 #btnExportTuokeNew
+    if (btnExportNew) btnExportNew.onclick = function () {
+      menu.style.display = 'none';
+      var hiddenBtn = document.getElementById('btnExportTuokeNew');
+      if (!hiddenBtn) { showToast('看板首页导出按钮未加载', true); return; }
+      hiddenBtn.click();
     };
 
     function exportRecordsToXlsx(list) {

@@ -554,9 +554,10 @@
 <div class="topbar">
   <h1>🦞 销售作战中心 <span class="ver" id="verLabel">v3.2</span></h1>
   <div class="topbar-right" id="topbarRight"></div>
-  <div id="exportBtnGroup" style="position:absolute;right:16px;top:10px;display:flex;gap:8px;">
-    <button id="btnExportTuokeAll" style="background:#2563eb;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(37,99,235,0.3);">⬇️ 拓新组登记客户明细</button>
-    <button id="btnExportTuokeNew" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(16,185,129,0.3);">⬇️ 25Q3-26Q2新客明细</button>
+  <!-- 双按钮已合并到右上角 cloud-menu 下拉里（方案 B / commit 待 push）。这里保留 hidden 触发器仅供下拉点击代理 -->
+  <div id="exportBtnGroup" style="display:none;">
+    <button id="btnExportTuokeAll">⬇️ 拓新组登记客户明细</button>
+    <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
   </div>
 </div>
 <script>
