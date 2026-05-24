@@ -655,10 +655,10 @@
     '拓新组登记客户明细',
     '全量登记');
 
-  // 按钮 2：25Q3-26Q2 新客
+  // 按钮 2：25Q3-26Q2 新客（用户口径：首投在 25Q3-26Q2 的全部客户，不依赖看板 isNew 标签）
   var Q_SET = {'2025/Q3':1,'2025Q3':1,'2025/Q4':1,'2025Q4':1,'2026/Q1':1,'2026Q1':1,'2026/Q2':1,'2026Q2':1};
   bindBtn('btnExportTuokeNew',
-    function(all){ return all.filter(function(r){ return r.isNew && Q_SET[r.firstQuarter || '']; }); },
+    function(all){ return all.filter(function(r){ return Q_SET[r.firstQuarter || '']; }); },
     '⬇️ 25Q3-26Q2新客明细',
     '25Q3-26Q2新客明细',
     '新客明细');
