@@ -554,66 +554,114 @@
 <div class="topbar">
   <h1>🦞 销售作战中心 <span class="ver" id="verLabel">v3.2</span></h1>
   <div class="topbar-right" id="topbarRight"></div>
-  <button id="btnExportTuokeAll" style="position:absolute;right:16px;top:14px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(37,99,235,0.3);">⬇️ 下载拓客全量登记</button>
+  <div id="exportBtnGroup" style="position:absolute;right:16px;top:10px;display:flex;gap:8px;">
+    <button id="btnExportTuokeAll" style="background:#2563eb;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(37,99,235,0.3);">⬇️ 拓新组登记客户明细</button>
+    <button id="btnExportTuokeNew" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 2px 6px rgba(16,185,129,0.3);">⬇️ 25Q3-26Q2新客明细</button>
+  </div>
 </div>
 <script>
 (function(){
-  var btn = document.getElementById('btnExportTuokeAll');
-  if (!btn) return;
-  btn.onclick = function(){
-    var recs = window.__TUOKE_REAL_RECORDS__ || [];
-    if (!recs.length) { alert('数据还没加载完，请刷新页面后重试'); return; }
-    if (typeof XLSX === 'undefined') { alert('xlsx 库未加载，请刷新页面'); return; }
-    btn.disabled = true; btn.innerText = '导出中…';
-    try {
-      var headers = ['序号','登记日期','销售','客户主体','客户简称','类目','在投链路','品牌','是否新客','是否有效','是否新锐','是否24老客','首投季度','客户身份','季度消耗','昨日消耗','环比金额','环比%','档位','成熟度','投放端','数据来源'];
-      var sorted = recs.slice().sort(function(a,b){
-        return ((a.date||'')+'').localeCompare((b.date||'')+'') || ((a.sale||'')+'').localeCompare((b.sale||'')+'');
-      });
-      var aoa = [headers];
-      sorted.forEach(function(r, i){
-        aoa.push([
-          i+1,
-          r.date || '',
-          r.sale || '',
-          r.name || '',
-          r.shortName || '',
-          r.cat || '',
-          r.link || r.links || '',
-          r.brand || '',
-          r.isNew ? '是' : '否',
-          r.isValid ? '是' : '否',
-          (r.isRising === '是' || r.status === '新锐') ? '是' : '否',
-          r.old24 ? '是' : '否',
-          r.firstQuarter || '',
-          r.customerType || r.status || '',
-          (typeof r.quarterCost === 'number') ? r.quarterCost : (r.quarterCost || 0),
-          (typeof r.yestCost === 'number') ? r.yestCost : (r.yestCost || 0),
-          (typeof r.diffAmt === 'number') ? r.diffAmt : '',
-          r.costChg || '',
-          r.centerGroup || '',
-          r.maturity || '',
-          r.deliverySide || '',
-          (r.id >= 1000000 ? '看板底表(rebuild)' : (r._cloud ? '云端' : '本地'))
-        ]);
-      });
-      var ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = headers.map(function(){ return { wch: 14 }; });
-      var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '拓客全量登记');
-      // meta sheet
-      var meta = [['指标','值'],['导出时间', new Date().toLocaleString()],['总记录数', recs.length],['来源','看板首页 __TUOKE_REAL_RECORDS__'],['数据日',(window.__CENTER_DAILY_KPI__&&window.__CENTER_DAILY_KPI__.dataDate)||'']];
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
-      var ymd = new Date().toISOString().slice(0,10);
-      XLSX.writeFile(wb, '拓客全量登记_看板_' + ymd + '_' + recs.length + '条.xlsx');
-      btn.innerText = '✅ 已下载 ' + recs.length + ' 条';
-      setTimeout(function(){ btn.disabled = false; btn.innerText = '⬇️ 下载拓客全量登记'; }, 3000);
-    } catch(err){
-      console.error(err);
-      alert('导出失败：' + err.message);
-      btn.disabled = false; btn.innerText = '⬇️ 下载拓客全量登记';
+  // 统一 13 列表头
+  var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路','投放端','类目','拓客途径','拓客来源'];
+
+  function parseLinks(r){
+    // 优先 links（JSON 字符串数组），否则单 link
+    var s = r.links;
+    if (s && s !== '[]'){
+      try {
+        var arr = JSON.parse(s);
+        if (Array.isArray(arr) && arr.length){
+          return arr.map(function(x){
+            if (typeof x === 'string') return x;
+            if (x && typeof x === 'object') return x.type || x.name || x.label || JSON.stringify(x);
+            return String(x);
+          }).join(' / ');
+        }
+      } catch(e){}
     }
-  };
+    return r.link || '';
+  }
+
+  function rowOf(r){
+    return [
+      r.date || '',
+      r.sale || '',
+      r.name || '',
+      r.shortName || '',
+      r.firstQuarter || '',
+      r.isNew ? '是' : '否',
+      r.isValid ? '是' : '否',
+      (r.isRising === '是' || r.status === '新锐') ? '是' : '否',
+      parseLinks(r),
+      r.deliverySide || '',
+      r.cat || '',
+      r.channel || '',
+      r.source || ''
+    ];
+  }
+
+  function exportXlsx(records, sheetName, filenamePrefix){
+    if (!records.length) { alert('没有命中数据'); return; }
+    if (typeof XLSX === 'undefined') { alert('xlsx 库未加载，请刷新页面'); return; }
+    var sorted = records.slice().sort(function(a,b){
+      return ((a.date||'')+'').localeCompare((b.date||'')+'') || ((a.sale||'')+'').localeCompare((b.sale||'')+'');
+    });
+    var aoa = [HEADERS];
+    sorted.forEach(function(r){ aoa.push(rowOf(r)); });
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [
+      {wch:12},{wch:12},{wch:30},{wch:24},{wch:10},{wch:8},{wch:8},{wch:8},
+      {wch:18},{wch:10},{wch:12},{wch:18},{wch:18}
+    ];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    var meta = [
+      ['指标','值'],
+      ['导出时间', new Date().toLocaleString()],
+      ['Sheet名称', sheetName],
+      ['总记录数', records.length],
+      ['来源','看板首页 __TUOKE_REAL_RECORDS__'],
+      ['数据日',(window.__CENTER_DAILY_KPI__&&window.__CENTER_DAILY_KPI__.dataDate)||'']
+    ];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
+    var ymd = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, filenamePrefix + '_' + ymd + '_' + records.length + '条.xlsx');
+  }
+
+  function bindBtn(btnId, getRecords, label, filePrefix, sheetName){
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.onclick = function(){
+      var all = window.__TUOKE_REAL_RECORDS__ || [];
+      if (!all.length) { alert('数据还没加载完，请刷新页面后重试'); return; }
+      var recs = getRecords(all);
+      btn.disabled = true; btn.innerText = '导出中…';
+      try {
+        exportXlsx(recs, sheetName, filePrefix);
+        btn.innerText = '✅ 已下载 ' + recs.length + ' 条';
+        setTimeout(function(){ btn.disabled = false; btn.innerText = label; }, 3000);
+      } catch(err){
+        console.error(err);
+        alert('导出失败：' + err.message);
+        btn.disabled = false; btn.innerText = label;
+      }
+    };
+  }
+
+  // 按钮 1：全量
+  bindBtn('btnExportTuokeAll',
+    function(all){ return all; },
+    '⬇️ 拓新组登记客户明细',
+    '拓新组登记客户明细',
+    '全量登记');
+
+  // 按钮 2：25Q3-26Q2 新客
+  var Q_SET = {'2025/Q3':1,'2025Q3':1,'2025/Q4':1,'2025Q4':1,'2026/Q1':1,'2026Q1':1,'2026/Q2':1,'2026Q2':1};
+  bindBtn('btnExportTuokeNew',
+    function(all){ return all.filter(function(r){ return r.isNew && Q_SET[r.firstQuarter || '']; }); },
+    '⬇️ 25Q3-26Q2新客明细',
+    '25Q3-26Q2新客明细',
+    '新客明细');
 })();
 </script>
 <script>
