@@ -1147,22 +1147,21 @@ function renderKPI() {
       </div>`;
 
     // 4) 累计新客昨日消耗（25Q3~26Q2 四季度首投新客在 T-1 的昨耗加总）
-    // 用户 2026-05-24 21:06 拍板：从 25Q3-26Q2 四个季度的"合计"行 yestCost 加总，不再是 季耗÷天数 日均
+    // 用户 2026-05-24 21:06 拍板：从 25Q3-26Q2 四个季度的"合计"行 yestCost 加总
+    // ⚠️ 必须用 window.__CENTER_QUARTER_SUMMARY__ 全量数据，不能用 rows（rows 已被 centerSummaryRows 按当前季度过滤）
+    // 用户 2026-05-24 21:30 修正
     const CUM_QS = ['2025Q3','2025Q4','2026Q1','2026Q2'];
-    let cumYestSum = 0, cumQCostSum = 0;
+    const ALL_QUARTER_ROWS = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
+    let cumYestSum = 0;
     CUM_QS.forEach(q => {
-      const r = rows.find(rr => rr.quarter === q && rr.sale === '合计');
-      if (r) { cumYestSum += Number(r.yestCost || 0); cumQCostSum += Number(r.quarterCost || 0); }
+      const r = ALL_QUARTER_ROWS.find(rr => rr.quarter === q && rr.sale === '合计');
+      if (r) cumYestSum += Number(r.yestCost || 0);
     });
     const cumYestWan = cumYestSum / 10000;
-    const cumQWan = cumQCostSum / 10000;
     const cumCard = `
       <div class="kpi-card purple">
         <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 四季度首投</span></div>
         <div class="value-row"><div class="value">${cumYestWan.toFixed(1)}万</div></div>
-        <div class="meta">
-          <span style="color:#6b7280;">四季度季耗合计 ${cumQWan.toFixed(1)}万</span>
-        </div>
       </div>`;
 
     document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
