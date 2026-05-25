@@ -1305,8 +1305,21 @@ function renderSalesProgress() {
       </td>`;
 
     // 参考列（默认隐藏，2026-05-21 拍板：删交接3列、加 2 列累计新客 = 现有新客 + 交接客户中的新客）
-    const cumYestCost = Number(r.yestCost || 0) + Number(handoverStats.newYestCost || 0);
-    const cumQCost    = Number(r.quarterCost || 0) + Number(handoverStats.newQCost || 0);
+    // 2026-05-25 17:11 修：副标写"25Q3-26Q2"但代码只算了当前季度+交接，名实不符
+    //   → 改为 25Q3-26Q2 该销售四个季度 yestCost 加和 + 交接客户中新客的昨耗
+    const _allQs = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const _cumQs = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const saleKey = (rowKind === 'total') ? '合计' : (rowKind === 'other' ? '其他' : r.sale);
+    const cumSaleYest = _cumQs.reduce((s, q) => {
+      const rr = _allQs.find(x => x.quarter === q && x.sale === saleKey);
+      return s + Number(rr ? rr.yestCost : 0);
+    }, 0);
+    const cumYestCost = cumSaleYest + Number(handoverStats.newYestCost || 0);
+    const cumSaleQ = _cumQs.reduce((s, q) => {
+      const rr = _allQs.find(x => x.quarter === q && x.sale === saleKey);
+      return s + Number(rr ? rr.quarterCost : 0);
+    }, 0);
+    const cumQCost    = cumSaleQ + Number(handoverStats.newQCost || 0);
     const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
     const refCells = `
       <td class="ref-cell ref-col-hidden">
@@ -1317,7 +1330,7 @@ function renderSalesProgress() {
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">累计新客昨日消耗</div>
         ${fmtMain(fmtWan(cumYestCost))}
-        <div class="sub-meta">现有新客 + 交接中新客</div>
+        <div class="sub-meta">25Q3-26Q2 合计 + 交接</div>
       </td>`;
 
     return `<tr class="${trCls}">${cells}${refCells}</tr>`;
