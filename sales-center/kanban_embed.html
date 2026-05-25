@@ -1142,20 +1142,22 @@ function renderKPI() {
         </div>
       </div>`;
 
-    // 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
-    const _qDaysCard = (function(){
-      const start = new Date(2026, 3, 1); // 2026-04-01
-      let end = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
-      end.setDate(end.getDate() - 1);
-      return Math.max(1, Math.floor((end - start) / 86400000) + 1);
-    })();
-    const dayAvgWan = Number(fixRow.quarterCost || 0) / _qDaysCard / 10000;
+    // 4) 累计新客昨日消耗（25Q3-26Q2 全部新客昨日消耗合计）
+    // 死规矩 2026-05-24：用 window.__CENTER_QUARTER_SUMMARY__ 全量原始数组（rows 已被 state.quarter 过滤掉非当前季度）
+    // 5/25 修：之前是「季耗÷已过天数」算日均，完全偏题，已纠正为 4 季度合计行 yestCost 加和
+    const ALL_QS = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const CUM_QS = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const cumYestSum = CUM_QS.reduce((s, q) => {
+      const r = ALL_QS.find(x => x.quarter === q && x.sale === '合计');
+      return s + Number(r ? r.yestCost : 0);
+    }, 0);
+    const cumYestWan = cumYestSum / 10000;
     const cumCard = `
       <div class="kpi-card purple">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷${_qDaysCard}天</span></div>
-        <div class="value-row"><div class="value">${dayAvgWan.toFixed(1)}万</div></div>
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3-26Q2 合计 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${cumYestWan.toFixed(1)}万</div></div>
         <div class="meta">
-          <span style="color:#6b7280;">2026Q2 季度累计 ${(Number(fixRow.quarterCost||0)/10000).toFixed(1)}万</span>
+          <span style="color:#6b7280;">25Q3-26Q2 全部新客昨日消耗合计</span>
         </div>
       </div>`;
 
