@@ -1067,8 +1067,8 @@ function validateBulkRow(row, colIdx, lineNo) {
     if (look.matched) {
       issues.push(`📍 客户简称: ${look.short}`);
     } else {
-      issues.push("⚠ 主体未命中映射字典（默认以主体作简称）");
-      if (level === "ok") level = "warn";
+      // 未命中字典是合法路径（用主体名兜底），仅提示不告警；只要不是 24 老客 / 重复登记就直接通过
+      issues.push(`📍 客户简称(主体兜底): ${look.short}`);
     }
     if (look.isLaoke) {
       issues.push("⚠ 24年老客（剔除新客统计）");
