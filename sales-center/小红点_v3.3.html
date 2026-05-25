@@ -7,10 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f5f7fa">
-<script src="data/center_quarter_summary.js"></script>
-<script src="data/center_daily_kpi.js"></script>
-<script src="data/top80_effective_metrics.js"></script>
-<script src="data/tuoke_real_records.js"></script>
+<script src="data/center_quarter_summary.js?v=20260525g"></script>
+<script src="data/center_daily_kpi.js?v=20260525g"></script>
+<script src="data/top80_effective_metrics.js?v=20260525g"></script>
+<script src="data/tuoke_real_records.js?v=20260525g"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body {
@@ -936,7 +936,7 @@ function renderTop10Card(c, isDone) {
   }
 
   const detail = `
-    <div class="metric-item"><span class="lbl">昨日</span><span class="num">${(c.todayCost/10000).toFixed(2)}w</span><span class="${chgColor}">${c.chgPct >= 0 ? "+" : ""}${c.chgPct}%</span></div>
+    <div class="metric-item"><span class="lbl">昨日消耗</span><span class="num">${(c.yestCost/10000).toFixed(2)}w</span><span class="${chgColor}">${c.chgPct >= 0 ? "+" : ""}${c.chgPct}%</span></div>
     <div class="metric-item"><span class="lbl">ROI</span><span class="num">${c.roi}</span><span class="${roiColor}">${c.roiChgPct >= 0 ? "+" : ""}${c.roiChgPct}%</span></div>
     <div class="metric-item"><span class="lbl">创意id</span><span class="num">${c.creativeId}</span><span class="${infraColor}">${c.infraChgPct >= 0 ? "+" : ""}${c.infraChgPct}%</span></div>
     <div class="metric-item"><span class="lbl">投放端</span><span class="num">${c.deliverySide || '未匹配'}</span></div>
