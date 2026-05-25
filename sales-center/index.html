@@ -7,11 +7,11 @@
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
 <script src="auth-guard.js?v=20260524k"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js"></script>
+<script src="data/current_rising_data.js?v=20260525d"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js"></script>
-<script src="data/center_daily_kpi.js"></script>
-<script src="data/tuoke_real_records.js"></script>
+<script src="data/center_quarter_summary.js?v=20260525d"></script>
+<script src="data/center_daily_kpi.js?v=20260525d"></script>
+<script src="data/tuoke_real_records.js?v=20260525d"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 <script src="cloud_sync.js?v=20260524s"></script>
@@ -837,7 +837,7 @@
       </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260522e" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260525d" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1438,7 +1438,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260525d`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
