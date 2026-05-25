@@ -197,7 +197,6 @@
     modal.innerHTML = '<div style="position:relative;background:#fff;border-radius:16px;padding:32px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);">' +
       '<div style="font-size:42px;text-align:center;margin-bottom:8px;">🦞</div>' +
       '<h2 style="margin:0 0 6px;font-size:20px;text-align:center;color:#1f1f1f;">连接云端</h2>' +
-      '<div style="font-size:13px;color:#888;text-align:center;margin-bottom:24px;">选择身份并输入密码（首次登录后浏览器会记住，30 天内免输）</div>' +
       '<div style="margin-bottom:14px;">' +
         '<label style="display:block;font-size:13px;color:#555;margin-bottom:6px;">我是</label>' +
         '<select id="cloud-login-rtx" style="width:100%;padding:11px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;outline:none;background:#fff;"><option value="">— 请选择 —</option>' + optionsHtml + '</select>' +

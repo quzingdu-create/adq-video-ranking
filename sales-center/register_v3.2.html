@@ -664,16 +664,22 @@ function onNameInput() {
     return; 
   }
 
-  const { short, isLaoke, matched } = lookupEntity(raw);
+  const { short, isLaoke, matched, firstQuarter, isOld24 } = lookupEntity(raw);
   const dup = lookupDuplicates(raw);
 
   let html = `<div class="row">
     <span class="text-gray-500">客户简称：</span>
     <span class="badge-short">${short}</span>`;
   if (matched) {
-    html += isLaoke
-      ? `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:12px;">⚠️ 24年老客 · 不算新客</span>`
-      : `<span class="badge-newk" style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:4px;font-size:12px;">✅ 非老客</span>`;
+    if (isOld24) {
+      html += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:12px;">⚠️ 24年老客 · 不算新客</span>`;
+    } else if (isLaoke && firstQuarter) {
+      // 其他季度老客：直接显示具体季度，如 25Q3老客 / 26Q1老客
+      const qLabel = firstQuarter.replace(/^20(\d{2})Q(\d)$/, '$1Q$2');
+      html += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:12px;">⚠️ ${qLabel}老客 · 不算新客</span>`;
+    } else {
+      html += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:4px;font-size:12px;">✅ 非老客</span>`;
+    }
   } else {
     html += `<span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:4px;font-size:12px;">未命中映射 · 默认主体作简称</span>`;
   }
@@ -1071,7 +1077,14 @@ function validateBulkRow(row, colIdx, lineNo) {
       issues.push(`📍 客户简称(主体兜底): ${look.short}`);
     }
     if (look.isLaoke) {
-      issues.push("⚠ 24年老客（剔除新客统计）");
+      if (look.isOld24) {
+        issues.push("⚠ 24年老客（剔除新客统计）");
+      } else if (look.firstQuarter) {
+        const qLabel = look.firstQuarter.replace(/^20(\d{2})Q(\d)$/, '$1Q$2');
+        issues.push(`⚠ ${qLabel}老客（剔除新客统计）`);
+      } else {
+        issues.push("⚠ 老客（剔除新客统计）");
+      }
       if (level === "ok") level = "warn";
     }
     // 重复登记：底表/本次
