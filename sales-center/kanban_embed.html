@@ -4,8 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
-<!-- 密码门 v1.1（iframe 内嵌时自动跳过，独立访问时锁页） -->
-<script src="auth-guard.js?v=20260524k"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
@@ -26,9 +24,7 @@
 <script src="data/old24_names.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260524s"></script>
-<!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260524b"></script>
+<script src="cloud_sync.js?v=20260521n"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -1146,22 +1142,21 @@ function renderKPI() {
         </div>
       </div>`;
 
-    // 4) 累计新客昨日消耗（25Q3~26Q2 四季度首投新客在 T-1 的昨耗加总）
-    // 用户 2026-05-24 21:06 拍板：从 25Q3-26Q2 四个季度的"合计"行 yestCost 加总
-    // ⚠️ 必须用 window.__CENTER_QUARTER_SUMMARY__ 全量数据，不能用 rows（rows 已被 centerSummaryRows 按当前季度过滤）
-    // 用户 2026-05-24 21:30 修正
-    const CUM_QS = ['2025Q3','2025Q4','2026Q1','2026Q2'];
-    const ALL_QUARTER_ROWS = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
-    let cumYestSum = 0;
-    CUM_QS.forEach(q => {
-      const r = ALL_QUARTER_ROWS.find(rr => rr.quarter === q && rr.sale === '合计');
-      if (r) cumYestSum += Number(r.yestCost || 0);
-    });
-    const cumYestWan = cumYestSum / 10000;
+    // 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
+    const _qDaysCard = (function(){
+      const start = new Date(2026, 3, 1); // 2026-04-01
+      let end = dailyKpi.dataDate ? new Date(dailyKpi.dataDate) : new Date();
+      end.setDate(end.getDate() - 1);
+      return Math.max(1, Math.floor((end - start) / 86400000) + 1);
+    })();
+    const dayAvgWan = Number(fixRow.quarterCost || 0) / _qDaysCard / 10000;
     const cumCard = `
       <div class="kpi-card purple">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3~26Q2 四季度首投</span></div>
-        <div class="value-row"><div class="value">${cumYestWan.toFixed(1)}万</div></div>
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">季耗÷${_qDaysCard}天</span></div>
+        <div class="value-row"><div class="value">${dayAvgWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span style="color:#6b7280;">2026Q2 季度累计 ${(Number(fixRow.quarterCost||0)/10000).toFixed(1)}万</span>
+        </div>
       </div>`;
 
     document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
@@ -1307,26 +1302,10 @@ function renderSalesProgress() {
         ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
       </td>`;
 
-    // 参考列（默认隐藏，2026-05-24 21:06 拍板：累计新客昨日消耗 = 该销售 25Q3-26Q2 四季度首投新客在 T-1 昨耗加总）
-    const CUM_QS_REF = ['2025Q3','2025Q4','2026Q1','2026Q2'];
-    const ALL_ROWS = window.__CENTER_QUARTER_SUMMARY__ || [];
-    let cumYestForSale = 0, cumQForSale = 0;
-    if (rowKind === 'total') {
-      CUM_QS_REF.forEach(q => {
-        const tr = ALL_ROWS.find(rr => rr.quarter === q && rr.sale === '合计');
-        if (tr) { cumYestForSale += Number(tr.yestCost||0); cumQForSale += Number(tr.quarterCost||0); }
-      });
-    } else if (rowKind === 'other') {
-      CUM_QS_REF.forEach(q => {
-        const tr = ALL_ROWS.find(rr => rr.quarter === q && rr.sale === '其他');
-        if (tr) { cumYestForSale += Number(tr.yestCost||0); cumQForSale += Number(tr.quarterCost||0); }
-      });
-    } else {
-      CUM_QS_REF.forEach(q => {
-        const tr = ALL_ROWS.find(rr => rr.quarter === q && rr.sale === r.sale);
-        if (tr) { cumYestForSale += Number(tr.yestCost||0); cumQForSale += Number(tr.quarterCost||0); }
-      });
-    }
+    // 参考列（默认隐藏，2026-05-21 拍板：删交接3列、加 2 列累计新客 = 现有新客 + 交接客户中的新客）
+    const cumYestCost = Number(r.yestCost || 0) + Number(handoverStats.newYestCost || 0);
+    const cumQCost    = Number(r.quarterCost || 0) + Number(handoverStats.newQCost || 0);
+    const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
     const refCells = `
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">本季度新客数</div>
@@ -1335,8 +1314,8 @@ function renderSalesProgress() {
       </td>
       <td class="ref-cell ref-col-hidden">
         <div class="label-tip">累计新客昨日消耗</div>
-        ${fmtMain(fmtWan(cumYestForSale))}
-        <div class="sub-meta">25Q3~26Q2 四季度首投</div>
+        ${fmtMain(fmtWan(cumYestCost))}
+        <div class="sub-meta">现有新客 + 交接中新客</div>
       </td>`;
 
     return `<tr class="${trCls}">${cells}${refCells}</tr>`;
@@ -2915,11 +2894,5 @@ document.addEventListener('click', e => {
   });
 })();
 </script>
-
-<!-- 隐藏触发器：cloud_sync 下拉菜单点击会代理到这里 -->
-<div id="exportBtnGroup" style="display:none;">
-  <button id="btnExportTuokeAll">⬇️ 拓新组登记客户明细</button>
-  <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
-</div>
 </body>
 </html>
