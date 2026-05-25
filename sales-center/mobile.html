@@ -359,7 +359,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
       return (n > 0 ? "+" : "") + n.toFixed(0);
     };
     $("kpiGrid").innerHTML = `
-      <div class="kpi wide"><div class="label">服饰中心日耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比前一天 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div></div>
+      <div class="kpi wide"><div class="label">服饰中心昨日消耗</div><div class="value">${moneyWan(centerCost)}</div><div class="sub">环比前一天 <span class="${clsTrend(centerChg)}">${Number(centerChg) >= 0 ? "+" : ""}${(Number(centerChg)*100).toFixed(1)}%</span></div></div>
       <div class="kpi"><div class="label">新锐客户</div><div class="value">${Number(r.risingCount || 0).toLocaleString("zh-CN")}</div><div class="sub">较上季度 <span class="${clsTrend(r.risingDelta)}">${deltaQ(r.risingDelta)}</span></div><div class="sub">较前一天 <span class="${clsTrend(r.risingDayDelta)}">${delta(r.risingDayDelta)}</span></div></div>
       <div class="kpi"><div class="label">新客消耗</div><div class="value">${moneyWan(r.yestCost)}</div><div class="sub">较上季度 <span class="${clsTrend(r.costRate)}">${pct(r.costRate)}</span></div><div class="sub">较前一天 <span class="${clsTrend(r.dayCostRate)}">${pct(r.dayCostRate)}</span></div></div>
     `;
@@ -522,7 +522,7 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
         </div>
         <div class="card-headline ${r._s.status}">${done && doneInfo ? `已处理 · ${doneInfo.tag || "已沟通"}` : r._s.headline}</div>
         <div class="card-metrics">
-          <span class="m-item"><i>日耗</i><b>${wan(r.yestCostWan)}</b>${rateChip(r.costRate)}</span>
+          <span class="m-item"><i>昨日消耗</i><b>${wan(r.yestCostWan)}</b>${rateChip(r.costRate)}</span>
           <span class="m-item"><i>ROI</i><b>${r.roi || "—"}</b>${rateChip(r.roiRate)}</span>
           <span class="m-item"><i>创意</i><b>${r.creativeIds || "—"}</b>${rateChip(r.creativeRate)}</span>
         </div>
