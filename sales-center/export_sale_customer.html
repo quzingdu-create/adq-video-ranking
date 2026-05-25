@@ -44,10 +44,14 @@
 
   <div class="row">
     <button class="btn-primary" id="btnLoad">📥 拉取云端最新数据</button>
+    <button class="btn-primary" id="btnLoadAll" style="background:#7c3aed;">👑 管理员·全量拉取（云函数）</button>
     <button class="btn-success" id="btnExport" disabled>📊 导出 xlsx（销售↔客户）</button>
     <button class="btn-ghost" id="btnExportRaw" disabled>📋 导出全量明细</button>
     <button class="btn-ghost" id="btnLogout">🚪 退出云端</button>
     <span id="loginStat" style="font-size:12px;color:#6b7280;margin-left:auto;"></span>
+  </div>
+  <div style="font-size:12px;color:#7c3aed;margin:6px 0 10px;">
+    💡 <b>管理员·全量拉取</b>：通过云函数 <code>exportAll</code> 用管理员权限读全表，绕开"销售只能看自己"的安全规则。任何已登录销售账号都能用，但导出的是<b>全量数据</b>。
   </div>
 
   <div id="statBox" class="stat" style="display:none;">
@@ -293,6 +297,38 @@
   }
 
   $('btnLoad').addEventListener('click', load);
+
+  // 👑 管理员·全量拉取（云函数 exportAll）
+  function loadAll(){
+    if (!window.cloud) { alert('cloud_sync.js 未加载'); return; }
+    cloud.requireLogin(function(){
+      refreshLoginStat();
+      log('👑 调用云函数 exportAll（管理员权限读全表）...');
+      $('btnLoadAll').disabled = true;
+      $('btnLoadAll').textContent = '👑 拉取中...';
+      cloud.callFunction('exportAll', {}).then(function(res){
+        if (!res || res.code !== 0) {
+          throw new Error((res && res.msg) || '云函数返回异常: ' + JSON.stringify(res).slice(0,200));
+        }
+        ALL = res.records || [];
+        log('✅ 云函数返回 ' + ALL.length + ' 条全量记录（fetchedBy=' + (res.fetchedBy||'?') + '）');
+        AGG = aggregate(ALL);
+        log('✅ 聚合完成，去重后客户数 ' + AGG.length);
+        renderStat();
+        renderTable();
+        $('btnExport').disabled = false;
+        $('btnExportRaw').disabled = false;
+        $('btnLoadAll').disabled = false;
+        $('btnLoadAll').textContent = '👑 管理员·重新全量拉取';
+      }).catch(function(err){
+        log('❌ 云函数调用失败: ' + (err && err.message || err));
+        alert('云函数 exportAll 调用失败：\n' + (err && err.message || err) + '\n\n可能原因：\n1. 云函数未部署或函数名错误\n2. 当前账号未登录云端\n3. 云函数运行报错（去控制台查日志）');
+        $('btnLoadAll').disabled = false;
+        $('btnLoadAll').textContent = '👑 管理员·全量拉取（云函数）';
+      });
+    });
+  }
+  $('btnLoadAll').addEventListener('click', loadAll);
   $('btnExport').addEventListener('click', exportAgg);
   $('btnExportRaw').addEventListener('click', exportRaw);
   $('btnLogout').addEventListener('click', function(){

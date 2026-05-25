@@ -486,6 +486,20 @@
     save: function (rec) { return upsertOne(rec); },
     deleteOne: deleteById,
 
+    // 调用云函数（用于 exportAll 等管理员接口，绕开行级安全规则）
+    // 用法：cloud.callFunction('exportAll', {}).then(res => res.records)
+    callFunction: function (name, data) {
+      return ensureReady().then(function () {
+        if (!_app || !_app.callFunction) {
+          return Promise.reject(new Error('SDK 不支持 callFunction（请检查 SDK 版本）'));
+        }
+        return _app.callFunction({ name: name, data: data || {} }).then(function (r) {
+          // v1/v2 SDK 返回结构：{ result: {...} }
+          return r && r.result !== undefined ? r.result : r;
+        });
+      });
+    },
+
     kpi: {
       upsert: kpiUpsert,
       query: kpiQuery
