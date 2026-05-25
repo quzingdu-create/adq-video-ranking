@@ -617,11 +617,28 @@ function initSelects() {
   fillSelect("f-source", SOURCES, true);
 }
 
+/* ===== 云端登录守卫（2026-05-25 新增）=====
+ * 死规矩：未登录云端 → 禁止任何写操作（新增/批量/删除）
+ * 否则数据只在本地 localStorage，汇总时丢条
+ * 命中未登录 → alert 强提示 + 唤起登录框，登录成功后 cb() 继续
+ */
+function requireCloudLoginOrBlock(actionName, cb) {
+  if (!window.cloud) {
+    alert("⛔ 云端模块未加载，无法" + actionName + "。\n请刷新页面后重试。");
+    return false;
+  }
+  if (window.cloud.isLoggedIn()) { cb && cb(); return true; }
+  alert("⛔ 未登录云端，无法" + actionName + "。\n\n登记数据必须实时同步到云端，否则汇总会丢条。\n点击「确定」后将弹出登录窗口，请用你的销售账号登录。");
+  window.cloud.showLogin(function(){ cb && cb(); });
+  return false;
+}
+
 /* ===== Modal ===== */
 let pendingImages = []; // [{id, dataUrl}]
 let pendingAuth   = []; // [{id, dataUrl}] 品牌授权书
 
 function openModal() {
+  if (!requireCloudLoginOrBlock("新增登记", function(){ openModal(); })) return;
   document.getElementById("modal").classList.add("show");
   document.getElementById("m-name").value = "";
   document.getElementById("m-name-hint").innerHTML = "";
@@ -789,6 +806,12 @@ function openLightbox(dataUrl) {
 
 /* ===== 提交 ===== */
 function submitRecord() {
+  // 云端登录守卫：未登录直接拦截（双保险，防止用户绕过 openModal）
+  if (!window.cloud || !window.cloud.isLoggedIn()) {
+    alert("⛔ 未登录云端，无法提交登记。\n\n登记数据必须实时同步到云端，否则汇总会丢条。\n请先登录云端再提交。");
+    if (window.cloud && window.cloud.showLogin) window.cloud.showLogin();
+    return;
+  }
   const name = document.getElementById("m-name").value.trim();
   const category = document.getElementById("m-category").value;
   const sales = document.getElementById("m-sales").value;
@@ -901,6 +924,7 @@ function downloadTemplate() {
 let bulkParsedRows = [];
 
 function openBulkModal() {
+  if (!requireCloudLoginOrBlock("批量导入登记", function(){ openBulkModal(); })) return;
   bulkParsedRows = [];
   document.getElementById("bulk-preview").style.display = "none";
   document.getElementById("bulk-submit-btn").disabled = true;
@@ -1106,6 +1130,12 @@ function escapeHtml(s) {
 }
 
 function submitBulk() {
+  // 云端登录守卫
+  if (!window.cloud || !window.cloud.isLoggedIn()) {
+    alert("⛔ 未登录云端，无法批量导入。\n\n登记数据必须实时同步到云端，否则汇总会丢条。\n请先登录云端再导入。");
+    if (window.cloud && window.cloud.showLogin) window.cloud.showLogin();
+    return;
+  }
   const ignoreWarn = document.getElementById("bulk-ignore-warn").checked;
   const pending = bulkParsedRows.filter(r => r.level === "ok" || (r.level === "warn" && ignoreWarn));
   if (!pending.length) { alert("没有可导入的记录，请先处理错误行或勾选「忽略警告并提交」"); return; }
@@ -1153,6 +1183,12 @@ function submitBulk() {
 }
 
 function deleteRecord(id) {
+  // 云端登录守卫：删除也要登录，避免本地删了云端还在导致下次同步又拉回来
+  if (!window.cloud || !window.cloud.isLoggedIn()) {
+    alert("⛔ 未登录云端，无法删除。\n\n本地删除会被云端数据覆盖。\n请先登录云端再操作。");
+    if (window.cloud && window.cloud.showLogin) window.cloud.showLogin();
+    return;
+  }
   if (!confirm("确认删除这条登记吗？")) return;
   records = records.filter(r => r.id !== id); save(); render();
 }
@@ -1662,6 +1698,44 @@ render();
       if (typeof updateBannerCount === 'function') updateBannerCount();
     }
   });
+})();
+
+/* 🚨 未登录强提示横幅（2026-05-25 新增）
+ * 未登录云端时在页面顶部固定显示红色横幅，引导销售先登录。
+ * 已登录时自动隐藏。
+ */
+(function initLoginGuardBanner(){
+  function ensureBanner(){
+    var b = document.getElementById('login-guard-banner');
+    if (b) return b;
+    b = document.createElement('div');
+    b.id = 'login-guard-banner';
+    b.style.cssText = [
+      'position:fixed','top:0','left:0','right:0','z-index:9999',
+      'background:linear-gradient(90deg,#dc2626,#b91c1c)','color:#fff',
+      'padding:10px 16px','font-size:14px','font-weight:600',
+      'display:none','align-items:center','justify-content:center','gap:12px',
+      'box-shadow:0 2px 8px rgba(220,38,38,0.4)'
+    ].join(';');
+    b.innerHTML = '<span>⛔ 你尚未登录云端，所有新增 / 批量 / 删除操作都已被锁定。登记数据必须同步到云端，否则汇总会丢条。</span>'
+      + '<button id="login-guard-btn" style="background:#fff;color:#dc2626;border:none;padding:6px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">立即登录 →</button>';
+    document.body.appendChild(b);
+    document.getElementById('login-guard-btn').addEventListener('click', function(){
+      if (window.cloud && window.cloud.showLogin) window.cloud.showLogin(function(){ refresh(); });
+    });
+    return b;
+  }
+  function refresh(){
+    var b = ensureBanner();
+    var logged = !!(window.cloud && window.cloud.isLoggedIn());
+    b.style.display = logged ? 'none' : 'flex';
+    // 已登录时把 body 顶 padding 还原；未登录把页面下推 44px 给横幅腾位置
+    document.body.style.paddingTop = logged ? '' : '44px';
+  }
+  // 首次延迟到 cloud 初始化完成后
+  setTimeout(refresh, 300);
+  // 每 3s 轮询一次，用户登录/注销后自动同步状态
+  setInterval(refresh, 3000);
 })();
 </script>
 </body>
