@@ -15,8 +15,8 @@
 <script src="data/top80_effective_metrics.js?v=20260526l"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526l"></script>
-<script src="login_guard_banner.js?v=20260526l"></script>
+<script src="cloud_sync.js?v=20260526m"></script>
+<script src="login_guard_banner.js?v=20260526m"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
 <script src="export_tuoke.js?v=20260526l"></script>
 <style>
@@ -1944,6 +1944,12 @@ let __notifyPollTimer = setInterval(() => {
   if (NotifyState._cloudReady) { clearInterval(__notifyPollTimer); return; }
   if (window.cloud && window.cloud.isLoggedIn()) { NotifyState._pullCloud(); }
 }, 5000);
+// 2026-05-26 16:55：持续 30s 轮询，让本机能看到其他销售的实时进度（跨设备同步）
+let __notifyLivePollTimer = setInterval(() => {
+  if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+    NotifyState._pullCloud();
+  }
+}, 30000);
 
 /* === 一次性清零（2026-05-26 12:25 用户拍板）===
    把 12:25 之前打的所有「✅ 已通知客户」状态全部清 0，

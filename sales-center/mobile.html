@@ -216,8 +216,8 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   <!-- ☁️ 云端同步 + 拓新组双导出按钮（v3.2 死规矩三件套） -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script src="cloud_sync.js?v=20260526k"></script>
-  <script src="login_guard_banner.js?v=20260526k"></script>
+  <script src="cloud_sync.js?v=20260526m"></script>
+  <script src="login_guard_banner.js?v=20260526m"></script>
   <script src="export_tuoke.js?v=20260526k"></script>
 </head>
 <body>
@@ -409,6 +409,12 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
     if (__mobileCloudReady) { clearInterval(__mobilePollTimer); return; }
     if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) __pullMobileCloud();
   }, 5000);
+  // 2026-05-26 16:55：持续 30s 轮询，跨设备实时同步其他销售的进度
+  let __mobileLivePollTimer = setInterval(() => {
+    if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+      __pullMobileCloud();
+    }
+  }, 30000);
 
   // 2026-05-26 13:16：监听 parent 一次性清零广播
   window.addEventListener('message', function(e){
