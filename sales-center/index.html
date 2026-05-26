@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260526d"></script>
+<script src="auth-guard.js?v=20260526e"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260526d"></script>
+<script src="data/current_rising_data.js?v=20260526e"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260526d"></script>
-<script src="data/center_daily_kpi.js?v=20260526d"></script>
-<script src="data/tuoke_real_records.js?v=20260526d"></script>
-<script src="data/top80_effective_metrics.js?v=20260526d"></script>
+<script src="data/center_quarter_summary.js?v=20260526e"></script>
+<script src="data/center_daily_kpi.js?v=20260526e"></script>
+<script src="data/tuoke_real_records.js?v=20260526e"></script>
+<script src="data/top80_effective_metrics.js?v=20260526e"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526d"></script>
-<script src="login_guard_banner.js?v=20260526d"></script>
+<script src="cloud_sync.js?v=20260526e"></script>
+<script src="login_guard_banner.js?v=20260526e"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260526d"></script>
+<script src="export_tuoke.js?v=20260526e"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -637,7 +637,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?v=20260526d"
+      src="mobile.html?v=20260526e"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -861,7 +861,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526d" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526e" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1531,7 +1531,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526d`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526e`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -1840,12 +1840,35 @@ function taskItemHTML(t) {
    - 双写：localStorage 快照 + 云端 redspot_progress 集合（全员共享）
    - 任意销售标 done → 全员看到（云端拉全量合并到 _set）
    - 未登录 fallback 纯本地（不阻断），登录后自动同步上云
-   - 集合字段：taskKey / status(done|undo) / salesName / ts
+   - 集合字段：taskKey / status(done|undo) / salesName / ts / dateKey
+   - 2026-05-26 改造：处理状态按日重置 —— localStorage key 加 dateKey，
+     云端拉取只取 dateKey == 今天 的记录；跨天自动归零
    =========================================================== */
+function __todayDateKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+// 启动时清掉昨天/更早的 v32_notify_done_v1_* key（避免 localStorage 越积越大）
+try {
+  const today = __todayDateKey();
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('v32_notify_done_v1_') && k !== `v32_notify_done_v1_${today}`) {
+      localStorage.removeItem(k);
+    }
+  }
+  // 兼容旧 key（无日期版） → 直接删，让今天从零开始
+  localStorage.removeItem('v32_notify_done_v1');
+} catch (e) {}
+
 const NotifyState = {
-  _key: "v32_notify_done_v1",
+  _dateKey: __todayDateKey(),
+  _key: `v32_notify_done_v1_${__todayDateKey()}`,
   _coll: "redspot_progress",
-  _set: new Set(JSON.parse(localStorage.getItem("v32_notify_done_v1") || "[]")),
+  _set: new Set(JSON.parse(localStorage.getItem(`v32_notify_done_v1_${__todayDateKey()}`) || "[]")),
   _cloudReady: false,
   has(k) { return this._set.has(k); },
   add(k) { this._set.add(k); this._save(); this._pushCloud(k, 'done'); },
@@ -1865,12 +1888,6 @@ const NotifyState = {
     try {
       if (!window.cloud || !window.cloud.isLoggedIn()) return;
       const salesName = (window.cloud.rtx && window.cloud.rtx()) || '';
-      const db = window.cloud;
-      // cloud_sync.js 没暴露通用 collection，复用 callFunction 模式不合适
-      // 直接通过 cloudbase SDK 全局对象写：window.tcb 或重新拿 _app
-      // 简化：用 fetch 替身——直接调 cloud._db 不行（私有），改用 callFunction 兜底
-      // 走 cloud.callFunction 调一个通用云函数（暂不接，用 SDK 直写）
-      // 最简方案：通过 cloudbase.init 拿 db 引用
       const cb = (window.cloudbase && window.cloudbase.init)
         ? window.cloudbase.init({ env: window.cloud.envId })
         : null;
@@ -1880,6 +1897,7 @@ const NotifyState = {
         taskKey: taskKey,
         status: status,
         salesName: salesName,
+        dateKey: this._dateKey,
         ts: Date.now()
       }).catch(function(e) { console.warn('[NotifyState] cloud push fail:', e && e.message); });
     } catch (e) { console.warn('[NotifyState] push exception:', e); }
@@ -1890,18 +1908,21 @@ const NotifyState = {
       const cb = (window.cloudbase && window.cloudbase.init)
         ? window.cloudbase.init({ env: window.cloud.envId }) : null;
       if (!cb) return;
-      // 等 cloud_sync 的登录态就绪（它内部 ensureReady 会拿 token）
-      // 不阻塞 UI——拉取失败/超时时就用本地快照渲染
       const cdb = cb.database();
-      // 拉全量（按 ts 倒序，每个 taskKey 取最新一条决定 done/undo）
-      const res = await cdb.collection(this._coll).orderBy('ts', 'desc').limit(1000).get();
+      // 只拉今天的记录（按 dateKey 过滤）—— 跨天处理状态自动重置
+      const _ = cdb.command;
+      const res = await cdb.collection(this._coll)
+        .where({ dateKey: this._dateKey })
+        .orderBy('ts', 'desc')
+        .limit(1000)
+        .get();
       const rows = (res && res.data) || [];
       const latestByKey = new Map();
       rows.forEach(r => {
         if (!r.taskKey) return;
         if (!latestByKey.has(r.taskKey)) latestByKey.set(r.taskKey, r);
       });
-      // 合并到 _set：done 加入 / undo 移除
+      // 合并到 _set：done 加入 / undo 移除（仅当天）
       latestByKey.forEach((r, k) => {
         if (r.status === 'done') this._set.add(k);
         else if (r.status === 'undo') this._set.delete(k);
@@ -1911,7 +1932,7 @@ const NotifyState = {
       // 重渲染
       try { if (typeof renderTodayTasks === 'function') renderTodayTasks(); } catch(e){}
       try { if (typeof renderYestProgress === 'function') renderYestProgress(); } catch(e){}
-      console.log('[NotifyState] cloud pull done, merged', latestByKey.size, 'records');
+      console.log('[NotifyState] cloud pull done (date=' + this._dateKey + '), merged', latestByKey.size, 'records');
     } catch (e) { console.warn('[NotifyState] pull fail:', e && e.message); }
   }
 };
