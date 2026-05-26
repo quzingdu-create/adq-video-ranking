@@ -7,21 +7,21 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260526e"></script>
-<script src="data/old24_customer_data.js?v=20260526e"></script>
-<script src="data/bulk_import_rows.js?v=20260526e"></script>
-<script src="data/tuoke_real_records.js?v=20260526e"></script>
-<script src="data/customer_link_data.js?v=20260526e"></script>
-<script src="data/center_sales_summary.js?v=20260526e"></script>
-<script src="data/center_quarter_summary.js?v=20260526e"></script>
-<script src="data/center_daily_kpi.js?v=20260526e"></script>
-<script src="data/delivery_side_summary.js?v=20260526e"></script>
-<script src="data/top80_effective_metrics.js?v=20260526e"></script>
-<script src="data/top_status_data.js?v=20260526e"></script>
-<script src="data/enough_candidates.js?v=20260526e"></script>
-<script src="data/handover_customers_519.js?v=20260526e"></script>
-<script src="data/first_quarter.js?v=20260526e"></script>
-<script src="data/old24_names.js?v=20260526e"></script>
+<script src="data/laoke_lookup_data.js?v=20260526f"></script>
+<script src="data/old24_customer_data.js?v=20260526f"></script>
+<script src="data/bulk_import_rows.js?v=20260526f"></script>
+<script src="data/tuoke_real_records.js?v=20260526f"></script>
+<script src="data/customer_link_data.js?v=20260526f"></script>
+<script src="data/center_sales_summary.js?v=20260526f"></script>
+<script src="data/center_quarter_summary.js?v=20260526f"></script>
+<script src="data/center_daily_kpi.js?v=20260526f"></script>
+<script src="data/delivery_side_summary.js?v=20260526f"></script>
+<script src="data/top80_effective_metrics.js?v=20260526f"></script>
+<script src="data/top_status_data.js?v=20260526f"></script>
+<script src="data/enough_candidates.js?v=20260526f"></script>
+<script src="data/handover_customers_519.js?v=20260526f"></script>
+<script src="data/first_quarter.js?v=20260526f"></script>
+<script src="data/old24_names.js?v=20260526f"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 <script src="cloud_sync.js?v=20260521n"></script>
@@ -2826,6 +2826,20 @@ function openEditRecord(rid) {
     if ($('m-source'))   $('m-source').value = rec.source || '';
     if ($('m-date'))     $('m-date').value = rec.date || '';
     if (typeof onChannelChange === 'function') onChannelChange();
+    // 修改模式：强制解锁销售下拉（业务死规矩支持归属变更）
+    // 2026-05-26 修复：之前 initRegisterModal 把 m-sales 锁成 disabled，
+    // 修改既有客户时也被一起锁了，违背"先登记先归属、归属可变更"业务规则
+    const saleSel = $('m-sales');
+    if (saleSel) {
+      saleSel.disabled = false;
+      saleSel.style.background = '#fff';
+      saleSel.style.color = '#1f2937';
+    }
+    const saleHint = $('m-sales-hint');
+    if (saleHint) {
+      saleHint.innerHTML = '✏️ <b style="color:#0369a1;">修改模式</b> · 可重新分配销售归属（系统会记录变更：原 ' + (rec.sale || '未分配') + '）';
+      saleHint.style.cssText = 'font-size:11px;color:#0369a1;margin-top:4px;';
+    }
     // 改弹窗标题
     const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
     if (titleEl) titleEl.textContent = '修改/补充：' + (rec.shortName || rec.name);
