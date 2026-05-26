@@ -308,12 +308,92 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
     if (raw === "1") return { tag: "", note: "" };
     try { return JSON.parse(raw); } catch { return { tag: "", note: "" }; }
   };
+
+  // ============================================================
+  // 今日待办勾选 → 云端 redspot_progress 集合（taskKey=mobile:<name>）
+  // 跟 index.html NotifyState 共用集合，全员实时同步
+  // 2026-05-26 改造
+  // ============================================================
+  const __MOBILE_COLL__ = "redspot_progress";
+  const __MOBILE_KEY_PREFIX__ = "mobile:";
+  let __mobileCloudReady = false;
+  function __getCloudDb() {
+    try {
+      if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return null;
+      if (!window.cloudbase || !window.cloudbase.init) return null;
+      const cb = window.cloudbase.init({ env: window.cloud.envId });
+      return cb.database();
+    } catch (e) { return null; }
+  }
+  function __pushMobileCloud(name, status, payload) {
+    try {
+      const db = __getCloudDb(); if (!db) return;
+      const salesName = (window.cloud && window.cloud.rtx && window.cloud.rtx()) || "";
+      db.collection(__MOBILE_COLL__).add({
+        taskKey: __MOBILE_KEY_PREFIX__ + name,
+        status: status,
+        salesName: salesName,
+        note: payload ? JSON.stringify(payload) : "",
+        ts: Date.now()
+      }).catch(function(e){ console.warn("[mobile] cloud push fail:", e && e.message); });
+    } catch (e) { console.warn("[mobile] push exception:", e); }
+  }
+  async function __pullMobileCloud() {
+    try {
+      const db = __getCloudDb(); if (!db) return;
+      // 拉全量 redspot_progress（按 ts desc），客户端过滤 mobile: 前缀
+      const res = await db.collection(__MOBILE_COLL__)
+        .orderBy("ts", "desc").limit(1000).get();
+      const rows = (res && res.data) || [];
+      const latest = new Map();
+      rows.forEach(r => {
+        if (!r.taskKey || r.taskKey.indexOf(__MOBILE_KEY_PREFIX__) !== 0) return;
+        if (!latest.has(r.taskKey)) latest.set(r.taskKey, r);
+      });
+      latest.forEach((r, k) => {
+        const name = k.replace(/^mobile:/, "");
+        const dKey = doneKey(name);
+        if (r.status === "done") {
+          // 仅在本地没有时回填，避免覆盖本地最新（防止异步抖动）
+          if (!localStorage.getItem(dKey)) {
+            let payload = { tag: "", note: "", at: r.ts || Date.now() };
+            if (r.note) { try { const p = JSON.parse(r.note); if (p && typeof p === "object") payload = Object.assign(payload, p); } catch {} }
+            localStorage.setItem(dKey, JSON.stringify(payload));
+          }
+        } else if (r.status === "undo") {
+          localStorage.removeItem(dKey);
+        }
+      });
+      __mobileCloudReady = true;
+      try { renderTop(); } catch(e){}
+      // 通知 parent（PC 看板）：mobile_done_* 数据已更新，让 cleanup-card 重新算
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: "mobile-done-pulled", count: latest.size }, "*");
+        }
+      } catch(e){}
+      console.log("[mobile] cloud pull done:", latest.size);
+    } catch (e) { console.warn("[mobile] pull fail:", e && e.message); }
+  }
+  // 启动后异步拉云端（延迟 1.5s 等 cloud_sync 初始化）
+  setTimeout(() => { __pullMobileCloud(); }, 1500);
+  // 5s 兜底轮询，登录后再拉一次
+  let __mobilePollTimer = setInterval(() => {
+    if (__mobileCloudReady) { clearInterval(__mobilePollTimer); return; }
+    if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) __pullMobileCloud();
+  }, 5000);
+
   const setDone = (name, payload) => {
     const data = JSON.stringify({ tag: payload.tag || "", note: payload.note || "", at: Date.now() });
     localStorage.setItem(doneKey(name), data);
     renderTop();
+    __pushMobileCloud(name, "done", { tag: payload.tag || "", note: payload.note || "" });
   };
-  const undoDone = name => { localStorage.removeItem(doneKey(name)); renderTop(); };
+  const undoDone = name => {
+    localStorage.removeItem(doneKey(name));
+    renderTop();
+    __pushMobileCloud(name, "undo", null);
+  };
 
   function initFilters(){
     const quarters = [...new Set(summary.map(r => r.quarter).filter(Boolean))].sort();

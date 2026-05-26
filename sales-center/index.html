@@ -12,6 +12,7 @@
 <script src="data/center_quarter_summary.js?v=20260525f"></script>
 <script src="data/center_daily_kpi.js?v=20260525f"></script>
 <script src="data/tuoke_real_records.js?v=20260525f"></script>
+<script src="data/top80_effective_metrics.js?v=20260526a"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 <script src="cloud_sync.js?v=20260524s"></script>
@@ -841,7 +842,7 @@
         <div class="cleanup-head">
           <div class="cleanup-title">
             <span class="cleanup-icon">🎯</span>
-            <span class="cleanup-text">今日 Top 客户清理进度</span>
+            <span class="cleanup-text">今日待办清理进度（告警+关注客户）</span>
             <span class="cleanup-badge" id="cleanupBadge">云端共享</span>
           </div>
           <div class="cleanup-summary">
@@ -1792,7 +1793,7 @@ function renderTodayTasks() {
   const qbT = document.getElementById('qbTuoke'); if (qbT) qbT.textContent = stats.tuoke.undone;
 }
 
-// 接收 iframe 实时通知，更新今日待办小红点的 dotHome 数字
+// 接收 iframe 实时通知，更新今日待办小红点的 dotHome 数字 + 触发 cleanup-card 重渲染
 window.addEventListener('message', function(ev){
   if (ev && ev.data && ev.data.type === 'todo-redpoint') {
     const dot = document.getElementById('dotHome');
@@ -1801,6 +1802,11 @@ window.addEventListener('message', function(ev){
       dot.textContent = n;
       dot.style.display = n > 0 ? '' : 'none';
     }
+    // mobile iframe 状态变化（勾选/取消），同步刷新 cleanup-card
+    try { renderCleanupCard(); } catch(e){}
+  } else if (ev && ev.data && ev.data.type === 'mobile-done-pulled') {
+    // mobile.html 拉完云端，本地 mobile_done_* 已合并 → 重新算 cleanup-card
+    try { renderCleanupCard(); } catch(e){}
   }
 });
 
@@ -2054,12 +2060,37 @@ function renderCleanupCard() {
   const card = document.getElementById('cleanupCard');
   if (!card) return;
 
-  // 7 销售各自统计 client 任务（Top80 客户红泡 = 重点/冲刺/生命周期警示）
+  // 数据源切换（2026-05-26）：从 NotifyState 改为 mobile.html 同口径——
+  // 即"今日待办里 状态=告警(alarm)/关注(focus) 的客户"，已处理读 mobile_done_<name>。
+  // 这样首页今日待办勾选 ↔ 这张卡 完全打通；通过 redspot_progress(taskKey=mobile:*) 全员云端同步。
+  const top80 = Array.isArray(window.__TOP80_EFFECTIVE_METRICS__) ? window.__TOP80_EFFECTIVE_METRICS__ : [];
+  // 复刻 mobile.html statusOf 的判定（与 mobile.html 行 386 保持一致）
+  const parsePctRate = v => {
+    if (v === null || v === undefined) return null;
+    const s = String(v).replace('%','').replace('+','').trim();
+    if (!s || s === '~' || s === '—') return null;
+    const n = Number(s); return Number.isFinite(n) ? n : null;
+  };
+  const statusOfRow = row => {
+    const cost = parsePctRate(row.costRate);
+    const roi = parsePctRate(row.roiRate);
+    const creative = parsePctRate(row.creativeRate);
+    if (String(row.matchStatus || '').includes('无投放')) return 'alarm';
+    if ((cost !== null && cost <= -0.20) || (roi !== null && roi <= -0.30)) return 'alarm';
+    if ((cost !== null && cost <= -0.10) || (roi !== null && roi <= -0.15) || (creative !== null && creative <= -0.20)) return 'focus';
+    return 'stable';
+  };
+  const isMobileDone = name => !!localStorage.getItem('mobile_done_' + name);
+
+  // 7 销售各自统计：alarm + focus 客户作为分母，已勾的作为分子
   const perSales = SALES.map(s => {
-    const scope = getClientsByUser(s);
-    const tasks = buildClientTasks(scope);
-    const total = tasks.length;
-    const done = tasks.filter(t => t.done).length;
+    const scope = top80.filter(r => r.sale === s);
+    const target = scope.filter(r => {
+      const st = statusOfRow(r);
+      return st === 'alarm' || st === 'focus';
+    });
+    const total = target.length;
+    const done = target.filter(r => isMobileDone(r.name)).length;
     return { sales: s, total: total, done: done, rate: total ? done/total : 1 };
   });
 
@@ -2082,10 +2113,10 @@ function renderCleanupCard() {
   // 团队总进度条
   $$('cleanupTeamFill').style.width = teamRate + '%';
 
-  // 云端徽章状态
+  // 云端徽章状态（沿用 NotifyState 的登录态判断）
   const badge = $$('cleanupBadge');
   if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
-    badge.textContent = NotifyState._cloudReady ? '☁️ 云端实时' : '☁️ 同步中…';
+    badge.textContent = (typeof NotifyState !== 'undefined' && NotifyState._cloudReady) ? '☁️ 云端实时' : '☁️ 同步中…';
     badge.style.color = '#15803d';
     badge.style.background = '#f0fdf4';
     badge.style.borderColor = '#bbf7d0';
@@ -2100,7 +2131,7 @@ function renderCleanupCard() {
   const list = $$('cleanupSalesList');
   if (!list) return;
   if (teamTotal === 0) {
-    list.innerHTML = '<div class="cleanup-empty">暂无 Top 客户红泡任务</div>';
+    list.innerHTML = '<div class="cleanup-empty">今日无告警/关注客户 🎉</div>';
     list.style.gridTemplateColumns = '1fr';
     return;
   }
@@ -2123,7 +2154,7 @@ function renderCleanupCard() {
     }
     const displayPct = x.total === 0 ? '—' : pct + '%';
     return `
-      <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}">
+      <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}（告警+关注）">
         <div class="cleanup-sales-name">${x.sales}</div>
         <div class="cleanup-sales-rate${rateCls}">${displayPct}</div>
         <div class="cleanup-sales-cnt">${x.done}/${x.total} 个</div>
