@@ -498,18 +498,21 @@ function lookupDuplicates(name) {
   const n = (name || "").trim();
   if (!n) return { total:0, entries:[] };
   const entries = [];
+  // 2026-05-26 12:39 修复：只算 7 名真销售登记的，归属"其他/未分配"是 AData 种子，不触发判重
+  const SALE7 = ["brownfan","lijunwu","jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+  const isRealSale = (s) => !!s && SALE7.includes(String(s).trim().toLowerCase());
   // 1. 拓新组底表：tuoke_real_records 已登记客户（最新，每天重建）
   if (Object.prototype.hasOwnProperty.call(REGISTERED_SUBJECTS, n)) {
     const r = REGISTERED_SUBJECTS[n];
-    entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+    if (isRealSale(r.sale)) entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
   }
   // 2. 历史表（兼容旧种子）
   if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) {
-    (HISTORY_MAP[n] || []).forEach(s => entries.push({ sales: s, date: "", src: "历史" }));
+    (HISTORY_MAP[n] || []).forEach(s => { if (isRealSale(s)) entries.push({ sales: s, date: "", src: "历史" }); });
   }
   // 3. 本地登记表
   records.forEach(r => {
-    if (r.name === n) entries.push({ sales: r.sales, date: r.date || "", src: "本次" });
+    if (r.name === n && isRealSale(r.sales)) entries.push({ sales: r.sales, date: r.date || "", src: "本次" });
   });
   return { total: entries.length, entries };
 }

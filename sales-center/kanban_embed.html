@@ -7,21 +7,21 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260526h"></script>
-<script src="data/old24_customer_data.js?v=20260526h"></script>
-<script src="data/bulk_import_rows.js?v=20260526h"></script>
-<script src="data/tuoke_real_records.js?v=20260526h"></script>
-<script src="data/customer_link_data.js?v=20260526h"></script>
-<script src="data/center_sales_summary.js?v=20260526h"></script>
-<script src="data/center_quarter_summary.js?v=20260526h"></script>
-<script src="data/center_daily_kpi.js?v=20260526h"></script>
-<script src="data/delivery_side_summary.js?v=20260526h"></script>
-<script src="data/top80_effective_metrics.js?v=20260526h"></script>
-<script src="data/top_status_data.js?v=20260526h"></script>
-<script src="data/enough_candidates.js?v=20260526h"></script>
-<script src="data/handover_customers_519.js?v=20260526h"></script>
-<script src="data/first_quarter.js?v=20260526h"></script>
-<script src="data/old24_names.js?v=20260526h"></script>
+<script src="data/laoke_lookup_data.js?v=20260526i"></script>
+<script src="data/old24_customer_data.js?v=20260526i"></script>
+<script src="data/bulk_import_rows.js?v=20260526i"></script>
+<script src="data/tuoke_real_records.js?v=20260526i"></script>
+<script src="data/customer_link_data.js?v=20260526i"></script>
+<script src="data/center_sales_summary.js?v=20260526i"></script>
+<script src="data/center_quarter_summary.js?v=20260526i"></script>
+<script src="data/center_daily_kpi.js?v=20260526i"></script>
+<script src="data/delivery_side_summary.js?v=20260526i"></script>
+<script src="data/top80_effective_metrics.js?v=20260526i"></script>
+<script src="data/top_status_data.js?v=20260526i"></script>
+<script src="data/enough_candidates.js?v=20260526i"></script>
+<script src="data/handover_customers_519.js?v=20260526i"></script>
+<script src="data/first_quarter.js?v=20260526i"></script>
+<script src="data/old24_names.js?v=20260526i"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 <script src="cloud_sync.js?v=20260521n"></script>
@@ -2121,16 +2121,36 @@ function lookupDuplicates(name) {
   const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
   if (!n) return { total:0, entries:[] };
   const entries = [];
-  // 1. 拓新组底表（最新，每天重建）
+  // 2026-05-26 12:39 修复：只有 7 名真销售登记的才算「先登记先归属」硬卡
+  // 归属"其他/未分配"的是 AData 拉来的种子记录，不算销售登记，跳过判重
+  const isRealSale = (s) => {
+    if (!s) return false;
+    const sl = String(s).trim().toLowerCase();
+    if (!sl) return false;
+    // 命中 7 销售集合（大小写不敏感）
+    const SALE7 = ["brownfan","lijunwu","jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+    return SALE7.includes(sl);
+  };
+  // 1. 拓新组底表（最新，每天重建）—— 只算真销售归属
   const REGISTERED_SUBJECTS = window.__REGISTERED_SUBJECTS__ || {};
   if (Object.prototype.hasOwnProperty.call(REGISTERED_SUBJECTS, n)) {
     const r = REGISTERED_SUBJECTS[n];
-    entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+    if (isRealSale(r.sale)) {
+      entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+    }
   }
-  // 2. 历史表（兼容旧种子）
-  if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) (HISTORY_MAP[n] || []).forEach(s => entries.push({ sales:s, date:"", src:"历史" }));
-  // 3. 本地 records
-  if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) RECORDS.forEach(r => { if ((r.name || "").trim().replace(/\s+/g,'') === n) entries.push({ sales:r.sale, date:r.date || "", src:"本地" }); });
+  // 2. 历史表（兼容旧种子）—— 只算真销售归属
+  if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) {
+    (HISTORY_MAP[n] || []).forEach(s => { if (isRealSale(s)) entries.push({ sales:s, date:"", src:"历史" }); });
+  }
+  // 3. 本地 records —— 只算真销售归属
+  if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) {
+    RECORDS.forEach(r => {
+      if ((r.name || "").trim().replace(/\s+/g,'') === n && isRealSale(r.sale)) {
+        entries.push({ sales:r.sale, date:r.date || "", src:"本地" });
+      }
+    });
+  }
   return { total:entries.length, entries };
 }
 let pendingImages = [];
