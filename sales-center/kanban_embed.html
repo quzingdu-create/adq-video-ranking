@@ -2978,6 +2978,76 @@ document.addEventListener('click', e => {
     }
   });
 })();
+
+/* 🦞 云端开机自动拉取（2026-05-26 14:58 子青拍板）
+   目标：
+   1) 销售实时登记的客户 → 看板进来就能在「拓客报备明细」看到（实时同步）
+   2) 任意销售再登记同名 → lookupDuplicates 命中云端记录显示重复（写入 __REGISTERED_SUBJECTS__）
+   3) 5 分钟会话缓存：同一会话内反复刷新只首次拉云，避免洪水
+   4) 失败/未登录都静默不弹框
+*/
+(function pullCloudOnBoot(){
+  try {
+    if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return;
+    var TS_KEY = 'kanban_cloud_pull_ts';
+    var CACHE_MS = 5 * 60 * 1000;
+    var last = 0;
+    try { last = parseInt(sessionStorage.getItem(TS_KEY) || '0', 10) || 0; } catch(_){}
+    if (Date.now() - last < CACHE_MS) {
+      console.info('[cloud] pull skipped (5min cache)');
+      return;
+    }
+    window.cloud.download().then(function(res){
+      var cloudList = (res && res.list) || [];
+      if (!cloudList.length) return;
+      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出）
+      if (!window.__REGISTERED_SUBJECTS__) window.__REGISTERED_SUBJECTS__ = {};
+      cloudList.forEach(function(r){
+        var n = (r.name || '').toString().trim().replace(/\s+/g, '');
+        if (!n) return;
+        // 只有云端比本地字典更新或字典里没有时才写
+        var exist = window.__REGISTERED_SUBJECTS__[n];
+        if (!exist || (r.date && (!exist.date || r.date >= exist.date))) {
+          window.__REGISTERED_SUBJECTS__[n] = {
+            sale: r.sale,
+            date: r.date || '',
+            shortName: n
+          };
+        }
+      });
+      // 2) 合并进 RECORDS：按 id 去重，云端独有的 unshift 到顶
+      var existIds = {};
+      (window.RECORDS || []).forEach(function(r){
+        if (r && r.id != null) existIds[String(r.id)] = 1;
+      });
+      var fresh = cloudList.filter(function(r){
+        return r && r.id != null && !existIds[String(r.id)];
+      });
+      if (fresh.length) {
+        // 同步进 USER_RECORDS（持久化）+ RECORDS（展示）
+        if (typeof USER_RECORDS !== 'undefined' && Array.isArray(USER_RECORDS)) {
+          USER_RECORDS.unshift.apply(USER_RECORDS, fresh);
+          try {
+            localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 2000)));
+          } catch(_){
+            try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 500))); } catch(__){}
+          }
+        }
+        window.RECORDS.unshift.apply(window.RECORDS, fresh);
+      }
+      console.info('[cloud] pull ok cloud=' + cloudList.length + ' fresh=' + fresh.length + ' subjects=' + Object.keys(window.__REGISTERED_SUBJECTS__).length);
+      try { sessionStorage.setItem(TS_KEY, String(Date.now())); } catch(_){}
+      // 3) 重渲染
+      if (typeof renderAll === 'function') {
+        try { renderAll(); } catch(e){ console.warn('[cloud] renderAll fail', e); }
+      }
+    }).catch(function(e){
+      console.warn('[cloud] pull fail:', e && e.message);
+    });
+  } catch(e) {
+    console.warn('[cloud] pullCloudOnBoot exception', e);
+  }
+})();
 </script>
 </body>
 </html>
