@@ -7,24 +7,24 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260526t"></script>
-<script src="data/old24_customer_data.js?v=20260526t"></script>
-<script src="data/bulk_import_rows.js?v=20260526t"></script>
-<script src="data/tuoke_real_records.js?v=20260526t"></script>
-<script src="data/customer_link_data.js?v=20260526t"></script>
-<script src="data/center_sales_summary.js?v=20260526t"></script>
-<script src="data/center_quarter_summary.js?v=20260526t"></script>
-<script src="data/center_daily_kpi.js?v=20260526t"></script>
-<script src="data/delivery_side_summary.js?v=20260526t"></script>
-<script src="data/top80_effective_metrics.js?v=20260526t"></script>
-<script src="data/top_status_data.js?v=20260526t"></script>
-<script src="data/enough_candidates.js?v=20260526t"></script>
-<script src="data/handover_customers_519.js?v=20260526t"></script>
-<script src="data/first_quarter.js?v=20260526t"></script>
-<script src="data/old24_names.js?v=20260526t"></script>
+<script src="data/laoke_lookup_data.js?v=20260526u"></script>
+<script src="data/old24_customer_data.js?v=20260526u"></script>
+<script src="data/bulk_import_rows.js?v=20260526u"></script>
+<script src="data/tuoke_real_records.js?v=20260526u"></script>
+<script src="data/customer_link_data.js?v=20260526u"></script>
+<script src="data/center_sales_summary.js?v=20260526u"></script>
+<script src="data/center_quarter_summary.js?v=20260526u"></script>
+<script src="data/center_daily_kpi.js?v=20260526u"></script>
+<script src="data/delivery_side_summary.js?v=20260526u"></script>
+<script src="data/top80_effective_metrics.js?v=20260526u"></script>
+<script src="data/top_status_data.js?v=20260526u"></script>
+<script src="data/enough_candidates.js?v=20260526u"></script>
+<script src="data/handover_customers_519.js?v=20260526u"></script>
+<script src="data/first_quarter.js?v=20260526u"></script>
+<script src="data/old24_names.js?v=20260526u"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526t"></script>
+<script src="cloud_sync.js?v=20260526u"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -968,14 +968,30 @@ function saveUserRecord(rec) {
   persistUserRecordsBestEffort();
   RECORDS.unshift(rec);
   // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55）：本地写完立即推一条到后端
-  // 失败不阻塞用户，仅静默 console.warn，下次手动「☁️同步到云端」可补
+  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推（对齐 register_v3.2 逻辑）
   try {
     if (window.cloud && window.cloud.isLoggedIn()) {
       window.cloud.upload([rec]).then(function(d){
         console.info('[cloud] saved single ok created=' + d.created + ' updated=' + d.updated);
       }).catch(function(e){
-        console.warn('[cloud] save single fail:', e.message);
-        if (window.cloud.toast) window.cloud.toast('云端保存失败：' + e.message + '（已本地保存）', true);
+        console.warn('[cloud] save single fail:', e && e.message);
+        var msg = (e && e.message) || '';
+        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
+          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
+          try {
+            window.cloud.requireLogin(function(){
+              window.cloud.upload([rec]).then(function(d){
+                console.info('[cloud] save single retry ok created=' + d.created + ' updated=' + d.updated);
+                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 1 条', false);
+              }).catch(function(e2){
+                console.warn('[cloud] save single retry fail:', e2 && e2.message);
+                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
+              });
+            });
+          } catch(_) {}
+        } else {
+          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
+        }
       });
     }
   } catch(_){}
@@ -985,13 +1001,30 @@ function saveUserRecordsBulk(records) {
   persistUserRecordsBestEffort();
   RECORDS.unshift(...records);
   // 🦞 云端双写
+  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推
   try {
     if (records && records.length && window.cloud && window.cloud.isLoggedIn()) {
       window.cloud.upload(records).then(function(d){
         console.info('[cloud] saved bulk ok n=' + records.length + ' created=' + d.created);
       }).catch(function(e){
-        console.warn('[cloud] save bulk fail:', e.message);
-        if (window.cloud.toast) window.cloud.toast('云端批量保存失败（已本地保存）', true);
+        console.warn('[cloud] save bulk fail:', e && e.message);
+        var msg = (e && e.message) || '';
+        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
+          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
+          try {
+            window.cloud.requireLogin(function(){
+              window.cloud.upload(records).then(function(d){
+                console.info('[cloud] save bulk retry ok n=' + records.length + ' created=' + d.created);
+                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 ' + records.length + ' 条', false);
+              }).catch(function(e2){
+                console.warn('[cloud] save bulk retry fail:', e2 && e2.message);
+                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
+              });
+            });
+          } catch(_) {}
+        } else {
+          if (window.cloud.toast) window.cloud.toast('云端批量保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
+        }
       });
     }
   } catch(_){}
