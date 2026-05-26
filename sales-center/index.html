@@ -615,8 +615,29 @@
 <!-- ========== 首页（嵌入手机端紧凑单页内容） ========== -->
 <div class="tab-page active" id="page-home">
   <div style="max-width:760px; margin:0 auto; padding:8px 0;">
+    <!-- 2026-05-26：今日待办清理进度卡（告警+关注客户），从拓客作战 tab 迁回今日待办首位 -->
+    <div class="cleanup-card" id="cleanupCard" style="margin-top:0; margin-bottom:12px;">
+      <div class="cleanup-head">
+        <div class="cleanup-title">
+          <span class="cleanup-icon">🎯</span>
+          <span class="cleanup-text">今日待办清理进度（告警+关注客户）</span>
+          <span class="cleanup-badge" id="cleanupBadge">云端实时</span>
+        </div>
+        <div class="cleanup-summary">
+          <span class="cleanup-main"><b id="cleanupDone">—</b> / <span id="cleanupTotal">—</span> 已处理</span>
+          <span class="cleanup-rate" id="cleanupRate">—</span>
+          <span class="cleanup-miss" id="cleanupMiss">—</span>
+        </div>
+      </div>
+      <div class="cleanup-team-bar">
+        <div class="cleanup-team-fill" id="cleanupTeamFill" style="width:0%"></div>
+      </div>
+      <div class="cleanup-sales-list" id="cleanupSalesList">
+        <!-- JS 渲染 7 销售横向对比 -->
+      </div>
+    </div>
     <iframe
-      src="mobile.html?v=20260526b"
+      src="mobile.html?v=20260526c"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -837,27 +858,7 @@
         </div>
       </div>
 
-      <!-- C方案：今日 Top 客户清理进度（云端共享 NotifyState 数据驱动） -->
-      <div class="cleanup-card" id="cleanupCard">
-        <div class="cleanup-head">
-          <div class="cleanup-title">
-            <span class="cleanup-icon">🎯</span>
-            <span class="cleanup-text">今日待办清理进度（告警+关注客户）</span>
-            <span class="cleanup-badge" id="cleanupBadge">云端共享</span>
-          </div>
-          <div class="cleanup-summary">
-            <span class="cleanup-main"><b id="cleanupDone">—</b> / <span id="cleanupTotal">—</span> 已处理</span>
-            <span class="cleanup-rate" id="cleanupRate">—</span>
-            <span class="cleanup-miss" id="cleanupMiss">—</span>
-          </div>
-        </div>
-        <div class="cleanup-team-bar">
-          <div class="cleanup-team-fill" id="cleanupTeamFill" style="width:0%"></div>
-        </div>
-        <div class="cleanup-sales-list" id="cleanupSalesList">
-          <!-- JS 渲染 7 销售横向对比 -->
-        </div>
-      </div>
+      <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
       <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260525f" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>

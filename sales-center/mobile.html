@@ -246,19 +246,6 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
 
       <div class="section">
         <div class="section-head"><h2>🎯 本季度有效新客 TOP 客户</h2><span class="more" id="topTotal">0 家</span></div>
-        <!-- 2026-05-26：今日待办清理进度（告警+关注客户），与 PC 看板 cleanup-card 同口径 -->
-        <div class="m-cleanup" id="mCleanup">
-          <div class="m-cleanup-head">
-            <div class="m-cleanup-title">🎯 今日待办清理进度（告警+关注）</div>
-            <div class="m-cleanup-summary">
-              <span><b id="mCleanupDone">—</b>/<span id="mCleanupTotal">—</span> 已处理</span>
-              <span class="m-cleanup-rate" id="mCleanupRate">—</span>
-            </div>
-          </div>
-          <div class="m-cleanup-bar"><div class="m-cleanup-fill" id="mCleanupFill" style="width:0%"></div></div>
-          <div class="m-cleanup-miss" id="mCleanupMiss"></div>
-          <div class="m-cleanup-list" id="mCleanupList"></div>
-        </div>
         <div class="sales-tabs" id="salesTabs">
           <button data-sale="all" class="active">全部</button>
           <button data-sale="kinsleyjin">kinsleyjin</button>
@@ -578,60 +565,6 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
         window.parent.postMessage({ type: "todo-redpoint", count: pendingCount }, "*");
       }
     } catch(e){}
-    // 同步刷新顶部清理进度卡（与 PC 看板 cleanup-card 同口径）
-    try { renderMCleanup(); } catch(e){}
-  }
-
-  /* ---- 2026-05-26：手机端今日待办清理进度卡（告警+关注客户） ---- */
-  function renderMCleanup(){
-    const card = $("mCleanup");
-    if (!card) return;
-    const SALES_LIST = ["Jonzhu","brownfan","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
-    // 7 销售各自 alarm+focus 客户作为分母，已勾的作为分子
-    const perSales = SALES_LIST.map(s => {
-      const target = topRows.filter(r => r.sale === s).map(r => ({...r, _s: statusOf(r)})).filter(r => r._s.status === "alarm" || r._s.status === "focus");
-      const total = target.length;
-      const done = target.filter(r => isDone(r.name)).length;
-      return { sales: s, total, done, rate: total ? done/total : 1 };
-    });
-    const teamTotal = perSales.reduce((a,b) => a + b.total, 0);
-    const teamDone  = perSales.reduce((a,b) => a + b.done, 0);
-    const teamMiss  = teamTotal - teamDone;
-    const teamRate  = teamTotal ? Math.round(teamDone / teamTotal * 100) : 100;
-
-    $("mCleanupDone").textContent  = teamDone;
-    $("mCleanupTotal").textContent = teamTotal;
-    $("mCleanupMiss").textContent  = teamMiss > 0 ? `· 还差 ${teamMiss} 个待处理` : "· 全部已处理 🎉";
-
-    const rateEl = $("mCleanupRate");
-    rateEl.textContent = teamRate + "%";
-    rateEl.className = "m-cleanup-rate" + (teamRate >= 80 ? "" : teamRate >= 50 ? " warn" : " alert");
-
-    $("mCleanupFill").style.width = teamRate + "%";
-
-    const list = $("mCleanupList");
-    if (teamTotal === 0) {
-      list.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:var(--muted);padding:6px;">今日无告警/关注客户 🎉</div>`;
-      return;
-    }
-    list.innerHTML = perSales.map(x => {
-      const pct = Math.round(x.rate * 100);
-      const isMe = x.sales === currentSale ? " me" : "";
-      let cls = "";
-      if (x.total === 0) cls = " done";
-      else if (pct >= 80) cls = " done";
-      else if (pct >= 50) cls = " warn";
-      else cls = " alert";
-      const displayPct = x.total === 0 ? "—" : pct + "%";
-      const fillW = x.total === 0 ? 100 : pct;
-      return `
-        <div class="m-cleanup-item${isMe}" title="${x.sales}：${x.done}/${x.total}">
-          <div class="m-cleanup-name">${x.sales}</div>
-          <div class="m-cleanup-pct${cls}">${displayPct}</div>
-          <div class="m-cleanup-cnt">${x.done}/${x.total}</div>
-          <div class="m-cleanup-itembar"><div class="m-cleanup-itemfill${cls}" style="width:${fillW}%"></div></div>
-        </div>`;
-    }).join("");
   }
 
   /* ---- 弹窗：标记为已处理 ---- */
