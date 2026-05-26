@@ -13,7 +13,7 @@
 <script src="data/register_lookup_data.js"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526n"></script>
+<script src="cloud_sync.js?v=20260526o"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
 <script src="data/tuoke_real_records.js"></script>
 <script src="export_tuoke.js?v=20260524b"></script>
@@ -568,7 +568,31 @@ function save(opts) {
           if (window.cloud.toast) window.cloud.toast('☁️ 已上传 ' + head.length + ' 条到云端');
         }).catch(function(e){
           console.warn('[cloud] register save fail:', e.message);
-          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + e.message + '（已本地保存，可顶栏「同步」补推）', true);
+          var msg = (e && e.message) || '';
+          // 2026-05-26 17:37 长期方案：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推
+          if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
+            if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
+            try {
+              window.cloud.requireLogin(function(){
+                // 登录成功后自动重推刚才那批
+                window.cloud.upload(head).then(function(d){
+                  console.info('[cloud] register save retry ok created=' + d.created + ' updated=' + d.updated);
+                  try {
+                    var SYNCED_KEY = 'cloud_synced_ids_v1';
+                    var syncedIds = JSON.parse(localStorage.getItem(SYNCED_KEY) || '{}') || {};
+                    head.forEach(function(r){ if (r && r.id != null) syncedIds[r.id] = 1; });
+                    localStorage.setItem(SYNCED_KEY, JSON.stringify(syncedIds));
+                  } catch(_){}
+                  if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 ' + head.length + ' 条', false);
+                }).catch(function(e2){
+                  console.warn('[cloud] register save retry fail:', e2 && e2.message);
+                  if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，请顶栏「同步」补推）', true);
+                });
+              });
+            } catch(_) {}
+          } else {
+            if (window.cloud.toast) window.cloud.toast('云端保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
+          }
         });
       }
     } else {
