@@ -835,6 +835,28 @@
           </div>
         </div>
       </div>
+
+      <!-- C方案：今日 Top 客户清理进度（云端共享 NotifyState 数据驱动） -->
+      <div class="cleanup-card" id="cleanupCard">
+        <div class="cleanup-head">
+          <div class="cleanup-title">
+            <span class="cleanup-icon">🎯</span>
+            <span class="cleanup-text">今日 Top 客户清理进度</span>
+            <span class="cleanup-badge" id="cleanupBadge">云端共享</span>
+          </div>
+          <div class="cleanup-summary">
+            <span class="cleanup-main"><b id="cleanupDone">—</b> / <span id="cleanupTotal">—</span> 已处理</span>
+            <span class="cleanup-rate" id="cleanupRate">—</span>
+            <span class="cleanup-miss" id="cleanupMiss">—</span>
+          </div>
+        </div>
+        <div class="cleanup-team-bar">
+          <div class="cleanup-team-fill" id="cleanupTeamFill" style="width:0%"></div>
+        </div>
+        <div class="cleanup-sales-list" id="cleanupSalesList">
+          <!-- JS 渲染 7 销售横向对比 -->
+        </div>
+      </div>
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
       <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260525f" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
@@ -867,6 +889,75 @@
   .bp-tag.kpi-tag  { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
   .bp-tag.time-tag { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
   .bp-tag.date-tag { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+
+  /* C方案：今日 Top 客户清理进度卡 */
+  .cleanup-card {
+    margin-top: 14px; background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 12px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+  }
+  .cleanup-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+  }
+  .cleanup-title { display: flex; align-items: center; gap: 8px; }
+  .cleanup-icon { font-size: 18px; }
+  .cleanup-text { font-size: 14px; font-weight: 700; color: #0f172a; }
+  .cleanup-badge {
+    padding: 2px 8px; font-size: 11px; font-weight: 600;
+    color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 999px;
+  }
+  .cleanup-summary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; }
+  .cleanup-main { color: #0f172a; }
+  .cleanup-main b { font-size: 18px; font-weight: 800; color: #2563eb; }
+  .cleanup-rate {
+    padding: 2px 10px; font-size: 12px; font-weight: 700;
+    border-radius: 999px; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0;
+  }
+  .cleanup-rate.warn { color: #b76b00; background: #fff7ed; border-color: #fed7aa; }
+  .cleanup-rate.alert { color: #c92a2a; background: #ffe9e9; border-color: #ffd0d0; }
+  .cleanup-miss { color: #6b7280; font-size: 12px; }
+  .cleanup-team-bar {
+    height: 6px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin-bottom: 12px;
+  }
+  .cleanup-team-fill {
+    height: 100%; background: linear-gradient(90deg, #2563eb 0%, #10b981 100%);
+    border-radius: 999px; transition: width .4s ease;
+  }
+  .cleanup-sales-list {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;
+  }
+  .cleanup-sales-item {
+    background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 8px 6px; text-align: center; font-size: 11px;
+    transition: all .2s ease; cursor: default;
+  }
+  .cleanup-sales-item:hover { background: #eff6ff; border-color: #bfdbfe; transform: translateY(-1px); }
+  .cleanup-sales-item.me { background: #fffbeb; border-color: #fcd34d; box-shadow: 0 0 0 2px #fef3c7; }
+  .cleanup-sales-name {
+    font-weight: 700; color: #0f172a; font-size: 12px; margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cleanup-sales-rate { font-size: 14px; font-weight: 800; color: #2563eb; margin-bottom: 4px; }
+  .cleanup-sales-rate.done { color: #15803d; }
+  .cleanup-sales-rate.warn { color: #b76b00; }
+  .cleanup-sales-rate.alert { color: #c92a2a; }
+  .cleanup-sales-cnt { color: #6b7280; font-size: 10px; margin-bottom: 4px; }
+  .cleanup-sales-bar {
+    height: 4px; background: #e5e7eb; border-radius: 999px; overflow: hidden;
+  }
+  .cleanup-sales-bar-fill {
+    height: 100%; background: #2563eb; border-radius: 999px; transition: width .4s ease;
+  }
+  .cleanup-sales-bar-fill.done { background: #10b981; }
+  .cleanup-sales-bar-fill.warn { background: #f59e0b; }
+  .cleanup-sales-bar-fill.alert { background: #ef4444; }
+  .cleanup-empty { padding: 20px; text-align: center; color: #9ca3af; font-size: 12px; }
+  @media (max-width: 1024px) {
+    .cleanup-sales-list { grid-template-columns: repeat(4, 1fr) !important; }
+  }
+  @media (max-width: 640px) {
+    .cleanup-sales-list { grid-template-columns: repeat(2, 1fr) !important; }
+  }
 
   .bp-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
@@ -1899,6 +1990,10 @@ window.resetNotify = () => {
 
 /* === 今日小红点完成进度：从 NotifyState 实时计算，不再使用固定 mock === */
 function renderYestProgress() {
+
+  /* C方案：拓客作战 portalKpi 区下方"今日 Top 客户清理进度"卡 —— 云端共享数据驱动 */
+  try { renderCleanupCard(); } catch(e){ console.warn('[cleanupCard] render fail:', e); }
+
   const $ = id => document.getElementById(id);
   if (!$('ypTeamRate')) return;
 
@@ -1946,6 +2041,96 @@ function renderYestProgress() {
       `;
     }).join('');
   }
+}
+
+/* ===========================================================
+   C方案：今日 Top 客户清理进度卡（云端共享 NotifyState）
+   - 数据源：每个销售的 client 任务（assignClientRedDot 命中 focus/sprint/lifecycle）
+   - 团队总进度 = sum(7销售 client任务 done/total)
+   - 7 销售横向对比：每人 done/total + 完成率 + 颜色
+   - 当前登录销售卡片高亮（cls=me）
+   =========================================================== */
+function renderCleanupCard() {
+  const card = document.getElementById('cleanupCard');
+  if (!card) return;
+
+  // 7 销售各自统计 client 任务（Top80 客户红泡 = 重点/冲刺/生命周期警示）
+  const perSales = SALES.map(s => {
+    const scope = getClientsByUser(s);
+    const tasks = buildClientTasks(scope);
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    return { sales: s, total: total, done: done, rate: total ? done/total : 1 };
+  });
+
+  const teamTotal = perSales.reduce((sum, x) => sum + x.total, 0);
+  const teamDone  = perSales.reduce((sum, x) => sum + x.done,  0);
+  const teamMiss  = teamTotal - teamDone;
+  const teamRate  = teamTotal ? Math.round(teamDone / teamTotal * 100) : 100;
+
+  // 顶部摘要
+  const $$ = id => document.getElementById(id);
+  $$('cleanupDone').textContent  = teamDone;
+  $$('cleanupTotal').textContent = teamTotal;
+  $$('cleanupMiss').textContent  = teamMiss > 0 ? `· 还差 ${teamMiss} 个待处理` : '· 全部已处理 🎉';
+
+  // 完成率徽章颜色：>=80% 绿 / 50-80% 黄 / <50% 红
+  const rateEl = $$('cleanupRate');
+  rateEl.textContent = teamRate + '%';
+  rateEl.className = 'cleanup-rate' + (teamRate >= 80 ? '' : teamRate >= 50 ? ' warn' : ' alert');
+
+  // 团队总进度条
+  $$('cleanupTeamFill').style.width = teamRate + '%';
+
+  // 云端徽章状态
+  const badge = $$('cleanupBadge');
+  if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+    badge.textContent = NotifyState._cloudReady ? '☁️ 云端实时' : '☁️ 同步中…';
+    badge.style.color = '#15803d';
+    badge.style.background = '#f0fdf4';
+    badge.style.borderColor = '#bbf7d0';
+  } else {
+    badge.textContent = '⚠️ 未登录（仅本地）';
+    badge.style.color = '#c92a2a';
+    badge.style.background = '#ffe9e9';
+    badge.style.borderColor = '#ffd0d0';
+  }
+
+  // 7 销售横向对比（按完成率倒序，并发数对比）
+  const list = $$('cleanupSalesList');
+  if (!list) return;
+  if (teamTotal === 0) {
+    list.innerHTML = '<div class="cleanup-empty">暂无 Top 客户红泡任务</div>';
+    list.style.gridTemplateColumns = '1fr';
+    return;
+  }
+  list.style.gridTemplateColumns = '';
+
+  // 不排序，固定 SALES 顺序便于销售自己找到自己；当前用户加 me 高亮
+  list.innerHTML = perSales.map(x => {
+    const pct = Math.round(x.rate * 100);
+    const isMe = x.sales === CURRENT_USER ? ' me' : '';
+    let rateCls = '';
+    let barCls = '';
+    if (x.total === 0) {
+      rateCls = ' done'; barCls = ' done';  // 没任务=已达成
+    } else if (pct >= 80) {
+      rateCls = ' done'; barCls = ' done';
+    } else if (pct >= 50) {
+      rateCls = ' warn'; barCls = ' warn';
+    } else {
+      rateCls = ' alert'; barCls = ' alert';
+    }
+    const displayPct = x.total === 0 ? '—' : pct + '%';
+    return `
+      <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}">
+        <div class="cleanup-sales-name">${x.sales}</div>
+        <div class="cleanup-sales-rate${rateCls}">${displayPct}</div>
+        <div class="cleanup-sales-cnt">${x.done}/${x.total} 个</div>
+        <div class="cleanup-sales-bar"><div class="cleanup-sales-bar-fill${barCls}" style="width:${x.total === 0 ? 100 : pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
 }
 
 /* ===========================================================
