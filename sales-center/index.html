@@ -1737,16 +1737,94 @@ function taskItemHTML(t) {
 }
 
 /* === 红点消除：NotifyState 维护「已通知客户」状态（localStorage 持久化） === */
+/* ===========================================================
+   小红点任务清理状态（NotifyState）—— 2026-05-26 接 CloudBase
+   - 双写：localStorage 快照 + 云端 redspot_progress 集合（全员共享）
+   - 任意销售标 done → 全员看到（云端拉全量合并到 _set）
+   - 未登录 fallback 纯本地（不阻断），登录后自动同步上云
+   - 集合字段：taskKey / status(done|undo) / salesName / ts
+   =========================================================== */
 const NotifyState = {
   _key: "v32_notify_done_v1",
+  _coll: "redspot_progress",
   _set: new Set(JSON.parse(localStorage.getItem("v32_notify_done_v1") || "[]")),
+  _cloudReady: false,
   has(k) { return this._set.has(k); },
-  add(k) { this._set.add(k); this._save(); },
-  remove(k) { this._set.delete(k); this._save(); },
-  addBatch(arr) { arr.forEach(k => this._set.add(k)); this._save(); },
-  reset() { this._set.clear(); this._save(); },
-  _save() { localStorage.setItem(this._key, JSON.stringify([...this._set])); }
+  add(k) { this._set.add(k); this._save(); this._pushCloud(k, 'done'); },
+  remove(k) { this._set.delete(k); this._save(); this._pushCloud(k, 'undo'); },
+  addBatch(arr) {
+    arr.forEach(k => this._set.add(k));
+    this._save();
+    arr.forEach(k => this._pushCloud(k, 'done'));
+  },
+  reset() {
+    const all = [...this._set];
+    this._set.clear(); this._save();
+    all.forEach(k => this._pushCloud(k, 'undo'));
+  },
+  _save() { localStorage.setItem(this._key, JSON.stringify([...this._set])); },
+  _pushCloud(taskKey, status) {
+    try {
+      if (!window.cloud || !window.cloud.isLoggedIn()) return;
+      const salesName = (window.cloud.rtx && window.cloud.rtx()) || '';
+      const db = window.cloud;
+      // cloud_sync.js 没暴露通用 collection，复用 callFunction 模式不合适
+      // 直接通过 cloudbase SDK 全局对象写：window.tcb 或重新拿 _app
+      // 简化：用 fetch 替身——直接调 cloud._db 不行（私有），改用 callFunction 兜底
+      // 走 cloud.callFunction 调一个通用云函数（暂不接，用 SDK 直写）
+      // 最简方案：通过 cloudbase.init 拿 db 引用
+      const cb = (window.cloudbase && window.cloudbase.init)
+        ? window.cloudbase.init({ env: window.cloud.envId })
+        : null;
+      if (!cb) return;
+      const cdb = cb.database();
+      cdb.collection(this._coll).add({
+        taskKey: taskKey,
+        status: status,
+        salesName: salesName,
+        ts: Date.now()
+      }).catch(function(e) { console.warn('[NotifyState] cloud push fail:', e && e.message); });
+    } catch (e) { console.warn('[NotifyState] push exception:', e); }
+  },
+  async _pullCloud() {
+    try {
+      if (!window.cloud || !window.cloud.isLoggedIn()) return;
+      const cb = (window.cloudbase && window.cloudbase.init)
+        ? window.cloudbase.init({ env: window.cloud.envId }) : null;
+      if (!cb) return;
+      // 等 cloud_sync 的登录态就绪（它内部 ensureReady 会拿 token）
+      // 不阻塞 UI——拉取失败/超时时就用本地快照渲染
+      const cdb = cb.database();
+      // 拉全量（按 ts 倒序，每个 taskKey 取最新一条决定 done/undo）
+      const res = await cdb.collection(this._coll).orderBy('ts', 'desc').limit(1000).get();
+      const rows = (res && res.data) || [];
+      const latestByKey = new Map();
+      rows.forEach(r => {
+        if (!r.taskKey) return;
+        if (!latestByKey.has(r.taskKey)) latestByKey.set(r.taskKey, r);
+      });
+      // 合并到 _set：done 加入 / undo 移除
+      latestByKey.forEach((r, k) => {
+        if (r.status === 'done') this._set.add(k);
+        else if (r.status === 'undo') this._set.delete(k);
+      });
+      this._save();
+      this._cloudReady = true;
+      // 重渲染
+      try { if (typeof renderTodayTasks === 'function') renderTodayTasks(); } catch(e){}
+      try { if (typeof renderYestProgress === 'function') renderYestProgress(); } catch(e){}
+      console.log('[NotifyState] cloud pull done, merged', latestByKey.size, 'records');
+    } catch (e) { console.warn('[NotifyState] pull fail:', e && e.message); }
+  }
 };
+
+// 启动后异步拉云端（延迟 1.5s 等 cloud_sync 完成 SDK 初始化和 token 校验）
+setTimeout(() => { NotifyState._pullCloud(); }, 1500);
+// 登录后再拉一次（cloud_sync 登录成功会触发自定义事件，这里轮询兜底）
+let __notifyPollTimer = setInterval(() => {
+  if (NotifyState._cloudReady) { clearInterval(__notifyPollTimer); return; }
+  if (window.cloud && window.cloud.isLoggedIn()) { NotifyState._pullCloud(); }
+}, 5000);
 
 window.toggleTaskDone = (key) => {
   if (NotifyState.has(key)) NotifyState.remove(key);
