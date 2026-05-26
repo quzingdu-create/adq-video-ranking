@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260526p"></script>
+<script src="auth-guard.js?v=20260526q"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260526p"></script>
+<script src="data/current_rising_data.js?v=20260526q"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260526p"></script>
-<script src="data/center_daily_kpi.js?v=20260526p"></script>
-<script src="data/tuoke_real_records.js?v=20260526p"></script>
-<script src="data/top80_effective_metrics.js?v=20260526p"></script>
+<script src="data/center_quarter_summary.js?v=20260526q"></script>
+<script src="data/center_daily_kpi.js?v=20260526q"></script>
+<script src="data/tuoke_real_records.js?v=20260526q"></script>
+<script src="data/top80_effective_metrics.js?v=20260526q"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526p"></script>
-<script src="login_guard_banner.js?v=20260526p"></script>
+<script src="cloud_sync.js?v=20260526q"></script>
+<script src="login_guard_banner.js?v=20260526q"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260526p"></script>
+<script src="export_tuoke.js?v=20260526q"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -637,7 +637,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?v=20260526p"
+      src="mobile.html?v=20260526q"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -861,7 +861,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526p" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526q" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1531,7 +1531,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526p`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526q`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -1969,6 +1969,63 @@ let __notifyLivePollTimer = setInterval(() => {
   }
 }, 30000);
 
+/* === 2026-05-26 17:56 重构：cleanup-card 直接读云端 mobile:* 状态 ===
+   血泪教训：之前走 mobile.html iframe → postMessage → parent localStorage 的中转，
+   任何一环（iframe storage 隔离 / oneShotReset 污染 / cache 失效）出问题都会导致 0/41。
+   新方案：parent 自己直接拉 redspot_progress 云端，按 taskKey=mobile:<name> 取最新状态。
+   关键过滤：忽略 note='one-shot-reset-1316' 的污染记录（让被错误推 undo 的 done 重新生效）。
+*/
+window.MobileDoneCloudState = {
+  _coll: 'redspot_progress',
+  _doneSet: new Set(),
+  _ready: false,
+  isDone(name) { return this._doneSet.has(name); },
+  async _pullCloud() {
+    try {
+      if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return;
+      if (!window.cloudbase || !window.cloudbase.init) return;
+      const cb = window.cloudbase.init({ env: window.cloud.envId });
+      const cdb = cb.database();
+      // 拉最近 1000 条 redspot_progress（按 ts desc）
+      const res = await cdb.collection(this._coll)
+        .orderBy('ts', 'desc').limit(1000).get();
+      const rows = (res && res.data) || [];
+      // 按 taskKey 取最新一条「非污染」记录
+      const latest = new Map();
+      rows.forEach(r => {
+        if (!r.taskKey || r.taskKey.indexOf('mobile:') !== 0) return;
+        // 关键过滤：oneShotReset-1316 推的 undo 是错的，跳过让更早的真实 done 生效
+        if (r.note === 'one-shot-reset-1316') return;
+        if (!latest.has(r.taskKey)) latest.set(r.taskKey, r);
+      });
+      const newDone = new Set();
+      latest.forEach((r, k) => {
+        const name = k.replace(/^mobile:/, '');
+        if (r.status === 'done') newDone.add(name);
+      });
+      this._doneSet = newDone;
+      this._ready = true;
+      console.log('[MobileDoneCloud] pulled', latest.size, 'records, done=', newDone.size);
+      try { renderCleanupCard(); } catch(e){}
+    } catch (e) { console.warn('[MobileDoneCloud] pull fail:', e && e.message); }
+  }
+};
+// 启动后异步拉
+setTimeout(() => { window.MobileDoneCloudState._pullCloud(); }, 1500);
+// 5s 兜底登录后再拉
+let __mobileDoneInitTimer = setInterval(() => {
+  if (window.MobileDoneCloudState._ready) { clearInterval(__mobileDoneInitTimer); return; }
+  if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+    window.MobileDoneCloudState._pullCloud();
+  }
+}, 5000);
+// 30s 持续轮询跨设备同步
+setInterval(() => {
+  if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+    window.MobileDoneCloudState._pullCloud();
+  }
+}, 30000);
+
 /* === 一次性清零（2026-05-26 12:25 用户拍板）===
    把 12:25 之前打的所有「✅ 已通知客户」状态全部清 0，
    理由：销售反馈 16/41 已处理是测试时打的，现在要从 0 开始。
@@ -2166,7 +2223,15 @@ function renderCleanupCard() {
     if ((cost !== null && cost <= -0.10) || (roi !== null && roi <= -0.15) || (creative !== null && creative <= -0.20)) return 'focus';
     return 'stable';
   };
-  const isMobileDone = name => !!localStorage.getItem('mobile_done_' + name);
+  // 2026-05-26 17:56 重构：cleanup-card 直接读云端 MobileDoneCloudState（不再依赖 iframe/localStorage 中转）
+  // 自动过滤 oneShotReset 污染（note='one-shot-reset-1316'），让被错误推 undo 的 done 重新生效
+  const isMobileDone = name => {
+    if (window.MobileDoneCloudState && window.MobileDoneCloudState._ready) {
+      return window.MobileDoneCloudState._doneSet.has(name);
+    }
+    // fallback：未登录或云端未拉到时读本地
+    return !!localStorage.getItem('mobile_done_' + name);
+  };
 
   // 7 销售各自统计：alarm + focus 客户作为分母，已勾的作为分子
   const perSales = SALES.map(s => {
