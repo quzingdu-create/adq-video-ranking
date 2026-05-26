@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260526v"></script>
+<script src="auth-guard.js?v=20260526w"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260526v"></script>
+<script src="data/current_rising_data.js?v=20260526w"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260526v"></script>
-<script src="data/center_daily_kpi.js?v=20260526v"></script>
-<script src="data/tuoke_real_records.js?v=20260526v"></script>
-<script src="data/top80_effective_metrics.js?v=20260526v"></script>
+<script src="data/center_quarter_summary.js?v=20260526w"></script>
+<script src="data/center_daily_kpi.js?v=20260526w"></script>
+<script src="data/tuoke_real_records.js?v=20260526w"></script>
+<script src="data/top80_effective_metrics.js?v=20260526w"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526v"></script>
-<script src="login_guard_banner.js?v=20260526v"></script>
+<script src="cloud_sync.js?v=20260526w"></script>
+<script src="login_guard_banner.js?v=20260526w"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260526v"></script>
+<script src="export_tuoke.js?v=20260526w"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -637,7 +637,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?v=20260526v"
+      src="mobile.html?v=20260526w"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -861,7 +861,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526v" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526w" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1531,7 +1531,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526v`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526w`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -1826,22 +1826,9 @@ window.addEventListener('message', function(ev){
       console.log('[parent] received mobile-done-pulled, applied', doneList.length, 'done /', undoList.length, 'undo');
     } catch(e){ console.warn('[parent] apply mobile-done-pulled fail:', e && e.message); }
     try { renderCleanupCard(); } catch(e){}
-  } else if (ev && ev.data && ev.data.type === 'cleanup-progress') {
-    // 2026-05-26 18:15 用户拍板「上面严格跟随下面气泡」：mobile.html 同步过来的 chip 同口径数字
-    // cleanup-card 直接镜像 mobile 算好的 teamDone/teamTotal/perSales，不再自己算，避免再搞反
-    try {
-      window.MobileChipMirror = {
-        _ready: true,
-        _ts: Date.now(),
-        teamDone: Number(ev.data.teamDone || 0),
-        teamTotal: Number(ev.data.teamTotal || 0),
-        perSales: Array.isArray(ev.data.perSales) ? ev.data.perSales : [],
-        doneNames: Array.isArray(ev.data.doneNames) ? ev.data.doneNames : []
-      };
-      console.log('[parent] cleanup-progress received: done=', window.MobileChipMirror.teamDone, '/ total=', window.MobileChipMirror.teamTotal);
-    } catch(e){ console.warn('[parent] apply cleanup-progress fail:', e && e.message); }
-    try { renderCleanupCard(); } catch(e){}
   }
+  // 2026-05-26 21:08 拍板「纯 parent 单一真源」：删掉 cleanup-progress 分支
+  // mobile.html 继续 postMessage 也没人接收（无害），cleanup-card 永远走 parent 算法
 });
 
 function taskItemHTML(t) {
@@ -2218,65 +2205,11 @@ function renderCleanupCard() {
   const card = document.getElementById('cleanupCard');
   if (!card) return;
 
-  // 2026-05-26 18:15 用户拍板「上面严格跟随下面气泡」：
-  // 优先镜像 mobile.html chip 算出来的 teamDone/teamTotal/perSales，
-  // 不再 parent 自己算，杜绝再搞反。mobile iframe 未加载时才走原 cloud/local 兜底。
-  const mirror = window.MobileChipMirror;
-  if (mirror && mirror._ready) {
-    const $$ = id => document.getElementById(id);
-    const teamTotal = mirror.teamTotal;
-    const teamDone = mirror.teamDone;
-    const teamMiss = teamTotal - teamDone;
-    const teamRate = teamTotal ? Math.round(teamDone / teamTotal * 100) : 100;
-    $$('cleanupDone').textContent = teamDone;
-    $$('cleanupTotal').textContent = teamTotal;
-    $$('cleanupMiss').textContent = teamMiss > 0 ? `· 还差 ${teamMiss} 个待处理` : '· 全部已处理 🎉';
-    const rateEl = $$('cleanupRate');
-    rateEl.textContent = teamRate + '%';
-    rateEl.className = 'cleanup-rate' + (teamRate >= 80 ? '' : teamRate >= 50 ? ' warn' : ' alert');
-    $$('cleanupTeamFill').style.width = teamRate + '%';
-    const badge = $$('cleanupBadge');
-    if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
-      badge.textContent = '☁️ 云端实时更新';
-      badge.style.color = '#15803d';
-      badge.style.background = '#f0fdf4';
-      badge.style.borderColor = '#bbf7d0';
-    } else {
-      badge.textContent = '⚠️ 未登录（仅本地）';
-      badge.style.color = '#c92a2a';
-      badge.style.background = '#ffe9e9';
-      badge.style.borderColor = '#ffd0d0';
-    }
-    const list = $$('cleanupSalesList');
-    if (!list) return;
-    if (teamTotal === 0) {
-      list.innerHTML = '<div class="cleanup-empty">今日无告警/关注客户 🎉</div>';
-      list.style.gridTemplateColumns = '1fr';
-      return;
-    }
-    list.style.gridTemplateColumns = '';
-    list.innerHTML = mirror.perSales.map(x => {
-      const pct = x.total ? Math.round(x.done / x.total * 100) : 100;
-      const isMe = x.sales === CURRENT_USER ? ' me' : '';
-      let rateCls = '', barCls = '';
-      if (x.total === 0) { rateCls = ' done'; barCls = ' done'; }
-      else if (pct >= 80) { rateCls = ' done'; barCls = ' done'; }
-      else if (pct >= 50) { rateCls = ' warn'; barCls = ' warn'; }
-      else { rateCls = ' alert'; barCls = ' alert'; }
-      const displayPct = x.total === 0 ? '—' : pct + '%';
-      return `
-        <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}（告警+关注）">
-          <div class="cleanup-sales-name">${x.sales}</div>
-          <div class="cleanup-sales-rate${rateCls}">${displayPct}</div>
-          <div class="cleanup-sales-cnt">${x.done}/${x.total} 个</div>
-          <div class="cleanup-sales-bar"><div class="cleanup-sales-bar-fill${barCls}" style="width:${x.total === 0 ? 100 : pct}%"></div></div>
-        </div>
-      `;
-    }).join('');
-    return;
-  }
-
-  // ====== 兜底逻辑（mobile iframe 未加载完时）======
+  // 2026-05-26 21:08 「纯 parent 单一真源」死规矩：
+  // 删掉 MobileChipMirror 镜像分支（之前 mobile postMessage 覆盖 parent 数字，因 iframe 缓存反复出错）
+  // cleanup-card 永远在 parent 自己算：top80 -> 按 status 过滤 alarm/focus -> 读云端 MobileDoneCloudState 判 done
+  // mobile.html 继续 postMessage 也没人接收（无害），不需要管 mobile 是否上线 v=v
+  // ====== 唯一算法 ======
   // 即"今日待办里 状态=告警(alarm)/关注(focus) 的客户"，已处理读 mobile_done_<name>。
   // 这样首页今日待办勾选 ↔ 这张卡 完全打通；通过 redspot_progress(taskKey=mobile:*) 全员云端同步。
   const top80 = Array.isArray(window.__TOP80_EFFECTIVE_METRICS__) ? window.__TOP80_EFFECTIVE_METRICS__ : [];
