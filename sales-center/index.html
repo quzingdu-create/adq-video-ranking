@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260526w"></script>
+<script src="auth-guard.js?v=20260526x"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260526w"></script>
+<script src="data/current_rising_data.js?v=20260526x"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260526w"></script>
-<script src="data/center_daily_kpi.js?v=20260526w"></script>
-<script src="data/tuoke_real_records.js?v=20260526w"></script>
-<script src="data/top80_effective_metrics.js?v=20260526w"></script>
+<script src="data/center_quarter_summary.js?v=20260526x"></script>
+<script src="data/center_daily_kpi.js?v=20260526x"></script>
+<script src="data/tuoke_real_records.js?v=20260526x"></script>
+<script src="data/top80_effective_metrics.js?v=20260526x"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526w"></script>
-<script src="login_guard_banner.js?v=20260526w"></script>
+<script src="cloud_sync.js?v=20260526x"></script>
+<script src="login_guard_banner.js?v=20260526x"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260526w"></script>
+<script src="export_tuoke.js?v=20260526x"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -637,7 +637,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?v=20260526w"
+      src="mobile.html?v=20260526x"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -861,7 +861,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526w" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526x" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1531,7 +1531,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526w`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526x`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -2204,6 +2204,43 @@ function renderYestProgress() {
 function renderCleanupCard() {
   const card = document.getElementById('cleanupCard');
   if (!card) return;
+
+  // 2026-05-26 22:11 修复 0→真值跳变：MobileDoneCloudState 拉云端要 1.5s+，
+  // 在 _ready=false 期间 _doneSet 是空集，会导致销售卡先渲染「全员 0/X」红色卡，
+  // 1.5s 后才跳到真实数字（2/8、1/8、9/9）。
+  // 修复：未 ready 直接显示骨架，不渲染任何数字，杜绝跳变。
+  const cloudReady = window.MobileDoneCloudState && window.MobileDoneCloudState._ready;
+  const isLoggedIn = window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn();
+  if (isLoggedIn && !cloudReady) {
+    const $$skeleton = id => document.getElementById(id);
+    if ($$skeleton('cleanupDone')) $$skeleton('cleanupDone').textContent = '—';
+    if ($$skeleton('cleanupTotal')) $$skeleton('cleanupTotal').textContent = '—';
+    if ($$skeleton('cleanupMiss')) $$skeleton('cleanupMiss').textContent = '· 同步中…';
+    const rateEl0 = $$skeleton('cleanupRate');
+    if (rateEl0) { rateEl0.textContent = '…'; rateEl0.className = 'cleanup-rate'; }
+    const badge0 = $$skeleton('cleanupBadge');
+    if (badge0) {
+      badge0.textContent = '☁️ 同步中…';
+      badge0.style.color = '#9a6b00';
+      badge0.style.background = '#fffbeb';
+      badge0.style.borderColor = '#fde68a';
+    }
+    const teamFill0 = $$skeleton('cleanupTeamFill');
+    if (teamFill0) teamFill0.style.width = '0%';
+    const list0 = $$skeleton('cleanupSalesList');
+    if (list0) {
+      list0.style.gridTemplateColumns = '';
+      list0.innerHTML = (typeof SALES !== 'undefined' ? SALES : []).map(s => `
+        <div class="cleanup-sales-item" title="${s}：同步中…">
+          <div class="cleanup-sales-name">${s}</div>
+          <div class="cleanup-sales-rate" style="color:#9ca3af;">…</div>
+          <div class="cleanup-sales-cnt" style="color:#9ca3af;">同步中</div>
+          <div class="cleanup-sales-bar"><div class="cleanup-sales-bar-fill" style="width:0%;background:#e5e7eb;"></div></div>
+        </div>
+      `).join('');
+    }
+    return;
+  }
 
   // 2026-05-26 21:08 「纯 parent 单一真源」死规矩：
   // 删掉 MobileChipMirror 镜像分支（之前 mobile postMessage 覆盖 parent 数字，因 iframe 缓存反复出错）
