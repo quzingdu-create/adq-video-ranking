@@ -216,8 +216,8 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   <!-- ☁️ 云端同步 + 拓新组双导出按钮（v3.2 死规矩三件套） -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script src="cloud_sync.js?v=20260526m"></script>
-  <script src="login_guard_banner.js?v=20260526m"></script>
+  <script src="cloud_sync.js?v=20260526n"></script>
+  <script src="login_guard_banner.js?v=20260526n"></script>
   <script src="export_tuoke.js?v=20260526k"></script>
 </head>
 <body>
@@ -394,9 +394,29 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
       __mobileCloudReady = true;
       try { renderTop(); } catch(e){}
       // 通知 parent（PC 看板）：mobile_done_* 数据已更新，让 cleanup-card 重新算
+      // 2026-05-26 17:25：iframe 与 parent localStorage 实测隔离（同源也不共享），
+      // 改成把 done 客户名 + payload 一起传过去，parent 自己写到自己的 localStorage
       try {
         if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: "mobile-done-pulled", count: latest.size }, "*");
+          const doneList = [];
+          latest.forEach((r, k) => {
+            const name = k.replace(/^mobile:/, "");
+            if (r.status === "done") {
+              let payload = { tag: "", note: "", at: r.ts || Date.now() };
+              if (r.note) { try { const p = JSON.parse(r.note); if (p && typeof p === "object") payload = Object.assign(payload, p); } catch {} }
+              doneList.push({ name: name, payload: payload });
+            }
+          });
+          const undoList = [];
+          latest.forEach((r, k) => {
+            if (r.status === "undo") undoList.push(k.replace(/^mobile:/, ""));
+          });
+          window.parent.postMessage({
+            type: "mobile-done-pulled",
+            count: latest.size,
+            doneList: doneList,
+            undoList: undoList
+          }, "*");
         }
       } catch(e){}
       console.log("[mobile] cloud pull done:", latest.size);
