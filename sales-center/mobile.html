@@ -171,6 +171,33 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   .bottom-nav button.active { background: var(--blue2); color: var(--blue); }
   [data-page] { display: none; }
   [data-page].active { display: block; }
+  /* 2026-05-26：手机端今日待办清理进度卡 */
+  .m-cleanup { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 11px 12px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  .m-cleanup-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .m-cleanup-title { font-size: 13px; font-weight: 800; color: var(--text); }
+  .m-cleanup-summary { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .m-cleanup-summary b { color: var(--blue); font-size: 16px; font-weight: 900; }
+  .m-cleanup-rate { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .m-cleanup-rate.warn { color: #b76b00; background: #fff7ed; border-color: #fed7aa; }
+  .m-cleanup-rate.alert { color: #c92a2a; background: #ffe9e9; border-color: #ffd0d0; }
+  .m-cleanup-bar { height: 5px; background: #f1f5f9; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+  .m-cleanup-fill { height: 100%; background: linear-gradient(90deg, #2563eb 0%, #10b981 100%); border-radius: 999px; transition: width .4s ease; }
+  .m-cleanup-miss { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .m-cleanup-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .m-cleanup-list::-webkit-scrollbar { display: none; }
+  .m-cleanup-item { flex: 0 0 64px; background: #f8fafc; border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .m-cleanup-item.me { background: #fffbeb; border-color: #fcd34d; box-shadow: 0 0 0 2px #fef3c7; }
+  .m-cleanup-name { font-size: 10px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .m-cleanup-pct { font-size: 13px; font-weight: 900; color: var(--blue); margin-bottom: 2px; line-height: 1.1; }
+  .m-cleanup-pct.done { color: #15803d; }
+  .m-cleanup-pct.warn { color: #b76b00; }
+  .m-cleanup-pct.alert { color: #c92a2a; }
+  .m-cleanup-cnt { font-size: 9px; color: var(--muted); margin-bottom: 3px; }
+  .m-cleanup-itembar { height: 3px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+  .m-cleanup-itemfill { height: 100%; background: var(--blue); border-radius: 999px; transition: width .4s ease; }
+  .m-cleanup-itemfill.done { background: #10b981; }
+  .m-cleanup-itemfill.warn { background: #f59e0b; }
+  .m-cleanup-itemfill.alert { background: #ef4444; }
   /* PC 端自适应：宽屏时双栏布局 */
   @media (min-width: 720px) {
     body { max-width: 1080px; margin: 0 auto; padding-left: 18px; padding-right: 18px; }
@@ -219,6 +246,19 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
 
       <div class="section">
         <div class="section-head"><h2>🎯 本季度有效新客 TOP 客户</h2><span class="more" id="topTotal">0 家</span></div>
+        <!-- 2026-05-26：今日待办清理进度（告警+关注客户），与 PC 看板 cleanup-card 同口径 -->
+        <div class="m-cleanup" id="mCleanup">
+          <div class="m-cleanup-head">
+            <div class="m-cleanup-title">🎯 今日待办清理进度（告警+关注）</div>
+            <div class="m-cleanup-summary">
+              <span><b id="mCleanupDone">—</b>/<span id="mCleanupTotal">—</span> 已处理</span>
+              <span class="m-cleanup-rate" id="mCleanupRate">—</span>
+            </div>
+          </div>
+          <div class="m-cleanup-bar"><div class="m-cleanup-fill" id="mCleanupFill" style="width:0%"></div></div>
+          <div class="m-cleanup-miss" id="mCleanupMiss"></div>
+          <div class="m-cleanup-list" id="mCleanupList"></div>
+        </div>
         <div class="sales-tabs" id="salesTabs">
           <button data-sale="all" class="active">全部</button>
           <button data-sale="kinsleyjin">kinsleyjin</button>
@@ -538,6 +578,60 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
         window.parent.postMessage({ type: "todo-redpoint", count: pendingCount }, "*");
       }
     } catch(e){}
+    // 同步刷新顶部清理进度卡（与 PC 看板 cleanup-card 同口径）
+    try { renderMCleanup(); } catch(e){}
+  }
+
+  /* ---- 2026-05-26：手机端今日待办清理进度卡（告警+关注客户） ---- */
+  function renderMCleanup(){
+    const card = $("mCleanup");
+    if (!card) return;
+    const SALES_LIST = ["Jonzhu","brownfan","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+    // 7 销售各自 alarm+focus 客户作为分母，已勾的作为分子
+    const perSales = SALES_LIST.map(s => {
+      const target = topRows.filter(r => r.sale === s).map(r => ({...r, _s: statusOf(r)})).filter(r => r._s.status === "alarm" || r._s.status === "focus");
+      const total = target.length;
+      const done = target.filter(r => isDone(r.name)).length;
+      return { sales: s, total, done, rate: total ? done/total : 1 };
+    });
+    const teamTotal = perSales.reduce((a,b) => a + b.total, 0);
+    const teamDone  = perSales.reduce((a,b) => a + b.done, 0);
+    const teamMiss  = teamTotal - teamDone;
+    const teamRate  = teamTotal ? Math.round(teamDone / teamTotal * 100) : 100;
+
+    $("mCleanupDone").textContent  = teamDone;
+    $("mCleanupTotal").textContent = teamTotal;
+    $("mCleanupMiss").textContent  = teamMiss > 0 ? `· 还差 ${teamMiss} 个待处理` : "· 全部已处理 🎉";
+
+    const rateEl = $("mCleanupRate");
+    rateEl.textContent = teamRate + "%";
+    rateEl.className = "m-cleanup-rate" + (teamRate >= 80 ? "" : teamRate >= 50 ? " warn" : " alert");
+
+    $("mCleanupFill").style.width = teamRate + "%";
+
+    const list = $("mCleanupList");
+    if (teamTotal === 0) {
+      list.innerHTML = `<div style="flex:1;text-align:center;font-size:11px;color:var(--muted);padding:6px;">今日无告警/关注客户 🎉</div>`;
+      return;
+    }
+    list.innerHTML = perSales.map(x => {
+      const pct = Math.round(x.rate * 100);
+      const isMe = x.sales === currentSale ? " me" : "";
+      let cls = "";
+      if (x.total === 0) cls = " done";
+      else if (pct >= 80) cls = " done";
+      else if (pct >= 50) cls = " warn";
+      else cls = " alert";
+      const displayPct = x.total === 0 ? "—" : pct + "%";
+      const fillW = x.total === 0 ? 100 : pct;
+      return `
+        <div class="m-cleanup-item${isMe}" title="${x.sales}：${x.done}/${x.total}">
+          <div class="m-cleanup-name">${x.sales}</div>
+          <div class="m-cleanup-pct${cls}">${displayPct}</div>
+          <div class="m-cleanup-cnt">${x.done}/${x.total}</div>
+          <div class="m-cleanup-itembar"><div class="m-cleanup-itemfill${cls}" style="width:${fillW}%"></div></div>
+        </div>`;
+    }).join("");
   }
 
   /* ---- 弹窗：标记为已处理 ---- */
