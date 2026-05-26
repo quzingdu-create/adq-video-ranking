@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260526o"></script>
+<script src="auth-guard.js?v=20260526p"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260526o"></script>
+<script src="data/current_rising_data.js?v=20260526p"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260526o"></script>
-<script src="data/center_daily_kpi.js?v=20260526o"></script>
-<script src="data/tuoke_real_records.js?v=20260526o"></script>
-<script src="data/top80_effective_metrics.js?v=20260526o"></script>
+<script src="data/center_quarter_summary.js?v=20260526p"></script>
+<script src="data/center_daily_kpi.js?v=20260526p"></script>
+<script src="data/tuoke_real_records.js?v=20260526p"></script>
+<script src="data/top80_effective_metrics.js?v=20260526p"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260526o"></script>
-<script src="login_guard_banner.js?v=20260526o"></script>
+<script src="cloud_sync.js?v=20260526p"></script>
+<script src="login_guard_banner.js?v=20260526p"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260526o"></script>
+<script src="export_tuoke.js?v=20260526p"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -637,7 +637,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?v=20260526o"
+      src="mobile.html?v=20260526p"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -861,7 +861,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526o" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260526p" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1531,7 +1531,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526o`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260526p`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -2001,71 +2001,13 @@ setTimeout(function() {
   if (!window.cloud || !window.cloud.isLoggedIn()) __oneShotResetBefore_20260526_1225();
 }, 500);
 
-/* === 二次清零（2026-05-26 13:16 用户拍板）===
-   清掉「本季度有效新客 TOP 客户」chip 的「已处理」状态——
-   即 localStorage 里所有 mobile_done_* key + 云端 redspot_progress 里 taskKey=mobile:* 的记录。
-   理由：12:25 那次只清了 NotifyState（41 条今日待办），但 Top 客户处理用的是
-   另一套 key (mobile_done_<name>)，那 5 条测试时打的「已处理」气泡没消，4+0+1+5=10 自洽不上。
-   保护：localStorage flag 防重复执行。
-*/
-function __oneShotResetMobileDone_20260526_1316() {
-  try {
-    var FLAG_KEY = '__mobile_done_reset_2026_05_26_1316__';
-    if (localStorage.getItem(FLAG_KEY) === '1') return;
-    // 1. 本地：扫所有 mobile_done_* 删除
-    var keys = [];
-    for (var i = 0; i < localStorage.length; i++) {
-      var k = localStorage.key(i);
-      if (k && k.indexOf('mobile_done_') === 0) keys.push(k);
-    }
-    if (keys.length > 0) {
-      console.log('[mobile_done] one-shot reset 13:16, clearing', keys.length, 'keys');
-      keys.forEach(function(k) { localStorage.removeItem(k); });
-    }
-    // 2. 云端：拉 redspot_progress 集合，把 mobile:* 前缀的都 push 一条 undo
-    try {
-      if (window.cloudbase && window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
-        var cb = window.cloudbase.init({ env: window.cloud.envId });
-        var db = cb.database();
-        db.collection('redspot_progress').orderBy('ts','desc').limit(1000).get().then(function(res){
-          var rows = (res && res.data) || [];
-          var seen = new Set();
-          var pushed = 0;
-          rows.forEach(function(r) {
-            if (!r.taskKey || r.taskKey.indexOf('mobile:') !== 0) return;
-            if (seen.has(r.taskKey)) return;
-            seen.add(r.taskKey);
-            if (r.status === 'done') {
-              db.collection('redspot_progress').add({
-                taskKey: r.taskKey, status: 'undo',
-                salesName: (window.cloud.rtx && window.cloud.rtx()) || '',
-                note: 'one-shot-reset-1316', ts: Date.now()
-              }).catch(function(){});
-              pushed++;
-            }
-          });
-          console.log('[mobile_done] cloud reset push undo:', pushed);
-        }).catch(function(e){ console.warn('[mobile_done] cloud reset fail:', e && e.message); });
-      }
-    } catch(e) { console.warn('[mobile_done] cloud reset exception:', e); }
-    localStorage.setItem(FLAG_KEY, '1');
-    // 通知 mobile iframe 重渲染（如果嵌入了）
-    try {
-      var mIframe = document.getElementById('battleFrame') ||
-                    document.querySelector('iframe[src*="mobile.html"]');
-      if (mIframe && mIframe.contentWindow) {
-        mIframe.contentWindow.postMessage({ type:'mobile-done-reset-1316' }, '*');
-      }
-    } catch(e){}
-    // 自身重渲染 cleanup-card（依赖 mobile_done 数据）
-    try { if (typeof renderCleanupCard === 'function') renderCleanupCard(); } catch(e){}
-  } catch(e) { console.warn('[mobile_done] one-shot reset fail:', e); }
-}
-// 等 _pullCloud + __pullMobileCloud 都完成（mobile.html 也是 1.5s）后再清，留 1.5s 余量
-setTimeout(__oneShotResetMobileDone_20260526_1316, 3200);
-setTimeout(function() {
-  if (!window.cloud || !window.cloud.isLoggedIn()) __oneShotResetMobileDone_20260526_1316();
-}, 600);
+/* === 二次清零（2026-05-26 13:16 用户拍板）—— 已废弃（17:40 移除）===
+   理由：oneShotReset 在每个新浏览器/隐身窗口/未设 FLAG_KEY 的设备上都会跑一次，
+   每次都把云端 redspot_progress 里所有 mobile:* 的 done 记录推一条 undo，
+   等同于「持续污染云端」——销售刚在手机端勾完 done，PC 端一打开就被推 undo。
+   17:35 用户验证 applied 23 done 之后，3200ms 这个清零跑了，
+   把云端 23 条 done 全推成 undo，下次硬刷拉到的就全是 undo → cleanup-card 0/41。
+   彻底移除该函数，让云端 mobile:* 最新状态由销售实时操作决定。 */
 
 window.toggleTaskDone = (key) => {
   if (NotifyState.has(key)) NotifyState.remove(key);
