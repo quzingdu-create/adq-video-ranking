@@ -453,6 +453,9 @@
   // ============== 用户登录统计 API（登录次数 + 停留时长） ==============
   var __currentSessionId = null;
   var __heartbeatTimer = null;
+  var __lastActivityTime = null;    // B++ 最后操作时间（用于有效时长）
+  var __visibilityHiddenSince = null; // 页面隐藏起点（用于暂停计时）
+  var __activityListenersAdded = false; // 是否已绑活动监听
   function _dateStr(d) {
     d = d || new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -468,12 +471,16 @@
         var old = JSON.parse(raw);
         if (old.sessionId && old.lastActiveTime && (Date.now() - old.lastActiveTime) < 5 * 60 * 1000) {
           __currentSessionId = old.sessionId;
-          // 更新本地 lastActiveTime
+          // 更新本地 lastActiveTime + lastActivityTime
           old.lastActiveTime = Date.now();
+          old.lastActivityTime = Date.now();
           localStorage.setItem('__cloud_session_current__', JSON.stringify(old));
-          // 启动心跳
+          __lastActivityTime = Date.now();
+          // 启动心跳 + 绑定活动监听
           if (__heartbeatTimer) clearInterval(__heartbeatTimer);
           __heartbeatTimer = setInterval(sessionHeartbeat, 30000);
+          _bindActivityListeners();
+          _bindVisibility();
           console.log('[session] reuse existing session', old.sessionId);
           return Promise.resolve();
         }
@@ -486,6 +493,7 @@
       sessionId: __currentSessionId,
       loginTime: Date.now(),
       lastActiveTime: Date.now(),
+      lastActivityTime: Date.now(),
       duration: 0,
       deviceInfo: (navigator.userAgent || '').slice(0, 200),
       date: _dateStr(),
@@ -493,9 +501,12 @@
     };
     // 先写本地缓存（防丢）
     try { localStorage.setItem('__cloud_session_current__', JSON.stringify(data)); } catch(_) {}
-    // 启动心跳
+    // 启动心跳 + 绑定活动监听
     if (__heartbeatTimer) clearInterval(__heartbeatTimer);
     __heartbeatTimer = setInterval(sessionHeartbeat, 30000);
+    __lastActivityTime = Date.now();
+    _bindActivityListeners();
+    _bindVisibility();
     return ensureReady().then(function () {
       var coll = _db.collection(COLL_SESSIONS);
       return coll.add(data).catch(function (e) {
@@ -511,6 +522,7 @@
       if (cached) {
         var d = JSON.parse(cached);
         d.lastActiveTime = now;
+        d.lastActivityTime = __lastActivityTime || now;
         localStorage.setItem('__cloud_session_current__', JSON.stringify(d));
       }
     } catch(_) {}
@@ -519,7 +531,7 @@
       coll.where({ sessionId: __currentSessionId }).get().then(function (res) {
         if (res.data && res.data.length) {
           var docId = res.data[0]._id;
-          coll.doc(docId).update({ lastActiveTime: now, _updatedAt: now }).catch(function(){});
+          coll.doc(docId).update({ lastActiveTime: now, lastActivityTime: __lastActivityTime || now, _updatedAt: now }).catch(function(){});
         }
       }).catch(function(){});
     }).catch(function(){});
@@ -535,8 +547,9 @@
       if (raw) cached = JSON.parse(raw);
     } catch(_) {}
     var loginTime = (cached && cached.loginTime) || now;
-    var durationSec = Math.max(0, Math.round((now - loginTime) / 1000));
-    var data = { lastActiveTime: now, duration: durationSec, _updatedAt: now };
+    var lastActivityTime = (cached && cached.lastActivityTime) || loginTime;
+    var durationSec = Math.max(0, Math.round((lastActivityTime - loginTime) / 1000));
+    var data = { lastActiveTime: now, lastActivityTime: lastActivityTime, duration: durationSec, _updatedAt: now };
     __currentSessionId = null;
     try { localStorage.removeItem('__cloud_session_current__'); } catch(_) {}
     return ensureReady().then(function () {
@@ -550,6 +563,39 @@
         console.warn('[session] end fail:', e && e.message);
       });
     }).catch(function(){});
+  }
+  function _onUserActivity() {
+    var now = Date.now();
+    if (__lastActivityTime && (now - __lastActivityTime) < 10000) return;
+    __lastActivityTime = now;
+    try {
+      var cached = localStorage.getItem('__cloud_session_current__');
+      if (cached) {
+        var d = JSON.parse(cached);
+        d.lastActivityTime = now;
+        localStorage.setItem('__cloud_session_current__', JSON.stringify(d));
+      }
+    } catch(_) {}
+  }
+  function _bindActivityListeners() {
+    if (__activityListenersAdded) return;
+    __activityListenersAdded = true;
+    document.addEventListener('click', _onUserActivity, true);
+    document.addEventListener('keyup', _onUserActivity, true);
+    document.addEventListener('scroll', _onUserActivity, true);
+  }
+  function _onVisibilityChange() {
+    if (document.visibilityState === 'hidden') {
+      __visibilityHiddenSince = Date.now();
+    } else {
+      __visibilityHiddenSince = null;
+      _onUserActivity();
+    }
+  }
+  function _bindVisibility() {
+    if (typeof document.visibilityState !== 'undefined') {
+      document.addEventListener('visibilitychange', _onVisibilityChange);
+    }
   }
   function sessionQuery(opts) {
     opts = opts || {};
