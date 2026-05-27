@@ -619,11 +619,18 @@
         // 聚合统计
         var stats = { totalSessions: list.length, totalDuration: 0, byDate: {} };
         list.forEach(function(r) {
-          stats.totalDuration += (r.duration || 0);
+          // 2026-05-27 B++ 修复：用 lastActivityTime 重算有效时长（防进行中 session 的 duration 过时）
+          var effectiveDuration = 0;
+          if (r.lastActivityTime && r.loginTime) {
+            effectiveDuration = Math.max(0, Math.round((r.lastActivityTime - r.loginTime) / 1000));
+          } else {
+            effectiveDuration = r.duration || 0;
+          }
+          stats.totalDuration += effectiveDuration;
           var d = r.date || _dateStr(new Date(r.loginTime));
           if (!stats.byDate[d]) stats.byDate[d] = { count: 0, duration: 0 };
           stats.byDate[d].count++;
-          stats.byDate[d].duration += (r.duration || 0);
+          stats.byDate[d].duration += effectiveDuration;
         });
         return { list: list, stats: stats };
       });
