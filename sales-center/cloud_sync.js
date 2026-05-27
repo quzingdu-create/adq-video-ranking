@@ -34,6 +34,7 @@
   var ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
   var COLL_RECORDS = 'tuoke_records';
   var COLL_KPI = 'sales_kpi_daily';
+  var COLL_SESSIONS = 'user_sessions';
   var RTX_KEY = 'cloud_rtx_v2';
   // B1 鉴权：每个销售一个 CloudBase 账号（用户名+用户自定义密码）
   // CloudBase 用户名 = rtx 本身（如 jonzhu），密码由销售首次输入
@@ -238,6 +239,8 @@
         document.getElementById('cloud-login-pwd').value = '';
         modal.style.display = 'none';
         showToast('☁️ 已连接云端，rtx=' + rtx);
+        // 登录成功 → 记录 session
+        try { sessionStart(); } catch(e) { console.warn('[session] start error', e); }
         if (cloud._afterLogin) { var cb = cloud._afterLogin; cloud._afterLogin = null; cb(); }
       }).catch(function (e) {
         btn.disabled = false; btn.textContent = '进入';
@@ -447,6 +450,120 @@
     });
   }
 
+  // ============== 用户登录统计 API（登录次数 + 停留时长） ==============
+  var __currentSessionId = null;
+  var __heartbeatTimer = null;
+  function _dateStr(d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function sessionStart() {
+    var rtx = getRtx();
+    if (!rtx) return Promise.resolve();
+    __currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    var data = {
+      rtx: rtx,
+      sessionId: __currentSessionId,
+      loginTime: Date.now(),
+      lastActiveTime: Date.now(),
+      duration: 0,
+      deviceInfo: (navigator.userAgent || '').slice(0, 200),
+      date: _dateStr(),
+      _createdAt: Date.now()
+    };
+    // 先写本地缓存（防丢）
+    try { localStorage.setItem('__cloud_session_current__', JSON.stringify(data)); } catch(_) {}
+    // 启动心跳
+    if (__heartbeatTimer) clearInterval(__heartbeatTimer);
+    __heartbeatTimer = setInterval(sessionHeartbeat, 30000);
+    return ensureReady().then(function () {
+      var coll = _db.collection(COLL_SESSIONS);
+      return coll.add(data).catch(function (e) {
+        console.warn('[session] start fail:', e && e.message);
+      });
+    }).catch(function () { /* 未登录云端时不阻断 */ });
+  }
+  function sessionHeartbeat() {
+    if (!__currentSessionId) return;
+    var now = Date.now();
+    try {
+      var cached = localStorage.getItem('__cloud_session_current__');
+      if (cached) {
+        var d = JSON.parse(cached);
+        d.lastActiveTime = now;
+        localStorage.setItem('__cloud_session_current__', JSON.stringify(d));
+      }
+    } catch(_) {}
+    ensureReady().then(function () {
+      var coll = _db.collection(COLL_SESSIONS);
+      coll.where({ sessionId: __currentSessionId }).get().then(function (res) {
+        if (res.data && res.data.length) {
+          var docId = res.data[0]._id;
+          coll.doc(docId).update({ lastActiveTime: now, _updatedAt: now }).catch(function(){});
+        }
+      }).catch(function(){});
+    }).catch(function(){});
+  }
+  function sessionEnd() {
+    if (!__currentSessionId) return Promise.resolve();
+    if (__heartbeatTimer) { clearInterval(__heartbeatTimer); __heartbeatTimer = null; }
+    var now = Date.now();
+    var sid = __currentSessionId;  // 先保存，后面再清空
+    var cached = null;
+    try {
+      var raw = localStorage.getItem('__cloud_session_current__');
+      if (raw) cached = JSON.parse(raw);
+    } catch(_) {}
+    var loginTime = (cached && cached.loginTime) || now;
+    var durationSec = Math.max(0, Math.round((now - loginTime) / 1000));
+    var data = { lastActiveTime: now, duration: durationSec, _updatedAt: now };
+    __currentSessionId = null;
+    try { localStorage.removeItem('__cloud_session_current__'); } catch(_) {}
+    return ensureReady().then(function () {
+      var coll = _db.collection(COLL_SESSIONS);
+      return coll.where({ sessionId: sid }).get().then(function (res) {
+        if (res.data && res.data.length) {
+          var docId = res.data[0]._id;
+          return coll.doc(docId).update(data);
+        }
+      }).catch(function (e) {
+        console.warn('[session] end fail:', e && e.message);
+      });
+    }).catch(function(){});
+  }
+  function sessionQuery(opts) {
+    opts = opts || {};
+    return ensureReady().then(function () {
+      var coll = _db.collection(COLL_SESSIONS);
+      var w = {};
+      if (opts.rtx) w.rtx = opts.rtx;
+      if (opts.date) w.date = opts.date;
+      var query = Object.keys(w).length ? coll.where(w) : coll;
+      if (opts.from || opts.to) {
+        var _ = _db.command;
+        var dateCond = null;
+        if (opts.from && opts.to) dateCond = _.gte(opts.from).and(_.lte(opts.to));
+        else if (opts.from) dateCond = _.gte(opts.from);
+        else dateCond = _.lte(opts.to);
+        var w2 = Object.assign({}, w, { date: dateCond });
+        query = coll.where(w2);
+      }
+      return query.orderBy('loginTime', 'desc').limit(opts.limit || 1000).get().then(function (res) {
+        var list = res.data || [];
+        // 聚合统计
+        var stats = { totalSessions: list.length, totalDuration: 0, byDate: {} };
+        list.forEach(function(r) {
+          stats.totalDuration += (r.duration || 0);
+          var d = r.date || _dateStr(new Date(r.loginTime));
+          if (!stats.byDate[d]) stats.byDate[d] = { count: 0, duration: 0 };
+          stats.byDate[d].count++;
+          stats.byDate[d].duration += (r.duration || 0);
+        });
+        return { list: list, stats: stats };
+      });
+    });
+  }
+
   // ============== 公开对象 ==============
   var cloud = {
     backendUrl: 'cloudbase://' + ENV_ID,
@@ -469,6 +586,8 @@
     },
     showLogin: showLoginModal,
     logout: function () {
+      // 退出前结束当前 session
+      try { sessionEnd(); } catch(e) {}
       clearRtx();
       _currentRtx = null;
       _readyPromise = null;
@@ -504,6 +623,13 @@
     kpi: {
       upsert: kpiUpsert,
       query: kpiQuery
+    },
+
+    session: {
+      start: sessionStart,
+      end: sessionEnd,
+      heartbeat: sessionHeartbeat,
+      query: sessionQuery
     },
 
     isAdmin: isAdmin,
@@ -828,7 +954,10 @@
       var tmpAuth = tmpApp.auth({ persistence: 'local' });
       if (tmpAuth.hasLoginState && tmpAuth.hasLoginState()) {
         // 有 token → 走「路径 2」复用，无需密码
-        ensureReady(rtx).catch(function (e) {
+        ensureReady(rtx).then(function () {
+          // 静默复用 token 成功 → 也记 session
+          try { sessionStart(); } catch(e) {}
+        }).catch(function (e) {
           console.warn('[cloud] silent init warn:', e.message);
         });
       }
