@@ -6,7 +6,7 @@
 <title>监察后台 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260527i"></script>
+<script src="cloud_sync.js?v=20260527j"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -119,22 +119,22 @@
 <!-- 概览卡片 -->
 <div class="grid">
   <div class="card">
-    <div class="card-label">登录次数</div>
+    <div class="card-label">Session 次数</div>
     <div class="card-value" id="totalSessions">-</div>
     <div class="card-sub">人次</div>
   </div>
   <div class="card">
-    <div class="card-label">总停留时长</div>
+    <div class="card-label">总有效时长</div>
     <div class="card-value success" id="totalDuration">-</div>
     <div class="card-sub">分钟</div>
   </div>
   <div class="card">
-    <div class="card-label">日均登录次数</div>
-    <div class="card-value warn" id="avgSessions">-</div>
-    <div class="card-sub">人次/日</div>
+    <div class="card-label" id="card3Label">独立用户·天</div>
+    <div class="card-value warn" id="card3Value">-</div>
+    <div class="card-sub" id="card3Sub">人·天</div>
   </div>
   <div class="card">
-    <div class="card-label">人均停留时长</div>
+    <div class="card-label">人均有效时长</div>
     <div class="card-value" id="avgDuration">-</div>
     <div class="card-sub">分钟/人次</div>
   </div>
@@ -323,13 +323,37 @@ async function loadDashboard() {
     if (res.list) res.list.forEach(s => allSessions.push(s));
   });
 
+  // 计算独立用户·天
+  const uniqueUserDays = new Set(allSessions.map(s => (s.rtx || '') + '|' + (s.date || ''))).size;
+
+  // 今天模式：计算在线人数
+  let onlineCount = 0;
+  if (isToday) {
+    const now = Date.now();
+    const onlineRtms = new Set();
+    allSessions.forEach(s => {
+      if (s.lastActiveTime && (now - s.lastActiveTime) < 30 * 60 * 1000) {
+        onlineRtms.add(s.rtx);
+      }
+    });
+    onlineCount = onlineRtms.size;
+  }
+
   const days = dates.length;
-  const avgSessions = days > 0 ? Math.round(totalSessions / days) : 0;
   const avgDuration = totalSessions > 0 ? Math.round((totalDuration / 60) / totalSessions) : 0;
 
   document.getElementById('totalSessions').textContent = totalSessions;
   document.getElementById('totalDuration').textContent = Math.round(totalDuration / 60);
-  document.getElementById('avgSessions').textContent = avgSessions;
+  // 卡片3：今天=在线人数，历史=独立用户·天
+  if (isToday) {
+    document.getElementById('card3Label').textContent = '当前在线人数';
+    document.getElementById('card3Value').textContent = onlineCount;
+    document.getElementById('card3Sub').textContent = '30分钟内活跃';
+  } else {
+    document.getElementById('card3Label').textContent = '独立用户·天';
+    document.getElementById('card3Value').textContent = uniqueUserDays;
+    document.getElementById('card3Sub').textContent = '人·天';
+  }
   document.getElementById('avgDuration').textContent = avgDuration;
 
   // 渲染明细表（仅今天模式显示明细，历史模式显示汇总）
