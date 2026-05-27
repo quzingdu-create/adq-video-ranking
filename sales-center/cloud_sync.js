@@ -42,6 +42,7 @@
   var SALES_LIST = [
     { rtx: 'ziqingdu',     name: '子青',          is_admin: true },
     { rtx: 'kinsleyjin',   name: 'Kinsleyjin',    is_admin: true },
+    { rtx: 'edcchen',      name: 'Edcchen',       is_admin: true },
     { rtx: 'jonzhu',       name: 'Jonzhu' },
     { rtx: 'brownfan',     name: 'Brownfan' },
     { rtx: 'kaikaigenli',  name: 'Kaikaigenli' },
