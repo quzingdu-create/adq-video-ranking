@@ -98,8 +98,13 @@
 </div>
 
 <div class="section">
-  <h2>📈 7日登录趋势 <button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
+  <h2>📈 7日登录趋势（按销售） <button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
   <div id="chart"></div>
+</div>
+
+<div class="section">
+  <h2>📊 销售7日对比</h2>
+  <div id="salesTable"><div class="loading">加载中...</div></div>
 </div>
 
 <div class="section">
@@ -136,12 +141,17 @@ function getDurationClass(sec) {
   return 'duration-low';
 }
 
-// 查最近7天数据
+const COLORS = {
+  brownfan: '#3b82f6', lijunwu: '#10b981', Jonzhu: '#f59e0b',
+  kaikaigenli: '#ef4444', kinsleyjin: '#8b5cf6', ruilingzhan: '#06b6d4', yvaineechen: '#ec4899'
+};
+
+// 查最近7天数据，按销售分组
 async function loadTrend() {
   const dates = [];
-  const counts = [];
-  const durations = [];
   const today = new Date();
+  const salesData = {}; // { rtx: { counts: [], durations: [] } }
+  SALES_NAMES.forEach(s => { salesData[s] = { counts: [], durations: [] }; });
 
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
@@ -151,35 +161,67 @@ async function loadTrend() {
 
     try {
       const res = await window.cloud.session.query({ date: ds });
-      counts.push(res.stats.totalSessions);
-      durations.push(Math.round((res.stats.totalDuration || 0) / 60));
+      const list = res.list || [];
+      // 按 rtx 聚合
+      const rtxMap = {};
+      list.forEach(s => {
+        if (!rtxMap[s.rtx]) rtxMap[s.rtx] = { count: 0, duration: 0 };
+        rtxMap[s.rtx].count++;
+        rtxMap[s.rtx].duration += (s.duration || 0);
+      });
+      SALES_NAMES.forEach(s => {
+        salesData[s].counts.push(rtxMap[s] ? rtxMap[s].count : 0);
+        salesData[s].durations.push(rtxMap[s] ? Math.round(rtxMap[s].duration / 60) : 0);
+      });
     } catch (e) {
-      counts.push(0);
-      durations.push(0);
+      SALES_NAMES.forEach(s => {
+        salesData[s].counts.push(0);
+        salesData[s].durations.push(0);
+      });
     }
   }
+
+  // 登录次数堆叠柱状图
+  const countSeries = SALES_NAMES.map(s => ({
+    name: s, type: 'bar', stack: 'count',
+    data: salesData[s].counts,
+    itemStyle: { color: COLORS[s] }
+  }));
 
   const chart = echarts.init(document.getElementById('chart'));
   chart.setOption({
     tooltip: { trigger: 'axis' },
-    legend: { data: ['登录次数', '停留时长(分钟)'] },
+    legend: { data: SALES_NAMES },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: { type: 'category', data: dates },
-    yAxis: [
-      { type: 'value', name: '次数', position: 'left' },
-      { type: 'value', name: '分钟', position: 'right' }
-    ],
-    series: [
-      {
-        name: '登录次数', type: 'bar', data: counts,
-        itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
-      },
-      {
-        name: '停留时长(分钟)', type: 'line', data: durations, yAxisIndex: 1,
-        smooth: true, itemStyle: { color: '#10b981' }, areaStyle: { color: 'rgba(16,185,129,0.1)' }
-      }
-    ]
+    yAxis: { type: 'value', name: '登录次数' },
+    series: countSeries
   });
+
+  // 渲染销售对比表
+  renderSalesTable(salesData, dates);
+}
+
+function renderSalesTable(salesData, dates) {
+  let html = '<table><thead><tr><th>销售</th>';
+  dates.forEach(d => { html += '<th>' + d + '</th>'; });
+  html += '<th>7日合计</th><th>7日总时长</th></tr></thead><tbody>';
+
+  SALES_NAMES.forEach(s => {
+    const totalCount = salesData[s].counts.reduce((a, b) => a + b, 0);
+    const totalDur = salesData[s].durations.reduce((a, b) => a + b, 0);
+    html += '<tr>';
+    html += '<td><span class="rtx-tag" style="background:' + COLORS[s] + '20;color:' + COLORS[s] + '">' + s + '</span></td>';
+    salesData[s].counts.forEach(c => {
+      html += '<td>' + (c || '-') + '</td>';
+    });
+    html += '<td><strong>' + totalCount + '</strong></td>';
+    html += '<td>' + totalDur + '分钟</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('salesTable').innerHTML = html;
 }
 
 // 查今日明细
