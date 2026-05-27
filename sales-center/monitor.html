@@ -181,21 +181,35 @@ async function loadTrend() {
     }
   }
 
-  // 登录次数堆叠柱状图
-  const countSeries = SALES_NAMES.map(s => ({
-    name: s, type: 'bar', stack: 'count',
-    data: salesData[s].counts,
+  // 柱子 = 登录时长（分钟），堆叠柱状图
+  const durSeries = SALES_NAMES.map(s => ({
+    name: s, type: 'bar', stack: 'duration',
+    data: salesData[s].durations,
     itemStyle: { color: COLORS[s] }
   }));
 
   const chart = echarts.init(document.getElementById('chart'));
   chart.setOption({
-    tooltip: { trigger: 'axis' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        let html = '<strong>' + params[0].axisValue + '</strong><br/>';
+        params.forEach(p => {
+          if (p.value > 0) {
+            const idx = p.dataIndex;
+            const sName = p.seriesName;
+            const count = salesData[sName].counts[idx];
+            html += p.marker + ' ' + sName + ': ' + p.value + '分钟 (登录' + count + '次)<br/>';
+          }
+        });
+        return html;
+      }
+    },
     legend: { data: SALES_NAMES },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
     xAxis: { type: 'category', data: dates },
-    yAxis: { type: 'value', name: '登录次数' },
-    series: countSeries
+    yAxis: { type: 'value', name: '停留时长(分钟)' },
+    series: durSeries
   });
 
   // 渲染销售对比表
@@ -212,10 +226,12 @@ function renderSalesTable(salesData, dates) {
     const totalDur = salesData[s].durations.reduce((a, b) => a + b, 0);
     html += '<tr>';
     html += '<td><span class="rtx-tag" style="background:' + COLORS[s] + '20;color:' + COLORS[s] + '">' + s + '</span></td>';
-    salesData[s].counts.forEach(c => {
-      html += '<td>' + (c || '-') + '</td>';
+    salesData[s].counts.forEach((c, idx) => {
+      const dur = salesData[s].durations[idx];
+      const cell = (c || dur) ? (c + '次/' + dur + '分') : '-';
+      html += '<td>' + cell + '</td>';
     });
-    html += '<td><strong>' + totalCount + '</strong></td>';
+    html += '<td><strong>' + totalCount + '次</strong></td>';
     html += '<td>' + totalDur + '分钟</td>';
     html += '</tr>';
   });
@@ -242,10 +258,15 @@ async function loadToday() {
   document.getElementById('todayDuration').textContent = Math.round((stats.totalDuration || 0) / 60);
   document.getElementById('avgDuration').textContent = stats.totalSessions ? Math.round((stats.totalDuration / 60) / stats.totalSessions) : 0;
 
-  // 计算在线人数（30分钟内有心跳）
+  // 计算在线人数（30分钟内有心跳，按 rtx 去重）
   const now = Date.now();
-  const onlineList = list.filter(s => s.lastActiveTime && (now - s.lastActiveTime) < 30 * 60 * 1000);
-  document.getElementById('onlineCount').textContent = onlineList.length;
+  const onlineRtms = new Set();
+  list.forEach(s => {
+    if (s.lastActiveTime && (now - s.lastActiveTime) < 30 * 60 * 1000) {
+      onlineRtms.add(s.rtx);
+    }
+  });
+  document.getElementById('onlineCount').textContent = onlineRtms.size;
 
   // 渲染表格
   if (!list.length) {

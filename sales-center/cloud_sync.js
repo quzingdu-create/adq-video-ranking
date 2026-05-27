@@ -460,6 +460,26 @@
   function sessionStart() {
     var rtx = getRtx();
     if (!rtx) return Promise.resolve();
+
+    // 2026-05-27 修复：5分钟内有活跃 session 则复用，避免刷新页面重复创建
+    try {
+      var raw = localStorage.getItem('__cloud_session_current__');
+      if (raw) {
+        var old = JSON.parse(raw);
+        if (old.sessionId && old.lastActiveTime && (Date.now() - old.lastActiveTime) < 5 * 60 * 1000) {
+          __currentSessionId = old.sessionId;
+          // 更新本地 lastActiveTime
+          old.lastActiveTime = Date.now();
+          localStorage.setItem('__cloud_session_current__', JSON.stringify(old));
+          // 启动心跳
+          if (__heartbeatTimer) clearInterval(__heartbeatTimer);
+          __heartbeatTimer = setInterval(sessionHeartbeat, 30000);
+          console.log('[session] reuse existing session', old.sessionId);
+          return Promise.resolve();
+        }
+      }
+    } catch(_) {}
+
     __currentSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     var data = {
       rtx: rtx,
