@@ -7,24 +7,24 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260527b"></script>
-<script src="data/old24_customer_data.js?v=20260527b"></script>
-<script src="data/bulk_import_rows.js?v=20260527b"></script>
-<script src="data/tuoke_real_records.js?v=20260527b"></script>
-<script src="data/customer_link_data.js?v=20260527b"></script>
-<script src="data/center_sales_summary.js?v=20260527b"></script>
-<script src="data/center_quarter_summary.js?v=20260527b"></script>
-<script src="data/center_daily_kpi.js?v=20260527b"></script>
-<script src="data/delivery_side_summary.js?v=20260527b"></script>
-<script src="data/top80_effective_metrics.js?v=20260527b"></script>
-<script src="data/top_status_data.js?v=20260527b"></script>
-<script src="data/enough_candidates.js?v=20260527b"></script>
-<script src="data/handover_customers_519.js?v=20260527b"></script>
-<script src="data/first_quarter.js?v=20260527b"></script>
-<script src="data/old24_names.js?v=20260527b"></script>
+<script src="data/laoke_lookup_data.js?v=20260527c"></script>
+<script src="data/old24_customer_data.js?v=20260527c"></script>
+<script src="data/bulk_import_rows.js?v=20260527c"></script>
+<script src="data/tuoke_real_records.js?v=20260527c"></script>
+<script src="data/customer_link_data.js?v=20260527c"></script>
+<script src="data/center_sales_summary.js?v=20260527c"></script>
+<script src="data/center_quarter_summary.js?v=20260527c"></script>
+<script src="data/center_daily_kpi.js?v=20260527c"></script>
+<script src="data/delivery_side_summary.js?v=20260527c"></script>
+<script src="data/top80_effective_metrics.js?v=20260527c"></script>
+<script src="data/top_status_data.js?v=20260527c"></script>
+<script src="data/enough_candidates.js?v=20260527c"></script>
+<script src="data/handover_customers_519.js?v=20260527c"></script>
+<script src="data/first_quarter.js?v=20260527c"></script>
+<script src="data/old24_names.js?v=20260527c"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260527b"></script>
+<script src="cloud_sync.js?v=20260527c"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -1236,8 +1236,8 @@ function renderSalesProgress() {
   const otherRow = rows.find(r => r.sale === '其他');
   const totalRow = rows.find(r => r.sale === '合计');
 
-  // 计算季度已过天数（基于"季度消耗截止日"= dataDate - 1，因为每日凌晨抓 T-1 截止）
-  // 例：dataDate=2026-05-19 → 季度消耗截止 5/18 → 4月30天+5月18天 = 48 天
+  // 2026-05-27 修正：与 index.html 紫色 KPI 卡 _qDays 对齐，含数据日当天
+  // 例：dataDate=2026-05-26 → 4-1 到 5-26 共 56 天 → 季耗÷56 与紫色卡 73.7 一致
   function quarterDays(quarter, dataDate) {
     const m = quarter.match(/^(\d{4})Q(\d)$/);
     if (!m) return 1;
@@ -1245,7 +1245,6 @@ function renderSalesProgress() {
     const startMonth = (q - 1) * 3 + 1; // Q1=1, Q2=4
     const start = new Date(y, startMonth - 1, 1);
     let end = dataDate ? new Date(dataDate) : new Date();
-    end.setDate(end.getDate() - 1); // 季度消耗截止 = 数据日 - 1
     const diff = Math.max(1, Math.floor((end - start) / 86400000) + 1);
     return diff;
   }
