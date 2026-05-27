@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>监察后台 · 销售作战中心</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_sync.js?v=20260527h"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --border: #e5e9f0;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --primary: #3b82f6;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
+  }
+  .card-label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+  .card-value.success { color: var(--success); }
+  .card-value.warn { color: var(--warn); }
+  .card-value.danger { color: var(--danger); }
+  .card-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .section { background: var(--panel); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border); }
+  .section h2 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #f8fafd; font-weight: 600; color: var(--text-2); font-size: 12px; }
+  tr:hover { background: #f8fafd; }
+  .rtx-tag {
+    display: inline-block; background: #eff6ff; color: var(--primary);
+    padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  }
+  .duration-good { color: var(--success); font-weight: 600; }
+  .duration-mid { color: var(--warn); font-weight: 600; }
+  .duration-low { color: var(--text-2); }
+  .loading { text-align: center; padding: 40px; color: var(--text-2); }
+  .error { text-align: center; padding: 40px; color: var(--danger); }
+  #chart { width: 100%; height: 320px; }
+  .refresh-btn {
+    float: right; background: var(--primary); color: white; border: none;
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  }
+  .refresh-btn:hover { opacity: 0.9; }
+  .login-status {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px;
+  }
+  .login-status.online { background: var(--success); }
+  .login-status.offline { background: var(--text-2); }
+</style>
+</head>
+<body>
+<h1>📊 监察后台 · 销售作战中心</h1>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-label">今日登录次数</div>
+    <div class="card-value" id="todaySessions">-</div>
+    <div class="card-sub">人次</div>
+  </div>
+  <div class="card">
+    <div class="card-label">今日总停留时长</div>
+    <div class="card-value success" id="todayDuration">-</div>
+    <div class="card-sub">分钟</div>
+  </div>
+  <div class="card">
+    <div class="card-label">当前在线人数</div>
+    <div class="card-value warn" id="onlineCount">-</div>
+    <div class="card-sub">30分钟内活跃</div>
+  </div>
+  <div class="card">
+    <div class="card-label">人均停留时长</div>
+    <div class="card-value" id="avgDuration">-</div>
+    <div class="card-sub">分钟/人次</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📈 7日登录趋势 <button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
+  <div id="chart"></div>
+</div>
+
+<div class="section">
+  <h2>👤 今日登录明细</h2>
+  <div id="detailTable"><div class="loading">加载中...</div></div>
+</div>
+
+<script>
+const SALES_NAMES = ['brownfan','lijunwu','Jonzhu','kaikaigenli','kinsleyjin','ruilingzhan','yvaineechen'];
+
+function formatDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function formatDuration(sec) {
+  if (!sec || sec < 60) return '<1分钟';
+  const min = Math.round(sec / 60);
+  if (min < 60) return min + '分钟';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h + '小时' + (m ? m + '分' : '');
+}
+
+function getDurationClass(sec) {
+  if (!sec) return 'duration-low';
+  const min = sec / 60;
+  if (min >= 30) return 'duration-good';
+  if (min >= 10) return 'duration-mid';
+  return 'duration-low';
+}
+
+// 查最近7天数据
+async function loadTrend() {
+  const dates = [];
+  const counts = [];
+  const durations = [];
+  const today = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const ds = formatDate(d);
+    dates.push(ds.slice(5)); // MM-DD
+
+    try {
+      const res = await window.cloud.session.query({ date: ds });
+      counts.push(res.stats.totalSessions);
+      durations.push(Math.round((res.stats.totalDuration || 0) / 60));
+    } catch (e) {
+      counts.push(0);
+      durations.push(0);
+    }
+  }
+
+  const chart = echarts.init(document.getElementById('chart'));
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['登录次数', '停留时长(分钟)'] },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { type: 'category', data: dates },
+    yAxis: [
+      { type: 'value', name: '次数', position: 'left' },
+      { type: 'value', name: '分钟', position: 'right' }
+    ],
+    series: [
+      {
+        name: '登录次数', type: 'bar', data: counts,
+        itemStyle: { color: '#3b82f6', borderRadius: [4, 4, 0, 0] }
+      },
+      {
+        name: '停留时长(分钟)', type: 'line', data: durations, yAxisIndex: 1,
+        smooth: true, itemStyle: { color: '#10b981' }, areaStyle: { color: 'rgba(16,185,129,0.1)' }
+      }
+    ]
+  });
+}
+
+// 查今日明细
+async function loadToday() {
+  const today = formatDate(new Date());
+  let res;
+  try {
+    res = await window.cloud.session.query({ date: today });
+  } catch (e) {
+    document.getElementById('detailTable').innerHTML = '<div class="error">查询失败: ' + (e.message || e) + '</div>';
+    return;
+  }
+
+  const { list, stats } = res;
+
+  // 更新概览卡片
+  document.getElementById('todaySessions').textContent = stats.totalSessions;
+  document.getElementById('todayDuration').textContent = Math.round((stats.totalDuration || 0) / 60);
+  document.getElementById('avgDuration').textContent = stats.totalSessions ? Math.round((stats.totalDuration / 60) / stats.totalSessions) : 0;
+
+  // 计算在线人数（30分钟内有心跳）
+  const now = Date.now();
+  const onlineList = list.filter(s => s.lastActiveTime && (now - s.lastActiveTime) < 30 * 60 * 1000);
+  document.getElementById('onlineCount').textContent = onlineList.length;
+
+  // 渲染表格
+  if (!list.length) {
+    document.getElementById('detailTable').innerHTML = '<div class="loading">今日暂无数据</div>';
+    return;
+  }
+
+  // 按 rtx 聚合（去重 session）
+  const rtxMap = {};
+  list.forEach(s => {
+    if (!rtxMap[s.rtx]) rtxMap[s.rtx] = [];
+    rtxMap[s.rtx].push(s);
+  });
+
+  // 生成表格 HTML
+  let html = '<table><thead><tr>' +
+    '<th>用户</th>' +
+    '<th>登录次数</th>' +
+    '<th>总停留时长</th>' +
+    '<th>首次登录</th>' +
+    '<th>最后活跃</th>' +
+    '<th>设备</th>' +
+    '<th>状态</th>' +
+    '</tr></thead><tbody>';
+
+  Object.entries(rtxMap).forEach(([rtx, sessions]) => {
+    const totalDur = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const firstLogin = Math.min(...sessions.map(s => s.loginTime));
+    const lastActive = Math.max(...sessions.map(s => s.lastActiveTime || s.loginTime));
+    const isOnline = (now - lastActive) < 30 * 60 * 1000;
+    const device = (sessions[0].deviceInfo || '').match(/(Windows|Mac|iPhone|iPad|Android)/)?.[0] || 'PC';
+
+    html += `<tr>
+      <td><span class="rtx-tag">${rtx}</span></td>
+      <td>${sessions.length}</td>
+      <td class="${getDurationClass(totalDur)}">${formatDuration(totalDur)}</td>
+      <td>${formatTime(firstLogin)}</td>
+      <td>${formatTime(lastActive)}</td>
+      <td>${device}</td>
+      <td><span class="login-status ${isOnline ? 'online' : 'offline'}"></span>${isOnline ? '在线' : '离线'}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('detailTable').innerHTML = html;
+}
+
+async function loadAll() {
+  if (!window.cloud || !window.cloud.session) {
+    document.getElementById('detailTable').innerHTML = '<div class="error">Cloud 尚未初始化，请稍后再试</div>';
+    return;
+  }
+  await loadToday();
+  await loadTrend();
+}
+
+// 页面加载后自动刷新
+setTimeout(loadAll, 2000);
+// 每30秒自动刷新
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>
