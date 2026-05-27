@@ -1,2 +1,0 @@
-/* Auto-generated 2026-05-15 (T-1=2026-05-20) */
-window.__CENTER_DAILY_KPI__ = {"dataDate":"2026-05-20","centerYestCost":6898620.2,"centerPrevCost":6405006.0,"centerDayCostRate":0.0771,"centerCost":6898620.2,"centerCostChg":0.0771,"updatedAt":"2026-05-22 10:53","source":"https://adata.woa.com/bi/view/15729?s=E0fBs","q2NewCount":4574,"q2ValidCount":1116,"q2RisingCount":28,"q2NewYestCost":975130.0,"q2NewDayCostRate":-0.0864,"q1NewCount":7160,"q1ValidCount":1784,"q1RisingCount":56};
