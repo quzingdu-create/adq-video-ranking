@@ -626,6 +626,7 @@
           } else {
             effectiveDuration = r.duration || 0;
           }
+          r.effectiveDuration = effectiveDuration; // 供调用方使用
           stats.totalDuration += effectiveDuration;
           var d = r.date || _dateStr(new Date(r.loginTime));
           if (!stats.byDate[d]) stats.byDate[d] = { count: 0, duration: 0 };

@@ -387,7 +387,7 @@ function renderDetailTable(list, date) {
     '</tr></thead><tbody>';
 
   Object.entries(rtxMap).forEach(([rtx, sessions]) => {
-    const totalDur = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const totalDur = sessions.reduce((sum, s) => sum + (s.effectiveDuration || s.duration || 0), 0);
     const firstLogin = Math.min(...sessions.map(s => s.loginTime));
     const lastActive = Math.max(...sessions.map(s => s.lastActiveTime || s.loginTime));
     const isOnline = (now - lastActive) < 30 * 60 * 1000;
@@ -420,7 +420,7 @@ function renderSummaryTable(allResults) {
     (res.list || []).forEach(s => {
       if (!rtxMap[s.rtx]) rtxMap[s.rtx] = { count: 0, duration: 0 };
       rtxMap[s.rtx].count++;
-      rtxMap[s.rtx].duration += (s.duration || 0);
+      rtxMap[s.rtx].duration += (s.effectiveDuration || s.duration || 0);
     });
     Object.entries(rtxMap).forEach(([rtx, data]) => {
       if (!salesDateMap[rtx]) salesDateMap[rtx] = {};
@@ -474,7 +474,7 @@ async function loadTrend() {
     (res.list || []).forEach(s => {
       if (!rtxMap[s.rtx]) rtxMap[s.rtx] = { count: 0, duration: 0 };
       rtxMap[s.rtx].count++;
-      rtxMap[s.rtx].duration += (s.duration || 0);
+      rtxMap[s.rtx].duration += (s.effectiveDuration || s.duration || 0);
     });
     SALES_NAMES.forEach(s => {
       salesData[s].counts.push(rtxMap[s] ? rtxMap[s].count : 0);
