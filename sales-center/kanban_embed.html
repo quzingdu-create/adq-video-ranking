@@ -1862,34 +1862,12 @@ function renderRecords() {
       : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
     const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
     const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
-    // 客户投放状态四档（用户 2026-05-22 11:31 拍板：文案统一 = ${当前季度}新客，不读销售登记字段）
-    // 2026-05-26 12:35 修复：firstQuarter 大量为空时(8468/12711)，必须用 isNew/quarterCost/status 兜底
-    let stateLabel = '', stateCls = 'gray';
-    const nm = String(r.shortName || r.name || '').trim();
-    const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
-    const curQ = window.CURRENT_QUARTER || '2026Q2';
-    const curQDisp = `${curQ.slice(0,4)}Q${curQ.slice(-1)}新客`; // "2026Q2新客"
-    const qcW = Number(r.quarterCost || 0); // 季度累计消耗
-    if ((window.__OLD24_SET_217__ || new Set()).has(nm)) {
-      stateLabel = '24年老客'; stateCls = 'gray';
-    } else if (r.isLaoke === true || (fq && fq < curQ)) {
-      // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
-      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
-      stateCls = 'red';
-    } else if (fq && fq === curQ) {
-      // AData 命中本季度首投 → 文案强制 "2026Q2新客"，不读销售登记字段
-      stateLabel = curQDisp;
-      stateCls = 'green';
-    } else if (r.isNew === true) {
-      // 兜底：rebuild 回写的 isNew=true（明确是本季度新客）
-      // 走到这里说明 firstQuarter 字段没回写但底层标已就位 → 仍然标为本季度新客
-      stateLabel = curQDisp;
-      stateCls = 'green';
-    } else if (Number(r.quarterCost || 0) > 1000) {
-      // 二级兜底：本季度有消耗(>1000)但首投季度未知 → 至少标"已投放"，不要再标"新增未投放"
+    // 客户投放状态（2026-05-28 简化：quarterCost > 0 即已投放，否则新增未投放）
+    let stateLabel = '', stateCls = 'orange';
+    const qcW = Number(r.quarterCost || 0);
+    if (qcW > 0) {
       stateLabel = '已投放'; stateCls = 'green';
     } else {
-      // 季度消耗表里没有这条客户 → 新增未投放
       stateLabel = '新增未投放'; stateCls = 'orange';
     }
     const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
