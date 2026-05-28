@@ -2016,8 +2016,10 @@ window.MobileDoneCloudState = {
       if (!window.cloudbase || !window.cloudbase.init) return;
       const cb = window.cloudbase.init({ env: window.cloud.envId });
       const cdb = cb.database();
-      // 拉最近 1000 条 redspot_progress（按 ts desc）
+      // 拉最近 1000 条 redspot_progress（按 ts desc），只取今天的记录
+      const _ = cdb.command;
       const res = await cdb.collection(this._coll)
+        .where({ dateKey: __todayDateKey() })
         .orderBy('ts', 'desc').limit(1000).get();
       const rows = (res && res.data) || [];
       // 按 taskKey 取最新一条「非污染」记录
