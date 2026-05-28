@@ -1900,11 +1900,16 @@ function __todayDateKey() {
   return `${y}-${m}-${dd}`;
 }
 // 启动时清掉昨天/更早的 v32_notify_done_v1_* key（避免 localStorage 越积越大）
+// 同时清掉 mobile_done_*（cleanup-card fallback 用，跨天必须归零）
 try {
   const today = __todayDateKey();
   for (let i = localStorage.length - 1; i >= 0; i--) {
     const k = localStorage.key(i);
-    if (k && k.startsWith('v32_notify_done_v1_') && k !== `v32_notify_done_v1_${today}`) {
+    if (!k) continue;
+    if (k.startsWith('v32_notify_done_v1_') && k !== `v32_notify_done_v1_${today}`) {
+      localStorage.removeItem(k);
+    }
+    if (k.startsWith('mobile_done_')) {
       localStorage.removeItem(k);
     }
   }
