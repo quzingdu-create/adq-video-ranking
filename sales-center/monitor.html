@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>监察后台 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260527k"></script>
+<script src="data/monitor_session_data.js?v=20260601g"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -53,6 +52,7 @@
   }
   .custom-range button:hover { opacity: 0.9; }
   .date-display { font-size: 13px; color: var(--primary); font-weight: 600; margin-left: 8px; }
+  .data-note { font-size: 11px; color: var(--text-2); margin-left: auto; }
 
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .card {
@@ -98,7 +98,7 @@
 </head>
 <body>
 
-<h1>📊 监察后台 · 销售作战中心</h1>
+<h1>&#x1F4CA; 监察后台 · 销售作战中心</h1>
 
 <!-- 时间窗口选择器 -->
 <div class="time-window-bar">
@@ -114,6 +114,7 @@
     <button onclick="applyCustomRange()">确定</button>
   </div>
   <span class="date-display" id="dateDisplay"></span>
+  <span class="data-note" id="dataNote"></span>
 </div>
 
 <!-- 概览卡片 -->
@@ -142,28 +143,58 @@
 
 <!-- 趋势图 -->
 <div class="section">
-  <h2 id="chartTitle">📈 登录趋势（按销售）<button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
+  <h2 id="chartTitle">&#x1F4C8; 登录趋势（按销售）<button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
   <div id="chart"></div>
 </div>
 
 <!-- 销售对比表 -->
 <div class="section">
-  <h2 id="tableTitle">📊 销售对比表</h2>
+  <h2 id="tableTitle">&#x1F4CA; 销售对比表</h2>
   <div id="salesTable"><div class="loading">加载中...</div></div>
 </div>
 
 <!-- 登录明细表 -->
 <div class="section">
-  <h2 id="detailTitle">👤 登录明细</h2>
+  <h2 id="detailTitle">&#x1F464; 登录明细</h2>
   <div id="detailTable"><div class="loading">加载中...</div></div>
 </div>
 
 <script>
 const SALES_NAMES = ['brownfan','lijunwu','Jonzhu','kaikaigenli','kinsleyjin','ruilingzhan','yvaineechen'];
 
-let currentRange = 'today'; // today | 7d | 30d | custom
-let customStart = null;     // '2026-05-01'
-let customEnd = null;       // '2026-05-27'
+let currentRange = 'today';
+let customStart = null;
+let customEnd = null;
+
+// ============ 本地数据查询（替代 CloudBase） ============
+
+function queryLocalByDates(dateList) {
+  // 从 MONITOR_SESSION_DATA 中按日期筛选，返回与 CloudBase 格式一致的结构
+  const allData = typeof MONITOR_SESSION_DATA !== 'undefined' ? MONITOR_SESSION_DATA : [];
+  const results = dateList.map(date => {
+    const list = allData.filter(s => s.date === date).map(s => {
+      // 计算有效时长（与 cloud_sync.js sessionQuery 逻辑一致）
+      let effectiveDuration = 0;
+      if (s.lastActiveTime && s.loginTime) {
+        effectiveDuration = Math.max(0, Math.round((s.lastActiveTime - s.loginTime) / 1000));
+      } else {
+        effectiveDuration = s.duration || 0;
+      }
+      return Object.assign({}, s, { effectiveDuration: effectiveDuration });
+    });
+    // 聚合统计
+    const stats = { totalSessions: list.length, totalDuration: 0, byDate: {} };
+    list.forEach(r => {
+      stats.totalDuration += r.effectiveDuration;
+      const d = r.date || date;
+      if (!stats.byDate[d]) stats.byDate[d] = { count: 0, duration: 0 };
+      stats.byDate[d].count++;
+      stats.byDate[d].duration += r.effectiveDuration;
+    });
+    return { date: date, res: { list: list, stats: stats } };
+  });
+  return results;
+}
 
 function formatDate(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -172,12 +203,6 @@ function formatDate(d) {
 function parseDate(s) {
   const p = s.split('-');
   return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
-}
-
-function formatDateCN(s) {
-  // '2026-05-27' -> '5月27日'
-  const p = s.split('-');
-  return parseInt(p[1]) + '月' + parseInt(p[2]) + '日';
 }
 
 function formatTime(ts) {
@@ -217,19 +242,16 @@ function selectRange(range) {
   const customEl = document.getElementById('customRange');
   if (range === 'custom') {
     customEl.style.display = 'flex';
-    // 设置默认值为最近7天
     const end = new Date();
     const start = new Date(); start.setDate(start.getDate() - 6);
     document.getElementById('startDate').value = formatDate(start);
     document.getElementById('endDate').value = formatDate(end);
-    return; // 等待用户点"确定"
+    return;
   } else {
     customEl.style.display = 'none';
   }
 
-  // 更新日期显示
   updateDateDisplay();
-  // 重新加载
   loadAll();
 }
 
@@ -261,7 +283,6 @@ function updateDateDisplay() {
   }
 }
 
-// 获取当前时间窗口的日期数组（用于趋势图）
 function getDateRange() {
   const dates = [];
   const today = new Date();
@@ -287,46 +308,24 @@ function getDateRange() {
   return dates;
 }
 
-// ============ 数据加载 ============
+// ============ 数据加载（本地模式） ============
 
-// 查某天或某日期范围的 session 数据，返回聚合结果
-async function queryRange(dateList) {
-  // dateList: ['2026-05-21', '2026-05-22', ...]
-  // 并发查询所有日期
-  const results = await Promise.all(dateList.map(d => {
-    return window.cloud.session.query({ date: d }).then(res => ({ date: d, res })).catch(e => ({ date: d, res: { list: [], stats: { totalSessions: 0, totalDuration: 0 } } }));
-  }));
-  return results; // [{ date, res: { list, stats } }]
-}
-
-// 加载概览卡片 + 明细表
-async function loadDashboard() {
+function loadDashboard() {
   const dates = getDateRange();
   const isToday = (currentRange === 'today');
 
-  let allResults;
-  if (isToday) {
-    // 今天：只查今天
-    const res = await window.cloud.session.query({ date: dates[0] }).catch(e => ({ list: [], stats: { totalSessions: 0, totalDuration: 0 } }));
-    allResults = [{ date: dates[0], res }];
-  } else {
-    // 历史：查日期范围内所有天
-    allResults = await queryRange(dates);
-  }
+  const allResults = queryLocalByDates(dates);
 
-  // 聚合所有天的 stats
   let totalSessions = 0, totalDuration = 0;
-  const allSessions = []; // 所有 session 记录（用于明细表和在线计算）
+  const allSessions = [];
   allResults.forEach(({ res }) => {
     totalSessions += (res.stats && res.stats.totalSessions) || 0;
     totalDuration += (res.stats && res.stats.totalDuration) || 0;
     if (res.list) res.list.forEach(s => allSessions.push(s));
   });
 
-  // 计算独立用户·天
   const uniqueUserDays = new Set(allSessions.map(s => (s.rtx || '') + '|' + (s.date || ''))).size;
 
-  // 今天模式：计算在线人数
   let onlineCount = 0;
   if (isToday) {
     const now = Date.now();
@@ -339,12 +338,11 @@ async function loadDashboard() {
     onlineCount = onlineRtms.size;
   }
 
-  const days = dates.length;
   const avgDuration = totalSessions > 0 ? Math.round((totalDuration / 60) / totalSessions) : 0;
 
   document.getElementById('totalSessions').textContent = totalSessions;
   document.getElementById('totalDuration').textContent = Math.round(totalDuration / 60);
-  // 卡片3：今天=在线人数，历史=独立用户·天
+
   if (isToday) {
     document.getElementById('card3Label').textContent = '当前在线人数';
     document.getElementById('card3Value').textContent = onlineCount;
@@ -356,24 +354,21 @@ async function loadDashboard() {
   }
   document.getElementById('avgDuration').textContent = avgDuration;
 
-  // 渲染明细表（仅今天模式显示明细，历史模式显示汇总）
   if (isToday) {
-    document.getElementById('detailTitle').textContent = '👤 今日登录明细';
+    document.getElementById('detailTitle').textContent = '&#x1F464; 今日登录明细';
     renderDetailTable(allSessions, dates[0]);
   } else {
-    document.getElementById('detailTitle').textContent = '👤 日期范围登录汇总（' + dates[0] + ' ~ ' + dates[dates.length-1] + '）';
+    document.getElementById('detailTitle').textContent = '&#x1F464; 日期范围登录汇总（' + dates[0] + ' ~ ' + dates[dates.length-1] + '）';
     renderSummaryTable(allResults);
   }
 }
 
-// 渲染今日登录明细表
 function renderDetailTable(list, date) {
   if (!list || !list.length) {
     document.getElementById('detailTable').innerHTML = '<div class="loading">暂无数据</div>';
     return;
   }
 
-  // 按 rtx 聚合
   const rtxMap = {};
   list.forEach(s => {
     if (!rtxMap[s.rtx]) rtxMap[s.rtx] = [];
@@ -408,11 +403,8 @@ function renderDetailTable(list, date) {
   document.getElementById('detailTable').innerHTML = html;
 }
 
-// 渲染历史汇总表（按日期 + 销售）
 function renderSummaryTable(allResults) {
-  // allResults: [{ date, res: { list, stats } }]
-  // 按销售 + 日期聚合
-  const salesDateMap = {}; // rtx -> { date -> { count, duration } }
+  const salesDateMap = {};
   const dates = allResults.map(r => r.date);
 
   allResults.forEach(({ date, res }) => {
@@ -428,9 +420,8 @@ function renderSummaryTable(allResults) {
     });
   });
 
-  // 渲染表格：行=销售，列=日期
   let html = '<table><thead><tr><th>销售</th>';
-  dates.forEach(d => { html += '<th>' + d.slice(5) + '</th>'; }); // MM-DD
+  dates.forEach(d => { html += '<th>' + d.slice(5) + '</th>'; });
   html += '<th>合计次数</th><th>合计时长</th></tr></thead><tbody>';
 
   SALES_NAMES.forEach(s => {
@@ -455,17 +446,11 @@ function renderSummaryTable(allResults) {
   document.getElementById('detailTable').innerHTML = html;
 }
 
-// 加载趋势图 + 销售对比表
-async function loadTrend() {
+function loadTrend() {
   const dates = getDateRange();
-  const shortDates = dates.map(d => d.slice(5)); // MM-DD
+  const shortDates = dates.map(d => d.slice(5));
+  const results = queryLocalByDates(dates);
 
-  // 并发查所有日期
-  const results = await Promise.all(dates.map(d => {
-    return window.cloud.session.query({ date: d }).then(res => ({ date: d, res })).catch(e => ({ date: d, res: { list: [], stats: {} } }));
-  }));
-
-  // 按销售聚合：salesData[rtx] = { counts: [], durations: [] }
   const salesData = {};
   SALES_NAMES.forEach(s => { salesData[s] = { counts: [], durations: [] }; });
 
@@ -482,9 +467,7 @@ async function loadTrend() {
     });
   });
 
-  // 渲染图表
   renderChart(salesData, shortDates, dates);
-  // 渲染销售对比表
   renderSalesTable(salesData, shortDates);
 }
 
@@ -498,7 +481,7 @@ function renderChart(salesData, shortDates, fullDates) {
   const titleText = currentRange === 'today' ? '今日登录时长（按销售）' :
                     (fullDates[0] + ' ~ ' + fullDates[fullDates.length-1] + ' 登录时长（按销售）');
 
-  document.getElementById('chartTitle').innerHTML = '📈 ' + titleText + ' <button class="refresh-btn" onclick="loadAll()">刷新</button>';
+  document.getElementById('chartTitle').innerHTML = '&#x1F4C8; ' + titleText + ' <button class="refresh-btn" onclick="loadAll()">刷新</button>';
 
   const chart = echarts.init(document.getElementById('chart'));
   chart.setOption({
@@ -524,7 +507,6 @@ function renderChart(salesData, shortDates, fullDates) {
     series: durSeries
   });
 
-  // 自适应
   window.addEventListener('resize', () => chart.resize());
 }
 
@@ -551,23 +533,29 @@ function renderSalesTable(salesData, shortDates) {
 
   html += '</tbody></table>';
   document.getElementById('salesTable').innerHTML = html;
-  document.getElementById('tableTitle').textContent = '📊 销售对比表（' + fullDates[0] + ' ~ ' + fullDates[fullDates.length-1] + '）';
+  document.getElementById('tableTitle').textContent = '&#x1F4CA; 销售对比表（' + fullDates[0] + ' ~ ' + fullDates[fullDates.length-1] + '）';
 }
 
 // ============ 主入口 ============
 
-async function loadAll() {
-  if (!window.cloud || !window.cloud.session) {
-    document.getElementById('detailTable').innerHTML = '<div class="error">Cloud 尚未初始化，请稍后再试</div>';
+function loadAll() {
+  const allData = typeof MONITOR_SESSION_DATA !== 'undefined' ? MONITOR_SESSION_DATA : [];
+  if (!allData.length) {
+    document.getElementById('detailTable').innerHTML = '<div class="error">&#x26A0;&#xFE0F; 暂无数据，请更新 monitor_session_data.js</div>';
     return;
   }
-  await loadDashboard();
-  await loadTrend();
+
+  // 显示数据时间范围
+  const dates = [...new Set(allData.map(s => s.date))].filter(Boolean).sort();
+  document.getElementById('dataNote').textContent = '数据范围：' + (dates[0] || '-') + ' ~ ' + (dates[dates.length-1] || '-') + '（' + allData.length + '条）';
+
+  loadDashboard();
+  loadTrend();
 }
 
-// 页面加载后自动刷新
-setTimeout(loadAll, 2000);
-// 每60秒自动刷新（降低频率，避免过多请求）
+// 页面加载后立即执行（不需要等 CloudBase）
+loadAll();
+// 每60秒自动刷新
 setInterval(loadAll, 60000);
 </script>
 </body>
