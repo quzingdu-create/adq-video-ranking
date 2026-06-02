@@ -7,24 +7,24 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260602a"></script>
-<script src="data/old24_customer_data.js?v=20260602a"></script>
-<script src="data/bulk_import_rows.js?v=20260602a"></script>
-<script src="data/tuoke_real_records.js?v=20260602a"></script>
-<script src="data/customer_link_data.js?v=20260602a"></script>
-<script src="data/center_sales_summary.js?v=20260602a"></script>
-<script src="data/center_quarter_summary.js?v=20260602a"></script>
-<script src="data/center_daily_kpi.js?v=20260602a"></script>
-<script src="data/delivery_side_summary.js?v=20260602a"></script>
-<script src="data/top80_effective_metrics.js?v=20260602a"></script>
-<script src="data/top_status_data.js?v=20260602a"></script>
-<script src="data/enough_candidates.js?v=20260602a"></script>
-<script src="data/handover_customers_519.js?v=20260602a"></script>
-<script src="data/first_quarter.js?v=20260602a"></script>
-<script src="data/old24_names.js?v=20260602a"></script>
+<script src="data/laoke_lookup_data.js?v=20260602c"></script>
+<script src="data/old24_customer_data.js?v=20260602c"></script>
+<script src="data/bulk_import_rows.js?v=20260602c"></script>
+<script src="data/tuoke_real_records.js?v=20260602c"></script>
+<script src="data/customer_link_data.js?v=20260602c"></script>
+<script src="data/center_sales_summary.js?v=20260602c"></script>
+<script src="data/center_quarter_summary.js?v=20260602c"></script>
+<script src="data/center_daily_kpi.js?v=20260602c"></script>
+<script src="data/delivery_side_summary.js?v=20260602c"></script>
+<script src="data/top80_effective_metrics.js?v=20260602c"></script>
+<script src="data/top_status_data.js?v=20260602c"></script>
+<script src="data/enough_candidates.js?v=20260602c"></script>
+<script src="data/handover_customers_519.js?v=20260602c"></script>
+<script src="data/first_quarter.js?v=20260602c"></script>
+<script src="data/old24_names.js?v=20260602c"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260602a"></script>
+<script src="cloud_sync.js?v=20260602c"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -578,7 +578,10 @@
   <div>
     ☁️ <b>云端实时同步</b> · 提交即生效，明早数据日报自动汇总（无需手动导出）
   </div>
-  <div id="banner-today-count-pc" style="background:#fff;padding:3px 10px;border-radius:12px;font-weight:600;color:#15803d;">今日 0 条</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="btnCloudRefresh" onclick="window.cloudRefresh && window.cloudRefresh()" style="background:#16a34a;color:#fff;border:none;padding:5px 12px;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;" title="立即拉取云端最新登记（其他销售刚登记的也能马上看到）">🔄 刷新最新</button>
+    <div id="banner-today-count-pc" style="background:#fff;padding:3px 10px;border-radius:12px;font-weight:600;color:#15803d;">今日 0 条</div>
+  </div>
 </div>
 
 <!-- Demo 提示条已移除（云端正式上线 2026-05-21） -->
@@ -904,6 +907,18 @@ const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
 
 let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
 const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
+// 2026-06-02 登记日期年份修正死规矩：月份 7-12 应为 2025（拓新组从 25Q3 起），
+// 误录成 2026-07~2026-12 的归一回 2025。1-6 月保持 2026 不动。
+window.fixRegYear = function(d){
+  var s = String(d || '').slice(0, 10);
+  var m = /^2026-(0[7-9]|1[0-2])-(\d{2})$/.exec(s);
+  return m ? ('2025-' + m[1] + '-' + m[2]) : (d || '');
+};
+function applyFixRegYear(list){
+  (list || []).forEach(function(r){ if (r && r.date) r.date = window.fixRegYear(r.date); });
+  return list;
+}
+applyFixRegYear(RECORDS);
 window.RECORDS = RECORDS;
 
 /* ============================================================
@@ -3019,19 +3034,23 @@ document.addEventListener('click', e => {
    4) 失败/未登录都静默不弹框
 */
 (function pullCloudOnBoot(){
-  try {
+  // 2026-06-02 抽成具名函数 window.cloudRefresh(force)，供「🔄刷新」按钮手动强制拉取
+  function doPull(force){
+    try {
     if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return;
     var TS_KEY = 'kanban_cloud_pull_ts';
-    var CACHE_MS = 5 * 60 * 1000;
+    var CACHE_MS = 30 * 1000;   // 2026-06-02 5分钟→30秒，让别人登记后更快可见
     var last = 0;
     try { last = parseInt(sessionStorage.getItem(TS_KEY) || '0', 10) || 0; } catch(_){}
-    if (Date.now() - last < CACHE_MS) {
-      console.info('[cloud] pull skipped (5min cache)');
+    if (!force && Date.now() - last < CACHE_MS) {
+      console.info('[cloud] pull skipped (30s cache)');
       return;
     }
     window.cloud.download().then(function(res){
       var cloudList = (res && res.list) || [];
       if (!cloudList.length) return;
+      // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
+      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); });
       // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出）
       if (!window.__REGISTERED_SUBJECTS__) window.__REGISTERED_SUBJECTS__ = {};
       cloudList.forEach(function(r){
@@ -3075,10 +3094,24 @@ document.addEventListener('click', e => {
       }
     }).catch(function(e){
       console.warn('[cloud] pull fail:', e && e.message);
+      if (force) { try { alert('刷新失败：' + (e && e.message || '请确认已登录')); } catch(_){} }
     });
   } catch(e) {
     console.warn('[cloud] pullCloudOnBoot exception', e);
   }
+  }
+  // 暴露给「🔄刷新」按钮：强制跳过缓存拉云端最新
+  window.cloudRefresh = function(){
+    if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) {
+      try { alert('未登录云端，无法刷新。请先登录。'); } catch(_){}
+      return;
+    }
+    var btn = document.getElementById('btnCloudRefresh');
+    if (btn){ btn.disabled = true; var old = btn.textContent; btn.textContent = '⏳ 刷新中…';
+      setTimeout(function(){ btn.disabled = false; btn.textContent = old; }, 2500); }
+    doPull(true);
+  };
+  doPull(false);
 })();
 </script>
 </body>
