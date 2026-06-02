@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>小红点任务系统 v3.2 · 服饰销售作战中心（拓新组定制版）</title>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260602c"></script>
+<script src="auth-guard.js?v=20260602d"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260602c"></script>
+<script src="data/current_rising_data.js?v=20260602d"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260602c"></script>
-<script src="data/center_daily_kpi.js?v=20260602c"></script>
-<script src="data/tuoke_real_records.js?v=20260602c"></script>
-<script src="data/top80_effective_metrics.js?v=20260602c"></script>
+<script src="data/center_quarter_summary.js?v=20260602d"></script>
+<script src="data/center_daily_kpi.js?v=20260602d"></script>
+<script src="data/tuoke_real_records.js?v=20260602d"></script>
+<script src="data/top80_effective_metrics.js?v=20260602d"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260602c"></script>
-<script src="login_guard_banner.js?v=20260602c"></script>
+<script src="cloud_sync.js?v=20260602d"></script>
+<script src="login_guard_banner.js?v=20260602d"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260602c"></script>
+<script src="export_tuoke.js?v=20260602d"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -636,7 +636,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260602c"
+      src="mobile.html?embed=1&v=20260602d"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（手机端内容嵌入）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -842,7 +842,7 @@
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260602c" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260602d" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1512,7 +1512,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260602c`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260602d`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -1996,9 +1996,11 @@ window.MobileDoneCloudState = {
   _doneSet: new Set(),
   _ready: false,
   isDone(name) { return this._doneSet.has(name); },
+  _firstPullTs: 0,
   async _pullCloud() {
     try {
       if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return;
+      if (!this._firstPullTs) this._firstPullTs = Date.now(); // 2026-06-02 记录首次真正尝试时间，供渲染层超时降级
       if (!window.cloudbase || !window.cloudbase.init) return;
       const cb = window.cloudbase.init({ env: window.cloud.envId });
       const cdb = cb.database();
@@ -2030,6 +2032,13 @@ window.MobileDoneCloudState = {
 };
 // 启动后异步拉
 setTimeout(() => { window.MobileDoneCloudState._pullCloud(); }, 1500);
+// 2026-06-02 兜底：登录后无论拉没拉到，记录首次尝试时间（供渲染层 8s 超时降级用）
+setTimeout(() => {
+  var m = window.MobileDoneCloudState;
+  if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn() && m && !m._firstPullTs) {
+    m._firstPullTs = Date.now();
+  }
+}, 1500);
 // 5s 兜底登录后再拉
 let __mobileDoneInitTimer = setInterval(() => {
   if (window.MobileDoneCloudState._ready) { clearInterval(__mobileDoneInitTimer); return; }
@@ -2037,6 +2046,16 @@ let __mobileDoneInitTimer = setInterval(() => {
     window.MobileDoneCloudState._pullCloud();
   }
 }, 5000);
+// 2026-06-02 超时降级触发器：登录后 9s 仍未 ready，强制重渲染一次，
+// 让渲染层走 _timedOut 分支用本地态出真实数字，杜绝永久"同步中"假象。
+setTimeout(() => {
+  var m = window.MobileDoneCloudState;
+  var loggedIn = window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn();
+  if (loggedIn && m && !m._ready) {
+    console.warn('[MobileDoneCloud] 9s 仍未拉到云端，强制降级重渲染（显示本地态）');
+    try { renderCleanupCard(); } catch(e){}
+  }
+}, 9000);
 // 30s 持续轮询跨设备同步
 setInterval(() => {
   if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
@@ -2227,7 +2246,12 @@ function renderCleanupCard() {
   // 修复：未 ready 直接显示骨架，不渲染任何数字，杜绝跳变。
   const cloudReady = window.MobileDoneCloudState && window.MobileDoneCloudState._ready;
   const isLoggedIn = window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn();
-  if (isLoggedIn && !cloudReady) {
+  // 2026-06-02 超时降级死规矩：登录后若云端 8s 还没拉到（token失效/网络/SDK异常），
+  // 绝不永久卡"同步中"骗人——强制降级用本地态渲染真实数字，徽章诚实标"云端未响应"。
+  const _mdc = window.MobileDoneCloudState;
+  const _firstTs = (_mdc && _mdc._firstPullTs) || 0;
+  const _timedOut = _firstTs > 0 && (Date.now() - _firstTs > 8000);
+  if (isLoggedIn && !cloudReady && !_timedOut) {
     const $$skeleton = id => document.getElementById(id);
     if ($$skeleton('cleanupDone')) $$skeleton('cleanupDone').textContent = '—';
     if ($$skeleton('cleanupTotal')) $$skeleton('cleanupTotal').textContent = '—';
@@ -2326,10 +2350,23 @@ function renderCleanupCard() {
   // 云端徽章状态（沿用 NotifyState 的登录态判断）
   const badge = $$('cleanupBadge');
   if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
-    badge.textContent = (typeof NotifyState !== 'undefined' && NotifyState._cloudReady) ? '☁️ 云端实时' : '☁️ 同步中…';
-    badge.style.color = '#15803d';
-    badge.style.background = '#f0fdf4';
-    badge.style.borderColor = '#bbf7d0';
+    if (cloudReady) {
+      badge.textContent = '☁️ 云端实时';
+      badge.style.color = '#15803d';
+      badge.style.background = '#f0fdf4';
+      badge.style.borderColor = '#bbf7d0';
+    } else if (_timedOut) {
+      // 2026-06-02 超时降级：诚实告知云端没响应，当前数字来自本地缓存
+      badge.textContent = '⚠️ 云端未响应（显示本地）';
+      badge.style.color = '#c92a2a';
+      badge.style.background = '#ffe9e9';
+      badge.style.borderColor = '#ffd0d0';
+    } else {
+      badge.textContent = '☁️ 同步中…';
+      badge.style.color = '#9a6b00';
+      badge.style.background = '#fffbeb';
+      badge.style.borderColor = '#fde68a';
+    }
   } else {
     badge.textContent = '⚠️ 未登录（仅本地）';
     badge.style.color = '#c92a2a';
