@@ -1006,7 +1006,9 @@
       '2026Q2': ['2026-04-01','2026-06-30'],
     };
     function calcQuarterDay(q) {
-      const today = new Date();
+      // 2026-06-03 修复：剩余天数必须跟数据日走，不能跟电脑当天走（否则看板27/快报28不一致）
+      const _dk = window.__CENTER_DAILY_KPI__ || {};
+      const today = _dk.dataDate ? new Date(_dk.dataDate + 'T12:00:00') : new Date();
       const range = QUARTER_RANGE[q]; if (!range) return null;
       const [s, e] = range;
       const start = new Date(s + 'T00:00:00');
