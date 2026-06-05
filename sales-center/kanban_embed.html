@@ -2670,11 +2670,17 @@ window.submitRecord = () => {
     const rec = (window.RECORDS || []).find(r => String(r.id) === String(window.__EDITING_RID__));
     if (rec) {
       rec.cat = document.getElementById('m-category').value || rec.cat;
+      var __saleChgInfo = '';
       var __newSale = document.getElementById('m-sales').value || rec.sale;
       if (__newSale !== rec.sale) {
         var __whoChg = (window.cloud && cloud.rtx && cloud.rtx()) || CURRENT_USER || 'unknown';
         recordSaleChange(rec, rec.sale, __newSale, __whoChg);  // 留痕(原→新/操作人/时间)
+        __saleChgInfo = '\n\n🔄 归属已修改：' + (rec.sale || '未分配') + ' → ' + __newSale
+          + '\n• 明细已即时更新、变更已留痕\n• 当天 KPI / 日报不变\n• 次日数据刷新后自动计入新销售';
         rec.sale = __newSale;
+        // 2026-06-06 归属生效时间戳:rebuild双层模型据此认准"最新归属",彻底替代手动override。
+        // upsert是update覆盖同id、_createdAt不变,故必须独立标记本次归属变更的真实时间。
+        rec.saleEffectiveAt = Date.now();
       }
       rec.channel = document.getElementById('m-channel').value || rec.channel;
       rec.resource = document.getElementById('m-resource').value.trim() || rec.resource;
@@ -2697,7 +2703,7 @@ window.submitRecord = () => {
       } catch(e){ console.warn('[cloud] edit upload exception:', e); }
       closeModal('modalRecord');
       if (typeof renderAll === 'function') renderAll();
-      alert('✅ 已更新：' + (rec.name || rec.shortName) + (newImgs.length ? `（新增 ${newImgs.length} 张建联截图）` : ''));
+      alert('✅ 已更新：' + (rec.name || rec.shortName) + (newImgs.length ? `（新增 ${newImgs.length} 张建联截图）` : '') + __saleChgInfo);
       return;
     }
   }
