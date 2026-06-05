@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "purpose": "人工归属覆盖层。当登记系统的归属变更没能写进 CloudBase 时，在此手动登记当前生效归属。脚本加载 records 后用本层强制覆盖匹配 shortName 的 sale 字段，优先级最高。",
+    "format": "shortName -> {sale, reason, date}",
+    "location_note": "2026-06-05 从 /tmp/kanban_0603/ 迁到项目 data 目录持久化，纳入 git，永不丢失。脚本 rebuild_kpi_csv.py 优先读本文件。"
+  },
+  "overrides": {
+    "广州星巢电子商务有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-2 在登记系统改归属 lijunwu，但未落云（localStorage 未同步 CloudBase），手动覆盖",
+      "date": "2026-06-03"
+    },
+    "泉州市酷旅科技有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-5 用户指定归属 lijunwu（改简称为泉州七匹狼，老客口径不影响新锐计算，仅修正归属展示）",
+      "date": "2026-06-05"
+    },
+    "晋江市谦煜商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-5 用户指定归属 lijunwu（改简称为泉州七匹狼）",
+      "date": "2026-06-05"
+    }
+  }
+}
