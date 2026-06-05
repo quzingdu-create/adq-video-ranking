@@ -1928,7 +1928,7 @@ function renderRecords() {
     return `
       <tr>
         <td>${display(r.date)}</td>
-        <td>${display(r.sale)}</td>
+        <td>${display(r.sale)}${(function(){var h=getSaleHistory(r);return h.length?`<span class="history-badge clickable-status" data-rid="${r.id}" data-act="saleHistory" title="查看归属变更历史" style="margin-left:4px;">↔${h.length}</span>`:'';})()}</td>
         <td>${display(r.name)}</td>
         <td>${display(r.shortName)}</td>
         <td>${display(r.cat)}</td>
@@ -1956,6 +1956,51 @@ function loadUserStatusMap() {
 }
 function saveUserStatusMap(map) {
   try { localStorage.setItem('USER_STATUS_MAP_v1', JSON.stringify(map)); } catch(e){}
+}
+/* 归属(销售)变更留痕（2026-06-06）：独立 map，随客户 id 记录每次改归属的 原→新/操作人/时间。
+   全量 RECORDS 改归属时 USER_RECORDS 不一定含该客户，故用独立 localStorage map 持久化留痕。 */
+function loadSaleChgMap() {
+  try { return JSON.parse(localStorage.getItem('SALE_CHANGE_MAP_v1') || '{}'); }
+  catch(e){ return {}; }
+}
+function saveSaleChgMap(map) {
+  try { localStorage.setItem('SALE_CHANGE_MAP_v1', JSON.stringify(map)); } catch(e){}
+}
+function getSaleHistory(r) {
+  const map = loadSaleChgMap();
+  const local = (map[r.id] && map[r.id].history) || [];
+  const onRec = Array.isArray(r.saleHistory) ? r.saleHistory : [];
+  // 合并去重(以 when+after 为键)，本地与记录自带的都显示
+  const seen = {}, out = [];
+  onRec.concat(local).forEach(h => { const k=(h.when||'')+'|'+(h.after||''); if(!seen[k]){seen[k]=1;out.push(h);} });
+  out.sort((a,b)=>String(a.when).localeCompare(String(b.when)));
+  return out;
+}
+function recordSaleChange(r, beforeSale, afterSale, who) {
+  if (beforeSale === afterSale) return;
+  const entry = { who: who || CURRENT_USER || 'unknown', when: new Date().toISOString().slice(0,19).replace('T',' '), before: beforeSale || '', after: afterSale || '' };
+  const map = loadSaleChgMap();
+  if (!map[r.id]) map[r.id] = { history: [] };
+  map[r.id].history.push(entry);
+  saveSaleChgMap(map);
+  // 同步写到记录对象自身(随 cloud.upload 落云端 → 跨设备/rebuild 可读)
+  if (!Array.isArray(r.saleHistory)) r.saleHistory = [];
+  r.saleHistory.push(entry);
+}
+function openSaleHistory(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const hist = getSaleHistory(r);
+  const html = hist.length ? hist.slice().reverse().map(h => `
+    <div style="display:flex;gap:10px;padding:8px 10px;border-bottom:1px dashed var(--border-2);font-size:12px;">
+      <span style="color:var(--text-2);min-width:130px;">${h.when}</span>
+      <span style="color:var(--primary);min-width:80px;font-weight:600;">${h.who}</span>
+      <span style="color:var(--text);">${h.before || '未分配'} <span style="color:#9ca3af;">→</span> <b>${h.after || '未分配'}</b></span>
+    </div>`).join('') : '<div style="text-align:center;color:var(--text-2);padding:20px;">暂无归属变更记录</div>';
+  showModal('归属变更历史', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b> · 当前归属 <b style="color:var(--primary);">${r.sale || '未分配'}</b></div>
+    <div style="max-height:360px;overflow-y:auto;">${html}</div>
+  `, null);
 }
 function getUserStatus(r) {
   if (r.userStatus) return r.userStatus;
@@ -2046,6 +2091,7 @@ document.addEventListener('click', e => {
   const rid = t.dataset.rid;
   const act = t.dataset.act;
   if (act === 'history') openStatusHistory(rid);
+  else if (act === 'saleHistory') openSaleHistory(rid);
   else openStatusEditor(rid);
 });
 
@@ -2624,7 +2670,12 @@ window.submitRecord = () => {
     const rec = (window.RECORDS || []).find(r => String(r.id) === String(window.__EDITING_RID__));
     if (rec) {
       rec.cat = document.getElementById('m-category').value || rec.cat;
-      rec.sale = document.getElementById('m-sales').value || rec.sale;
+      var __newSale = document.getElementById('m-sales').value || rec.sale;
+      if (__newSale !== rec.sale) {
+        var __whoChg = (window.cloud && cloud.rtx && cloud.rtx()) || CURRENT_USER || 'unknown';
+        recordSaleChange(rec, rec.sale, __newSale, __whoChg);  // 留痕(原→新/操作人/时间)
+        rec.sale = __newSale;
+      }
       rec.channel = document.getElementById('m-channel').value || rec.channel;
       rec.resource = document.getElementById('m-resource').value.trim() || rec.resource;
       rec.source = document.getElementById('m-source').value || rec.source;
@@ -2637,6 +2688,13 @@ window.submitRecord = () => {
       window.__EDITING_RID__ = null;
       if (typeof persistUserRecordsBestEffort === 'function') persistUserRecordsBestEffort();
       else if (typeof saveRecords === 'function') saveRecords();
+      // 2026-06-06 改归属/编辑后云端双写：整条 rec(含 sale/saleHistory)推 CloudBase,改完即生效,跨设备同步,rebuild可读,无需手动 override
+      try {
+        if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn() && window.cloud.upload) {
+          window.cloud.upload([rec]).then(function(d){ console.info('[cloud] edit saved ok', d && (d.created+'/'+d.updated)); })
+            .catch(function(e){ console.warn('[cloud] edit save fail:', e && e.message); });
+        }
+      } catch(e){ console.warn('[cloud] edit upload exception:', e); }
       closeModal('modalRecord');
       if (typeof renderAll === 'function') renderAll();
       alert('✅ 已更新：' + (rec.name || rec.shortName) + (newImgs.length ? `（新增 ${newImgs.length} 张建联截图）` : ''));
