@@ -939,7 +939,7 @@ window.__INDUSTRY_DASH__ = {"period": "近7天（5/29–6/4）", "updatedAt": "2
   st.textContent='#indBody '+D.css.replace(/\n/g,'\n#indBody ').replace(/table/g,'table').trim();
   // 简单作用域:直接套用原CSS到#indBody内
   st.textContent='#indBody .title{background:#296BEF;color:#fff;padding:8px 14px;font-size:13px;font-weight:bold;text-align:center;border-radius:4px 4px 0 0;}'+
-    '#indBody table{border-collapse:collapse;width:100%;font-size:12px;}'+
+    '#indBody table{border-collapse:collapse;width:100%!important;font-size:12px;table-layout:auto;}'+'#indBody table{display:table!important;}'+'#indBody tr{display:table-row!important;}'+'#indBody td{display:table-cell!important;}'+'#indBody .section-title{display:table-row!important;}'+'#indBody .section-title td{display:table-cell!important;width:auto;}'+
     '#indBody td{white-space:nowrap;}'+
     '#indBody .section-title{background:#296BEF;color:#fff;}'+
     '#indBody .note{font-size:11px;color:#999;margin-top:8px;}';
