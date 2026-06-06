@@ -7,13 +7,48 @@
   "overrides": {
     "广州星巢电子商务有限公司": {
       "sale": "lijunwu",
-      "reason": "6-2 在登记系统改归属 lijunwu，但未落云（localStorage 未同步 CloudBase），手动覆盖",
-      "date": "2026-06-03"
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州丰泽区创域商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州鲤城区骁腾商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州丰泽区佑羽商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
+    },
+    "泉州韩依梦诺贸易有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
     },
     "泉州市酷旅科技有限公司": {
       "sale": "lijunwu",
-      "reason": "6-5 用户指定归属 lijunwu（改简称为泉州七匹狼，老客口径不影响新锐计算，仅修正归属展示）",
-      "date": "2026-06-05"
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu；改简称泉州七匹狼）",
+      "date": "2026-06-06"
+    },
+    "杭州云一绒服饰有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
+    },
+    "广州美丽商业有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kinsleyjin）",
+      "date": "2026-06-06"
+    },
+    "佛山市南海区缘芝甄选百货商行(个体工商户)": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 ruilingzhan）",
+      "date": "2026-06-06"
     },
     "晋江市谦煜商贸有限公司": {
       "sale": "lijunwu",
