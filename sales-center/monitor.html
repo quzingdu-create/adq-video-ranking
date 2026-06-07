@@ -173,13 +173,11 @@ function queryLocalByDates(dateList) {
   const allData = typeof MONITOR_SESSION_DATA !== 'undefined' ? MONITOR_SESSION_DATA : [];
   const results = dateList.map(date => {
     const list = allData.filter(s => s.date === date).map(s => {
-      // 计算有效时长（与 cloud_sync.js sessionQuery 逻辑一致）
-      let effectiveDuration = 0;
-      if (s.lastActiveTime && s.loginTime) {
-        effectiveDuration = Math.max(0, Math.round((s.lastActiveTime - s.loginTime) / 1000));
-      } else {
-        effectiveDuration = s.duration || 0;
-      }
+      // 有效时长口径（2026-06-08 子青拍板：只认 duration 真操作时长，单次封顶1小时）
+      // duration = 写入端 sessionEnd 按 lastActivityTime-loginTime 算的真操作时长（已扣挂机）
+      // 关标签页未正常退出的 session duration=0，不计入（避免 lastActiveTime 心跳爆表）
+      const CAP = 3600; // 单次有效时长上限 1 小时（秒）
+      let effectiveDuration = Math.min(s.duration || 0, CAP);
       return Object.assign({}, s, { effectiveDuration: effectiveDuration });
     });
     // 聚合统计
