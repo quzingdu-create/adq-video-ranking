@@ -1,5 +1,5 @@
 // monitor_session_data.js - 销售登录时长数据（静态嵌入）
-// 更新时间: 2026-06-01
+// 更新时间: 2026-06-08
 // 数据来源: CloudBase user_sessions (export)
 
 var MONITOR_SESSION_DATA = [
@@ -1557,8 +1557,8 @@ var MONITOR_SESSION_DATA = [
     "rtx": "lijunwu",
     "sessionId": "sess_1780255909440_4i9gwl",
     "loginTime": 1780255909440,
-    "lastActiveTime": 1780309105108,
-    "duration": 0,
+    "lastActiveTime": 1780367930240,
+    "duration": 112017,
     "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
     "date": "2026-06-01",
     "_createdAt": 1780255909440
@@ -1587,7 +1587,7 @@ var MONITOR_SESSION_DATA = [
     "rtx": "kinsleyjin",
     "sessionId": "sess_1780294059212_0fbhru",
     "loginTime": 1780294059212.0,
-    "lastActiveTime": 1780309076971.0,
+    "lastActiveTime": 1780322817825.0,
     "duration": 13410.0,
     "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
     "date": "2026-06-01",
@@ -1637,7 +1637,7 @@ var MONITOR_SESSION_DATA = [
     "rtx": "jonzhu",
     "sessionId": "sess_1780299926954_rc1sua",
     "loginTime": 1780299926954.0,
-    "lastActiveTime": 1780309116881.0,
+    "lastActiveTime": 1780320735372.0,
     "duration": 0.0,
     "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
     "date": "2026-06-01",
@@ -1647,7 +1647,7 @@ var MONITOR_SESSION_DATA = [
     "rtx": "kaikaigenli",
     "sessionId": "sess_1780307083853_0o5hdy",
     "loginTime": 1780307083853,
-    "lastActiveTime": 1780309082284,
+    "lastActiveTime": 1780553150567,
     "duration": 0,
     "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
     "date": "2026-06-01",
@@ -1667,10 +1667,980 @@ var MONITOR_SESSION_DATA = [
     "rtx": "brownfan",
     "sessionId": "sess_1780308398277_esdolc",
     "loginTime": 1780308398277,
-    "lastActiveTime": 1780308773189,
+    "lastActiveTime": 1780310846258,
     "duration": 0,
     "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.74(0x18004a24) NetType/4G Language/zh_CN",
     "date": "2026-06-01",
     "_createdAt": 1780308398278
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780313567708_esu1yx",
+    "loginTime": 1780313567708.0,
+    "lastActiveTime": 1780313609983.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/148.0.7778.166 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-01",
+    "_createdAt": 1780313567708.0
+  },
+  {
+    "rtx": "kinsleyjin",
+    "sessionId": "sess_1780316360480_owb4a7",
+    "loginTime": 1780316360480.0,
+    "lastActiveTime": 1780316383206.0,
+    "duration": 11.0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-01",
+    "_createdAt": 1780316360480.0
+  },
+  {
+    "rtx": "kinsleyjin",
+    "sessionId": "sess_1780316383387_zsinzo",
+    "loginTime": 1780316383387.0,
+    "lastActiveTime": 1780322817824.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-01",
+    "_createdAt": 1780316383387.0
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780367931807_swe6er",
+    "loginTime": 1780367931807,
+    "lastActiveTime": 1780367993435,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780367931807
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780368005193_1443yg",
+    "loginTime": 1780368005193,
+    "lastActiveTime": 1780478621423,
+    "duration": 15390,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780368005193
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780369823515_w0uuoe",
+    "loginTime": 1780369823515,
+    "lastActiveTime": 1780369823515,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780369823515
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780371793422_jb9gly",
+    "loginTime": 1780371793422,
+    "lastActiveTime": 1780378244930,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780371793422
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780375346073_vwns8s",
+    "loginTime": 1780375346073,
+    "lastActiveTime": 1780386126610,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780375346073
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780375540368_j3s3bv",
+    "loginTime": 1780375540368,
+    "lastActiveTime": 1780376345928,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780375540368
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780378265104_6vdv4k",
+    "loginTime": 1780378265104,
+    "lastActiveTime": 1780451859274,
+    "duration": 73591,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780378265104
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780382801465_pqdzxy",
+    "loginTime": 1780382801465,
+    "lastActiveTime": 1780383038325,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-02",
+    "_createdAt": 1780382801465
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780386694402_lkvtp2",
+    "loginTime": 1780386694402,
+    "lastActiveTime": 1780657783469,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780386694402
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780388917048_5v7w8k",
+    "loginTime": 1780388917048.0,
+    "lastActiveTime": 1780388982012.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780388917048.0
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780392864914_7uowd8",
+    "loginTime": 1780392864914,
+    "lastActiveTime": 1780392885252,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.74(0x18004a24) NetType/4G Language/zh_CN",
+    "date": "2026-06-02",
+    "_createdAt": 1780392864914
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780393969915_fztz8f",
+    "loginTime": 1780393969915,
+    "lastActiveTime": 1780393969915,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.74(0x18004a24) NetType/4G Language/zh_CN",
+    "date": "2026-06-02",
+    "_createdAt": 1780393969915
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780396665061_xeuwh3",
+    "loginTime": 1780396665061,
+    "lastActiveTime": 1780396665061,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.74(0x18004a24) NetType/4G Language/zh_CN",
+    "date": "2026-06-02",
+    "_createdAt": 1780396665061
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780396736844_tr8pgu",
+    "loginTime": 1780396736844,
+    "lastActiveTime": 1780396879752,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780396736845
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780396840862_5q1nb6",
+    "loginTime": 1780396840862,
+    "lastActiveTime": 1780398032947,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-02",
+    "_createdAt": 1780396840862
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780398904017_49nkkn",
+    "loginTime": 1780398904017.0,
+    "lastActiveTime": 1780400192952.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780398904017.0
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780400167811_ca58ik",
+    "loginTime": 1780400167811,
+    "lastActiveTime": 1780405428930,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-02",
+    "_createdAt": 1780400167811
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780400937061_t8hf95",
+    "loginTime": 1780400937061,
+    "lastActiveTime": 1780400967064,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.73(0x18004939) NetType/4G Language/zh_CN",
+    "date": "2026-06-02",
+    "_createdAt": 1780400937061
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780402476993_y2zllu",
+    "loginTime": 1780402476993,
+    "lastActiveTime": 1780412310752,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-02",
+    "_createdAt": 1780402476993
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780405155330_4cad7o",
+    "loginTime": 1780405155330.0,
+    "lastActiveTime": 1780405367387.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-02",
+    "_createdAt": 1780405155330.0
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780405449370_kq6nfx",
+    "loginTime": 1780405449370,
+    "lastActiveTime": 1780409607080,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-02",
+    "_createdAt": 1780405449370
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780451866132_xhkxjh",
+    "loginTime": 1780451866132,
+    "lastActiveTime": 1780545477946,
+    "duration": 93609,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780451866132
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780463228798_fej0hk",
+    "loginTime": 1780463228798,
+    "lastActiveTime": 1780510569490,
+    "duration": 31945,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780463228798
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780465165931_4h5o7u",
+    "loginTime": 1780465165931,
+    "lastActiveTime": 1780465357838,
+    "duration": 12,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780465165931
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780465364762_nsfrgi",
+    "loginTime": 1780465364762,
+    "lastActiveTime": 1780623687907,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780465364762
+  },
+  {
+    "rtx": "yvaineechen",
+    "sessionId": "sess_1780467076877_2hqkfy",
+    "loginTime": 1780467076877,
+    "lastActiveTime": 1780517359444,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780467076877
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780471101429_fqxj3m",
+    "loginTime": 1780471101429,
+    "lastActiveTime": 1780471171266,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.73(0x18004939) NetType/WIFI Language/zh_CN",
+    "date": "2026-06-03",
+    "_createdAt": 1780471101429
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780478622607_lm0edu",
+    "loginTime": 1780478622607,
+    "lastActiveTime": 1780551232413,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780478622607
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780481349608_zx6w3j",
+    "loginTime": 1780481349608,
+    "lastActiveTime": 1780540021634,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-03",
+    "_createdAt": 1780481349608
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780482145939_mfybhy",
+    "loginTime": 1780482145939,
+    "lastActiveTime": 1780482870828,
+    "duration": 721,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780482145939
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780482873578_7fvmb0",
+    "loginTime": 1780482873578,
+    "lastActiveTime": 1780564502836,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-03",
+    "_createdAt": 1780482873578
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780493378108_13yahm",
+    "loginTime": 1780493378108.0,
+    "lastActiveTime": 1780493378108.0,
+    "duration": 0.0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/148.0.7778.166 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-03",
+    "_createdAt": 1780493378108.0
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780510570754_nwdoqr",
+    "loginTime": 1780510570755,
+    "lastActiveTime": 1780563163017,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780510570755
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780541322445_km7b2x",
+    "loginTime": 1780541322445,
+    "lastActiveTime": 1780541404391,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-04",
+    "_createdAt": 1780541322445
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780545493116_segxau",
+    "loginTime": 1780545493116,
+    "lastActiveTime": 1780565666162,
+    "duration": 20170,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780545493116
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780546359485_bcckez",
+    "loginTime": 1780546359485,
+    "lastActiveTime": 1780547042739,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780546359485
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780550162883_iw18mr",
+    "loginTime": 1780550162883,
+    "lastActiveTime": 1780550259587,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780550162883
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780551641226_79yo0w",
+    "loginTime": 1780551641226,
+    "lastActiveTime": 1780551662803,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780551641226
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780552973410_nq5qeh",
+    "loginTime": 1780552973410,
+    "lastActiveTime": 1780553634376,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-04",
+    "_createdAt": 1780552973410
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780555400436_v57jnv",
+    "loginTime": 1780555400436,
+    "lastActiveTime": 1780556120764,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-04",
+    "_createdAt": 1780555400436
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780560344140_32rezu",
+    "loginTime": 1780560344140,
+    "lastActiveTime": 1780588590519,
+    "duration": 28241,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780560344140
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780563191728_04eu76",
+    "loginTime": 1780563191728,
+    "lastActiveTime": 1780568092144,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780563191728
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780565667600_o0ddk2",
+    "loginTime": 1780565667600,
+    "lastActiveTime": 1780619384243,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780565667600
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780566566871_u6mwch",
+    "loginTime": 1780566566871,
+    "lastActiveTime": 1780566566871,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780566566871
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780567582673_7k3fzs",
+    "loginTime": 1780567582673,
+    "lastActiveTime": 1780567582673,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780567582673
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780571065100_bht9oz",
+    "loginTime": 1780571065100,
+    "lastActiveTime": 1780631260499,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-04",
+    "_createdAt": 1780571065100
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780577741421_4agcfj",
+    "loginTime": 1780577741421,
+    "lastActiveTime": 1780580024797,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-04",
+    "_createdAt": 1780577741421
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780578523350_olrk9z",
+    "loginTime": 1780578523350,
+    "lastActiveTime": 1780591991103,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780578523350
+  },
+  {
+    "rtx": "yvaineechen",
+    "sessionId": "sess_1780586479371_rlxbg1",
+    "loginTime": 1780586479371,
+    "lastActiveTime": 1780621422544,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780586479371
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780588590905_ba6s6w",
+    "loginTime": 1780588590905,
+    "lastActiveTime": 1780850969701,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-04",
+    "_createdAt": 1780588590905
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780589017545_t0kp3o",
+    "loginTime": 1780589017545,
+    "lastActiveTime": 1780639570555,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-05",
+    "_createdAt": 1780589017545
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780590535912_98f1qw",
+    "loginTime": 1780590535912,
+    "lastActiveTime": 1780590818317,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-05",
+    "_createdAt": 1780590535912
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780623694455_xly4ms",
+    "loginTime": 1780623694455,
+    "lastActiveTime": 1780657805641,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780623694455
+  },
+  {
+    "rtx": "kaikaigenli",
+    "sessionId": "sess_1780626059312_lm3jo6",
+    "loginTime": 1780626059312,
+    "lastActiveTime": 1780710118334,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-05",
+    "_createdAt": 1780626059312
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780633244479_ndc4mg",
+    "loginTime": 1780633244479,
+    "lastActiveTime": 1780639968539,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-05",
+    "_createdAt": 1780633244479
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780645059030_sbtsr8",
+    "loginTime": 1780645059030,
+    "lastActiveTime": 1780645077398,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-05",
+    "_createdAt": 1780645059030
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780649668434_v54s64",
+    "loginTime": 1780649668434,
+    "lastActiveTime": 1780675796635,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-05",
+    "_createdAt": 1780649668434
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780650086917_cdj6r8",
+    "loginTime": 1780650086917,
+    "lastActiveTime": 1780716142655,
+    "duration": 66052,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780650086917
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780651555662_gilbt5",
+    "loginTime": 1780651555662,
+    "lastActiveTime": 1780651555662,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-05",
+    "_createdAt": 1780651555662
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780651796908_7c6xgx",
+    "loginTime": 1780651796908,
+    "lastActiveTime": 1780651829867,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.73(0x18004939) NetType/4G Language/zh_CN",
+    "date": "2026-06-05",
+    "_createdAt": 1780651796908
+  },
+  {
+    "rtx": "kinsleyjin",
+    "sessionId": "sess_1780657149715_eb7ao0",
+    "loginTime": 1780657149715,
+    "lastActiveTime": 1780657149715,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.71(0x18004730) NetType/WIFI Language/zh_CN",
+    "date": "2026-06-05",
+    "_createdAt": 1780657149715
+  },
+  {
+    "rtx": "kinsleyjin",
+    "sessionId": "sess_1780657338767_s2uthz",
+    "loginTime": 1780657338767,
+    "lastActiveTime": 1780710097735,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-05",
+    "_createdAt": 1780657338768
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780661406471_njq0w6",
+    "loginTime": 1780661406471,
+    "lastActiveTime": 1780661526490,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.73(0x18004939) NetType/4G Language/zh_CN",
+    "date": "2026-06-05",
+    "_createdAt": 1780661406471
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780662014427_kx5d4c",
+    "loginTime": 1780662014427,
+    "lastActiveTime": 1780662044428,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.73(0x18004939) NetType/4G Language/zh_CN",
+    "date": "2026-06-05",
+    "_createdAt": 1780662014427
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780668117650_p010b5",
+    "loginTime": 1780668117650,
+    "lastActiveTime": 1780668526525,
+    "duration": 408,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780668117650
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780668534087_8nqd2n",
+    "loginTime": 1780668534087,
+    "lastActiveTime": 1780668557863,
+    "duration": 19,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780668534087
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780668566874_7krqgi",
+    "loginTime": 1780668566874,
+    "lastActiveTime": 1780669232848,
+    "duration": 10,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780668566874
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780669244443_8mq2tp",
+    "loginTime": 1780669244443,
+    "lastActiveTime": 1780670047750,
+    "duration": 802,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780669244443
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780670049959_j22dta",
+    "loginTime": 1780670049959,
+    "lastActiveTime": 1780670982061,
+    "duration": 2,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780670049959
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780670984360_g67idd",
+    "loginTime": 1780670984360,
+    "lastActiveTime": 1780671046487,
+    "duration": 2,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780670984360
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780671116687_2ys5k1",
+    "loginTime": 1780671116687,
+    "lastActiveTime": 1780718621611,
+    "duration": 47504,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-05",
+    "_createdAt": 1780671116688
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780671453015_g7zmrz",
+    "loginTime": 1780671453015,
+    "lastActiveTime": 1780672190725,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 26_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.74(0x18004a27) NetType/WIFI Language/zh_CN",
+    "date": "2026-06-05",
+    "_createdAt": 1780671453015
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780680822440_6jrysd",
+    "loginTime": 1780680822440,
+    "lastActiveTime": 1780681148768,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.2 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-06",
+    "_createdAt": 1780680822440
+  },
+  {
+    "rtx": "yvaineechen",
+    "sessionId": "sess_1780685776831_edgar4",
+    "loginTime": 1780685776831,
+    "lastActiveTime": 1780687114651,
+    "duration": 1327,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780685776831
+  },
+  {
+    "rtx": "yvaineechen",
+    "sessionId": "sess_1780687115167_duofdf",
+    "loginTime": 1780687115167,
+    "lastActiveTime": 1780699212436,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780687115167
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780716150389_ml867f",
+    "loginTime": 1780716150389,
+    "lastActiveTime": 1780811119557,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780716150389
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780717657971_fi73h7",
+    "loginTime": 1780717657971,
+    "lastActiveTime": 1780718114450,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-06",
+    "_createdAt": 1780717657971
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780718624635_mgvnn1",
+    "loginTime": 1780718624635,
+    "lastActiveTime": 1780719064011,
+    "duration": 437,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780718624635
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780719065065_g1p8al",
+    "loginTime": 1780719065065,
+    "lastActiveTime": 1780719169648,
+    "duration": 1,
+    "deviceInfo": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780719065065
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780719194434_pw44tx",
+    "loginTime": 1780719194434,
+    "lastActiveTime": 1780719429029,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Mobile Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780719194434
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780719458236_p2v3bg",
+    "loginTime": 1780719458236,
+    "lastActiveTime": 1780720738868,
+    "duration": 1266,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780719458236
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780720752123_4k8owx",
+    "loginTime": 1780720752123,
+    "lastActiveTime": 1780851165522,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780720752123
+  },
+  {
+    "rtx": "edcchen",
+    "sessionId": "sess_1780720975759_iuglul",
+    "loginTime": 1780720975759,
+    "lastActiveTime": 1780851165521,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-06",
+    "_createdAt": 1780720975759
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780721588790_lsz6c4",
+    "loginTime": 1780721588790,
+    "lastActiveTime": 1780721835345,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-06",
+    "_createdAt": 1780721588790
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780725096595_qp5q7j",
+    "loginTime": 1780725096595,
+    "lastActiveTime": 1780725713764,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-06",
+    "_createdAt": 1780725096595
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780733321227_oxpjqp",
+    "loginTime": 1780733321227,
+    "lastActiveTime": 1780795955640,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-06",
+    "_createdAt": 1780733321227
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780783129614_9w37kz",
+    "loginTime": 1780783129614,
+    "lastActiveTime": 1780783415003,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-07",
+    "_createdAt": 1780783129614
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780785198018_jlp5ai",
+    "loginTime": 1780785198018,
+    "lastActiveTime": 1780785473917,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-07",
+    "_createdAt": 1780785198018
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780803681104_ssmwin",
+    "loginTime": 1780803681104,
+    "lastActiveTime": 1780803681104,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-07",
+    "_createdAt": 1780803681104
+  },
+  {
+    "rtx": "brownfan",
+    "sessionId": "sess_1780803694449_43fryd",
+    "loginTime": 1780803694449,
+    "lastActiveTime": 1780833249173,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "date": "2026-06-07",
+    "_createdAt": 1780803694449
+  },
+  {
+    "rtx": "jonzhu",
+    "sessionId": "sess_1780803865865_xaqwf2",
+    "loginTime": 1780803865865,
+    "lastActiveTime": 1780803865865,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Mobile/15E148 Safari/604.1",
+    "date": "2026-06-07",
+    "_createdAt": 1780803865865
+  },
+  {
+    "rtx": "ruilingzhan",
+    "sessionId": "sess_1780843479410_ilez8j",
+    "loginTime": 1780843479410,
+    "lastActiveTime": 1780850373412,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 NetType/WIFI MicroMessenger/7.0.20.1781(0x6700143B) MacWechat/3.8.7(0x13080712) Un",
+    "date": "2026-06-07",
+    "_createdAt": 1780843479410
+  },
+  {
+    "rtx": "lijunwu",
+    "sessionId": "sess_1780849416037_1fyktm",
+    "loginTime": 1780849416038,
+    "lastActiveTime": 1780850094707,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-08",
+    "_createdAt": 1780849416038
+  },
+  {
+    "rtx": "yvaineechen",
+    "sessionId": "sess_1780851006029_ghoegw",
+    "loginTime": 1780851006029,
+    "lastActiveTime": 1780851156481,
+    "duration": 0,
+    "deviceInfo": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36",
+    "date": "2026-06-08",
+    "_createdAt": 1780851006029
   }
 ];
