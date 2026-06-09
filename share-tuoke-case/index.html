@@ -247,6 +247,27 @@
   .case-trend .ct-tag.drop{top:30px;left:24%;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;}
   .case-trend .ct-tag.rise{top:30px;right:8%;background:#ecfdf5;color:#059669;border:1px solid #6ee7b7;}
   .case-trend .dgm-cap{padding:0 16px 14px;margin-top:0;}
+  /* 技术框架分层 */
+  .techstack{margin:16px 0;}
+  .ts-layer{border-radius:13px;padding:14px 16px;color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    box-shadow:0 6px 18px -10px rgba(15,23,42,.4);margin:0;}
+  .ts-layer .ts-name{flex:0 0 132px;font-weight:850;font-size:14px;}
+  .ts-layer .ts-name small{display:block;font-weight:600;font-size:11px;opacity:.85;margin-top:2px;}
+  .ts-layer .ts-chips{flex:1;display:flex;flex-wrap:wrap;gap:7px;}
+  .ts-layer .ts-chips span{background:rgba(255,255,255,.18);font-size:12px;font-weight:700;
+    padding:5px 11px;border-radius:8px;line-height:1.5;}
+  .ts-layer .ts-chips span code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;
+    background:rgba(0,0,0,.18);padding:1px 5px;border-radius:4px;}
+  .ts-app{background:linear-gradient(135deg,#3b82f6,#1B4FC4);}
+  .ts-ai{background:linear-gradient(135deg,#8b5cf6,#6d28d9);}
+  .ts-proc{background:linear-gradient(135deg,#0ea5a5,#0f766e);}
+  .ts-data{background:linear-gradient(135deg,#64748b,#475569);}
+  .ts-flow{text-align:center;color:#94a3b8;font-size:16px;font-weight:700;padding:3px 0;}
+  .ts-deploy{margin-top:12px;background:linear-gradient(135deg,#f6f9ff,#eef3fb);border:1px solid #d7e3fb;
+    border-radius:12px;padding:13px 16px;font-size:13px;color:#3a4d6b;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .ts-deploy b{color:var(--blue-d);}
+  .ts-deploy .dchip{background:#fff;border:1px solid #cfe0fb;color:var(--blue-d);font-weight:700;
+    font-size:12px;padding:4px 10px;border-radius:7px;}
   @media(max-width:720px){
     .grid2,.grid3,.kpi-row,.compare,.meaning,.tabrow,.qgrid,.pain,.role,.support{grid-template-columns:1fr;}
     .slide{padding:28px 22px;} h1{font-size:24px;} .hero h1{font-size:25px;}
@@ -804,9 +825,99 @@
     <div class="note">⚠️ 顺序不能反——必须<b>先决定"该处理什么"，再决定"用什么形式给出去"</b>，否则做出来就只是个 BI 看板。AData 提供原始数据，作战中心把"目标 / 3 千门槛 / 首投季度"这些业务规则翻译成动作。这套方法，对内是"防漏+抓机会"，对外是"信息产品化"。</div>
   </div>
 
-  <!-- PART 09 · 当前卡点全景 -->
+  <!-- PART 09 · 技术框架 -->
   <div class="slide">
-    <div class="part-tag">PART 09 · 当前卡点</div>
+    <div class="part-tag">PART 09 · 技术框架</div>
+    <h2>技术实现：一条"CSV 进 → Python 算 → JS 文件出 → 静态页渲染"的轻管线</h2>
+    <p class="lead">没有数据库、没有后端服务、不依赖 BI 平台。整套是 <b>Python 脚本 + 静态前端</b>，每天一条命令跑完重建，产物直接推 GitHub Pages。下面是端到端的真实链路：</p>
+
+    <div class="dgm">
+      <svg viewBox="0 0 680 250" role="img" aria-label="端到端数据管线">
+        <defs>
+          <marker id="pa" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/></marker>
+          <linearGradient id="pp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0ea5a5"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
+        </defs>
+        <!-- 输入 -->
+        <text x="92" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">① 输入</text>
+        <rect x="14" y="30" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="92" y="48" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">AData 7 份 CSV</text>
+        <text x="92" y="63" text-anchor="middle" fill="#94a3b8" font-size="10">季度消耗/昨耗/链路…</text>
+        <rect x="14" y="78" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="92" y="96" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">CloudBase 登记导出</text>
+        <text x="92" y="111" text-anchor="middle" fill="#94a3b8" font-size="10">tuoke_records.json</text>
+        <rect x="14" y="126" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="92" y="144" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">新锐名单 / 14天日耗</text>
+        <text x="92" y="159" text-anchor="middle" fill="#94a3b8" font-size="10">txt / csv</text>
+        <line x1="172" y1="98" x2="200" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
+        <!-- 处理 -->
+        <text x="340" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">② Python 处理（标准库，无 pandas）</text>
+        <rect x="204" y="30" width="272" height="136" rx="12" fill="url(#pp)"/>
+        <text x="340" y="54" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">rebuild_kpi_csv.py（约1400行）</text>
+        <text x="222" y="76" fill="#d1fae5" font-size="11">· 解析 CSV，按首投季度 / 破千 / 名单打标</text>
+        <text x="222" y="95" fill="#d1fae5" font-size="11">· 算新客 / 有效 / 新锐 / 消耗 + 日Δ</text>
+        <text x="222" y="114" fill="#d1fae5" font-size="11">· 归属覆盖层 override + 生效时间戳</text>
+        <text x="340" y="138" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">reconcile 回扫 · sync_mobile 同步</text>
+        <text x="340" y="156" text-anchor="middle" fill="#a7f3d0" font-size="10.5">每天一条命令跑完全流程</text>
+        <line x1="478" y1="98" x2="506" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
+        <!-- 输出 -->
+        <text x="592" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">③ 产物</text>
+        <rect x="510" y="40" width="156" height="116" rx="11" fill="#eef3fe" stroke="#bcd3f9"/>
+        <text x="588" y="62" text-anchor="middle" fill="#1B4FC4" font-size="12" font-weight="850">9 个 .js 数据文件</text>
+        <text x="588" y="82" text-anchor="middle" fill="#475569" font-size="10">window.__XXX__ =</text>
+        <text x="588" y="98" text-anchor="middle" fill="#475569" font-size="10">{聚合好的JSON}</text>
+        <text x="588" y="120" text-anchor="middle" fill="#64748b" font-size="9.5">center_quarter_summary</text>
+        <text x="588" y="134" text-anchor="middle" fill="#64748b" font-size="9.5">top80_effective_metrics…</text>
+        <!-- 底部到前端 -->
+        <line x1="588" y1="160" x2="588" y2="186" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
+        <rect x="14" y="184" width="652" height="50" rx="12" fill="#1B4FC4"/>
+        <text x="340" y="206" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">④ 静态前端：原生 HTML/JS 直接读 window 全局变量渲染</text>
+        <text x="340" y="224" text-anchor="middle" fill="#cfe0fb" font-size="11">无需接口请求 · 打开页面即拿到当天数据</text>
+      </svg>
+    </div>
+
+    <h3>四个关键技术点</h3>
+    <div class="techstack">
+      <div class="ts-layer ts-proc">
+        <div class="ts-name">数据处理<small>Python 标准库</small></div>
+        <div class="ts-chips">
+          <span>csv / json / re / glob</span><span>无 pandas，零三方依赖</span><span>口径全写进脚本（首投季度/3千门槛/新锐名单）</span><span>override 人工兜底层</span>
+        </div>
+      </div>
+      <div class="ts-layer ts-app">
+        <div class="ts-name">数据传递<small>不用接口</small></div>
+        <div class="ts-chips">
+          <span>Python 把结果写成 <code>window.__XXX__=JSON</code> 的 .js</span><span>前端 &lt;script&gt; 直接引</span><span>静态托管也能"动态"展示</span>
+        </div>
+      </div>
+      <div class="ts-layer ts-app">
+        <div class="ts-name">前端渲染<small>原生 + 轻库</small></div>
+        <div class="ts-chips">
+          <span>原生 HTML/CSS/JS（无 Vue/React）</span><span>ECharts 5.5 画图</span><span>iframe 嵌子页 + postMessage 传红点数</span><span>cache-buster ?v= 控版本</span>
+        </div>
+      </div>
+      <div class="ts-layer ts-ai">
+        <div class="ts-name">实时 & AI<small>云 + 协同</small></div>
+        <div class="ts-chips">
+          <span>CloudBase JS SDK（账号登录）</span><span>redspot_progress 集合：小红点全员跨端实时同步</span><span>🩺 一键跳 adataclaw 归因</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ts-deploy">
+      <b>🚀 部署：</b>
+      <span class="dchip">GitHub Pages 静态托管</span>
+      <span class="dchip">单一真源仓库</span>
+      <span class="dchip">改完 git push 即上线</span>
+      <span class="dchip">固定链接不过期</span>
+      <span style="flex-basis:100%;color:#64748b;font-size:12.5px;margin-top:4px;">零服务器、零数据库、零运维成本——这也是它能由一个人独立维护的根本原因。</span>
+    </div>
+
+    <div class="note">💡 一句话概括技术选型：<b>把"重"放在 Python 脚本里（口径计算一次算准），把"前端"做到最轻（静态文件人人能开、随时能改）</b>。复杂度集中在数据处理，展示层保持简单，所以迭代快、好维护、可独立交付。</div>
+  </div>
+
+  <!-- PART 10 · 当前卡点全景 -->
+  <div class="slide">
+    <div class="part-tag">PART 10 · 当前卡点</div>
     <h2>把话说透：现在我们仍卡在哪里（AI / 运营 两个视角）</h2>
     <div class="role" style="grid-template-columns:1fr 1fr;">
       <div class="rolebox ai">
@@ -830,9 +941,9 @@
     </div>
   </div>
 
-  <!-- PART 10 · 希望的资源与支持 -->
+  <!-- PART 11 · 希望的资源与支持 -->
   <div class="slide">
-    <div class="part-tag">PART 10 · 资源与支持</div>
+    <div class="part-tag">PART 11 · 资源与支持</div>
     <h2>基于卡点，我们希望给予的支持</h2>
     <p class="lead">不是要更多人手堆活，而是把几个"卡住规模化"的关键点打通——让这套已经验证有效的机制，能稳定服务整个团队。</p>
     <div class="support">
@@ -864,9 +975,9 @@
     </div>
   </div>
 
-  <!-- PART 11 · 下一步 -->
+  <!-- PART 12 · 下一步 -->
   <div class="slide">
-    <div class="part-tag">PART 11 · 下一步</div>
+    <div class="part-tag">PART 12 · 下一步</div>
     <h2>看板的下一步：把"发现"和"归因"做得更自动、更闭环</h2>
     <p class="lead">沿着现有的三个 Tab，往"少一步人工、多一步自动"的方向迭代——</p>
     <div class="grid2">
