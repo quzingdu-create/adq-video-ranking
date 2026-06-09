@@ -7,24 +7,24 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260609b"></script>
-<script src="data/old24_customer_data.js?v=20260609b"></script>
-<script src="data/bulk_import_rows.js?v=20260609b"></script>
-<script src="data/tuoke_real_records.js?v=20260609b"></script>
-<script src="data/customer_link_data.js?v=20260609b"></script>
-<script src="data/center_sales_summary.js?v=20260609b"></script>
-<script src="data/center_quarter_summary.js?v=20260609b"></script>
-<script src="data/center_daily_kpi.js?v=20260609b"></script>
-<script src="data/delivery_side_summary.js?v=20260609b"></script>
-<script src="data/top80_effective_metrics.js?v=20260609b"></script>
-<script src="data/top_status_data.js?v=20260609b"></script>
-<script src="data/enough_candidates.js?v=20260609b"></script>
-<script src="data/handover_customers_519.js?v=20260609b"></script>
-<script src="data/first_quarter.js?v=20260609b"></script>
-<script src="data/old24_names.js?v=20260609b"></script>
+<script src="data/laoke_lookup_data.js?v=20260609c"></script>
+<script src="data/old24_customer_data.js?v=20260609c"></script>
+<script src="data/bulk_import_rows.js?v=20260609c"></script>
+<script src="data/tuoke_real_records.js?v=20260609c"></script>
+<script src="data/customer_link_data.js?v=20260609c"></script>
+<script src="data/center_sales_summary.js?v=20260609c"></script>
+<script src="data/center_quarter_summary.js?v=20260609c"></script>
+<script src="data/center_daily_kpi.js?v=20260609c"></script>
+<script src="data/delivery_side_summary.js?v=20260609c"></script>
+<script src="data/top80_effective_metrics.js?v=20260609c"></script>
+<script src="data/top_status_data.js?v=20260609c"></script>
+<script src="data/enough_candidates.js?v=20260609c"></script>
+<script src="data/handover_customers_519.js?v=20260609c"></script>
+<script src="data/first_quarter.js?v=20260609c"></script>
+<script src="data/old24_names.js?v=20260609c"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260609b"></script>
+<script src="cloud_sync.js?v=20260609c"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -2246,6 +2246,17 @@ function lookupDuplicates(name) {
   }
   return { total:entries.length, entries };
 }
+/* 2026-06-10 子青拍板：判重命中多个销售时，区分「真·先登记先归属」与「归属被改过」。
+   优先级 本地(date最新) > 底表 > 历史 = 当前归属，其余视为历史归属。 */
+function _dupCurrentOwner(entries){
+  const local = (entries||[]).filter(e=>e.src==='本地' && e.date).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(local.length) return local[0].sales;
+  const localAny = (entries||[]).filter(e=>e.src==='本地');
+  if(localAny.length) return localAny[localAny.length-1].sales;
+  const base = (entries||[]).filter(e=>e.src==='底表');
+  if(base.length) return base[base.length-1].sales;
+  return (entries&&entries.length) ? entries[entries.length-1].sales : '';
+}
 let pendingImages = [];
 function fillModalSelect(id, arr) { const el = document.getElementById(id); if (el) el.innerHTML = arr.map(x => `<option>${x}</option>`).join(''); }
 function initRegisterModal() {
@@ -2616,8 +2627,15 @@ function onNameInput() {
       return `<b>${d.sales}</b>${tag}`;
     }).join('、');
     if (hasHardDup) {
+      const _owner = _dupCurrentOwner(dup.entries);
+      const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
+      const _changed = _others.length > 0;  // 出现过别的销售 = 归属被改过
+      const _ownerHtml = `<b>${_owner}</b>`;
+      const _bodyHtml = _changed
+        ? `❌ <b>主体重复</b>：该客户当前归属 ${_ownerHtml}（销售已由 ${_others.map(s=>`<span style="text-decoration:line-through;color:#9ca3af;">${s}</span>`).join('、')} 修改为 ${_ownerHtml}）。按「先登记先归属」规则<b>本次拒绝提交</b>。`
+        : `❌ <b>主体重复</b>：该客户已被 ${_ownerHtml} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。`;
       hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
-        ❌ <b>主体重复</b>：已被 ${salesList} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。
+        ${_bodyHtml}
       </div>`;
     } else {
       hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
@@ -2724,8 +2742,12 @@ window.submitRecord = () => {
   // 「先登记先归属」硬卡：底表/本地命中即拒绝
   const hardDup = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
   if (hardDup.length > 0) {
-    const list = hardDup.map(d => d.sales + (d.date ? '@' + d.date : '')).join('、');
-    return alert('❌ 主体重复：已被 ' + list + ' 登记。\n按「先登记先归属」规则拒绝提交。');
+    const _owner = _dupCurrentOwner(dup.entries);
+    const _others = [...new Set(dup.entries.map(d => d.sales).filter(s => s && s !== _owner))];
+    const msg = _others.length > 0
+      ? `❌ 主体重复：该客户当前归属 ${_owner}（销售已由 ${_others.join('、')} 修改为 ${_owner}）。\n按「先登记先归属」规则拒绝提交。`
+      : `❌ 主体重复：该客户已被 ${_owner} 登记。\n按「先登记先归属」规则拒绝提交。`;
+    return alert(msg);
   }
   if (dup.total) {
     const salesList = dup.entries.map(d => d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`).join('、');
