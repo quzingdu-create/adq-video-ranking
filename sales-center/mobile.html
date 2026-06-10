@@ -775,7 +775,14 @@ window.__TUOKE_REAL_RECORDS__=[{"sale":"kinsleyjin","name":"重庆红芒科技�
   function renderTop(){
     let rows = topRows.map(r => ({...r, _s: statusOf(r)}));
     if (topSaleTab !== "all") rows = rows.filter(r => r.sale === topSaleTab);
-    $("topTotal").textContent = `${rows.length} 家`;
+    // 标题区分项统计：预警 / 关注 / 稳定（该销售全量，与下方 chip 同口径）
+    {
+      var _a = rows.filter(r => r._s.status === "alarm").length;
+      var _f = rows.filter(r => r._s.status === "focus").length;
+      var _st = rows.filter(r => r._s.status === "stable").length;
+      var tt = $("topTotal");
+      if (tt) tt.innerHTML = '<span style="color:#dc2626;font-weight:800;">预警 ' + _a + '</span> · <span style="color:#d97706;font-weight:800;">关注 ' + _f + '</span> · <span style="color:#059669;font-weight:800;">稳定 ' + _st + '</span>';
+    }
     rows.sort((a,b) => Number(b.yestCostWan || 0) - Number(a.yestCostWan || 0));
     // 排名先存（按昨日消耗降序）
     rows = rows.map((r, i) => ({...r, _rank: i}));
