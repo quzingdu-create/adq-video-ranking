@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>服饰拓新小红点系统 · 应用思路 — 让销售化被动为主动、面对客户不漏球</title>
+<style>
+  :root{
+    --bg:#f7f8fb;
+    --ink:#0f172a;
+    --ink-2:#334155;
+    --muted:#64748b;
+    --line:#e2e8f0;
+    --brand:#296BEF;
+    --brand-d:#1B4FC4;
+    --brand-l:#eaf0fe;
+    --red:#dc2626;
+    --red-l:#fef2f2;
+    --green:#059669;
+    --green-l:#ecfdf5;
+    --gold:#d97706;
+    --gold-l:#fef7e8;
+    --purple:#7c3aed;
+    --purple-l:#f3effd;
+    --shadow-s:0 1px 3px rgba(15,23,42,.05),0 1px 2px rgba(15,23,42,.03);
+    --shadow-m:0 4px 14px rgba(15,23,42,.06),0 2px 4px rgba(15,23,42,.04);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:"Tencent Sans W7","TencentSans-W7","Tencent Sans","腾讯体",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.75;-webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+
+  /* —— Hero —— */
+  .hero{
+    position:relative;
+    background:
+      radial-gradient(1200px 500px at 20% -10%,rgba(59,130,246,.18),transparent 60%),
+      radial-gradient(1000px 480px at 100% 10%,rgba(16,185,129,.08),transparent 55%),
+      linear-gradient(135deg,#0f172a 0%,#1e293b 60%,#1B4FC4 100%);
+    color:#fff;padding:84px 32px 72px;overflow:hidden;
+  }
+  .hero::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);
+    background-size:24px 24px;opacity:.6;pointer-events:none;}
+  .hero-inner{max-width:1080px;margin:0 auto;position:relative;z-index:1;}
+  .kicker{display:inline-block;font-size:12px;font-weight:800;letter-spacing:2.5px;
+    background:rgba(125,211,252,.18);color:#7dd3fc;padding:7px 14px;border-radius:999px;
+    border:1px solid rgba(125,211,252,.32);margin-bottom:22px;}
+  .hero h1{font-size:42px;font-weight:850;line-height:1.25;letter-spacing:-.5px;margin-bottom:14px;
+    text-shadow:0 2px 24px rgba(0,0,0,.25);}
+  .hero h1 .em{background:linear-gradient(90deg,#7dd3fc,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero .subtitle{font-size:18px;color:#cbd5e1;max-width:760px;line-height:1.7;margin-bottom:28px;}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:20px;font-size:13px;color:#94a3b8;}
+  .hero-meta .it{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);}
+  .hero-meta .it b{color:#fff;font-weight:850;font-size:14px;letter-spacing:.5px;}
+  .hero-quick{margin-top:36px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .qstat{padding:18px 18px;border-radius:14px;background:rgba(255,255,255,.07);
+    border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);}
+  .qstat .qv{font-size:26px;font-weight:850;color:#fff;letter-spacing:-.5px;line-height:1.1;}
+  .qstat .ql{font-size:12px;color:#94a3b8;margin-top:6px;letter-spacing:.5px;}
+
+  /* —— Layout —— */
+  .container{max-width:1080px;margin:0 auto;padding:48px 32px 100px;
+    display:grid;grid-template-columns:200px 1fr;gap:40px;align-items:flex-start;}
+  /* 左侧锚 */
+  .toc{position:sticky;top:32px;font-size:13px;}
+  .toc-h{font-size:11px;font-weight:850;letter-spacing:2px;color:var(--muted);margin-bottom:10px;}
+  .toc ol{list-style:none;counter-reset:tc;}
+  .toc li{counter-increment:tc;position:relative;padding:9px 0 9px 30px;cursor:pointer;color:var(--muted);
+    border-left:2px solid var(--line);transition:.2s;}
+  .toc li::before{content:counter(tc,decimal-leading-zero);position:absolute;left:10px;top:9px;
+    font-size:11px;font-weight:800;color:var(--muted);}
+  .toc li:hover,.toc li.active{color:var(--brand-d);border-left-color:var(--brand);font-weight:800;}
+  .toc li.active::before{color:var(--brand);}
+
+  /* —— Sections —— */
+  section{margin-bottom:56px;scroll-margin-top:24px;}
+  section .chap-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:850;
+    letter-spacing:2.5px;color:var(--brand-d);background:var(--brand-l);padding:6px 14px;
+    border-radius:6px;margin-bottom:14px;border:1px solid #d7e3fb;}
+  section .chap-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand);}
+  section h2{font-size:30px;font-weight:850;line-height:1.3;letter-spacing:-.3px;margin-bottom:10px;}
+  section .lede{font-size:16px;color:var(--ink-2);max-width:780px;margin-bottom:28px;line-height:1.85;}
+  section .lede b{color:var(--ink);}
+  h3{font-size:18px;font-weight:850;margin:32px 0 14px;color:var(--ink);
+    padding-left:14px;border-left:4px solid var(--brand);border-radius:1px;}
+
+  /* —— 叙事块（章首引用） —— */
+  .quote-narr{background:linear-gradient(135deg,#fff,#f3f7ff);border:1px solid #d6e0f5;
+    border-radius:14px;padding:22px 26px 22px 28px;position:relative;margin:18px 0 24px;
+    box-shadow:var(--shadow-s);}
+  .quote-narr::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;
+    background:linear-gradient(180deg,var(--brand),#7dabf6);border-radius:0 4px 4px 0;}
+  .quote-narr .ql{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--brand-d);margin-bottom:8px;}
+  .quote-narr .qb{font-size:15px;color:var(--ink);line-height:1.85;}
+  .quote-narr .qb b{color:var(--brand-d);}
+
+  /* —— Pain 三视角 —— */
+  .pains{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .pain{border-radius:16px;padding:24px;border:1px solid var(--line);background:#fff;
+    box-shadow:var(--shadow-s);transition:.25s;position:relative;overflow:hidden;}
+  .pain:hover{transform:translateY(-3px);box-shadow:var(--shadow-m);}
+  .pain::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;}
+  .pain.p1{border-color:#fecaca;}.pain.p1::before{background:linear-gradient(90deg,#dc2626,#f87171);}
+  .pain.p2{border-color:#bfdbfe;}.pain.p2::before{background:linear-gradient(90deg,#2563eb,#60a5fa);}
+  .pain.p3{border-color:#fde68a;}.pain.p3::before{background:linear-gradient(90deg,#d97706,#fbbf24);}
+  .pain .pi{font-size:30px;margin-bottom:10px;line-height:1;}
+  .pain .ph{font-size:15px;font-weight:850;margin-bottom:5px;}
+  .pain .ps{font-size:11.5px;font-weight:800;letter-spacing:1px;margin-bottom:14px;}
+  .pain.p1 .ps{color:#dc2626;}
+  .pain.p2 .ps{color:#2563eb;}
+  .pain.p3 .ps{color:#d97706;}
+  .pain .pd{font-size:13.5px;color:var(--ink-2);line-height:1.85;}
+  .pain .pd b{color:var(--ink);}
+  .pain .case{margin-top:14px;padding:11px 13px;border-radius:9px;background:var(--bg);font-size:12.5px;
+    color:var(--ink-2);line-height:1.7;border-left:3px solid;}
+  .pain.p1 .case{border-left-color:#dc2626;}
+  .pain.p2 .case{border-left-color:#2563eb;}
+  .pain.p3 .case{border-left-color:#d97706;}
+  .pain .case b{color:var(--ink);}
+
+  /* —— Stage 进化 —— */
+  .stage{display:grid;grid-template-columns:1fr 60px 1fr;align-items:stretch;gap:0;margin:18px 0;}
+  .stage-card{border-radius:16px;padding:26px 28px;background:#fff;border:1px solid var(--line);
+    box-shadow:var(--shadow-s);transition:.25s;}
+  .stage-card.s1{border-color:#cbd5e1;background:linear-gradient(160deg,#fbfcfd,#f1f5f9);}
+  .stage-card.s2{border-color:#bcd3f9;background:linear-gradient(160deg,#f3f7ff,#e9f0fd);
+    box-shadow:0 8px 28px -10px rgba(27,79,196,.22);}
+  .stage-arr{display:flex;align-items:center;justify-content:center;font-size:22px;
+    color:var(--brand);font-weight:800;}
+  .stage-card .st{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .stage-card .st .num{flex:0 0 auto;width:34px;height:34px;border-radius:10px;font-size:13px;font-weight:850;
+    color:#fff;display:flex;align-items:center;justify-content:center;}
+  .stage-card.s1 .st .num{background:linear-gradient(135deg,#94a3b8,#64748b);}
+  .stage-card.s2 .st .num{background:linear-gradient(135deg,#3b82f6,#1B4FC4);}
+  .stage-card .st .tt{font-size:17px;font-weight:850;}
+  .stage-card .ss{font-size:12.5px;color:var(--muted);margin:2px 0 14px 44px;}
+  .stage-card .body{font-size:13.5px;color:var(--ink-2);line-height:1.8;}
+  .stage-card .body b{color:var(--ink);}
+  .stage-card ul{list-style:none;margin-top:8px;}
+  .stage-card li{position:relative;padding:6px 0 6px 18px;font-size:13.5px;color:var(--ink-2);}
+  .stage-card li::before{content:"";position:absolute;left:2px;top:14px;width:6px;height:6px;border-radius:50%;
+    background:var(--brand);}
+  .stage-card.s1 li::before{background:#94a3b8;}
+  .stage-foot{margin-top:14px;padding-top:14px;border-top:1px dashed #d4dbe6;font-size:12.5px;color:var(--muted);}
+  .stage-foot.bad{color:#b91c1c;}.stage-foot.good{color:#047857;}
+
+  /* —— 三大功能 —— */
+  .feat{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin:14px 0;}
+  .fcard{background:#fff;border-radius:16px;border:1px solid var(--line);overflow:hidden;
+    box-shadow:var(--shadow-s);transition:.3s;display:flex;flex-direction:column;}
+  .fcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-m);}
+  .fcard .fhead{padding:20px 22px 16px;color:#fff;}
+  .fcard.f1 .fhead{background:linear-gradient(135deg,#2563eb,#1d4ed8);}
+  .fcard.f2 .fhead{background:linear-gradient(135deg,#dc2626,#b91c1c);}
+  .fcard.f3 .fhead{background:linear-gradient(135deg,#7c3aed,#5b21b6);}
+  .fcard .fnum{display:inline-flex;width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.22);
+    color:#fff;font-size:11px;font-weight:850;align-items:center;justify-content:center;margin-bottom:8px;}
+  .fcard .ftt{font-size:18px;font-weight:850;line-height:1.4;}
+  .fcard .fsub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:5px;}
+  .fcard .fbody{padding:18px 22px 20px;font-size:13.5px;color:var(--ink-2);line-height:1.85;flex:1;}
+  .fcard .fbody b{color:var(--ink);}
+  .fcard .fbody p{margin-bottom:10px;}
+  .fcard .fchips{padding:0 22px 20px;display:flex;flex-wrap:wrap;gap:6px;}
+  .fcard .fchips span{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:7px;background:var(--bg);
+    color:var(--ink-2);border:1px solid var(--line);}
+
+  /* —— 触发逻辑详情（功能2 内嵌） —— */
+  .trigger{margin:22px 0 8px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;
+    box-shadow:var(--shadow-s);}
+  .trigger-h{padding:14px 20px;background:linear-gradient(135deg,#fef2f2,#fff7f7);
+    color:#b91c1c;font-weight:850;font-size:14.5px;border-bottom:1px solid #fde0e0;}
+  .trig-row{display:grid;grid-template-columns:130px 1fr;gap:0;border-bottom:1px solid #f1f5f9;}
+  .trig-row:last-child{border-bottom:none;}
+  .trig-k{padding:14px 18px;background:#fafbfd;font-weight:800;font-size:13px;color:var(--ink);
+    border-right:1px solid var(--line);display:flex;align-items:flex-start;gap:6px;}
+  .trig-k .icn{flex:0 0 auto;}
+  .trig-v{padding:14px 18px;font-size:13.5px;color:var(--ink-2);line-height:1.8;}
+  .trig-v b{color:var(--ink);}
+  .trig-v .rule{display:inline-block;font-size:12px;font-weight:800;color:#b91c1c;background:#fef2f2;
+    padding:2px 9px;border-radius:6px;margin:0 4px;border:1px solid #fecaca;}
+  .trig-v .rule.up{color:#047857;background:#ecfdf5;border-color:#a7e8c8;}
+
+  /* —— 实操之变 三段 —— */
+  .opbig{margin:22px 0 14px;border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;
+    box-shadow:var(--shadow-s);}
+  .opbig-h{padding:18px 26px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(135deg,#fbfcfe,#f3f7fc);}
+  .opbig-h .badge{flex:0 0 auto;width:42px;height:42px;border-radius:12px;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:850;}
+  .opbig.b1 .opbig-h .badge{background:linear-gradient(135deg,#2563eb,#1d4ed8);}
+  .opbig.b2 .opbig-h .badge{background:linear-gradient(135deg,#10b981,#047857);}
+  .opbig.b3 .opbig-h .badge{background:linear-gradient(135deg,#f59e0b,#b45309);}
+  .opbig-h .ttwrap{flex:1;}
+  .opbig-h .ttn{font-size:11.5px;font-weight:800;letter-spacing:2px;color:var(--muted);}
+  .opbig-h .ttt{font-size:18px;font-weight:850;color:var(--ink);}
+  .opbig-h .ttsub{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .opbig-body{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .opbig-half{padding:22px 26px;}
+  .opbig-half.before{border-right:1px dashed var(--line);background:linear-gradient(160deg,#fff,#fafbfc);}
+  .opbig-half.after{background:linear-gradient(160deg,#f3f7ff,#eef3fc);}
+  .opbig-half .lab{display:inline-block;font-size:11px;font-weight:850;letter-spacing:1.5px;
+    padding:3px 10px;border-radius:5px;margin-bottom:10px;}
+  .opbig-half.before .lab{background:#fef2f2;color:#b91c1c;}
+  .opbig-half.after .lab{background:#dcfce7;color:#047857;}
+  .opbig-half .lab2{font-size:14.5px;font-weight:850;margin-bottom:10px;color:var(--ink);}
+  .opbig-half ul{list-style:none;}
+  .opbig-half li{position:relative;padding:7px 0 7px 22px;font-size:13.5px;color:var(--ink-2);line-height:1.7;}
+  .opbig-half li::before{content:"";position:absolute;left:6px;top:14px;width:6px;height:6px;border-radius:50%;}
+  .opbig-half.before li::before{background:#b91c1c;}
+  .opbig-half.after li::before{background:#047857;}
+  .opbig-half li b{color:var(--ink);}
+  .opbig-foot{padding:14px 26px;background:linear-gradient(135deg,#ecfdf5,#dcfce7);
+    color:#047857;font-size:13.5px;font-weight:700;border-top:1px solid #a7e8c8;}
+  .opbig-foot b{font-weight:850;}
+
+  /* —— 案例闭环 —— */
+  .case-cycle{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0;}
+  .cycle-step{border-radius:14px;padding:18px 16px;background:#fff;border:1px solid var(--line);
+    box-shadow:var(--shadow-s);position:relative;}
+  .cycle-step::after{content:"➜";position:absolute;right:-13px;top:50%;transform:translateY(-50%);
+    font-size:18px;color:var(--muted);font-weight:800;z-index:1;}
+  .cycle-step:last-child::after{display:none;}
+  .cycle-step .cn{font-size:11px;font-weight:850;letter-spacing:1.5px;color:var(--muted);}
+  .cycle-step .ct{font-size:15px;font-weight:850;margin:6px 0 8px;color:var(--ink);}
+  .cycle-step .cd{font-size:12.5px;color:var(--ink-2);line-height:1.7;}
+  .cycle-step.s1{border-top:3px solid #dc2626;} .cycle-step.s1 .cn{color:#dc2626;}
+  .cycle-step.s2{border-top:3px solid #d97706;} .cycle-step.s2 .cn{color:#d97706;}
+  .cycle-step.s3{border-top:3px solid #2563eb;} .cycle-step.s3 .cn{color:#2563eb;}
+  .cycle-step.s4{border-top:3px solid #059669;} .cycle-step.s4 .cn{color:#059669;}
+
+  /* —— 现存问题 —— */
+  .issues{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0;}
+  .iss{padding:20px 22px;border-radius:14px;background:#fff;border:1px solid var(--line);
+    box-shadow:var(--shadow-s);position:relative;}
+  .iss .ihd{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:850;color:var(--ink);margin-bottom:10px;}
+  .iss .ihd .icn{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;
+    justify-content:center;font-size:15px;color:#fff;}
+  .iss.i1 .ihd .icn{background:linear-gradient(135deg,#7c3aed,#5b21b6);}
+  .iss.i2 .ihd .icn{background:linear-gradient(135deg,#f59e0b,#b45309);}
+  .iss.i3 .ihd .icn{background:linear-gradient(135deg,#dc2626,#991b1b);}
+  .iss .id{font-size:13px;color:var(--ink-2);line-height:1.8;}
+  .iss .id b{color:var(--ink);}
+  .iss .needs{margin-top:12px;padding:10px 14px;border-radius:9px;background:var(--brand-l);
+    border-left:3px solid var(--brand);font-size:12.5px;color:var(--brand-d);line-height:1.7;}
+  .iss .needs b{color:var(--brand-d);font-weight:850;}
+
+  /* —— 收尾 —— */
+  .closing{
+    margin:80px auto 0;max-width:1080px;padding:0 32px;
+  }
+  .closing-card{
+    border-radius:20px;padding:48px 40px;text-align:center;color:#fff;position:relative;overflow:hidden;
+    background:
+      radial-gradient(700px 300px at 100% 0%,rgba(125,211,252,.25),transparent 60%),
+      linear-gradient(135deg,#0f172a,#1e293b 60%,#1B4FC4);
+  }
+  .closing-card::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:22px 22px;}
+  .closing-card>*{position:relative;z-index:1;}
+  .closing-card .lab{display:inline-block;font-size:11px;font-weight:850;letter-spacing:3px;
+    color:#7dd3fc;background:rgba(125,211,252,.16);padding:7px 14px;border-radius:999px;
+    border:1px solid rgba(125,211,252,.3);margin-bottom:20px;}
+  .closing-card .big{font-size:28px;font-weight:850;line-height:1.55;letter-spacing:-.3px;}
+  .closing-card .big .em{color:#7dd3fc;}
+  .closing-card .small{font-size:15px;color:#cbd5e1;margin-top:18px;line-height:1.85;}
+
+  /* —— 引用原页 —— */
+  .ref-link{margin-top:32px;font-size:13px;color:var(--muted);}
+  .ref-link a{color:var(--brand-d);font-weight:700;border-bottom:1px dashed var(--brand);}
+
+  /* —— 截图卡通用 —— */
+  .shotcard{margin:14px 0 4px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    background:#fff;box-shadow:var(--shadow-s);}
+  .shotcard .shot-h{padding:10px 16px;background:linear-gradient(135deg,#fafbfd,#f3f7fc);
+    font-size:12.5px;color:var(--ink-2);font-weight:700;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;}
+  .shotcard .shot-h .tag{font-size:10.5px;font-weight:850;letter-spacing:1.5px;color:var(--brand-d);
+    background:var(--brand-l);padding:2px 8px;border-radius:5px;border:1px solid #d7e3fb;}
+  .shotcard .shot-img{padding:0;background:#fbfcfe;}
+  .shotcard .shot-img img{width:100%;display:block;}
+  .shotcard.dark .shot-h{background:linear-gradient(135deg,#1e293b,#0f172a);color:#cbd5e1;border-bottom-color:#1e293b;}
+  .shotcard.dark .shot-h .tag{background:rgba(125,211,252,.16);color:#7dd3fc;border-color:rgba(125,211,252,.3);}
+  /* 阶段1 截图横排 */
+  .stage1-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0 4px;}
+  .stage1-shots .shotcard{margin:0;}
+  .stage1-shots .shot-img{display:flex;align-items:flex-start;justify-content:center;height:170px;overflow:hidden;}
+  .stage1-shots .shot-img img{width:100%;height:auto;object-fit:cover;object-position:top;}
+  /* 实操图组 */
+  .op-shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px 26px 22px;background:#fbfcfe;
+    border-top:1px solid var(--line);}
+  .op-shots .shotcard{margin:0;}
+  .op-shots.single{grid-template-columns:1fr;}
+  /* 监察后台高亮卡 */
+  .monitor-banner{margin:18px 0 6px;border-radius:14px;padding:18px 22px 0;
+    background:linear-gradient(135deg,#0f172a,#1e293b 60%,#1B4FC4);color:#fff;
+    box-shadow:0 14px 30px -16px rgba(27,79,196,.4);overflow:hidden;}
+  .monitor-banner .mb-h{font-size:14.5px;font-weight:850;display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+  .monitor-banner .mb-h .lab{font-size:11px;font-weight:850;letter-spacing:2px;background:rgba(125,211,252,.18);
+    color:#7dd3fc;padding:3px 10px;border-radius:5px;border:1px solid rgba(125,211,252,.3);}
+  .monitor-banner .mb-d{font-size:13px;color:#cbd5e1;line-height:1.7;margin-bottom:12px;}
+  .monitor-banner .mb-d b{color:#fff;}
+  .monitor-banner .mb-img{margin:0 -22px 0;background:#fff;padding:14px;}
+  .monitor-banner .mb-img img{width:100%;display:block;border-radius:8px;}
+  .monitor-banner .mb-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px;margin-bottom:0;}
+  .monitor-banner .mst{padding:10px 12px;border-radius:9px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);}
+  .monitor-banner .mst .v{font-size:18px;font-weight:850;color:#fff;line-height:1.1;}
+  .monitor-banner .mst .l{font-size:11px;color:#94a3b8;margin-top:3px;}
+
+  @media(max-width:960px){
+    .stage1-shots,.op-shots,.monitor-banner .mb-stats{grid-template-columns:1fr 1fr;}
+  }
+    .container{grid-template-columns:1fr;}
+    .toc{position:relative;top:auto;display:none;}
+    .pains,.feat,.opbig-body,.case-cycle,.issues{grid-template-columns:1fr;}
+    .stage{grid-template-columns:1fr;} .stage-arr{padding:8px 0;transform:rotate(90deg);}
+    .hero h1{font-size:30px;} .hero{padding:48px 22px;}
+    .hero-quick{grid-template-columns:repeat(2,1fr);}
+    section h2{font-size:24px;}
+    .opbig-half.before{border-right:none;border-bottom:1px dashed var(--line);}
+    .closing-card{padding:36px 24px;} .closing-card .big{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="kicker">服饰拓新 · 销售作战中心实践分享</div>
+    <h1>让销售<span class="em">化被动为主动</span>，<br>面对客户<span class="em">不漏球</span></h1>
+    <p class="subtitle">服饰拓新一个季度引入新客 4000+，人均服务客户 200-500。我们用一套小红点系统，把"客户的需要"和"销售的需要"，通过程序化转化为销售每天的 daily work——不依赖个人分析，直接转任务。</p>
+    <div class="hero-meta">
+      <span class="it">📅 <b>2026 Q2</b> · 实践案例</span>
+      <span class="it">🎯 服务对象 <b>7 销售 · 服饰中心</b></span>
+      <span class="it">🏗️ 由数据分析师 <b>独立交付</b></span>
+    </div>
+    <div class="hero-quick">
+      <div class="qstat"><div class="qv">4 000<span style="font-size:16px;opacity:.7">+</span></div><div class="ql">季度新客引入</div></div>
+      <div class="qstat"><div class="qv">3.4<span style="font-size:16px;opacity:.7">万+</span></div><div class="ql">服饰中心客户池</div></div>
+      <div class="qstat"><div class="qv">200-500</div><div class="ql">人均服务客户数</div></div>
+      <div class="qstat"><div class="qv">3<span style="font-size:16px;opacity:.7"> 大</span></div><div class="ql">系统功能 · 串成动作闭环</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Body ===== -->
+<div class="container">
+
+  <!-- 左侧锚 -->
+  <aside class="toc">
+    <div class="toc-h">CHAPTERS</div>
+    <ol>
+      <li data-tar="ch1">业务痛点</li>
+      <li data-tar="ch2">解决思路</li>
+      <li data-tar="ch3">系统三大功能</li>
+      <li data-tar="ch4">销售实操之变</li>
+      <li data-tar="ch5">完整闭环案例</li>
+      <li data-tar="ch6">现存问题与诉求</li>
+    </ol>
+  </aside>
+
+  <main>
+
+  <!-- ===== CH1 业务痛点（三视角） ===== -->
+  <section id="ch1">
+    <div class="chap-tag">CH 01 · 痛点</div>
+    <h2>三个视角，同一段卡住</h2>
+    <p class="lede">服饰拓新真正卡住的，是<b>"客户的需要"和"销售的精力"</b>之间这一段。下面从销售、客户、管理三个视角看，问题各有侧重，但指向同一件事——<b style="color:#b91c1c;">销售被动响应、容易漏球，且管理无法监控动作</b>。</p>
+
+    <div class="quote-narr">
+      <div class="ql">原文 · 业务背景</div>
+      <div class="qb">"一个季度引入新客数 4000+，人均服务客户数 200-500，过往靠客户找，<b>销售偏被动服务，客户的体感不好</b>。需要化被动为主动。"</div>
+    </div>
+
+    <div class="pains">
+      <div class="pain p1">
+        <div class="pi">🏃</div>
+        <div class="ph">销售视角</div>
+        <div class="ps">被动 · 漏球</div>
+        <div class="pd">海量新客涌入，<b>过往靠客户找上门</b>，销售偏被动响应。如何识别有价值客户、主动触达——本质是帮销售<b>及时抓住业务机会，做到不漏球</b>。</div>
+        <div class="case"><b>结果：</b>客户体感不好，机会从指缝里溜走。</div>
+      </div>
+      <div class="pain p2">
+        <div class="pi">🛒</div>
+        <div class="ph">客户视角</div>
+        <div class="ps">离散 · 错过窗口</div>
+        <div class="pd">客户的问题被<b>离散式响应</b>，错过起量与挽回的窗口。<br>同一个销售一天里要切换不同客户、不同问题，<b>每件事都临场拼内容</b>。</div>
+        <div class="case"><b>场景①</b>太力 6/2 找我们前已持续掉量，介入 2 天才拉回——早点介入能少掉很多。<br><b>场景②</b>樊志权拜访新起量客户，要临时凑大盘 ROI / 单价 / 退款率 / 爆品素材 / 4+M 政策…<b>5-6 份文档</b>。</div>
+      </div>
+      <div class="pain p3">
+        <div class="pi">📊</div>
+        <div class="ph">管理视角</div>
+        <div class="ps">无法监控</div>
+        <div class="pd">已搭客户<b>全生命周期系统（头腰尾、新老客）</b>分层匹配服务，但新客持续涌入后，销售精力鞭长莫及。</div>
+        <div class="case"><b>关键缺口：</b>客户涨跌背后，销售有没有做干预动作，<b>管理无法监控、动作不可见</b>。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CH2 解决思路 ===== -->
+  <section id="ch2">
+    <div class="chap-tag">CH 02 · 思路</div>
+    <h2>从"手搓单点工具"到"AI 任务体系"</h2>
+    <p class="lede">面对客户的不同阶段、销售的不同需要，我们的核心思路始终是：<b>把客户的需要和销售的需要，通过程序化转化为销售每天的 daily work</b>，不依赖销售的个人分析，<b>直接转化成任务体系</b>。这套思路，经历了两个阶段。</p>
+
+    <div class="stage">
+      <div class="stage-card s1">
+        <div class="st"><div class="num">01</div><div class="tt">手搓时代</div></div>
+        <div class="ss">AI 普及前 · 用人力梳理业务规则，做单点工具</div>
+        <div class="body">
+          <ul>
+            <li><b>销售拓客弹药库</b>：把行业、政策、案例打包给销售对外讲</li>
+            <li><b>消耗红黑榜</b>：每日榜单挂出涨跌客户，销售自己看</li>
+            <li><b>自动诊断小卡片</b>：单客户基础诊断，需人工触发、口径不统一</li>
+          </ul>
+        </div>
+        <div class="stage-foot bad">⚠ 局限：每个工具解决一个点，没串成动作闭环——销售仍要自己翻、自己判断、自己记。</div>
+      </div>
+
+      <div class="stage-arr">→</div>
+
+      <div class="stage-card s2">
+        <div class="st"><div class="num">02</div><div class="tt">AI 任务体系</div></div>
+        <div class="ss">小红点系统 · 不依赖销售个人分析，直接转任务</div>
+        <div class="body">
+          <ul>
+            <li><b>掉量/起量自动识别</b>，按规则触发小红点任务</li>
+            <li><b>红点未消除可监控</b>，销售有没有做功一目了然</li>
+            <li>对接 <b>adata claw（小 A）</b>，一键调用诊断 skill 出报告</li>
+            <li>三 Tab 串通：<b>待办 → 进度 → 弹药</b>，覆盖销售一天动线</li>
+          </ul>
+        </div>
+        <div class="stage-foot good">✓ 升级：从"给工具"变成"给任务"——直接告诉销售今天该做什么。</div>
+      </div>
+    </div>
+
+    <div class="quote-narr" style="margin-top:18px;">
+      <div class="ql">方法论 · 一句话总结</div>
+      <div class="qb">不论手搓还是 AI，核心都是把<b>"客户需要 + 销售需要"翻译成程序化任务</b>。AI 没有改变思路，AI 让这套思路<b>真正能落地、能规模化、能监控</b>。</div>
+    </div>
+
+    <h3>阶段 1 · 手搓时代的真实工具截图</h3>
+    <div class="stage1-shots">
+      <div class="shotcard">
+        <div class="shot-h"><span class="tag">弹药库</span> 拓客弹药库 · 高频问题处理</div>
+        <div class="shot-img"><img src="assets/wxdoc/wxdoc_01.png" alt="拓客弹药库 - 服饰拓新组销售更新版"></div>
+      </div>
+      <div class="shotcard">
+        <div class="shot-h"><span class="tag">红黑榜</span> 涨跌红黑榜 · 群内推送</div>
+        <div class="shot-img"><img src="assets/wxdoc/wxdoc_02.png" alt="涨跌红黑榜任务卡"></div>
+      </div>
+      <div class="shotcard">
+        <div class="shot-h"><span class="tag">诊断卡</span> 自动诊断小卡片 · 客户复盘</div>
+        <div class="shot-img"><img src="assets/wxdoc/wxdoc_03.png" alt="羽鑫曼尔服饰自动诊断小卡片"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CH3 系统三大功能 ===== -->
+  <section id="ch3">
+    <div class="chap-tag">CH 03 · 系统能力</div>
+    <h2>小红点系统的三大功能</h2>
+    <p class="lede">小红点系统不是看板，它是<b>任务系统</b>。三大核心功能围绕"<b>触发任务 → 销售消除 → AI 加持</b>"形成闭环——把客户需要、销售动作、管理监控统一在一个机制里。</p>
+
+    <div class="feat">
+      <div class="fcard f1">
+        <div class="fhead">
+          <div class="fnum">01</div>
+          <div class="ftt">销售消除每日任务</div>
+          <div class="fsub">每天有数量限制 · 处理留痕 · 管理可监控</div>
+        </div>
+        <div class="fbody">
+          <p>每个销售每天待清除的小红点<b>有数量限制</b>，任务类型清晰；处理完点击「已清除」，系统<b>实时记录销售的小红点清除记录</b>。</p>
+          <p>从管理视角，可<b>实时监控各销售的任务进展</b>——动作是否做、做了多少、是否漏球，一目了然。</p>
+        </div>
+        <div class="fchips">
+          <span>当日上限</span><span>类型清晰</span><span>云端实时</span><span>处理留痕</span><span>管理监控</span>
+        </div>
+      </div>
+
+      <div class="fcard f2">
+        <div class="fhead">
+          <div class="fnum">02</div>
+          <div class="ftt">不同场景触发逻辑</div>
+          <div class="fsub">头部掉量预警 · 起量觉醒抓窗口</div>
+        </div>
+        <div class="fbody">
+          <p>服饰行业有<b>两个核心特征</b>：①头部客户消耗集中（少数客户占大头），是业务基本盘；②素材有<b>3-5 天的起量窗口</b>，时效性极强。系统针对两个特征设计两类触发：</p>
+        </div>
+        <div class="fchips">
+          <span>头部掉量预警</span><span>起量觉醒抓窗口</span><span>规则可视化</span>
+        </div>
+      </div>
+
+      <div class="fcard f3">
+        <div class="fhead">
+          <div class="fnum">03</div>
+          <div class="ftt">与 adata claw 联动</div>
+          <div class="fsub">一键跳小 A · 3-5 分钟出诊断报告</div>
+        </div>
+        <div class="fbody">
+          <p>掉量客户排查账户、找原因，对拓客销售的能力模型要求很高。小红点系统与 adata claw <b>做了打通</b>——支持一键跳转到小 A 上，<b>自动调用客户诊断 skill</b>。</p>
+          <p>销售等待 3-5 分钟，即可获取一份<b>客户投放诊断 + 优化建议</b>报告。销售拿着报告找客户，<b>言之有物、动作具象</b>。</p>
+        </div>
+        <div class="fchips">
+          <span>一键跳转</span><span>自动调用 skill</span><span>多维归因</span><span>优化建议</span><span>报告可转发</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 监察后台 · 管理监控的具象证据 -->
+    <div class="monitor-banner">
+      <div class="mb-h">
+        <span class="lab">管理后台</span>
+        <span>📊 销售作战中心 · 监察后台（实时监控销售有没有在做功）</span>
+      </div>
+      <div class="mb-d">配合「销售消除每日任务」功能，<b>管理后台实时监控每位销售的登录时长、有效时长与任务清除进度</b>。从此销售有没有在做功、做了多少、是否漏球——<b>不再凭印象，全数据化</b>。下图为近一周（5/28-6/3）7 销售登录时长堆叠图：</div>
+      <div class="mb-img"><img src="assets/wxdoc/monitor_backend.png" alt="销售作战中心 · 监察后台 · 销售登录时长按销售堆叠"></div>
+      <div class="mb-stats">
+        <div class="mst"><div class="v">145<span style="font-size:13px;opacity:.7;"> 人次</span></div><div class="l">Session 次数</div></div>
+        <div class="mst"><div class="v">41 308<span style="font-size:13px;opacity:.7;"> 分钟</span></div><div class="l">总有效时长</div></div>
+        <div class="mst"><div class="v">35<span style="font-size:13px;opacity:.7;"> 人·天</span></div><div class="l">独立用户·天</div></div>
+        <div class="mst"><div class="v">285<span style="font-size:13px;opacity:.7;"> 分钟</span></div><div class="l">人均有效时长</div></div>
+      </div>
+      <div style="height:16px;"></div>
+    </div>
+
+    <!-- 功能2 触发规则展开 -->
+    <h3>触发逻辑详解（功能 ②）</h3>
+    <div class="trigger">
+      <div class="trigger-h">🎯 两类小红点任务的触发规则</div>
+      <div class="trig-row">
+        <div class="trig-k"><span class="icn">⚠️</span><span>类型 A<br>头部掉量预警</span></div>
+        <div class="trig-v">
+          针对头部客户的<b>消耗掉量</b><span class="rule">超 20%</span>，或者 <b>ROI 掉</b><span class="rule">20% 以上</span>触发小红点任务。<br>
+          <span style="color:var(--muted);">业务逻辑：头部消耗集中，一旦素材衰退、卡审、直播间违规，会引发连续控量。<b>ROI 波动是关键信号</b>，必须人工介入。</span>
+        </div>
+      </div>
+      <div class="trig-row">
+        <div class="trig-k"><span class="icn">🚀</span><span>类型 B<br>起量觉醒抓窗口</span></div>
+        <div class="trig-v">
+          针对原消耗水平较低的客户，<b>昨天涨幅</b><span class="rule up">达到 XX 元</span>触发小红点任务。<br>
+          <span style="color:var(--muted);">业务逻辑：服饰客户突然起量，往往是<b>创意素材爆了</b>，同行会快速跟素材吃红利。窗口仅 3-5 天——必须<b>快速介入</b>，提升创意消耗天花板，给客户更多服务，把潜力推向头部。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quote-narr">
+      <div class="ql">技术结合 · 销售动作具象化</div>
+      <div class="qb">基于触发的任务，销售动作就<b>具象化</b>了：掉量客户排查账户、与客户沟通原因、给问题诊断和解决方案。<br>但这对拓客型销售的能力模型要求高——所以小红点和 adata claw 打通，<b>销售拿着 AI 报告找客户，言之有物</b>。</div>
+    </div>
+
+    <h3>客户健康度分层 · 触发逻辑的底层依据</h3>
+    <div class="shotcard">
+      <div class="shot-h"><span class="tag">分层模型</span> 按消耗水位把客户切四层 · 每层一种触发信号 · 每层一个对应动作</div>
+      <div class="shot-img"><img src="assets/wxdoc/wxdoc_04.png" alt="客户健康度分层：头部稳定 / 头部掉量 / 潜力起量 / 海量长尾"></div>
+    </div>
+  </section>
+
+  <!-- ===== CH4 实操之变 ===== -->
+  <section id="ch4">
+    <div class="chap-tag">CH 04 · 实操之变</div>
+    <h2>销售一天的三件事，怎么变了</h2>
+    <p class="lede">系统能力是底层，<b>销售在每天 work flow 里的实际感受</b>才是检验有没有用。三件最高频的事——客户预警、拓客登记、拓客工具——都从「靠人」升级到「<b>靠系统 + AI</b>」。</p>
+
+    <!-- 实操 1 -->
+    <article class="opbig b1">
+      <header class="opbig-h">
+        <div class="badge">🔴</div>
+        <div class="ttwrap">
+          <div class="ttn">实操 ① · 客户预警监控与服务</div>
+          <div class="ttt">变被动为主动，服务不掉球</div>
+          <div class="ttsub">解决：销售定时查、发现滞后、覆盖不全</div>
+        </div>
+      </header>
+      <div class="opbig-body">
+        <div class="opbig-half before">
+          <span class="lab">原先 · 被动</span>
+          <div class="lab2">销售自己上 PC 端 AData 查数</div>
+          <ul>
+            <li><b>发现滞后</b>，等看到时损失已经发生</li>
+            <li>客户多<b>覆盖不全</b>，重点之外漏球</li>
+            <li>给客户复盘要拼<b>5-6 份文档</b>，临场凑</li>
+            <li>处理过没记录，换人就断</li>
+          </ul>
+        </div>
+        <div class="opbig-half after">
+          <span class="lab">现在 · 主动</span>
+          <div class="lab2">小红点主动预警 + 一键 AI 复盘</div>
+          <ul>
+            <li>掉量自动顶出，<b>红点提醒</b></li>
+            <li><b>移动端 5 分钟看清</b>客户情况</li>
+            <li>🩺 一键跳小 A，多维归因出<b>诊断报告</b></li>
+            <li>报告<b>一键转发</b>客户，处理留痕可监控</li>
+          </ul>
+        </div>
+      </div>
+      <div class="opbig-foot">✓ <b>实操之变：</b>从"销售定时查、发现滞后"→"系统主动预警 + 移动端 5 分钟看清 + 一键 AI 复盘"，掉量在客户开口前就被拦回。</div>
+      <div class="op-shots single">
+        <div class="shotcard">
+          <div class="shot-h"><span class="tag">📌 今日待办小红点</span> 头部掉量客户作战台 · 7 销售清理进度实时</div>
+          <div class="shot-img"><img src="assets/wxdoc/wxdoc_08.png" alt="今日待办小红点 · 头部掉量客户列表 · 4 销售作战台"></div>
+        </div>
+      </div>
+    </article>
+    <article class="opbig b2">
+      <header class="opbig-h">
+        <div class="badge">📝</div>
+        <div class="ttwrap">
+          <div class="ttn">实操 ② · 拓客登记与模型建立</div>
+          <div class="ttt">从"人工清洗"到"自动打标"</div>
+          <div class="ttsub">解决：登记口径乱、归属说不清、扯皮</div>
+        </div>
+      </header>
+      <div class="opbig-body">
+        <div class="opbig-half before">
+          <span class="lab">原先 · 人工</span>
+          <div class="lab2">销售在线表格手工登记</div>
+          <ul>
+            <li>老客判定靠运营<b>二次清洗</b></li>
+            <li>简称 ↔ 主体对不上</li>
+            <li>重复报备多发，<b>归属不清</b>易扯皮</li>
+            <li>改派靠记忆，没留痕</li>
+          </ul>
+        </div>
+        <div class="opbig-half after">
+          <span class="lab">现在 · 自动</span>
+          <div class="lab2">作战中心一键识别打标</div>
+          <ul>
+            <li>新老客状态 + <b>首投季度</b>自动识别</li>
+            <li>简称 ↔ 主体<b>自动归一</b></li>
+            <li><b>先登记先归属</b>，冲突自动判</li>
+            <li>登记即留痕，改派<b>全程可追溯</b></li>
+          </ul>
+        </div>
+      </div>
+      <div class="opbig-foot">✓ <b>实操之变：</b>从"手工登记 + 运营清洗"→"登记即打标、归属自动判、改派可追溯"，不再为客户归属扯皮。</div>
+      <div class="op-shots">
+        <div class="shotcard">
+          <div class="shot-h"><span class="tag">🚀 拓客作战看板</span> 团队 KPI 进度 + 7 销售明细横向对比</div>
+          <div class="shot-img"><img src="assets/wxdoc/wxdoc_07.png" alt="拓客作战看板 · 团队季度 KPI · 销售明细"></div>
+        </div>
+        <div class="shotcard">
+          <div class="shot-h"><span class="tag">📝 新增拓客登记</span> 公司全称粘贴 → 自动匹配简称、老客、链路</div>
+          <div class="shot-img"><img src="assets/wxdoc/wxdoc_09.png" alt="新增拓客登记弹窗 · 公司主体自动匹配"></div>
+        </div>
+      </div>
+    </article>
+    <article class="opbig b3">
+      <header class="opbig-h">
+        <div class="badge">📚</div>
+        <div class="ttwrap">
+          <div class="ttn">实操 ③ · 拓客工具支持</div>
+          <div class="ttt">从"现查现猜"到"统一权威"</div>
+          <div class="ttsub">解决：行情/政策/打法答不上、口径不一</div>
+        </div>
+      </header>
+      <div class="opbig-body">
+        <div class="opbig-half before">
+          <span class="lab">原先 · 现查</span>
+          <div class="lab2">销售个人整理积累</div>
+          <ul>
+            <li>大盘/竞品要<b>临时找数</b></li>
+            <li>政策一变，传达<b>滞后说不准</b></li>
+            <li>"别人怎么投的"全靠经验</li>
+            <li>新销售没积累，开口没底气</li>
+          </ul>
+        </div>
+        <div class="opbig-half after">
+          <span class="lab">现在 · 权威</span>
+          <div class="lab2">弹药库统一口径 + 当天传达</div>
+          <ul>
+            <li>行情：大盘 + 二级行业 + Top3 参考</li>
+            <li>政策：发布 → 同步库 → <b>当天传达</b></li>
+            <li>案例：点开带<b>「适用客户名单」</b></li>
+            <li>新销售即拿即用，<b>开口有据</b></li>
+          </ul>
+        </div>
+      </div>
+      <div class="opbig-foot">✓ <b>实操之变：</b>从"个人整理 + 临场现查"→"统一权威 + 当天传达"，政策红利不错过、专业度不再靠个人经验。</div>
+    </article>
+  </section>
+
+  <!-- ===== CH5 闭环案例 ===== -->
+  <section id="ch5">
+    <div class="chap-tag">CH 05 · 真实案例</div>
+    <h2>太力客户 · 一个完整闭环</h2>
+    <p class="lede">这个案例最能说明系统的价值——不只是发现问题，还顺手把"找原因"接到了 AI 上，最后由销售完成动作，<b>四步串成闭环</b>，把一次潜在流失挡了回去。</p>
+
+    <div class="case-cycle">
+      <div class="cycle-step s1">
+        <div class="cn">STEP 1 · 系统</div>
+        <div class="ct">⚠️ 预警发现</div>
+        <div class="cd">太力 5.28-6.2 消耗持续下滑 → 小红点系统<b>头部掉量预警</b>第一时间顶出，置入今日待办。</div>
+      </div>
+      <div class="cycle-step s2">
+        <div class="cn">STEP 2 · AI</div>
+        <div class="ct">🩺 一键诊断</div>
+        <div class="cd">销售点客户卡 <b>🩺 诊断</b> → 跳转 adataclaw → 自动调用「全面诊断该客户投放」skill。</div>
+      </div>
+      <div class="cycle-step s3">
+        <div class="cn">STEP 3 · 销售</div>
+        <div class="ct">💡 加投决策</div>
+        <div class="cd">小 A 多维归因（消耗/基建/投放策略/素材质量）→ 销售<b>据此加投补量</b>，并把报告同步客户。</div>
+      </div>
+      <div class="cycle-step s4">
+        <div class="cn">STEP 4 · 结果</div>
+        <div class="ct">✓ 消耗回正</div>
+        <div class="cd">6.3-6.4 消耗<b>快速回升到正常水位</b>，一次潜在流失被拦回。如果早 2 天介入，损失更小。</div>
+      </div>
+    </div>
+
+    <div class="quote-narr">
+      <div class="ql">价值 · 闭环</div>
+      <div class="qb">系统负责"<b>发现</b>"，AI 负责"<b>归因到账户/素材/模型颗粒度</b>"，销售负责"<b>加投决策</b>"。三方各司其职，串成闭环。<br>这就是把"业务规则翻译成动作机制"——AI 没有替代人的判断，AI <b>把人的精力解放到最关键的判断上</b>。</div>
+    </div>
+  </section>
+
+  <!-- ===== CH6 现存问题与诉求 ===== -->
+  <section id="ch6">
+    <div class="chap-tag">CH 06 · 现存问题与下一步</div>
+    <h2>说透：现在我们仍卡在哪</h2>
+    <p class="lede">系统已验证有效，但要稳定服务整个团队，还有 3 个关键卡点要打通。这些不是要"更多人手堆活"，而是<b>把规模化的关键节点接上去</b>。</p>
+
+    <div class="issues">
+      <div class="iss i1">
+        <div class="ihd"><span class="icn">⚙️</span>运行性能</div>
+        <div class="id"><b>历史消耗每天回填</b>，数据量过大，运行速度慢。</div>
+        <div class="needs"><b>所需支持：</b>开发部门技术支持，把"个人脚本拼装"升级为<b>敏捷、轻量、可增量更新</b>的正式产品。</div>
+      </div>
+      <div class="iss i2">
+        <div class="ihd"><span class="icn">🤖</span>模型能力</div>
+        <div class="id"><b>模型自身存在不足</b>，长对话之后容易产生<b>幻觉、忘记前文口径</b>。</div>
+        <div class="needs"><b>所需支持：</b>申请<b>更强的长上下文模型</b>，并把核心口径文档化注入，减少漂移。</div>
+      </div>
+      <div class="iss i3">
+        <div class="ihd"><span class="icn">💲</span>成本消耗</div>
+        <div class="id"><b>token 消耗大</b>，以 5 月为例，小红点系统已使用接近 <b>2000＄</b>。</div>
+        <div class="needs"><b>所需支持：</b>申请<b>团队级大模型额度 / 企业账号</b>，覆盖 token 成本、保障稳定调用。</div>
+      </div>
+    </div>
+
+    <p class="ref-link">⤷ 看板原版（PPT 卡片式分享页）：<a href="../share-tuoke-case/" target="_blank">../share-tuoke-case/</a></p>
+  </section>
+
+  </main>
+</div>
+
+<!-- ===== Closing ===== -->
+<footer class="closing">
+  <div class="closing-card">
+    <div class="lab">CLOSING</div>
+    <div class="big">在服饰拓新赛道里，<br>AI 的价值不只是提效——<br>更是帮我们<span class="em">更早理解客户、信号和动作之间的关系</span>。</div>
+    <div class="small">把<span style="color:#7dd3fc;font-weight:700;">业务规则翻译成动作提示</span>，把人的注意力，留给最关键的判断。</div>
+  </div>
+</footer>
+
+<script>
+  // 章节锚点高亮
+  (function(){
+    var items = document.querySelectorAll('.toc li');
+    var sections = Array.prototype.map.call(items, function(li){ return document.getElementById(li.dataset.tar); });
+    items.forEach(function(li, i){
+      li.addEventListener('click', function(){
+        if(sections[i]) sections[i].scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    });
+    function onScroll(){
+      var sy = window.scrollY + 120;
+      var idx = 0;
+      for(var i=0;i<sections.length;i++){
+        if(sections[i] && sections[i].offsetTop <= sy) idx = i;
+      }
+      items.forEach(function(li,i){ li.classList.toggle('active', i===idx); });
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  })();
+</script>
+</body>
+</html>
