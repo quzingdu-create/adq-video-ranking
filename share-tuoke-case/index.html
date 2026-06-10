@@ -247,6 +247,23 @@
   .case-trend .ct-tag.drop{top:30px;left:24%;background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;}
   .case-trend .ct-tag.rise{top:30px;right:8%;background:#ecfdf5;color:#059669;border:1px solid #6ee7b7;}
   .case-trend .dgm-cap{padding:0 16px 14px;margin-top:0;}
+  /* 折叠卡（点击展开） */
+  details.fold{border:1px solid #d6def0;border-radius:13px;margin:16px 0;overflow:hidden;
+    background:linear-gradient(160deg,#fbfcfe,#f3f7fc);transition:.25s ease;}
+  details.fold[open]{box-shadow:0 10px 26px -16px rgba(27,79,196,.28);}
+  details.fold>summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;align-items:center;gap:10px;
+    font-weight:850;font-size:15px;color:var(--blue-d);user-select:none;}
+  details.fold>summary::-webkit-details-marker{display:none;}
+  details.fold>summary .fold-ico{flex:0 0 auto;width:22px;height:22px;border-radius:7px;
+    background:linear-gradient(135deg,var(--blue),#4f86f0);color:#fff;font-size:13px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;transition:.25s ease;}
+  details.fold[open]>summary .fold-ico{transform:rotate(45deg);}
+  details.fold>summary .fold-hint{margin-left:auto;font-size:12px;font-weight:700;color:var(--text-2);
+    background:#e8eefb;padding:3px 10px;border-radius:7px;}
+  details.fold[open]>summary .fold-hint{display:none;}
+  details.fold .fold-body{padding:4px 18px 18px;}
+  details.fold .fold-body>h3:first-child,details.fold .fold-body>.case-trend:first-child{margin-top:6px;}
+  details.fold .fold-body .case-trend,details.fold .fold-body .evo{margin-top:6px;}
   /* 技术框架分层 */
   .techstack{margin:16px 0;}
   .ts-layer{border-radius:13px;padding:14px 16px;color:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;
@@ -405,7 +422,9 @@
       <span style="font-size:12px;font-weight:800;padding:1px 7px;border-radius:6px;background:#fef9c3;color:#a16207;">🆕 本期新增</span>
       <span style="font-size:12px;font-weight:800;padding:1px 7px;border-radius:6px;background:#e2e8f0;color:#475569;">⏳ 待建设</span></p>
 
-    <h3>场景一 · 销售任务系统，处理每日任务 → 📌 小红点·客户消耗四象限</h3>
+    <details class="fold">
+      <summary><span class="fold-ico">+</span>场景一 · 销售任务系统，处理每日任务 → 📌 小红点·客户消耗四象限<span class="fold-hint">点击展开</span></summary>
+      <div class="fold-body">
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
       <tbody>
@@ -415,8 +434,12 @@
         <tr><td class="sc">长尾 / 冲击有效新客</td><td class="now">季度累计低消耗，且昨日低消耗 → 推一把就破千</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
       </tbody>
     </table>
+      </div>
+    </details>
 
-    <h3>场景二 · 客户生命周期管理 → 🚀 拓客作战看板</h3>
+    <details class="fold">
+      <summary><span class="fold-ico">+</span>场景二 · 客户生命周期管理 → 🚀 拓客作战看板<span class="fold-hint">点击展开</span></summary>
+      <div class="fold-body">
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
       <tbody>
@@ -427,8 +450,12 @@
         <tr><td class="sc">客户生命周期全视</td><td class="now">客户流失 / 跃迁 / 掉量的全周期状态流转</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
       </tbody>
     </table>
+      </div>
+    </details>
 
-    <h3>场景三 · 补充行业知识，建立专业度 → 📚 信息同步库</h3>
+    <details class="fold">
+      <summary><span class="fold-ico">+</span>场景三 · 补充行业知识，建立专业度 → 📚 信息同步库<span class="fold-hint">点击展开</span></summary>
+      <div class="fold-body">
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
       <tbody>
@@ -438,6 +465,8 @@
         <tr><td class="sc">产品能力</td><td class="now">ADQ 服饰投放产品矩阵介绍 & 对外文档</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
       </tbody>
     </table>
+      </div>
+    </details>
     <div class="note">三个场景从"<b>每天处理任务</b>"（小红点）到"<b>管好客户生命周期</b>"（拓客看板）再到"<b>建立专业度对外赋能</b>"（信息同步库），覆盖销售一天的完整动线。</div>
   </div>
 
@@ -723,6 +752,9 @@
       </div>
     </div>
 
+    <details class="fold">
+      <summary><span class="fold-ico">+</span>📈 太力消耗趋势 & 小 A 诊断结论（节选）<span class="fold-hint">点击展开</span></summary>
+      <div class="fold-body">
     <div class="case-trend">
       <div class="ct-head">
         <span class="ct-title">📈 太力消耗趋势</span>
@@ -758,6 +790,8 @@
       <div class="diag-sum">🚨 <b>综合判断</b>：本轮是效果恶化驱动的系统性缩量，非 ROI 广告为主因、账户 78104759 为直接触发点，深层根因是 pCVR/pCTR 模型预估偏乐观。<b>建议：优先联动产研校准预估模型，同步引导客户补充差异化素材、降低账户集中度。</b></div>
     </div>
     <div class="note">这份报告是销售用小 A 实际跑出来的——看板负责"发现"，小 A 负责"归因到账户/素材/模型颗粒度"，销售负责"加投决策"。三步串成闭环，把一次潜在流失挡了回去。</div>
+      </div>
+    </details>
 
     <div class="takeaway">
       <div class="tl">TAKEAWAY</div>
@@ -918,24 +952,24 @@
   <!-- PART 10 · 当前卡点全景 -->
   <div class="slide">
     <div class="part-tag">PART 10 · 当前卡点</div>
-    <h2>把话说透：现在我们仍卡在哪里（AI / 运营 两个视角）</h2>
-    <div class="role" style="grid-template-columns:1fr 1fr;">
+    <h2>把话说透：现在我们仍卡在哪里</h2>
+    <div class="role" style="grid-template-columns:repeat(3,1fr);">
       <div class="rolebox ai">
-        <div class="rh">🤖 AI（小A）的卡点</div>
+        <div class="rh">⚙️ 运行性能</div>
         <div class="rb"><ul>
-          <li><b>数据源割裂</b>：登记 + 7 份报表 + 名单要每天手动导入对齐</li>
-          <li><b>口径易漂移</b>：历史消耗每天回填，客户首投季度会变，数字非单调，核对成本高</li>
-          <li><b>拿不到深度数据</b>：读不到素材/出价/竞品，能做"防漏+信息重组"，但做不到真正的自动归因</li>
-          <li><b>没有直连接口</b>：依赖人工导出 CloudBase/AData，时效慢半拍，无法自动校验防错</li>
-          <li><b>加载速度慢</b>：数据量大时看板打开偏慢</li>
-          <li><b>长对话易失忆</b>：长对话之后容易产生幻觉、忘记前文口径</li>
+          <li><b>历史消耗每天回填</b>，数据量过大，运行速度慢</li>
+        </ul></div>
+      </div>
+      <div class="rolebox sale">
+        <div class="rh">🤖 模型能力</div>
+        <div class="rb"><ul>
+          <li><b>模型自身存在的不足</b>，长对话之后容易产生幻觉、忘记前文口径</li>
         </ul></div>
       </div>
       <div class="rolebox me">
-        <div class="rh">🧑‍💼 运营的卡点</div>
+        <div class="rh">💲 成本消耗</div>
         <div class="rb"><ul>
-          <li><b>工具个人驱动</b>：缺正式产品化资源，难规模化、难沉淀、换人就断</li>
-          <li><b>权限只能靠密码</b>：已做密码隔离，但<b>打不通企业微信、抓不到访客身份</b>，做不到按人/按角色精细权限</li>
+          <li><b>token 消耗大</b>，以五月为例，小红点系统已经使用接近 <b>2000＄</b></li>
         </ul></div>
       </div>
     </div>
@@ -948,29 +982,14 @@
     <p class="lead">不是要更多人手堆活，而是把几个"卡住规模化"的关键点打通——让这套已经验证有效的机制，能稳定服务整个团队。</p>
     <div class="support">
       <div class="supbox">
-        <div class="sh">① 打通正式数据接口与权限</div>
-        <div class="ssd">把 AData / CloudBase / 企微的数据从"人工导出"升级为正式接口直连，减少手工拼装、提升时效、支持自动校验防错。</div>
-        <div class="who">解决：AI 数据源割裂 + 慢半拍</div>
+        <div class="sh">① 开发部门技术支持，系统敏捷轻量化</div>
+        <div class="ssd">目前代码冗杂、历史消耗每天全量回填导致运行偏慢。希望开发部门同事提供技术支持，把系统从"个人脚本拼装"升级为<b>敏捷、轻量、可增量更新</b>的正式产品，提升运行与加载性能。</div>
+        <div class="who">解决：代码冗杂、数据量大、运行慢</div>
       </div>
       <div class="supbox">
-        <div class="sh">② 开放归因所需的深度数据</div>
-        <div class="ssd">授权素材 / 出价 / 竞品等深度数据，让"客户异动自动归因"从设想变成能力，把现在的"一键诊断"升级成"自动给原因+策略"。</div>
-        <div class="who">解决：做不到自动归因</div>
-      </div>
-      <div class="supbox">
-        <div class="sh">③ 把个人工具产品化的资源</div>
-        <div class="ssd">给予前端/数据工程的协同支持，把看板从"个人驱动"升级为团队正式产品，能稳定规模化、可沉淀、不因换人而中断，同时优化加载性能。</div>
-        <div class="who">解决：工具个人驱动、难规模化、加载慢</div>
-      </div>
-      <div class="supbox">
-        <div class="sh">④ 纳入团队正式工作流与考核对齐</div>
-        <div class="ssd">让看板数据口径与考核体系正式对齐、纳入日常工作流，把运营从重复数据处理中解放出来，聚焦业务策略。</div>
-        <div class="who">解决：工具难沉淀、口径需统一</div>
-      </div>
-      <div class="supbox">
-        <div class="sh">⑤ 打通企业微信身份与权限体系</div>
-        <div class="ssd">目前看板只能靠<b>设置密码</b>做权限隔离，无法和企业微信打通、自动抓取访客身份。希望支持<b>企微免登 + 按人/按角色的精细权限</b>，让数据"谁能看哪些"自动管控，更安全也更省心。</div>
-        <div class="who">解决：权限只能靠密码、抓不到访客身份</div>
+        <div class="sh">② 企业级模型额度与更强模型支持</div>
+        <div class="ssd">五月小红点系统 token 消耗已接近 <b>2000＄</b>，且长对话后模型易产生幻觉、忘记前文口径。希望申请<b>团队级大模型额度 / 企业账号</b>，并用<b>更强的长上下文模型</b>覆盖 token 成本、减少口径漂移。</div>
+        <div class="who">解决：token 消耗大、模型幻觉/忘口径</div>
       </div>
     </div>
   </div>
