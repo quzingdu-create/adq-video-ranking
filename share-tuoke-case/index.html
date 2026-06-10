@@ -123,6 +123,28 @@
   .shiftbox .to{color:#15803d;font-size:17px;}
   .shiftbox .sdesc{font-size:12.5px;color:var(--text-2);margin-top:9px;line-height:1.6;}
   @media(max-width:720px){.shift{grid-template-columns:1fr;}}
+  /* 三联图例（三个 Tab 一屏讲透） */
+  .triptych{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;}
+  .tcol{border-radius:15px;overflow:hidden;border:1px solid #e6ecf5;background:#fff;display:flex;flex-direction:column;
+    box-shadow:0 6px 18px -12px rgba(15,23,42,.2);transition:.28s ease;}
+  .tcol:hover{transform:translateY(-3px);box-shadow:0 16px 32px -16px rgba(15,23,42,.3);}
+  .tcol-hd{padding:14px 15px;color:#fff;display:flex;align-items:center;gap:11px;}
+  .tcol.c1 .tcol-hd{background:linear-gradient(135deg,#3b82f6,#1B4FC4);}
+  .tcol.c2 .tcol-hd{background:linear-gradient(135deg,#10b981,#047857);}
+  .tcol.c3 .tcol-hd{background:linear-gradient(135deg,#f59e0b,#b45309);}
+  .tcol-ico{flex:0 0 auto;width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;font-size:21px;}
+  .tcol-name{font-weight:850;font-size:14.5px;line-height:1.2;}
+  .tcol-role{font-size:11.5px;opacity:.92;margin-top:3px;}
+  .tcol-body{padding:12px 13px;flex:1;display:flex;flex-direction:column;gap:9px;}
+  .tmod{border-radius:10px;padding:9px 11px;background:linear-gradient(160deg,#fbfcfe,#f3f7fc);border:1px solid #eef2f9;}
+  .tmod b{display:block;font-size:12.5px;color:#1e293b;margin-bottom:3px;}
+  .tmod span{font-size:11.5px;color:#64748b;line-height:1.55;display:block;}
+  .tcol-win{margin:0 13px 13px;text-align:center;font-size:12.5px;font-weight:850;color:#fff;border-radius:9px;padding:9px;}
+  .tcol.c1 .tcol-win{background:linear-gradient(135deg,#3b82f6,#1B4FC4);}
+  .tcol.c2 .tcol-win{background:linear-gradient(135deg,#10b981,#047857);}
+  .tcol.c3 .tcol-win{background:linear-gradient(135deg,#f59e0b,#b45309);}
+  @media(max-width:720px){.triptych{grid-template-columns:1fr;}}
   ul.clean{list-style:none;margin:10px 0;}
   ul.clean li{padding:9px 0 9px 26px;position:relative;font-size:14.5px;border-bottom:1px solid #f1f5f9;}
   ul.clean li:before{content:"";position:absolute;left:7px;top:16px;width:7px;height:7px;border-radius:2px;
@@ -517,266 +539,60 @@
     <div class="note">三个场景从"<b>每天处理任务</b>"（小红点）到"<b>管好客户生命周期</b>"（拓客看板）再到"<b>建立专业度对外赋能</b>"（信息同步库），覆盖销售一天的完整动线。</div>
   </div>
 
-  <!-- PART 04 · Tab① 今日待办 -->
+  <!-- PART 04 · 三个 Tab 详解（三联图例合并） -->
   <div class="slide">
-    <div class="part-tag">PART 04 · Tab① 详解</div>
-    <h2>📌 今日待办小红点：把"今天该处理谁"变成一条可清零的待办</h2>
-    <p class="lead">这一屏只回答一件事——<b>今天哪些客户必须动手</b>。核心是把告警/关注客户拢成一条<b>可清零的待办进度</b>，配一张<b>关键客户作战台</b>，处理一个、消一个红点。</p>
+    <div class="part-tag">PART 04 · 三个 Tab 详解</div>
+    <h2>三个 Tab 一屏看全：看进度 · 做动作 · 给弹药</h2>
+    <p class="lead">三个 Tab 对应销售一天的完整动线——<b>📌 今日待办</b>解决"今天处理谁"、<b>🚀 拓客看板</b>解决"进度与底表"、<b>📚 信息同步库</b>解决"对客户讲什么"。下面一张图讲透每个 Tab 的核心模块与产出：</p>
 
-    <h3>① 今日待办清理进度（告警 + 关注客户）· 云端实时</h3>
-    <div class="dgm">
-      <svg viewBox="0 0 680 150" role="img" aria-label="今日待办清理进度条逻辑">
-        <defs>
-          <linearGradient id="prog" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient>
-          <marker id="pa2" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#94a3b8"/></marker>
-        </defs>
-        <text x="20" y="34" fill="#0f172a" font-size="13" font-weight="850">今日待办 = 告警客户 + 关注客户</text>
-        <!-- track -->
-        <rect x="20" y="50" width="500" height="26" rx="13" fill="#eef2f7"/>
-        <rect x="20" y="50" width="300" height="26" rx="13" fill="url(#prog)"/>
-        <text x="170" y="68" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">已处理 · 闭环留痕</text>
-        <text x="430" y="68" text-anchor="middle" fill="#94a3b8" font-size="12">待处理</text>
-        <text x="534" y="68" fill="#059669" font-size="13" font-weight="850">已处理/总数</text>
-        <!-- arrow down to action -->
-        <line x1="270" y1="84" x2="270" y2="104" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#pa2)"/>
-        <rect x="20" y="108" width="640" height="32" rx="9" fill="#f6f9ff" stroke="#cfe0fb"/>
-        <text x="36" y="128" fill="#1B4FC4" font-size="12" font-weight="800">处理一个消一个 · 状态写云端 → PC / 手机 / 7 个销售实时同步 · 跨天自动归零 · 未清完数回传成 Tab 红点角标</text>
-      </svg>
-      <div class="dgm-cap">不再"看一堆数字自己判断"——告警+关注被拢成一条待办，处理完一个进度就涨一格，红点清零=今天该催的都催了。</div>
-    </div>
-
-    <h3>② 告警 / 关注怎么来：TOP 客健康分层 · 每档配一个明确动作</h3>
-    <div class="dgm">
-      <svg viewBox="0 0 680 250" role="img" aria-label="TOP客健康分层金字塔">
-        <defs>
-          <marker id="pd" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto"><circle cx="4.5" cy="4.5" r="2.5" fill="#94a3b8"/></marker>
-        </defs>
-        <polygon points="300,20 380,20 396,72 284,72" fill="#dc2626"/>
-        <text x="340" y="44" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">🔔 需告警</text>
-        <text x="340" y="61" text-anchor="middle" fill="#ffe3e3" font-size="10.5">昨耗≤-20% / ROI≤-30%</text>
-        <polygon points="282,76 398,76 416,128 264,128" fill="#f59e0b"/>
-        <text x="340" y="100" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">⚠ 需关注</text>
-        <text x="340" y="117" text-anchor="middle" fill="#fff5e0" font-size="10.5">昨耗≤-10% / ROI≤-15%</text>
-        <polygon points="262,132 418,132 440,200 240,200" fill="#296BEF"/>
-        <text x="340" y="160" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">✓ 基本稳定</text>
-        <text x="340" y="178" text-anchor="middle" fill="#dbe7ff" font-size="10.5">投放平稳 · 无异常</text>
-        <text x="150" y="50" text-anchor="end" fill="#dc2626" font-size="20" font-weight="850">告警</text>
-        <text x="150" y="106" text-anchor="end" fill="#d97706" font-size="20" font-weight="850">关注</text>
-        <text x="150" y="170" text-anchor="end" fill="#296BEF" font-size="20" font-weight="850">稳定</text>
-        <text x="150" y="222" text-anchor="end" fill="#94a3b8" font-size="11">告警+关注 = 今日待办池</text>
-        <line x1="158" y1="46" x2="284" y2="46" stroke="#fca5a5" stroke-width="1.4" stroke-dasharray="3 3"/>
-        <line x1="158" y1="102" x2="266" y2="102" stroke="#fcd34d" stroke-width="1.4" stroke-dasharray="3 3"/>
-        <line x1="158" y1="166" x2="244" y2="166" stroke="#9ec0f6" stroke-width="1.4" stroke-dasharray="3 3"/>
-        <line x1="396" y1="46" x2="470" y2="46" stroke="#fca5a5" stroke-width="1.4" stroke-dasharray="3 3" marker-end="url(#pd)"/>
-        <rect x="474" y="26" width="194" height="42" rx="9" fill="#fff" stroke="#fca5a5"/>
-        <text x="486" y="44" fill="#dc2626" font-size="12" font-weight="850">今天必须催</text>
-        <text x="486" y="60" fill="#64748b" font-size="10.5">点🩺诊断查因 · 当天跟进</text>
-        <line x1="416" y1="102" x2="470" y2="102" stroke="#fcd34d" stroke-width="1.4" stroke-dasharray="3 3" marker-end="url(#pd)"/>
-        <rect x="474" y="82" width="194" height="42" rx="9" fill="#fff" stroke="#fcd34d"/>
-        <text x="486" y="100" fill="#d97706" font-size="12" font-weight="850">持续观察 · 看走势</text>
-        <text x="486" y="116" fill="#64748b" font-size="10.5">是否继续下滑 · 留意拐点</text>
-        <line x1="440" y1="166" x2="470" y2="166" stroke="#9ec0f6" stroke-width="1.4" stroke-dasharray="3 3" marker-end="url(#pd)"/>
-        <rect x="474" y="146" width="194" height="42" rx="9" fill="#fff" stroke="#9ec0f6"/>
-        <text x="486" y="164" fill="#296BEF" font-size="12" font-weight="850">维持 · 放大消耗</text>
-        <text x="486" y="180" fill="#64748b" font-size="10.5">表现稳健 · 找加投空间</text>
-      </svg>
-      <div class="dgm-cap">把大客户按健康度分三档，注意力自动收到"需告警"那一小撮——告警+关注合并成今日待办池，这就是把"红黄绿评分"翻译成每天的动作。</div>
-    </div>
-
-    <h3>③ 关键客户作战台 · 两套视角管理客户</h3>
-    <p class="lead">同一张明细清单，按两种视角切换看——既盯"客户养到哪一步"，也盯"考核还差谁来追"。</p>
-    <div class="grid2">
-      <div class="card">
-        <div class="ico">🌱</div><div class="t big">生命周期视角</div><div class="csub">客户养到哪一步</div>
-        <ul class="dot">
-          <li><b>新手期</b> → 刚起量，扶上路</li>
-          <li><b>培育期</b> → 冲量中，加投破千</li>
-          <li><b>成熟期</b> → 稳定客户，维持放大</li>
-        </ul>
+    <div class="triptych">
+      <!-- Tab① -->
+      <div class="tcol c1">
+        <div class="tcol-hd"><div class="tcol-ico">📌</div><div><div class="tcol-name">今日待办小红点</div><div class="tcol-role">看进度 → 做动作</div></div></div>
+        <div class="tcol-body">
+          <div class="tmod"><b>① 今日待办清理进度</b><span>告警+关注客户拢成一条可清零待办，已处理/总数 · 云端实时</span></div>
+          <div class="tmod"><b>② TOP客健康分层</b><span>🔔告警(必催) / ⚠关注(观察) / ✓稳定(放大)，三档配三个动作</span></div>
+          <div class="tmod"><b>③ 关键客户作战台</b><span>两套视角：🌱生命周期(新手/培育/成熟) · 🎯考核追赶(潜在新锐/重点监控)</span></div>
+          <div class="tmod"><b>④ 团队季度 KPI 进度</b><span>季度新锐(/207) · 新客日耗(/121万) · 91天倒计时算缺口</span></div>
+        </div>
+        <div class="tcol-win">处理一个消一个红点 · 跨天归零</div>
       </div>
-      <div class="card">
-        <div class="ico">🎯</div><div class="t big">考核追赶视角</div><div class="csub">KPI 还差谁来追</div>
-        <ul class="dot">
-          <li><b>潜在新锐</b> → 离新锐就差一点，重点推</li>
-          <li><b>重点客户消耗监控</b> → 高消耗客户盯紧别掉</li>
-          <li>配合战役标签：🚀产业带拓客 / 🦅腾飞扶持 / 💎珠宝超品日 / ⚔️T2T攻坚</li>
-        </ul>
+
+      <!-- Tab② -->
+      <div class="tcol c2">
+        <div class="tcol-hd"><div class="tcol-ico">🚀</div><div><div class="tcol-name">拓客作战看板</div><div class="tcol-role">把握进度 · 维护底表</div></div></div>
+        <div class="tcol-body">
+          <div class="tmod"><b>① 季度 KPI 进度盘</b><span>目标－进度＝每日动作量，把缺口翻译成"今天还差多少"</span></div>
+          <div class="tmod"><b>② 销售明细横向对比</b><span>7 销售统一口径(新锐数/新客日耗/累计日均)，谁快谁慢一目了然</span></div>
+          <div class="tmod"><b>③ 拓客模型画像</b><span>全部/仅新锐 × 数量/消耗，配类目·来源·投放端·链路 4 饼图</span></div>
+          <div class="tmod"><b>④ 归属变更留痕</b><span>改销售即时留痕(原→新/操作人/时间)、次日自动归位</span></div>
+        </div>
+        <div class="tcol-win">KPI 考核 + 日报快报的数据底座</div>
+      </div>
+
+      <!-- Tab③ -->
+      <div class="tcol c3">
+        <div class="tcol-hd"><div class="tcol-ico">📚</div><div><div class="tcol-name">信息同步库</div><div class="tcol-role">对外赋能 · 给弹药</div></div></div>
+        <div class="tcol-body">
+          <div class="tmod"><b>① 行业概况</b><span>服饰大盘 + 10 个二级行业指标 + Top3 客户参考</span></div>
+          <div class="tmod"><b>② 政策活动库</b><span>618 等政策实时同步，缩略图看大图、可下载、上下线管理</span></div>
+          <div class="tmod"><b>③ 标杆案例库</b><span>18 条带图打法，按类目/链路检索，截图给客户讲</span></div>
+          <div class="tmod"><b>④ 脱敏重组 3 原则</b><span>内部大盘→行业指标 · 绝对值→排名占比 · 散落报表→统一入口</span></div>
+        </div>
+        <div class="tcol-win">内部数据 → 销售随手可用的弹药</div>
       </div>
     </div>
-    <div class="note">📋 明细清单字段：客户简称 · 类目 · <b>客户阶段/追赶状态</b> · 昨日消耗 · 环比量/环比率 · ROI 环比 · <b>涨跌原因</b> · 归属 · 所属战役 · 操作。可按分组 / 类目 / 战役多维筛选，每行客户都能<b>一键🩺诊断（接 AI）+ 标记已处理（强制填原因、闭环留痕）</b>。</div>
 
-    <h3>④ 团队季度 KPI 完成进度 · 顶部常驻</h3>
-    <ul class="clean">
-      <li>两张大卡：<b>季度新锐客户数（/207）</b>、<b>新客季度日耗（/121 万）</b>，带进度条 + 追赶文案</li>
-      <li>按 <b>2026Q2 · 91 天倒计时</b>实时算缺口，把目标翻译成"今天还差多少"</li>
-    </ul>
-
-    <p>"已处理"状态写入云端，<b>PC 与手机、7 个销售之间实时同步、跨天自动归零</b>，并把"未处理的告警+关注数"回传成 Tab 上的红点角标——谁还没清完一目了然。<b>整套看板默认就是移动端</b>，销售在路上随手就能清待办。</p>
+    <div class="note">💡 三个 Tab 串起销售一天：先在<b>今日待办</b>清掉该催该盯的客户（被动→主动、不漏球），再到<b>拓客看板</b>看进度对底表，最后用<b>信息同步库</b>把内部数据变成给客户的弹药。<b>整套看板默认就是移动端</b>，在路上随手就能处理。</div>
     <div class="compare">
       <div class="col old"><div class="lab">传统看板</div><div class="txt">告诉你"这个客户消耗是多少"</div></div>
-      <div class="col new"><div class="lab">销售作战中心</div><div class="txt">把告警+关注拢成一条可清零待办，告诉你"今天这个客户要不要处理、怎么处理"，一键诊断+闭环留痕</div></div>
+      <div class="col new"><div class="lab">销售作战中心</div><div class="txt">告诉你"今天这个客户要不要处理、怎么处理"，一键诊断 + 闭环留痕，还能对客户输出弹药</div></div>
     </div>
   </div>
 
-  <!-- PART 05 · Tab② 拓客作战看板 -->
+  <!-- PART 05 · 真实成效闭环 -->
   <div class="slide">
-    <div class="part-tag">PART 05 · Tab② 详解</div>
-    <h2>🚀 拓客作战看板：把握进度 + 维护拓客底表</h2>
-    <p class="lead">这一屏面向"<b>季度进度怎么样、每个销售拓了多少、客户底表对不对</b>"。是 KPI 考核和日报快报的数据底座。</p>
-    <h3>解决的痛点 · 之前 vs 现在</h3>
-    <div class="compare">
-      <div class="col old"><div class="lab">以前的方式</div><div class="txt">
-        · KPI 进度靠人工汇总、隔天才知道<br>
-        · 拓客底表散在 Excel / 腾讯文档，登记口径不一<br>
-        · 客户归属谁全凭记忆，改派后没人记得、数据归错人<br>
-        · 销售之间数据不透明，比拼凭感觉</div></div>
-      <div class="col new"><div class="lab">现在 · 拓客作战看板</div><div class="txt">
-        · KPI 进度盘按 91 天倒计时实时算缺口<br>
-        · 统一登记入口 + 系统自动识别简称/打标，一张真源底表<br>
-        · 归属变更即时留痕、次日自动归位（核心成果）<br>
-        · 7 个销售统一口径横向对比，良性竞争看得见</div></div>
-    </div>
-    <h3>① 团队季度 KPI 进度盘</h3>
-    <div class="dgm">
-      <svg viewBox="0 0 680 168" role="img" aria-label="KPI进度盘逻辑：目标缺口翻译成每日动作量">
-        <defs>
-          <marker id="ka" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/></marker>
-        </defs>
-        <rect x="8" y="44" width="170" height="80" rx="13" fill="#f3f7ff" stroke="#cfe0fb"/>
-        <text x="93" y="74" text-anchor="middle" fill="#1B4FC4" font-size="13" font-weight="850">季度目标</text>
-        <text x="93" y="96" text-anchor="middle" fill="#64748b" font-size="11">新锐新客数</text>
-        <text x="93" y="113" text-anchor="middle" fill="#64748b" font-size="11">季度新客消耗</text>
-        <line x1="182" y1="84" x2="210" y2="84" stroke="#94a3b8" stroke-width="2" marker-end="url(#ka)"/>
-        <text x="196" y="36" text-anchor="middle" fill="#94a3b8" font-size="10.5">减去</text>
-        <rect x="214" y="44" width="170" height="80" rx="13" fill="#f3f7ff" stroke="#cfe0fb"/>
-        <text x="299" y="74" text-anchor="middle" fill="#1B4FC4" font-size="13" font-weight="850">当前进度</text>
-        <text x="299" y="96" text-anchor="middle" fill="#64748b" font-size="11">已完成 + 时间进度</text>
-        <text x="299" y="113" text-anchor="middle" fill="#64748b" font-size="11">按 91 天倒计时</text>
-        <line x1="388" y1="84" x2="416" y2="84" stroke="#94a3b8" stroke-width="2" marker-end="url(#ka)"/>
-        <text x="402" y="36" text-anchor="middle" fill="#94a3b8" font-size="10.5">算出</text>
-        <rect x="420" y="44" width="252" height="80" rx="13" fill="url(#g3)"/>
-        <text x="546" y="72" text-anchor="middle" fill="#fff" font-size="13" font-weight="850">每天的动作量</text>
-        <text x="546" y="95" text-anchor="middle" fill="#dcfce7" font-size="11.5">"今天还需 N 个新锐"</text>
-        <text x="546" y="113" text-anchor="middle" fill="#dcfce7" font-size="11.5">"日耗要冲到 M 万"</text>
-        <text x="340" y="150" text-anchor="middle" fill="#64748b" font-size="11.5">把抽象的"季度目标"翻译成每天能执行的"还差多少、要做什么"。</text>
-      </svg>
-    </div>
-    <ul class="clean">
-      <li>两张大卡（<b>季度新锐 / 新客季度日耗</b>）带进度条 + 追赶文案</li>
-      <li>按 91 天倒计时，自动算出"每天还需多少新锐 / 日耗要到多少"</li>
-      <li>把目标缺口翻译成<b>每天能执行的动作量</b>，不用自己心算</li>
-    </ul>
-    <h3>② 销售明细 · ③ 拓客画像 · ④ 报备明细 + 归属变更</h3>
-    <div class="btnlist">
-      <div class="btnitem"><span class="bb">销售明细横向对比</span><div class="bd">7 销售统一口径拉齐（新锐数/新客日耗/累计日均），"更多 ›"展开参考列，谁快谁慢一目了然。</div></div>
-      <div class="btnitem"><span class="bb">拓客模型画像</span><div class="bd">全部新客/仅新锐 × 按数量/按消耗，配类目·来源·投放端·链路 4 个饼图。</div></div>
-      <div class="btnitem"><span class="bb r">归属变更留痕</span><div class="bd"><b>改销售即时显示 + 留痕（原 → 新 / 操作人 / 时间）</b>，可随时回看变更历史。</div></div>
-    </div>
-  </div>
-
-  <!-- PART 06 · Tab③ 信息同步库 -->
-  <div class="slide">
-    <div class="part-tag">PART 06 · Tab③ 详解</div>
-    <h2>📚 信息同步库：把内部数据，变成销售和客户能直接用的弹药库</h2>
-    <p class="lead">前两个 Tab 是"对内提效"，这一个是"<b>对外赋能</b>"——把内部行业数据脱敏重组，让销售随手能拿去给客户讲。这是我们独有的差异化能力。</p>
-    <div class="grid3">
-      <div class="card"><div class="ico">📊</div><div class="t">行业概况</div>
-        <ul class="dot">
-          <li>服饰合计 + 10 个二级行业 tab</li>
-          <li>每行业带大盘指标</li>
-          <li>5 个分组：投放OG / 系统工具 / 直播链路 / 小店明细</li>
-          <li>附 Top3 客户参考</li>
-        </ul>
-      </div>
-      <div class="card"><div class="ico">📢</div><div class="t">政策活动库</div>
-        <ul class="dot">
-          <li>618 等政策实时同步</li>
-          <li>缩略图点开看高清大图、可下载</li>
-          <li>管理员能上下线，全端云端状态同步</li>
-        </ul>
-      </div>
-      <div class="card"><div class="ico">🏆</div><div class="t">标杆案例库</div>
-        <ul class="dot">
-          <li>18 条带图打法案例</li>
-          <li>按类目 / 链路检索，点卡看大图</li>
-          <li>销售直接截图给客户讲"别人怎么跑出来的"</li>
-        </ul>
-      </div>
-    </div>
-    <h3>WHY · 这个库的业务意义</h3>
-    <div class="dgm">
-      <svg viewBox="0 0 680 260" role="img" aria-label="信息同步库设计逻辑：从客户决策到脱敏赋能">
-        <defs>
-          <linearGradient id="midg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f74f5"/><stop offset="1" stop-color="#1B4FC4"/></linearGradient>
-          <marker id="fa" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#6f9bf2"/></marker>
-        </defs>
-        <!-- col headers -->
-        <text x="105" y="20" text-anchor="middle" fill="#1e293b" font-size="12.5" font-weight="850">① 客户每天问什么</text>
-        <text x="340" y="20" text-anchor="middle" fill="#1e293b" font-size="12.5" font-weight="850">② 我们怎么重组</text>
-        <text x="575" y="20" text-anchor="middle" fill="#1e293b" font-size="12.5" font-weight="850">③ 变成什么能力</text>
-        <!-- left questions -->
-        <g>
-          <rect x="14" y="34" width="182" height="56" rx="11" fill="#f3f7ff" stroke="#cfe0fb"/>
-          <text x="30" y="56" fill="#1B4FC4" font-size="12.5" font-weight="800">我这赛道行情如何？</text>
-          <text x="30" y="76" fill="#64748b" font-size="11">大盘走势 · 竞品动态</text>
-        </g>
-        <g>
-          <rect x="14" y="100" width="182" height="56" rx="11" fill="#f3f7ff" stroke="#cfe0fb"/>
-          <text x="30" y="122" fill="#1B4FC4" font-size="12.5" font-weight="800">现在有什么政策？</text>
-          <text x="30" y="142" fill="#64748b" font-size="11">活动节点 · 扶持力度</text>
-        </g>
-        <g>
-          <rect x="14" y="166" width="182" height="56" rx="11" fill="#f3f7ff" stroke="#cfe0fb"/>
-          <text x="30" y="188" fill="#1B4FC4" font-size="12.5" font-weight="800">别人怎么投的？</text>
-          <text x="30" y="208" fill="#64748b" font-size="11">爆款打法 · 起量路径</text>
-        </g>
-        <!-- arrows L->M -->
-        <line x1="200" y1="62" x2="246" y2="98" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <line x1="200" y1="128" x2="246" y2="128" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <line x1="200" y1="194" x2="246" y2="158" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <!-- center block -->
-        <rect x="252" y="40" width="176" height="176" rx="14" fill="url(#midg)"/>
-        <text x="340" y="68" text-anchor="middle" fill="#fff" font-size="13" font-weight="850">脱敏重组 3 原则</text>
-        <line x1="272" y1="80" x2="408" y2="80" stroke="#5b8def" stroke-width="1"/>
-        <text x="270" y="104" fill="#dbe7ff" font-size="11">① 内部大盘 → 行业指标</text>
-        <text x="270" y="130" fill="#dbe7ff" font-size="11">② 绝对值 → 排名/占比</text>
-        <text x="270" y="156" fill="#dbe7ff" font-size="11">③ 散落报表 → 统一入口</text>
-        <text x="270" y="186" fill="#bcd9ff" font-size="10.5">先想清客户要什么决策，</text>
-        <text x="270" y="202" fill="#bcd9ff" font-size="10.5">再决定给什么信号</text>
-        <!-- arrows M->R -->
-        <line x1="432" y1="80" x2="478" y2="62" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <line x1="432" y1="128" x2="478" y2="128" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <line x1="432" y1="176" x2="478" y2="194" stroke="#6f9bf2" stroke-width="2" marker-end="url(#fa)"/>
-        <!-- right capabilities -->
-        <g>
-          <rect x="484" y="34" width="184" height="56" rx="11" fill="#eefbf4" stroke="#a7e8c8"/>
-          <text x="500" y="56" fill="#047857" font-size="12.5" font-weight="800">📊 行业概况</text>
-          <text x="500" y="76" fill="#64748b" font-size="11">大盘+10行业+Top3客户</text>
-        </g>
-        <g>
-          <rect x="484" y="100" width="184" height="56" rx="11" fill="#eefbf4" stroke="#a7e8c8"/>
-          <text x="500" y="122" fill="#047857" font-size="12.5" font-weight="800">📢 政策活动库</text>
-          <text x="500" y="142" fill="#64748b" font-size="11">实时同步 · 上下线管理</text>
-        </g>
-        <g>
-          <rect x="484" y="166" width="184" height="56" rx="11" fill="#eefbf4" stroke="#a7e8c8"/>
-          <text x="500" y="188" fill="#047857" font-size="12.5" font-weight="800">🏆 标杆案例库</text>
-          <text x="500" y="208" fill="#64748b" font-size="11">18条带图打法 · 可检索</text>
-        </g>
-        <text x="340" y="248" text-anchor="middle" fill="#64748b" font-size="11.5">难点不是脱敏本身，而是先想清楚销售/客户每天要做什么决策。</text>
-      </svg>
-    </div>
-    <div class="meaning">
-      <div class="mc"><div class="mt">① 消除信息不对称</div><div class="md">客户问行情/政策/打法，销售有统一权威答案，不再"现查现猜"</div></div>
-      <div class="mc"><div class="mt">② 缩短政策传导链路</div><div class="md">政策一发布→同步库即时更新→销售当天就能传达给客户响应</div></div>
-      <div class="mc"><div class="mt">③ 把行业 know-how 产品化</div><div class="md">ADQ 服饰的行业理解沉淀成可复用资产，新销售也能即用</div></div>
-      <div class="mc"><div class="mt">④ 覆盖人力够不着的客户</div><div class="md">中腰部客户人工照顾不到，产品化后也能拿到同样的决策输入</div></div>
-    </div>
-  </div>
-
-  <!-- PART 07 · 真实成效闭环 -->
-  <div class="slide">
-    <div class="part-tag">PART 07 · 真实成效</div>
+    <div class="part-tag">PART 05 · 真实成效</div>
     <h2>一个"预警 → 诊断 → 加投"的完整闭环案例</h2>
     <p class="lead">这个案例最能说明看板的价值：它不只是发现问题，还顺手把"找原因"这一步接到了 AI 上。</p>
     <div class="dgm">
@@ -872,9 +688,9 @@
     </div>
   </div>
 
-  <!-- PART 08 · 共性方法 -->
+  <!-- PART 06 · 共性方法 -->
   <div class="slide">
-    <div class="part-tag">PART 08 · 共性方法</div>
+    <div class="part-tag">PART 06 · 共性方法</div>
     <h2>所有功能背后的同一套方法：业务规则翻译器</h2>
     <p class="lead">无论是对内防漏、抓机会，还是对外赋能，背后都是同一个四步闭环——把"业务规则"翻译成"动作机制"。</p>
     <div class="dgm">
@@ -932,9 +748,9 @@
     <div class="note">⚠️ 顺序不能反——必须<b>先决定"该处理什么"，再决定"用什么形式给出去"</b>，否则做出来就只是个 BI 看板。AData 提供原始数据，作战中心把"目标 / 3 千门槛 / 首投季度"这些业务规则翻译成动作。这套方法，对内是"防漏+抓机会"，对外是"信息产品化"。</div>
   </div>
 
-  <!-- PART 09 · 技术框架 -->
+  <!-- PART 07 · 技术框架 -->
   <div class="slide">
-    <div class="part-tag">PART 09 · 技术框架</div>
+    <div class="part-tag">PART 07 · 技术框架</div>
     <h2>技术实现：一条"CSV 进 → Python 算 → JS 文件出 → 静态页渲染"的轻管线</h2>
     <p class="lead">没有数据库、没有后端服务、不依赖 BI 平台。整套是 <b>Python 脚本 + 静态前端</b>，每天一条命令跑完重建，产物直接推 GitHub Pages。下面是端到端的真实链路：</p>
 
@@ -1022,9 +838,9 @@
     <div class="note">💡 一句话概括技术选型：<b>把"重"放在 Python 脚本里（口径计算一次算准），把"前端"做到最轻（静态文件人人能开、随时能改）</b>。复杂度集中在数据处理，展示层保持简单，所以迭代快、好维护、可独立交付。</div>
   </div>
 
-  <!-- PART 10 · 当前卡点全景 -->
+  <!-- PART 08 · 当前卡点全景 -->
   <div class="slide">
-    <div class="part-tag">PART 10 · 当前卡点</div>
+    <div class="part-tag">PART 08 · 当前卡点</div>
     <h2>把话说透：现在我们仍卡在哪里</h2>
     <div class="role" style="grid-template-columns:repeat(3,1fr);">
       <div class="rolebox ai">
@@ -1048,9 +864,9 @@
     </div>
   </div>
 
-  <!-- PART 11 · 希望的资源与支持 -->
+  <!-- PART 09 · 希望的资源与支持 -->
   <div class="slide">
-    <div class="part-tag">PART 11 · 资源与支持</div>
+    <div class="part-tag">PART 09 · 资源与支持</div>
     <h2>基于卡点，我们希望给予的支持</h2>
     <p class="lead">不是要更多人手堆活，而是把几个"卡住规模化"的关键点打通——让这套已经验证有效的机制，能稳定服务整个团队。</p>
     <div class="support">
@@ -1067,9 +883,9 @@
     </div>
   </div>
 
-  <!-- PART 12 · 下一步 -->
+  <!-- PART 10 · 下一步 -->
   <div class="slide">
-    <div class="part-tag">PART 12 · 下一步</div>
+    <div class="part-tag">PART 10 · 下一步</div>
     <h2>看板的下一步：把"发现"和"归因"做得更自动、更闭环</h2>
     <p class="lead">沿着现有的三个 Tab，往"少一步人工、多一步自动"的方向迭代——</p>
     <div class="grid2">
