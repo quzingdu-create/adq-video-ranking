@@ -104,6 +104,20 @@
     display:inline-flex;align-items:center;gap:6px;}
   .takeaway .tl::before{content:"◆";font-size:9px;}
   .takeaway .tt{font-size:18px;font-weight:800;line-height:1.55;}
+  /* 被动→主动 / 不漏球 转变横幅 */
+  .shift{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0;}
+  .shiftbox{border-radius:14px;padding:16px 20px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#fff,#f6f9ff);border:1px solid #d6e0f5;
+    box-shadow:0 8px 22px -14px rgba(27,79,196,.3);}
+  .shiftbox .sk{font-size:12px;font-weight:800;letter-spacing:1px;color:#94a3b8;margin-bottom:8px;}
+  .shiftbox .sline{display:flex;align-items:center;gap:12px;font-weight:850;font-size:16px;}
+  .shiftbox .from{color:#b91c1c;text-decoration:line-through;text-decoration-color:#fca5a5;opacity:.78;}
+  .shiftbox .arrow{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:linear-gradient(135deg,#2f74f5,#1B4FC4);color:#fff;font-size:15px;
+    box-shadow:0 4px 10px -3px rgba(27,79,196,.5);}
+  .shiftbox .to{color:#15803d;font-size:17px;}
+  .shiftbox .sdesc{font-size:12.5px;color:var(--text-2);margin-top:9px;line-height:1.6;}
+  @media(max-width:720px){.shift{grid-template-columns:1fr;}}
   ul.clean{list-style:none;margin:10px 0;}
   ul.clean li{padding:9px 0 9px 26px;position:relative;font-size:14.5px;border-bottom:1px solid #f1f5f9;}
   ul.clean li:before{content:"";position:absolute;left:7px;top:16px;width:7px;height:7px;border-radius:2px;
@@ -181,8 +195,9 @@
   .painbox{border-radius:14px;padding:18px 20px;border:1px solid var(--line);}
   .painbox.eff{background:linear-gradient(160deg,#fff6f6,#fdeeee);border-color:#f6c2c2;}
   .painbox.inf{background:linear-gradient(160deg,#f3f7ff,#e9f0fd);border-color:#bcd3f9;}
-  .painbox .ph{font-weight:850;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
-  .painbox.eff .ph{color:var(--red);} .painbox.inf .ph{color:var(--blue-d);}
+  .painbox.tool{background:linear-gradient(160deg,#fffbf2,#fdf3df);border-color:#f3d79a;}
+  .painbox .ph{font-weight:850;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .painbox.eff .ph{color:var(--red);} .painbox.inf .ph{color:var(--blue-d);} .painbox.tool .ph{color:#a16207;}
   .painbox .pd{font-size:13.5px;line-height:2;color:var(--text);}
   .role{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0;}
   .rolebox{border-radius:14px;padding:0;overflow:hidden;border:1px solid #e8ecf3;background:#fff;
@@ -305,7 +320,7 @@
   <div class="slide">
     <div class="part-tag">PART 01 · 为什么</div>
     <h2>为什么服饰拓新特别需要从"数据洞察"走向"业务动作"</h2>
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:repeat(3,1fr);">
       <div class="card">
         <div class="ico">🏁</div><div class="t">行业特点 · 季度制 + 海量客户</div>
         <ul class="dot">
@@ -321,6 +336,14 @@
           <li>客户消耗每天起伏，<b>起量窗口往往只有几天</b></li>
           <li>信号闪一下就过去，靠人盯很容易错过</li>
           <li>大客户突然掉量，错过预警就是<b>真金白银的流失</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="ico">🏃</div><div class="t">销售特点 · 在路上 · 靠经验</div>
+        <ul class="dot">
+          <li>精力分散、<b>时间碎片化</b>，常在路上 / 频繁出差，难集中复盘</li>
+          <li>客户数量多，<b>无法全部兼顾</b>，重点之外容易漏球</li>
+          <li>服务多依靠<b>个人经验</b>，缺标准打法，质量随人波动</li>
         </ul>
       </div>
     </div>
@@ -365,27 +388,47 @@
   <!-- PART 02 · 两类卡点（业务思考） -->
   <div class="slide">
     <div class="part-tag">PART 02 · 卡点</div>
-    <h2>我们看到的两类卡点：数据有了，但还没变成动作</h2>
-    <p class="lead">在动手做工具之前，我们先想清楚：数据其实不缺，缺的是"<b>从数据到动作</b>"这一段。它卡在两个地方——</p>
-    <div class="pain">
+    <h2>站在销售视角：三道瓶颈，让人被动、还漏球</h2>
+    <p class="lead">销售真正卡住的，是"<b>从数据到动作</b>"这一段。它卡在三个地方，共同的后果就是——<b style="color:#b91c1c;">总是被动响应、还容易漏球</b>：</p>
+    <div class="pain" style="grid-template-columns:repeat(3,1fr);">
       <div class="painbox eff">
-        <div class="ph">⏱️ 效率瓶颈 ——"该做的事没法及时做"</div>
+        <div class="ph">⏱️ 效率瓶颈 <span style="font-size:12px;color:#dc2626;">→ 容易漏球</span></div>
         <div class="pd">
-          • <b>量太大</b>：3.4 万客户远超个人精力上限<br>
-          • <b>重复劳动</b>：日报、归因、底表每天手做一遍<br>
-          • <b>注意力被稀释</b>：只能抓几个重点，其他被迫放弃
+          • <b>量太大</b>：3.4 万客户远超个人精力上限，重点之外只能放弃<br>
+          • <b>精力被稀释</b>：碎片时间多，难集中复盘，容易顾此失彼<br>
+          • <b>靠人记</b>：该催谁、该盯谁全凭脑子记，<b>一忙就漏</b>
         </div>
       </div>
       <div class="painbox inf">
-        <div class="ph">🧩 信息瓶颈 ——"有数据没法变信号"</div>
+        <div class="ph">🛡️ 监控瓶颈 <span style="font-size:12px;color:#1B4FC4;">→ 总是被动</span></div>
         <div class="pd">
-          • <b>数据散</b>：CloudBase 登记 + 7 份 AData 报表，拼一份要翻好几个工具<br>
+          • <b>缺预警</b>：客户掉量没人提醒，等客户主动求助，<b>损失早已造成</b><br>
           • <b>要翻译</b>：从"消耗多少"到"该不该催"，隔着一层口径<br>
-          • <b>慢半拍</b>：业务按天变，信息却按"次日结算"给
+          • <b>慢半拍</b>：业务按天变，靠人盯总是后知后觉
+        </div>
+      </div>
+      <div class="painbox tool">
+        <div class="ph">📱 工具瓶颈 <span style="font-size:12px;color:#a16207;">→ 想做做不了</span></div>
+        <div class="pd">
+          • <b>依赖电脑</b>：以往看数要回到电脑前才能查<br>
+          • <b>人在路上</b>：销售频繁出差、常在外面跑<br>
+          • <b>缺移动入口</b>：碎片时间想处理客户，却没有便捷的手机端
         </div>
       </div>
     </div>
-    <div class="note">💡 这两道瓶颈是我们所有功能的出发点——<b>数据如果不能及时转成动作，它的价值就会流失</b>。我们这段时间做的，就是围绕这两点，把"该处理什么"翻译成机制。</div>
+    <div class="shift">
+      <div class="shiftbox">
+        <div class="sk">核心转变 ①</div>
+        <div class="sline"><span class="from">被动</span><span class="arrow">➜</span><span class="to">主动</span></div>
+        <div class="sdesc">不再等客户掉量后主动求助，而是<b>系统提前预警、第一时间顶出该处理的客户</b>。</div>
+      </div>
+      <div class="shiftbox">
+        <div class="sk">核心转变 ②</div>
+        <div class="sline"><span class="from">漏球</span><span class="arrow">➜</span><span class="to">不漏球</span></div>
+        <div class="sdesc">3.4 万客户不靠人脑记，<b>每天该催/该盯/该抓的一个不落，碎片时间手机随时处理</b>。</div>
+      </div>
+    </div>
+    <div class="note">💡 这三道瓶颈是我们所有功能的出发点——目标只有一个：把销售从"<b>被动、漏球、用不上工具</b>"，彻底变成"<b>主动预警、不漏球、手机随时处理</b>"。下面这套小红点系统<b>默认就是移动端</b>，正是为此而生。</div>
   </div>
 
   <!-- PART 03 · 能力地图 + 能力蓝图（合并） -->
