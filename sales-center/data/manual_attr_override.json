@@ -114,6 +114,11 @@
       "sale": "ruilingzhan",
       "reason": "6-10 用户指定归属 ruilingzhan（原 kaikaigenli；云端已改，加override防rebuild打回）",
       "date": "2026-06-10"
+    },
+    "常熟市未半服装有限公司": {
+      "sale": "brownfan",
+      "reason": "6-10 云端saleHistory确认kaikaigenli→brownfan(6/9改)",
+      "date": "2026-06-10"
     }
   }
 }
