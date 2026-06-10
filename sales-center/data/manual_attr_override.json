@@ -99,6 +99,21 @@
       "sale": "lijunwu",
       "reason": "6-7 用户指定归属 lijunwu（原 kaikaigenli）",
       "date": "2026-06-07"
+    },
+    "义乌市小师哥供应链管理有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-10 用户指定归属 yvaineechen（原 kaikaigenli；云端已改但本地tuoke未同步，加override根治）",
+      "date": "2026-06-10"
+    },
+    "义乌市科茹电子商务有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-10 用户指定归属 yvaineechen（原 Jonzhu；云端已改但本地tuoke未同步，加override根治）",
+      "date": "2026-06-10"
+    },
+    "广州如一传媒有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "6-10 用户指定归属 ruilingzhan（原 kaikaigenli；云端已改，加override防rebuild打回）",
+      "date": "2026-06-10"
     }
   }
 }
