@@ -7,25 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260611l"></script>
+<script src="data/laoke_lookup_data.js?v=20260611r"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260611l"></script>
-<script src="data/tuoke_real_records.js?v=20260611l"></script>
-<script src="data/customer_link_data.js?v=20260611l"></script>
-<script src="data/center_sales_summary.js?v=20260611l"></script>
-<script src="data/center_quarter_summary.js?v=20260611l"></script>
-<script src="data/center_daily_kpi.js?v=20260611l"></script>
-<script src="data/delivery_side_summary.js?v=20260611l"></script>
-<script src="data/top80_effective_metrics.js?v=20260611l"></script>
-<script src="data/top_status_data.js?v=20260611l"></script>
-<script src="data/enough_candidates.js?v=20260611l"></script>
-<script src="data/handover_customers_519.js?v=20260611l"></script>
-<script src="data/first_quarter.js?v=20260611l"></script>
-<script src="data/customer_lifecycle.js?v=20260611l"></script>
+<script src="data/bulk_import_rows.js?v=20260611r"></script>
+<script src="data/tuoke_real_records.js?v=20260611r"></script>
+<script src="data/customer_link_data.js?v=20260611r"></script>
+<script src="data/center_sales_summary.js?v=20260611r"></script>
+<script src="data/center_quarter_summary.js?v=20260611r"></script>
+<script src="data/center_daily_kpi.js?v=20260611r"></script>
+<script src="data/delivery_side_summary.js?v=20260611r"></script>
+<script src="data/top80_effective_metrics.js?v=20260611r"></script>
+<script src="data/top_status_data.js?v=20260611r"></script>
+<script src="data/enough_candidates.js?v=20260611r"></script>
+<script src="data/handover_customers_519.js?v=20260611r"></script>
+<script src="data/first_quarter.js?v=20260611r"></script>
+<script src="data/customer_lifecycle.js?v=20260611r"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611l"></script>
+<script src="cloud_sync.js?v=20260611r"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -613,6 +613,50 @@
   .invest-qy  { background: #ecfdf5; color: #059669; }
   .invest-both { background: #fef3c7; color: #b45309; }
   .invest-none { background: #f3f4f6; color: #6b7280; }
+  /* === 客户详情弹窗（简版） === */
+  #lcModalMask { position: fixed; inset: 0; background: rgba(15,23,42,.45); backdrop-filter: blur(2px); z-index: 9999; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+  #lcModalMask.show { display: flex; }
+  .lc-modal { background: #fff; width: 100%; max-width: 560px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; animation: lcModalIn .18s ease; }
+  @keyframes lcModalIn { from { opacity: 0; transform: translateY(-12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .lc-modal-head { padding: 18px 20px 14px; color: #fff; position: relative; }
+  .lc-modal-head .stage-pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 12px; background: rgba(255,255,255,.22); margin-bottom: 8px; }
+  .lc-modal-head .cust-name { font-size: 18px; font-weight: 800; line-height: 1.35; padding-right: 32px; }
+  .lc-modal-head .cust-sub { font-size: 12px; opacity: .9; margin-top: 5px; }
+  .lc-modal-close { position: absolute; top: 14px; right: 16px; width: 28px; height: 28px; border: none; border-radius: 8px; background: rgba(255,255,255,.2); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; transition: background .15s; }
+  .lc-modal-close:hover { background: rgba(255,255,255,.35); }
+  .lc-modal-body { padding: 16px 20px 20px; }
+  .lc-modal-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .lc-mm { background: #f9fafb; border: 1px solid #f1f5f9; border-radius: 10px; padding: 10px 12px; }
+  .lc-mm .lbl { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+  .lc-mm .val { font-size: 19px; font-weight: 800; color: #1f2937; }
+  .lc-mm .val.up { color: #16a34a; } .lc-mm .val.down { color: #dc2626; }
+  .lc-mm .ext { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .lc-modal-sec-title { font-size: 12px; font-weight: 700; color: #374151; margin: 4px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .lc-svc-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .lc-svc-mini { border-radius: 10px; padding: 9px 10px; border: 1px solid #e5e7eb; background: #fff; text-align: center; }
+  .lc-svc-mini .t { font-size: 10px; color: #9ca3af; margin-bottom: 3px; }
+  .lc-svc-mini .v { font-size: 13px; font-weight: 700; color: #1f2937; }
+  .lc-cmp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .lc-cmp-table th, .lc-cmp-table td { padding: 7px 8px; border-bottom: 1px solid #f1f5f9; text-align: right; }
+  .lc-cmp-table th:first-child, .lc-cmp-table td:first-child { text-align: left; color: #6b7280; }
+  .lc-cmp-table thead th { font-size: 11px; color: #9ca3af; font-weight: 600; }
+  .lc-cmp-table .me { font-weight: 800; color: #1f2937; }
+  .lc-cmp-table .diff.up { color: #16a34a; } .lc-cmp-table .diff.down { color: #dc2626; }
+  .lc-cmp-hint { font-size: 11px; color: #9ca3af; margin-top: 7px; line-height: 1.5; }
+  #lcDetailTable tbody tr { cursor: pointer; }
+  #lcDetailTable tbody tr:hover { background: #f0f9ff !important; }
+  /* === 客户清单筛选工具栏（增强版） === */
+  .lc-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-radius: 10px; margin: 12px 0; }
+  .lc-toolbar input, .lc-toolbar select, .lc-toolbar button { font-size: 12.5px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #1f2937; transition: all .15s; cursor: pointer; outline: none; }
+  .lc-toolbar input { cursor: text; }
+  .lc-toolbar input:focus, .lc-toolbar select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  .lc-toolbar select:hover, .lc-toolbar button:hover { border-color: #94a3b8; background: #fafbfc; }
+  .lc-toolbar button#lcDetailExport { background: #1f2937; color: #fff; border-color: #1f2937; font-weight: 600; }
+  .lc-toolbar button#lcDetailExport:hover { background: #111827; }
+  .lc-toolbar button.lc-btn-ghost { background: #fff; color: #6b7280; font-weight: 500; }
+  .lc-toolbar button.lc-btn-ghost:hover { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+  #lcFilterCount { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; padding: 0 4px; margin-left: auto; }
+  #lcFilterCount b { color: #1f2937; font-weight: 700; }
   @media (max-width: 720px) {
     .lc-overview { grid-template-columns: repeat(2, 1fr); }
     #lcGridChart { height: 380px !important; }
@@ -811,8 +855,21 @@
           <strong>📋 客户清单</strong>
           <span class="badge">点九宫格上的格子，看该层级所有客户</span>
         </div>
-        <div class="toolbar" id="lcDetailToolbar" style="display:none;">
-          <input id="lcSearch" placeholder="搜索客户简称/类目" style="flex:1;min-width:200px;" />
+        <div class="toolbar lc-toolbar" id="lcDetailToolbar" style="display:none;">
+          <input id="lcSearch" placeholder="🔍 搜索客户简称/类目" style="flex:1 1 220px;min-width:200px;" />
+          <select id="lcDays">
+            <option value="">引入阶段不限</option>
+            <option value="<=30天">🌱 0-30天</option>
+            <option value="31-60天">🚀 31-60天</option>
+            <option value="61-90天">🚀 61-90天</option>
+            <option value="90+天">👑 90+天</option>
+          </select>
+          <select id="lcTier">
+            <option value="">日耗分层不限</option>
+            <option value="头部">🔥 头部 (≥1万)</option>
+            <option value="腰部">⚡ 腰部 (1千-1万)</option>
+            <option value="尾部">💧 尾部 (0-1千)</option>
+          </select>
           <select id="lcInvest">
             <option value="">投放类型不限</option>
             <option value="单ADQ">单ADQ</option>
@@ -820,6 +877,24 @@
             <option value="双投">双投</option>
             <option value="无投放">无投放</option>
           </select>
+          <select id="lcCat">
+            <option value="">赛道(类目)不限</option>
+          </select>
+          <select id="lcTrend">
+            <option value="">环比方向不限</option>
+            <option value="up">📈 环比上升</option>
+            <option value="down">📉 环比下降</option>
+            <option value="flat">➖ 环比持平/无</option>
+          </select>
+          <select id="lcSort">
+            <option value="yest_desc">排序：昨日日耗 ↓</option>
+            <option value="yest_asc">排序：昨日日耗 ↑</option>
+            <option value="rate_desc">排序：环比率 ↓</option>
+            <option value="rate_asc">排序：环比率 ↑</option>
+            <option value="q2_desc">排序：26Q2累计 ↓</option>
+            <option value="q2_asc">排序：26Q2累计 ↑</option>
+          </select>
+          <button id="lcReset" class="lc-btn-ghost">↺ 重置筛选</button>
           <button id="lcDetailExport">📥 导出 CSV</button>
         </div>
         <table class="tbl" id="lcDetailTable" style="display:none;">
@@ -832,6 +907,11 @@
     </div>
   </div>
 
+</div>
+
+<!-- 客户详情弹窗（生命周期） -->
+<div id="lcModalMask">
+  <div class="lc-modal" id="lcModalBox"></div>
 </div>
 
 <!-- 目标管理弹窗 -->
@@ -3571,15 +3651,9 @@ document.addEventListener('click', e => {
 
     chart.off('click');
     chart.on('click', function(p){
-      // 点客户散点 → 加亮该客户清单
+      // 点客户散点 → 直接打开客户详情弹窗
       if (p.data && p.data.cust){
-        state.selectedX = p.data.cust[COL.daysBucket];
-        state.selectedY = p.data.cust[COL.costTier];
-        state.selectedShort = p.data.cust[COL.short];
-        renderDetail();
-        // 滚动到详情
-        var d = document.getElementById('lcDetail');
-        if (d) d.scrollIntoView({ behavior:'smooth', block:'start' });
+        openCustModal(p.data.cust);
       }
     });
   }
@@ -3598,13 +3672,38 @@ document.addEventListener('click', e => {
     if (hasFilter){
       list = list.filter(function(r){ return r[COL.daysBucket]===state.selectedX && r[COL.costTier]===state.selectedY; });
     }
-    // 投放筛选
-    var iv = (document.getElementById('lcInvest')||{}).value || '';
+    // ===== 多维筛选 =====
+    var iv  = (document.getElementById('lcInvest')||{}).value || '';
+    var dd  = (document.getElementById('lcDays')  ||{}).value || '';
+    var tt  = (document.getElementById('lcTier')  ||{}).value || '';
+    var cc  = (document.getElementById('lcCat')   ||{}).value || '';
+    var tr  = (document.getElementById('lcTrend') ||{}).value || '';
+    var so  = (document.getElementById('lcSort')  ||{}).value || 'yest_desc';
+    var q   = ((document.getElementById('lcSearch')||{}).value || '').trim().toLowerCase();
+
     if (iv) list = list.filter(function(r){ return r[COL.invest]===iv; });
-    // 搜索
-    var q = ((document.getElementById('lcSearch')||{}).value || '').trim().toLowerCase();
-    if (q) list = list.filter(function(r){ return (r[COL.short]||'').toLowerCase().indexOf(q)>=0 || (r[COL.cat]||'').toLowerCase().indexOf(q)>=0; });
-    list.sort(function(a,b){ return (b[COL.yestCost]||0) - (a[COL.yestCost]||0); });
+    if (dd) list = list.filter(function(r){ return r[COL.daysBucket]===dd; });
+    if (tt) list = list.filter(function(r){ return r[COL.costTier]===tt; });
+    if (cc) list = list.filter(function(r){ return r[COL.cat]===cc; });
+    if (tr) list = list.filter(function(r){
+      var rate = r[COL.deltaRate];
+      if (tr==='up')   return rate!==null && rate!==undefined && !isNaN(rate) && rate >  0;
+      if (tr==='down') return rate!==null && rate!==undefined && !isNaN(rate) && rate <  0;
+      if (tr==='flat') return rate===null || rate===undefined || isNaN(rate) || rate === 0;
+      return true;
+    });
+    if (q) list = list.filter(function(r){ return (r[COL.short]||'').toLowerCase().indexOf(q)>=0 || (r[COL.cat]||'').toLowerCase().indexOf(q)>=0 || (r[COL.sale]||'').toLowerCase().indexOf(q)>=0; });
+
+    // 排序
+    var sortMap = {
+      'yest_desc': function(a,b){ return (b[COL.yestCost]||0) - (a[COL.yestCost]||0); },
+      'yest_asc':  function(a,b){ return (a[COL.yestCost]||0) - (b[COL.yestCost]||0); },
+      'rate_desc': function(a,b){ var ra=a[COL.deltaRate], rb=b[COL.deltaRate]; if (ra===null||isNaN(ra)) ra=-9; if (rb===null||isNaN(rb)) rb=-9; return rb-ra; },
+      'rate_asc':  function(a,b){ var ra=a[COL.deltaRate], rb=b[COL.deltaRate]; if (ra===null||isNaN(ra)) ra=9; if (rb===null||isNaN(rb)) rb=9; return ra-rb; },
+      'q2_desc':   function(a,b){ return (b[COL.q2Cost]||0) - (a[COL.q2Cost]||0); },
+      'q2_asc':    function(a,b){ return (a[COL.q2Cost]||0) - (b[COL.q2Cost]||0); }
+    };
+    list.sort(sortMap[so] || sortMap.yest_desc);
 
     var titleText = hasFilter
       ? '📋 客户清单 · '+state.selectedX+' × '+state.selectedY
@@ -3612,8 +3711,12 @@ document.addEventListener('click', e => {
     var clearBtn = hasFilter
       ? '<button id="lcClearSel" style="margin-left:auto;padding:4px 12px;font-size:12px;background:#fff;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;">清除选择</button>'
       : '';
+    // 是否有任何二级筛选（搜索/天数/分层/投放/类目/环比/排序非默认）激活
+    var anyFilter = !!(q || dd || tt || iv || cc || tr || (so && so!=='yest_desc'));
+    var filterTag = anyFilter ? '<span class="badge" style="background:#fef3c7;color:#b45309;">已激活筛选</span>' : '';
     head.innerHTML = '<strong>'+titleText+'</strong>'+
       '<span class="badge">'+list.length+' 个客户 · 销售：'+(state.sale==='all'?'全部':state.sale)+' · '+(state.custType==='本'?'本季度新客':'25Q3-26Q1新客')+'</span>'+
+      filterTag +
       clearBtn;
     if (hasFilter){
       var btn=document.getElementById('lcClearSel');
@@ -3633,7 +3736,7 @@ document.addEventListener('click', e => {
         var tierCls = r[COL.costTier]==='头部' ? 'tier-head' : (r[COL.costTier]==='腰部' ? 'tier-mid' : '');
         var inv = r[COL.invest], invCls = inv==='单ADQ'?'invest-adq':(inv==='单全域通'?'invest-qy':(inv==='双投'?'invest-both':'invest-none'));
         var rowCls = (state.selectedShort && r[COL.short]===state.selectedShort) ? ' style="background:#fef3c7"' : '';
-        return '<tr'+rowCls+'>'+
+        return '<tr data-short="'+escapeHtml(r[COL.short])+'"'+rowCls+'>'+
           '<td>'+escapeHtml(r[COL.short])+'</td>'+
           '<td>'+escapeHtml(r[COL.sale])+'</td>'+
           '<td>'+escapeHtml(r[COL.cat])+'</td>'+
@@ -3647,11 +3750,121 @@ document.addEventListener('click', e => {
       }).join('');
     }
 
+    // 类目下拉(首次渲染时填充)
+    var catSel = document.getElementById('lcCat');
+    if (catSel && catSel.options.length <= 1){
+      var allCats = {};
+      rows.forEach(function(r){ if (r[COL.cat]) allCats[r[COL.cat]] = (allCats[r[COL.cat]]||0)+1; });
+      var catList = Object.keys(allCats).sort(function(a,b){ return allCats[b]-allCats[a]; });
+      var prev = catSel.value;
+      catList.forEach(function(c){
+        var opt = document.createElement('option'); opt.value = c; opt.textContent = c+' ('+allCats[c]+')';
+        catSel.appendChild(opt);
+      });
+      if (prev) catSel.value = prev;
+    }
     // 工具栏事件
     var ls=document.getElementById('lcSearch'); if (ls) ls.oninput = renderDetail;
-    var li=document.getElementById('lcInvest'); if (li) li.onchange = renderDetail;
+    ['lcInvest','lcDays','lcTier','lcCat','lcTrend','lcSort'].forEach(function(id){
+      var el=document.getElementById(id); if (el) el.onchange = renderDetail;
+    });
+    var lr=document.getElementById('lcReset'); if (lr) lr.onclick = function(){
+      ['lcSearch','lcInvest','lcDays','lcTier','lcCat','lcTrend'].forEach(function(id){
+        var el=document.getElementById(id); if (el) el.value = '';
+      });
+      var ss=document.getElementById('lcSort'); if (ss) ss.value = 'yest_desc';
+      renderDetail();
+    };
     var le=document.getElementById('lcDetailExport'); if (le) le.onclick = function(){ exportCsv(list); };
+    // 点表格行 → 打开客户详情弹窗
+    if (tbody) tbody.onclick = function(e){
+      var tr = e.target.closest('tr'); if (!tr) return;
+      var sh = tr.getAttribute('data-short'); if (!sh) return;
+      var r = rows.filter(function(x){ return x[COL.short]===sh && x[COL.custType]===state.custType; })[0];
+      if (r) openCustModal(r);
+    };
   }
+
+  // === 客户详情弹窗（简版）===
+  function openCustModal(r){
+    var mask = document.getElementById('lcModalMask');
+    var box = document.getElementById('lcModalBox');
+    if (!mask || !box) return;
+    var stg = stageOf(r[COL.daysBucket]);
+    var stgName = stg==='newbie' ? '🌱 新手期' : (stg==='growth' ? '🚀 成长期' : '👑 成熟期');
+    var headColor = STAGE_COLOR[stg];
+    var rate = r[COL.deltaRate];
+    var rateText = (rate===null||rate===undefined||isNaN(rate)) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+    var rateCls = (rate===null||rate===undefined||isNaN(rate)) ? '' : (rate>=0?'up':'down');
+    var deltaAmt = r[COL.deltaAmt];
+    var deltaTxt = (deltaAmt===null||deltaAmt===undefined||isNaN(deltaAmt)) ? '—' : ((deltaAmt>=0?'+':'')+fmtMoney(deltaAmt));
+    var inv = r[COL.invest];
+
+    // 对标：同客类 + 同消耗层 的客户群（剔自己）
+    var peers = rows.filter(function(x){
+      return x[COL.custType]===r[COL.custType] && x[COL.costTier]===r[COL.costTier] && x[COL.short]!==r[COL.short];
+    });
+    function avg(col){
+      var vals = peers.map(function(x){ return x[col]; }).filter(function(v){ return v!==null&&v!==undefined&&!isNaN(v); });
+      if (!vals.length) return null;
+      return vals.reduce(function(s,v){ return s+v; },0)/vals.length;
+    }
+    function cmpRow(label, mine, peerAvg, isMoney){
+      var mTxt = isMoney ? fmtMoney(mine) : ((mine===null||isNaN(mine))?'—':Math.round(mine).toLocaleString());
+      var pTxt = (peerAvg===null) ? '—' : (isMoney ? fmtMoney(peerAvg) : Math.round(peerAvg).toLocaleString());
+      var diffCls = '', diffTxt = '—';
+      if (peerAvg!==null && mine!==null && !isNaN(mine)){
+        var d = mine - peerAvg;
+        diffCls = d>=0 ? 'up' : 'down';
+        diffTxt = (d>=0?'▲ ':'▼ ') + (isMoney ? fmtMoney(Math.abs(d)) : Math.round(Math.abs(d)).toLocaleString());
+      }
+      return '<tr><td>'+label+'</td><td class="me">'+mTxt+'</td><td>'+pTxt+'</td><td class="diff '+diffCls+'">'+diffTxt+'</td></tr>';
+    }
+
+    var custTypeName = r[COL.custType]==='本' ? '本季度新客' : '25Q3-26Q1新客';
+    box.innerHTML =
+      '<div class="lc-modal-head" style="background:linear-gradient(135deg,'+headColor+','+headColor+'cc);">'+
+        '<button class="lc-modal-close" onclick="window.__closeLcModal()">×</button>'+
+        '<div class="stage-pill">'+stgName+' · '+escapeHtml(r[COL.daysBucket])+'</div>'+
+        '<div class="cust-name">'+escapeHtml(r[COL.short])+'</div>'+
+        '<div class="cust-sub">'+escapeHtml(r[COL.sale])+' · '+escapeHtml(r[COL.cat])+' · '+custTypeName+' · '+escapeHtml(r[COL.costTier])+'</div>'+
+      '</div>'+
+      '<div class="lc-modal-body">'+
+        '<div class="lc-modal-metrics">'+
+          '<div class="lc-mm"><div class="lbl">昨日日耗 (T-1)</div><div class="val">'+fmtMoney(r[COL.yestCost])+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">上期 (7天前)</div><div class="val">'+fmtMoney(r[COL.prevCost])+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">环比变化</div><div class="val '+rateCls+'">'+rateText+'</div><div class="ext">'+deltaTxt+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">26Q2累计消耗</div><div class="val">'+fmtMoney(r[COL.q2Cost])+'</div></div>'+
+        '</div>'+
+        '<div class="lc-modal-sec-title">🛠 服务三要素</div>'+
+        '<div class="lc-svc-row">'+
+          '<div class="lc-svc-mini"><div class="t">归属销售</div><div class="v">'+escapeHtml(r[COL.sale])+'</div></div>'+
+          '<div class="lc-svc-mini"><div class="t">所属赛道</div><div class="v">'+escapeHtml(r[COL.cat])+'</div></div>'+
+          '<div class="lc-svc-mini"><div class="t">投放方式</div><div class="v">'+escapeHtml(inv)+'</div></div>'+
+        '</div>'+
+        '<div class="lc-modal-sec-title">📊 同分层对标 <span style="font-weight:400;color:#9ca3af;">('+r[COL.costTier]+' · '+peers.length+'家同层客户均值)</span></div>'+
+        '<table class="lc-cmp-table">'+
+          '<thead><tr><th>指标</th><th>本客户</th><th>同层均值</th><th>差异</th></tr></thead>'+
+          '<tbody>'+
+            cmpRow('昨日日耗', r[COL.yestCost], avg(COL.yestCost), true)+
+            cmpRow('26Q2累计', r[COL.q2Cost], avg(COL.q2Cost), true)+
+            cmpRow('上期日耗', r[COL.prevCost], avg(COL.prevCost), true)+
+          '</tbody>'+
+        '</table>'+
+        '<div class="lc-cmp-hint">对标口径：同「'+custTypeName+'」+ 同「'+r[COL.costTier]+'」分层的客户群均值。差异为正(▲)代表高于同层平均水平。</div>'+
+      '</div>';
+    mask.classList.add('show');
+  }
+  window.__closeLcModal = function(){
+    var mask = document.getElementById('lcModalMask');
+    if (mask) mask.classList.remove('show');
+  };
+  // 点遮罩空白 / ESC 关闭
+  (function(){
+    var mask = document.getElementById('lcModalMask');
+    if (mask) mask.addEventListener('click', function(e){ if (e.target===mask) window.__closeLcModal(); });
+    document.addEventListener('keydown', function(e){ if (e.key==='Escape') window.__closeLcModal(); });
+  })();
 
   function exportCsv(list){
     var head = ['客户简称','销售','类目','引入天数','昨日日耗','上期(7天前)','环比变化率%','26Q2累计','投放类型'];
