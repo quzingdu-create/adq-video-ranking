@@ -379,7 +379,9 @@
   .modal {
     background: #fff; border-radius: 12px; padding: 28px;
     width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    /* 2026-06-11 弹窗在卡片旁打开，加更强阴影 + 亮蓝边框让它从页面上凸出来 */
+    box-shadow: 0 24px 60px rgba(15,23,42,0.28), 0 0 0 1px rgba(59,130,246,0.18);
+    border: 2px solid #3b82f6;
   }
   .modal .m-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
   .modal .m-title { font-size: 20px; font-weight: 700; }
@@ -911,46 +913,44 @@ function renderCustomerGrid() {
 }
 
 /* =============== 弹窗：客户详情 ===============
- * 2026-06-11 子青死规矩：弹窗必须在被点击的客户卡片旁边，不许跑飞
+ * 2026-06-11 子青第5轮死规矩：弹窗中心必须对齐被点击客户卡片中心
  *
- * 策略：弹窗 absolute 绝对定位到 body，top = 客户卡片相对 iframe document 的 top + 12px 偏移
- * 这样无论 iframe 嵌在哪、用户滚到哪，弹窗都贴在客户卡片紧下方/同高度
+ * 策略：
+ *  1. 弹窗 absolute 定位到 body（不是 fixed，因为 iframe 内 fixed 等于贴 iframe 内部顶）
+ *  2. mask top = 卡片中心相对 iframe document 的 Y - 弹窗本身高度/2
+ *  3. 不再 parent.scrollTo（用户已经能看到卡片，不要再让父页面跳动）
  */
 function positionModalForEmbed() {
   const mask = document.getElementById('modal-mask');
+  const modal = mask ? mask.querySelector('.modal') : null;
   if (!mask) return;
   const card = window.__lastClickCardEl__;
-  // 默认 fixed 居中（独立窗口模式下足够）
-  mask.style.position = 'fixed';
-  mask.style.inset = '0';
-  mask.style.top = '';
-  mask.style.left = '';
-  mask.style.width = '';
-  mask.style.height = '';
-  mask.style.alignItems = 'flex-start';
-  mask.style.justifyContent = 'center';
-  mask.style.paddingTop = '0';
 
-  // 任何模式（独立 / 嵌入），都把弹窗 absolute 定位到客户卡片旁边
   if (card) {
     try {
       const cardRect = card.getBoundingClientRect();
-      // 卡片相对 iframe document 的绝对 top
-      const cardTopInDoc = cardRect.top + (window.scrollY || window.pageYOffset || 0);
+      // 卡片中心相对 iframe document 的 Y
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const cardCenterY = cardRect.top + scrollY + cardRect.height / 2;
+
+      // 弹窗外层 mask 用 absolute 定位
       mask.style.position = 'absolute';
       mask.style.inset = 'auto';
-      mask.style.top = Math.max(0, cardTopInDoc - 20) + 'px';
       mask.style.left = '0';
       mask.style.width = '100%';
       mask.style.height = 'auto';
-      mask.style.paddingTop = '20px';
-      // 嵌入模式：通知父页面滚到卡片位置
-      if (window.parent && window.parent !== window && window.frameElement) {
-        const frameRect = window.frameElement.getBoundingClientRect();
-        const parentScrollY = window.parent.scrollY || 0;
-        const targetTopInParent = parentScrollY + frameRect.top + cardRect.top - 80;
-        window.parent.scrollTo({ top: Math.max(0, targetTopInParent), behavior: 'smooth' });
-      }
+      mask.style.alignItems = 'flex-start';
+      mask.style.justifyContent = 'center';
+      mask.style.padding = '0';
+      mask.style.background = 'transparent'; // 不再 mask 全屏，避免遮挡其他卡片
+
+      // 先让 mask 显示出来才能拿 modal 高度
+      mask.classList.add('show');
+      requestAnimationFrame(() => {
+        const modalH = modal ? modal.offsetHeight : 560;
+        const targetTop = Math.max(0, cardCenterY - modalH / 2);
+        mask.style.top = targetTop + 'px';
+      });
     } catch (e) {}
   }
 }
@@ -1049,8 +1049,8 @@ function openDetail(id) {
       💡 <strong>v0.6 说明：</strong>服务映射已按生命周期展示；指标 Benchmark 取同二级运营行业、同消耗层级 Top1 客户。智投消耗 / 是否使用4+M产品 / 是否短直双开 三项已按 2026-06-11 真源 csv 补齐（命中即显示真值，未命中显示「-」或「否」）。
     </div>
   `;
+  // positionModalForEmbed 内部会调 .show
   positionModalForEmbed();
-  document.getElementById('modal-mask').classList.add('show');
 }
 
 function closeDetail() {
