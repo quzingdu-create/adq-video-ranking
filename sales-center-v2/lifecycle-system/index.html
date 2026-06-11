@@ -950,6 +950,8 @@ function positionModalForEmbed() {
         const modalH = modal ? modal.offsetHeight : 560;
         const targetTop = Math.max(0, cardCenterY - modalH / 2);
         mask.style.top = targetTop + 'px';
+        // 通知上层 iframe 重新算高度，避免弹窗底部被裁切
+        try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
       });
     } catch (e) {}
   }

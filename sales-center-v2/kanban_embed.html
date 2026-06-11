@@ -7,25 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260611m8"></script>
+<script src="data/laoke_lookup_data.js?v=20260611m9"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260611m8"></script>
-<script src="data/tuoke_real_records.js?v=20260611m8"></script>
-<script src="data/customer_link_data.js?v=20260611m8"></script>
-<script src="data/center_sales_summary.js?v=20260611m8"></script>
-<script src="data/center_quarter_summary.js?v=20260611m8"></script>
-<script src="data/center_daily_kpi.js?v=20260611m8"></script>
-<script src="data/delivery_side_summary.js?v=20260611m8"></script>
-<script src="data/top80_effective_metrics.js?v=20260611m8"></script>
-<script src="data/top_status_data.js?v=20260611m8"></script>
-<script src="data/enough_candidates.js?v=20260611m8"></script>
-<script src="data/handover_customers_519.js?v=20260611m8"></script>
-<script src="data/first_quarter.js?v=20260611m8"></script>
-<script src="data/customer_lifecycle.js?v=20260611m8"></script>
+<script src="data/bulk_import_rows.js?v=20260611m9"></script>
+<script src="data/tuoke_real_records.js?v=20260611m9"></script>
+<script src="data/customer_link_data.js?v=20260611m9"></script>
+<script src="data/center_sales_summary.js?v=20260611m9"></script>
+<script src="data/center_quarter_summary.js?v=20260611m9"></script>
+<script src="data/center_daily_kpi.js?v=20260611m9"></script>
+<script src="data/delivery_side_summary.js?v=20260611m9"></script>
+<script src="data/top80_effective_metrics.js?v=20260611m9"></script>
+<script src="data/top_status_data.js?v=20260611m9"></script>
+<script src="data/enough_candidates.js?v=20260611m9"></script>
+<script src="data/handover_customers_519.js?v=20260611m9"></script>
+<script src="data/first_quarter.js?v=20260611m9"></script>
+<script src="data/customer_lifecycle.js?v=20260611m9"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611m8"></script>
+<script src="cloud_sync.js?v=20260611m9"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -812,31 +812,50 @@
   <div class="section" id="lifecycleSystemSection" style="margin-top:24px;">
     <div class="section-title">
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge" style="background:#ecfdf5;color:#10b981;">v0.5 · 2026-06-10 数据</span></div>
-      <div class="right"><a href="lifecycle-system/index.html?embed=1&sales=all" target="_blank" style="color:#3b82f6;font-size:13px;text-decoration:none;">独立窗口打开 ↗</a></div>
+      <div class="right"><a href="lifecycle-system/index.html?embed=1&sales=all&v=20260611m9" target="_blank" style="color:#3b82f6;font-size:13px;text-decoration:none;">独立窗口打开 ↗</a></div>
     </div>
-    <div class="panel" style="padding:0;overflow:hidden;border-radius:12px;">
+    <div class="panel" style="padding:0;overflow:visible;border-radius:12px;">
+      <!-- 2026-06-11 子青：生命周期 iframe 也必须自适应内容高度，禁止内部滚动/冻结错觉 -->
       <iframe
         id="lifecycleSystemFrame"
-        src="lifecycle-system/index.html?embed=1&sales=all"
+        src="lifecycle-system/index.html?embed=1&sales=all&v=20260611m9"
         title="客户生命周期系统"
         loading="lazy"
-        style="width:100%;height:1200px;border:0;background:#f5f7fb;display:block;"
+        scrolling="no"
+        onload="resizeLifecycleFrame()"
+        style="width:100%;min-height:1200px;height:1800px;border:0;background:#f5f7fb;display:block;overflow:hidden;"
       ></iframe>
     </div>
   </div>
   <script>
-    // 2026-06-11 子青：iframe 内点客户卡片打开弹窗时，把父页面滚到 iframe 内点击点附近，避免弹窗错位
+    function resizeLifecycleFrame(){
+      var f = document.getElementById('lifecycleSystemFrame');
+      if(!f) return;
+      try{
+        var doc = f.contentDocument || (f.contentWindow && f.contentWindow.document);
+        if(!doc) return;
+        var h = Math.max(
+          doc.body ? doc.body.scrollHeight : 0,
+          doc.documentElement ? doc.documentElement.scrollHeight : 0,
+          1200
+        );
+        f.style.height = (h + 80) + 'px';
+        if(window.parent && window.parent !== window){
+          window.parent.postMessage({type:'kanban-resize'}, '*');
+        }
+      }catch(e){}
+    }
     window.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'lifecycle-modal-open') {
-        var frame = document.getElementById('lifecycleSystemFrame');
-        if (!frame) return;
-        var rect = frame.getBoundingClientRect();
-        var clickYInIframe = e.data.iframeY || 0;
-        // 父页面应滚到：iframe 顶部 + 用户在 iframe 内的点击位置 - viewport 1/3 高度
-        var target = window.scrollY + rect.top + clickYInIframe - window.innerHeight / 3;
-        window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+      if (e.data && (e.data.type === 'lifecycle-modal-open' || e.data.type === 'lifecycle-resize')) {
+        setTimeout(resizeLifecycleFrame, 80);
+        if(window.parent && window.parent !== window){
+          window.parent.postMessage({type:'kanban-resize'}, '*');
+        }
       }
     });
+    setTimeout(resizeLifecycleFrame, 300);
+    setTimeout(resizeLifecycleFrame, 1200);
+    setInterval(resizeLifecycleFrame, 1500);
   </script>
 
 </div>
