@@ -7,25 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260611t"></script>
+<script src="data/laoke_lookup_data.js?v=20260611u"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260611t"></script>
-<script src="data/tuoke_real_records.js?v=20260611t"></script>
-<script src="data/customer_link_data.js?v=20260611t"></script>
-<script src="data/center_sales_summary.js?v=20260611t"></script>
-<script src="data/center_quarter_summary.js?v=20260611t"></script>
-<script src="data/center_daily_kpi.js?v=20260611t"></script>
-<script src="data/delivery_side_summary.js?v=20260611t"></script>
-<script src="data/top80_effective_metrics.js?v=20260611t"></script>
-<script src="data/top_status_data.js?v=20260611t"></script>
-<script src="data/enough_candidates.js?v=20260611t"></script>
-<script src="data/handover_customers_519.js?v=20260611t"></script>
-<script src="data/first_quarter.js?v=20260611t"></script>
-<script src="data/customer_lifecycle.js?v=20260611t"></script>
+<script src="data/bulk_import_rows.js?v=20260611u"></script>
+<script src="data/tuoke_real_records.js?v=20260611u"></script>
+<script src="data/customer_link_data.js?v=20260611u"></script>
+<script src="data/center_sales_summary.js?v=20260611u"></script>
+<script src="data/center_quarter_summary.js?v=20260611u"></script>
+<script src="data/center_daily_kpi.js?v=20260611u"></script>
+<script src="data/delivery_side_summary.js?v=20260611u"></script>
+<script src="data/top80_effective_metrics.js?v=20260611u"></script>
+<script src="data/top_status_data.js?v=20260611u"></script>
+<script src="data/enough_candidates.js?v=20260611u"></script>
+<script src="data/handover_customers_519.js?v=20260611u"></script>
+<script src="data/first_quarter.js?v=20260611u"></script>
+<script src="data/customer_lifecycle.js?v=20260611u"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611t"></script>
+<script src="cloud_sync.js?v=20260611u"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -778,141 +778,10 @@
   <!-- 「拓客模型链路深度分析」模块已下线（2026-05-21 用户拍板：链路 CSV 字典覆盖不全，
        与销售日耗口径不可对账，先删，等链路标签覆盖完整后再上） -->
 
-  <!-- ========== 客户生命周期一览（2026-06-11 模块B） ========== -->
-  <div class="section" id="lifecycleSection">
-    <div class="section-title">
-      <div class="left">
-        <span>🌱 客户生命周期一览</span>
-        <span class="badge">横轴=引入天数 · 纵轴=昨日日耗层 · 点击格子下钻清单</span>
-      </div>
-    </div>
-    <div class="panel">
-      <!-- 客类大Tab + 销售小Tab -->
-      <div class="lc-tab-row">
-        <div class="lc-cust-tabs" id="lcCustTabs">
-          <button data-lct="本" class="active">本季度新客</button>
-          <button data-lct="老">25Q3-26Q1新客</button>
-        </div>
-      </div>
-      <div class="lc-tab-row">
-        <div class="lc-sales-tabs" id="lcSalesTabs">
-          <button data-lcsale="all" class="active">全部</button>
-          <button data-lcsale="kinsleyjin">kinsleyjin</button>
-          <button data-lcsale="brownfan">brownfan</button>
-          <button data-lcsale="lijunwu">lijunwu</button>
-          <button data-lcsale="Jonzhu">Jonzhu</button>
-          <button data-lcsale="kaikaigenli">kaikaigenli</button>
-          <button data-lcsale="ruilingzhan">ruilingzhan</button>
-          <button data-lcsale="yvaineechen">yvaineechen</button>
-          <button data-lcsale="其他">其他</button>
-        </div>
-      </div>
-      <!-- 总览统计 -->
-      <div class="lc-overview" id="lcOverview"></div>
-
-      <!-- 服务三要素紧凑卡（吸收自客户生命周期系统交接文档 2026-06-11） -->
-      <div class="lc-service-row" id="lcServiceRow">
-        <div class="lc-svc-card stage-newbie">
-          <div class="lc-svc-head"><span class="lc-svc-icon">🌱</span><span class="lc-svc-name">新手期</span><span class="lc-svc-time">0-30天</span><span class="lc-svc-intensity">🔥 重投入</span></div>
-          <div class="lc-svc-body">
-            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">拓新销售 · 服务商</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">群运营 · 新手培训直播课 · onepage</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">学投放+快上手</span><div class="lc-svc-detail">广告基建达标 · 竞价+艾米多工具投放</div></div>
-          </div>
-        </div>
-        <div class="lc-svc-card stage-growth">
-          <div class="lc-svc-head"><span class="lc-svc-icon">🚀</span><span class="lc-svc-name">成长期</span><span class="lc-svc-time">31-90天</span><span class="lc-svc-intensity">🤝 深度协同</span></div>
-          <div class="lc-svc-body">
-            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">拓新销售 · 行业运营 · 服务商 · KA销售（重点新客）</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">重点客户1v1 · 小班直播课 · AI诊断复盘</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">冲消耗+提能力</span><div class="lc-svc-detail">多链路/多OG投放 · 提升创意唯一性ID</div></div>
-          </div>
-        </div>
-        <div class="lc-svc-card stage-mature">
-          <div class="lc-svc-head"><span class="lc-svc-icon">👑</span><span class="lc-svc-name">成熟期</span><span class="lc-svc-time">90+天</span><span class="lc-svc-intensity">🚀 自助化</span></div>
-          <div class="lc-svc-body">
-            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">行业运营 · KA销售 · 服务商</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">1v1服务 · T2T拜访 · 私享会/沙龙</span></div>
-            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">稳投放+促增长</span><div class="lc-svc-detail">多直播间/多端投放 · 适配本土化 · 参与好友日促GMV</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 九宫格 + 散点图 -->
-      <div class="lc-grid-wrap">
-        <div id="lcGridChart" style="width:100%; height:480px;"></div>
-        <div class="lc-grid-legend">
-          <span class="lg-tag lg-head">头部 ≥1万/日</span>
-          <span class="lg-tag lg-mid">腰部 1千-1万/日</span>
-          <span class="lg-tag lg-tail">尾部 0-1千/日</span>
-          <span style="color:#9ca3af;font-size:11px;">· 一个客户=一个点 · 点大小代表昨日消耗 · 同格内自动散开</span>
-        </div>
-      </div>
-
-      <!-- 下钻客户清单 -->
-      <div class="lc-detail" id="lcDetail">
-        <div class="lc-detail-head" id="lcDetailHead">
-          <strong>📋 客户清单</strong>
-          <span class="badge">点九宫格上的格子，看该层级所有客户</span>
-        </div>
-        <div class="toolbar lc-toolbar" id="lcDetailToolbar" style="display:none;">
-          <input id="lcSearch" placeholder="🔍 搜索客户简称/类目" style="flex:1 1 220px;min-width:200px;" />
-          <select id="lcDays">
-            <option value="">引入阶段不限</option>
-            <option value="<=30天">🌱 0-30天</option>
-            <option value="31-60天">🚀 31-60天</option>
-            <option value="61-90天">🚀 61-90天</option>
-            <option value="90+天">👑 90+天</option>
-          </select>
-          <select id="lcTier">
-            <option value="">日耗分层不限</option>
-            <option value="头部">🔥 头部 (≥1万)</option>
-            <option value="腰部">⚡ 腰部 (1千-1万)</option>
-            <option value="尾部">💧 尾部 (0-1千)</option>
-          </select>
-          <select id="lcInvest">
-            <option value="">投放类型不限</option>
-            <option value="单ADQ">单ADQ</option>
-            <option value="单全域通">单全域通</option>
-            <option value="双投">双投</option>
-            <option value="无投放">无投放</option>
-          </select>
-          <select id="lcCat">
-            <option value="">赛道(类目)不限</option>
-          </select>
-          <select id="lcTrend">
-            <option value="">环比方向不限</option>
-            <option value="up">📈 环比上升</option>
-            <option value="down">📉 环比下降</option>
-            <option value="flat">➖ 环比持平/无</option>
-          </select>
-          <select id="lcSort">
-            <option value="yest_desc">排序：昨日日耗 ↓</option>
-            <option value="yest_asc">排序：昨日日耗 ↑</option>
-            <option value="rate_desc">排序：环比率 ↓</option>
-            <option value="rate_asc">排序：环比率 ↑</option>
-            <option value="q2_desc">排序：26Q2累计 ↓</option>
-            <option value="q2_asc">排序：26Q2累计 ↑</option>
-          </select>
-          <button id="lcReset" class="lc-btn-ghost">↺ 重置筛选</button>
-          <button id="lcDetailExport">📥 导出 CSV</button>
-        </div>
-        <table class="tbl" id="lcDetailTable" style="display:none;">
-          <thead><tr>
-            <th>客户简称</th><th>销售</th><th>类目</th><th>引入天数</th>
-            <th>昨日日耗</th><th>上期(7天前)</th><th>环比变化</th><th>26Q2累计</th><th>投放类型</th>
-          </tr></thead>
-        </table>
-      </div>
-    </div>
-  </div>
 
 </div>
 
-<!-- 客户详情弹窗（生命周期） -->
-<div id="lcModalMask">
-  <div class="lc-modal" id="lcModalBox"></div>
-</div>
+<!-- 2026-06-11 子青：客户详情弹窗（生命周期）已删 -->
 
 <!-- 目标管理弹窗 -->
 <div class="modal-mask" id="modalTarget">
