@@ -911,19 +911,15 @@ function renderCustomerGrid() {
 }
 
 /* =============== 弹窗：客户详情 ===============
- * 2026-06-11 子青第三次反馈：弹窗仍然跑飞到 iframe 顶部
- * 根因：fixed 在 iframe 内是相对 iframe viewport（不是浏览器 viewport），
- *      iframe 不滚动（高度 1200px 一次性渲染），fixed 等于 iframe 内部贴顶
+ * 2026-06-11 子青死规矩：弹窗必须在被点击的客户卡片旁边，不许跑飞
  *
- * 新策略：
- * 1. 弹窗用 absolute 绝对定位到 body
- * 2. top = 父页面 scrollY 在 iframe 内的换算位置（iframe 实际可见的中心）
- * 3. 兜底：postMessage 让父页面 scrollTo 到点击点附近
+ * 策略：弹窗 absolute 绝对定位到 body，top = 客户卡片相对 iframe document 的 top + 12px 偏移
+ * 这样无论 iframe 嵌在哪、用户滚到哪，弹窗都贴在客户卡片紧下方/同高度
  */
 function positionModalForEmbed() {
   const mask = document.getElementById('modal-mask');
   if (!mask) return;
-
+  const card = window.__lastClickCardEl__;
   // 默认 fixed 居中（独立窗口模式下足够）
   mask.style.position = 'fixed';
   mask.style.inset = '0';
@@ -931,40 +927,38 @@ function positionModalForEmbed() {
   mask.style.left = '';
   mask.style.width = '';
   mask.style.height = '';
-  mask.style.alignItems = 'center';
+  mask.style.alignItems = 'flex-start';
   mask.style.justifyContent = 'center';
+  mask.style.paddingTop = '0';
 
-  // 嵌入模式：用 absolute 把弹窗定位到「父页面 viewport 中心在 iframe 内的对应 Y」
-  try {
-    if (window.parent && window.parent !== window && window.frameElement) {
-      const rect = window.frameElement.getBoundingClientRect();
-      const parentScrollY = window.parent.scrollY || 0;
-      const parentViewportH = window.parent.innerHeight || 900;
-      // iframe 相对父 document 的 top
-      const iframeTopInParentDoc = parentScrollY + rect.top;
-      // 父 viewport 中心在 iframe 内的 Y
-      const centerInIframe = (parentScrollY + parentViewportH / 2) - iframeTopInParentDoc;
-
+  // 任何模式（独立 / 嵌入），都把弹窗 absolute 定位到客户卡片旁边
+  if (card) {
+    try {
+      const cardRect = card.getBoundingClientRect();
+      // 卡片相对 iframe document 的绝对 top
+      const cardTopInDoc = cardRect.top + (window.scrollY || window.pageYOffset || 0);
       mask.style.position = 'absolute';
       mask.style.inset = 'auto';
-      mask.style.top = Math.max(0, centerInIframe - 280) + 'px';   // 弹窗顶 = center - half modal height (~560/2)
+      mask.style.top = Math.max(0, cardTopInDoc - 20) + 'px';
       mask.style.left = '0';
       mask.style.width = '100%';
       mask.style.height = 'auto';
-
-      // 同时通知父页面把 iframe 内点击位置滚到 viewport 中部（避免弹窗顶部出 iframe）
-      const yInIframe = (window.__lastClickY__ || 0);
-      window.parent.postMessage({
-        type: 'lifecycle-modal-open',
-        iframeY: yInIframe
-      }, '*');
-    }
-  } catch (e) {}
+      mask.style.paddingTop = '20px';
+      // 嵌入模式：通知父页面滚到卡片位置
+      if (window.parent && window.parent !== window && window.frameElement) {
+        const frameRect = window.frameElement.getBoundingClientRect();
+        const parentScrollY = window.parent.scrollY || 0;
+        const targetTopInParent = parentScrollY + frameRect.top + cardRect.top - 80;
+        window.parent.scrollTo({ top: Math.max(0, targetTopInParent), behavior: 'smooth' });
+      }
+    } catch (e) {}
+  }
 }
 
-// 记录最后一次点击的 Y 坐标（相对 iframe 文档）
+// 记录最后一次点击的客户卡片元素（用于弹窗定位）
 document.addEventListener('click', function(e) {
-  window.__lastClickY__ = e.clientY + (window.scrollY || 0);
+  const card = e.target.closest('.customer-card');
+  if (card) window.__lastClickCardEl__ = card;
 }, true);
 
 function openDetail(id) {
