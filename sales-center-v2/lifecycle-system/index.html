@@ -523,8 +523,15 @@
     background:#fff;
     padding-bottom:18px;
   }
+  /* 2026-06-11 子青：嵌入模式下，topbar / filter-bar 全部禁用 sticky，
+     避免父页面滚动时被一路拖到 iframe 底部、挡住客户生命周期分布等下方内容 */
+  body.embed-mode .topbar,
+  body.embed-mode .filter-bar {
+    position:static !important;
+    top:auto !important;
+    z-index:auto !important;
+  }
   body.embed-mode .topbar {
-    position:static;
     border-bottom:0;
     padding:12px 20px 6px;
     background:#fff;
@@ -904,41 +911,58 @@ function renderCustomerGrid() {
 }
 
 /* =============== 弹窗：客户详情 ===============
- * 2026-06-11 子青反馈：iframe 嵌在父页面深处时弹窗错位（跑到顶部）。
- * 新策略：嵌入模式下不再尝试用 absolute 贴合父 viewport，
- * 改为 fixed 定位 + 通过 postMessage 通知父页面把 iframe 滚到可视中央。
- * 父页面如果不监听消息，也能用 fixed 兜底（fixed 在 iframe 内 viewport 居中）。
+ * 2026-06-11 子青第三次反馈：弹窗仍然跑飞到 iframe 顶部
+ * 根因：fixed 在 iframe 内是相对 iframe viewport（不是浏览器 viewport），
+ *      iframe 不滚动（高度 1200px 一次性渲染），fixed 等于 iframe 内部贴顶
+ *
+ * 新策略：
+ * 1. 弹窗用 absolute 绝对定位到 body
+ * 2. top = 父页面 scrollY 在 iframe 内的换算位置（iframe 实际可见的中心）
+ * 3. 兜底：postMessage 让父页面 scrollTo 到点击点附近
  */
 function positionModalForEmbed() {
   const mask = document.getElementById('modal-mask');
   if (!mask) return;
-  // 统一用 fixed，让弹窗永远相对 iframe 自身 viewport 居中
+
+  // 默认 fixed 居中（独立窗口模式下足够）
   mask.style.position = 'fixed';
   mask.style.inset = '0';
   mask.style.top = '';
+  mask.style.left = '';
+  mask.style.width = '';
   mask.style.height = '';
   mask.style.alignItems = 'center';
   mask.style.justifyContent = 'center';
-  // 嵌入模式：通知父页面把 iframe scrollIntoView，确保用户视野中心落在 iframe 内
+
+  // 嵌入模式：用 absolute 把弹窗定位到「父页面 viewport 中心在 iframe 内的对应 Y」
   try {
     if (window.parent && window.parent !== window && window.frameElement) {
-      // 找到点击客户卡片的相对 Y 坐标（iframe 内）
+      const rect = window.frameElement.getBoundingClientRect();
+      const parentScrollY = window.parent.scrollY || 0;
+      const parentViewportH = window.parent.innerHeight || 900;
+      // iframe 相对父 document 的 top
+      const iframeTopInParentDoc = parentScrollY + rect.top;
+      // 父 viewport 中心在 iframe 内的 Y
+      const centerInIframe = (parentScrollY + parentViewportH / 2) - iframeTopInParentDoc;
+
+      mask.style.position = 'absolute';
+      mask.style.inset = 'auto';
+      mask.style.top = Math.max(0, centerInIframe - 280) + 'px';   // 弹窗顶 = center - half modal height (~560/2)
+      mask.style.left = '0';
+      mask.style.width = '100%';
+      mask.style.height = 'auto';
+
+      // 同时通知父页面把 iframe 内点击位置滚到 viewport 中部（避免弹窗顶部出 iframe）
       const yInIframe = (window.__lastClickY__ || 0);
       window.parent.postMessage({
         type: 'lifecycle-modal-open',
         iframeY: yInIframe
       }, '*');
-      // 兜底：直接告诉父页面滚到 iframe 顶部 + clickY 偏移
-      try {
-        const rect = window.frameElement.getBoundingClientRect();
-        const targetTop = window.parent.scrollY + rect.top + yInIframe - 100;
-        window.parent.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-      } catch (e) {}
     }
   } catch (e) {}
 }
 
-// 记录最后一次点击的 Y 坐标（用于 scrollIntoView 定位）
+// 记录最后一次点击的 Y 坐标（相对 iframe 文档）
 document.addEventListener('click', function(e) {
   window.__lastClickY__ = e.clientY + (window.scrollY || 0);
 }, true);
