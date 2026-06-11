@@ -7,24 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260611d"></script>
+<script src="data/laoke_lookup_data.js?v=20260611l"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260611d"></script>
-<script src="data/tuoke_real_records.js?v=20260611d"></script>
-<script src="data/customer_link_data.js?v=20260611d"></script>
-<script src="data/center_sales_summary.js?v=20260611d"></script>
-<script src="data/center_quarter_summary.js?v=20260611d"></script>
-<script src="data/center_daily_kpi.js?v=20260611d"></script>
-<script src="data/delivery_side_summary.js?v=20260611d"></script>
-<script src="data/top80_effective_metrics.js?v=20260611d"></script>
-<script src="data/top_status_data.js?v=20260611d"></script>
-<script src="data/enough_candidates.js?v=20260611d"></script>
-<script src="data/handover_customers_519.js?v=20260611d"></script>
-<script src="data/first_quarter.js?v=20260611d"></script>
+<script src="data/bulk_import_rows.js?v=20260611l"></script>
+<script src="data/tuoke_real_records.js?v=20260611l"></script>
+<script src="data/customer_link_data.js?v=20260611l"></script>
+<script src="data/center_sales_summary.js?v=20260611l"></script>
+<script src="data/center_quarter_summary.js?v=20260611l"></script>
+<script src="data/center_daily_kpi.js?v=20260611l"></script>
+<script src="data/delivery_side_summary.js?v=20260611l"></script>
+<script src="data/top80_effective_metrics.js?v=20260611l"></script>
+<script src="data/top_status_data.js?v=20260611l"></script>
+<script src="data/enough_candidates.js?v=20260611l"></script>
+<script src="data/handover_customers_519.js?v=20260611l"></script>
+<script src="data/first_quarter.js?v=20260611l"></script>
+<script src="data/customer_lifecycle.js?v=20260611l"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611d"></script>
+<script src="cloud_sync.js?v=20260611l"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -549,6 +550,73 @@
   body.embed-mode .topbar .btn-link,
   body.embed-mode .topbar .view-toggle { display: none !important; }
   body.embed-mode .topbar .topbar-right { width: 100%; justify-content: flex-end; }
+
+  /* ============= 客户生命周期模块 ============= */
+  .lc-tab-row { margin-bottom: 10px; }
+  .lc-cust-tabs, .lc-sales-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lc-cust-tabs button, .lc-sales-tabs button {
+    padding: 7px 14px; border: 1px solid #d1d5db; background: #fff; color: #4b5563;
+    border-radius: 18px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .lc-cust-tabs button:hover, .lc-sales-tabs button:hover { border-color: #2563eb; color: #2563eb; }
+  .lc-cust-tabs button.active { background: linear-gradient(135deg,#2563eb,#7c3aed); color: #fff; border-color: transparent; }
+  .lc-sales-tabs button.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .lc-overview {
+    margin: 14px 0 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .lc-ov-card {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px;
+  }
+  .lc-ov-card .label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+  .lc-ov-card .value { font-size: 22px; font-weight: 700; color: #1f2937; }
+  .lc-ov-card .sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .lc-grid-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-top: 10px; }
+  /* 服务三要素紧凑卡 */
+  .lc-service-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0 6px; }
+  .lc-svc-card { border-radius: 10px; padding: 10px 12px; border: 1px solid; transition: all .15s; }
+  .lc-svc-card:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.05); }
+  .lc-svc-card.stage-newbie { background: #ecfdf5; border-color: #a7f3d0; }
+  .lc-svc-card.stage-growth { background: #eff6ff; border-color: #bfdbfe; }
+  .lc-svc-card.stage-mature { background: #f5f3ff; border-color: #ddd6fe; }
+  .lc-svc-head { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.08); flex-wrap: wrap; }
+  .lc-svc-icon { font-size: 20px; }
+  .lc-svc-name { font-size: 14px; font-weight: 800; }
+  .stage-newbie .lc-svc-name { color: #059669; }
+  .stage-growth .lc-svc-name { color: #2563eb; }
+  .stage-mature .lc-svc-name { color: #7c3aed; }
+  .lc-svc-time { font-size: 11px; color: #6b7280; padding: 1px 6px; background: rgba(255,255,255,0.7); border-radius: 6px; }
+  .lc-svc-intensity { font-size: 10px; padding: 1px 7px; background: rgba(255,255,255,0.85); border-radius: 8px; margin-left: auto; font-weight: 600; color: #4b5563; }
+  .lc-svc-body { display: flex; flex-direction: column; gap: 6px; }
+  .lc-svc-block { display: flex; flex-direction: column; gap: 2px; font-size: 11px; }
+  .lc-svc-bt { font-weight: 600; color: #4b5563; font-size: 11px; }
+  .lc-svc-tags { color: #1f2937; line-height: 1.5; }
+  .lc-svc-goal { font-weight: 700; color: #111827; font-size: 12px; }
+  .lc-svc-detail { color: #6b7280; font-size: 10px; line-height: 1.5; margin-top: 2px; }
+  @media (max-width: 900px) { .lc-service-row { grid-template-columns: 1fr; } }
+  .lc-grid-legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 10px 6px 0; font-size: 11px; color: #6b7280; }
+  .lg-tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .lg-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+  .lg-head::before { background: #ef4444; } .lg-head { color: #b91c1c; background: #fef2f2; }
+  .lg-mid::before  { background: #f59e0b; } .lg-mid  { color: #b45309; background: #fffbeb; }
+  .lg-tail::before { background: #3b82f6; } .lg-tail { color: #1d4ed8; background: #eff6ff; }
+  .lg-zero::before { background: #9ca3af; } .lg-zero { color: #4b5563; background: #f3f4f6; }
+  .lc-detail { margin-top: 18px; }
+  .lc-detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+  .lc-detail-head .badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #eff6ff; color: #2563eb; font-weight: 500; }
+  #lcDetailTable td.up { color: #16a34a; font-weight: 600; }
+  #lcDetailTable td.down { color: #dc2626; font-weight: 600; }
+  #lcDetailTable td.tier-head { color: #b91c1c; font-weight: 700; }
+  #lcDetailTable td.tier-mid { color: #b45309; font-weight: 600; }
+  #lcDetailTable td.invest-pill { padding: 0; }
+  #lcDetailTable td.invest-pill span { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .invest-adq { background: #eff6ff; color: #1d4ed8; }
+  .invest-qy  { background: #ecfdf5; color: #059669; }
+  .invest-both { background: #fef3c7; color: #b45309; }
+  .invest-none { background: #f3f4f6; color: #6b7280; }
+  @media (max-width: 720px) {
+    .lc-overview { grid-template-columns: repeat(2, 1fr); }
+    #lcGridChart { height: 380px !important; }
+  }
 </style>
 <script>
   // embed=1 参数下进入 embed-mode
@@ -666,30 +734,101 @@
   <!-- 「拓客模型链路深度分析」模块已下线（2026-05-21 用户拍板：链路 CSV 字典覆盖不全，
        与销售日耗口径不可对账，先删，等链路标签覆盖完整后再上） -->
 
-  <!-- ========== 报备明细 ========== -->
-  <div class="section">
+  <!-- ========== 客户生命周期一览（2026-06-11 模块B） ========== -->
+  <div class="section" id="lifecycleSection">
     <div class="section-title">
-      <div class="left"><span>📋 拓客报备明细</span><span class="badge">默认展示当天，点击查看其他周期</span></div>
+      <div class="left">
+        <span>🌱 客户生命周期一览</span>
+        <span class="badge">横轴=引入天数 · 纵轴=昨日日耗层 · 点击格子下钻清单</span>
+      </div>
     </div>
     <div class="panel">
-      <div class="toolbar">
-        <input id="recordSearch" placeholder="搜索客户主体/品牌" />
-        <select id="recordSales"><option value="">全部销售</option></select>
-        <select id="recordCategory"><option value="">全部类目</option></select>
-        <select id="recordRising">
-          <option value="">全部</option>
-          <option value="是">仅新锐</option>
-          <option value="否">仅非新锐</option>
-        </select>
-        <button id="recordToday" class="active">今日</button>
-        <button id="record7d">近7天</button>
-        <button id="recordAll">全部</button>
+      <!-- 客类大Tab + 销售小Tab -->
+      <div class="lc-tab-row">
+        <div class="lc-cust-tabs" id="lcCustTabs">
+          <button data-lct="本" class="active">本季度新客</button>
+          <button data-lct="老">25Q3-26Q1新客</button>
+        </div>
       </div>
-      <table class="tbl" id="recordTable">
-        <thead><tr>
-          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>季度累计(元)</th><th>昨耗(元)</th><th>日环比</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
-        </tr></thead>
-      </table>
+      <div class="lc-tab-row">
+        <div class="lc-sales-tabs" id="lcSalesTabs">
+          <button data-lcsale="all" class="active">全部</button>
+          <button data-lcsale="kinsleyjin">kinsleyjin</button>
+          <button data-lcsale="brownfan">brownfan</button>
+          <button data-lcsale="lijunwu">lijunwu</button>
+          <button data-lcsale="Jonzhu">Jonzhu</button>
+          <button data-lcsale="kaikaigenli">kaikaigenli</button>
+          <button data-lcsale="ruilingzhan">ruilingzhan</button>
+          <button data-lcsale="yvaineechen">yvaineechen</button>
+          <button data-lcsale="其他">其他</button>
+        </div>
+      </div>
+      <!-- 总览统计 -->
+      <div class="lc-overview" id="lcOverview"></div>
+
+      <!-- 服务三要素紧凑卡（吸收自客户生命周期系统交接文档 2026-06-11） -->
+      <div class="lc-service-row" id="lcServiceRow">
+        <div class="lc-svc-card stage-newbie">
+          <div class="lc-svc-head"><span class="lc-svc-icon">🌱</span><span class="lc-svc-name">新手期</span><span class="lc-svc-time">0-30天</span><span class="lc-svc-intensity">🔥 重投入</span></div>
+          <div class="lc-svc-body">
+            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">拓新销售 · 服务商</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">群运营 · 新手培训直播课 · onepage</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">学投放+快上手</span><div class="lc-svc-detail">广告基建达标 · 竞价+艾米多工具投放</div></div>
+          </div>
+        </div>
+        <div class="lc-svc-card stage-growth">
+          <div class="lc-svc-head"><span class="lc-svc-icon">🚀</span><span class="lc-svc-name">成长期</span><span class="lc-svc-time">31-90天</span><span class="lc-svc-intensity">🤝 深度协同</span></div>
+          <div class="lc-svc-body">
+            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">拓新销售 · 行业运营 · 服务商 · KA销售（重点新客）</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">重点客户1v1 · 小班直播课 · AI诊断复盘</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">冲消耗+提能力</span><div class="lc-svc-detail">多链路/多OG投放 · 提升创意唯一性ID</div></div>
+          </div>
+        </div>
+        <div class="lc-svc-card stage-mature">
+          <div class="lc-svc-head"><span class="lc-svc-icon">👑</span><span class="lc-svc-name">成熟期</span><span class="lc-svc-time">90+天</span><span class="lc-svc-intensity">🚀 自助化</span></div>
+          <div class="lc-svc-body">
+            <div class="lc-svc-block"><span class="lc-svc-bt">👤 谁服务</span><span class="lc-svc-tags">行业运营 · KA销售 · 服务商</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">📋 服务形式</span><span class="lc-svc-tags">1v1服务 · T2T拜访 · 私享会/沙龙</span></div>
+            <div class="lc-svc-block"><span class="lc-svc-bt">🎯 核心目标</span><span class="lc-svc-goal">稳投放+促增长</span><div class="lc-svc-detail">多直播间/多端投放 · 适配本土化 · 参与好友日促GMV</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 九宫格 + 散点图 -->
+      <div class="lc-grid-wrap">
+        <div id="lcGridChart" style="width:100%; height:480px;"></div>
+        <div class="lc-grid-legend">
+          <span class="lg-tag lg-head">头部 ≥1万/日</span>
+          <span class="lg-tag lg-mid">腰部 1千-1万/日</span>
+          <span class="lg-tag lg-tail">尾部 0-1千/日</span>
+          <span style="color:#9ca3af;font-size:11px;">· 一个客户=一个点 · 点大小代表昨日消耗 · 同格内自动散开</span>
+        </div>
+      </div>
+
+      <!-- 下钻客户清单 -->
+      <div class="lc-detail" id="lcDetail">
+        <div class="lc-detail-head" id="lcDetailHead">
+          <strong>📋 客户清单</strong>
+          <span class="badge">点九宫格上的格子，看该层级所有客户</span>
+        </div>
+        <div class="toolbar" id="lcDetailToolbar" style="display:none;">
+          <input id="lcSearch" placeholder="搜索客户简称/类目" style="flex:1;min-width:200px;" />
+          <select id="lcInvest">
+            <option value="">投放类型不限</option>
+            <option value="单ADQ">单ADQ</option>
+            <option value="单全域通">单全域通</option>
+            <option value="双投">双投</option>
+            <option value="无投放">无投放</option>
+          </select>
+          <button id="lcDetailExport">📥 导出 CSV</button>
+        </div>
+        <table class="tbl" id="lcDetailTable" style="display:none;">
+          <thead><tr>
+            <th>客户简称</th><th>销售</th><th>类目</th><th>引入天数</th>
+            <th>昨日日耗</th><th>上期(7天前)</th><th>环比变化</th><th>26Q2累计</th><th>投放类型</th>
+          </tr></thead>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1841,12 +1980,14 @@ function exportRecordsCsv() {
 }
 
 function renderRecords() {
+  // 「拓客报备明细」UI 已下线，DOM 不存在时直接返回（保留函数避免外部调用爆栈）
+  if (!document.getElementById('recordTable')) return;
   const salesSel = document.getElementById('recordSales');
-  if (salesSel.options.length === 1) {
+  if (salesSel && salesSel.options.length === 1) {
     SALES.forEach(s => salesSel.innerHTML += `<option>${s}</option>`);
   }
   const catSel = document.getElementById('recordCategory');
-  if (catSel.options.length === 1) {
+  if (catSel && catSel.options.length === 1) {
     CATEGORIES.forEach(c => catSel.innerHTML += `<option>${c}</option>`);
   }
 
@@ -2124,13 +2265,17 @@ document.querySelectorAll('[data-metric]').forEach(b => {
   };
 });
 
-document.getElementById('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
-document.getElementById('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
-document.getElementById('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
-document.getElementById('recordRising').onchange = e => { state.recordRising = e.target.value; renderRecords(); };
-document.getElementById('recordToday').onclick = () => { state.recordRange = 'today'; ['recordToday','record7d','recordAll'].forEach(id=>document.getElementById(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
-document.getElementById('record7d').onclick = () => { state.recordRange = '7d'; ['recordToday','record7d','recordAll'].forEach(id=>document.getElementById(id).classList.toggle('active', id==='record7d')); renderRecords(); };
-document.getElementById('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>document.getElementById(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+// 「拓客报备明细」UI 已下线，绑定加 null 守卫，避免 JS 抛错
+(function bindRecordHandlersIfPresent(){
+  const $ = id => document.getElementById(id);
+  if ($('recordSearch')) $('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
+  if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
+  if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
+  if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; renderRecords(); };
+  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
+  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
+  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+})();
 
 
 document.getElementById('btnTarget') && (document.getElementById('btnTarget').onclick = () => {
@@ -3208,6 +3353,366 @@ document.addEventListener('click', e => {
     doPull(true);
   };
   doPull(false);
+})();
+</script>
+
+<!-- ============= 客户生命周期模块 JS（2026-06-11 模块B） ============= -->
+<script>
+(function(){
+  var DATA = window.__CUSTOMER_LIFECYCLE__;
+  if (!DATA || !DATA.rows) return;
+  var rows = DATA.rows;
+  var COL = { short:0, sale:1, cat:2, custType:3, daysBucket:4, costTier:5, yestCost:6, prevCost:7, deltaAmt:8, deltaRate:9, q2Cost:10, invest:11 };
+  // 2026-06-11 子青修正：纵轴只3档（头/腰/尾），无消耗=0直接挤到尾部底部
+  var Y_TIERS = ['头部','腰部','尾部'];
+  // 2026-06-11 19:23 吸收「客户生命周期系统」命名：新手期(0-30)/成长期(31-90)/成熟期(90+)
+  var X_BUCK_NEW = ['<=30天','31-60天','61-90天'];
+  var X_BUCK_OLD = ['90+天','61-90天','31-60天','<=30天'];
+  var X_LABEL_MAP = {
+    '<=30天':  '🌱 新手期\n0-30天',
+    '31-60天': '🚀 成长期\n31-60天',
+    '61-90天': '🚀 成长期\n61-90天',
+    '90+天':   '👑 成熟期\n90+天'
+  };
+  function stageOf(db){
+    if (db==='<=30天') return 'newbie';
+    if (db==='31-60天' || db==='61-90天') return 'growth';
+    return 'mature';
+  }
+  var STAGE_COLOR = { newbie:'#10b981', growth:'#3b82f6', mature:'#8b5cf6' };
+  var STAGE_BG    = { newbie:'#ecfdf5', growth:'#eff6ff', mature:'#f5f3ff' };
+  var TIER_COLOR = { '头部':'#ef4444','腰部':'#f59e0b','尾部':'#3b82f6' };
+  var state = { custType:'本', sale:'all', selectedX:null, selectedY:null };
+  var chart = null;
+
+  function fmtMoney(v){
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    if (Math.abs(v)>=10000) return (v/10000).toFixed(2)+'万';
+    return Math.round(v).toLocaleString();
+  }
+  function fmtPct(v){
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    return (v>0?'+':'') + (v*100).toFixed(1) + '%';
+  }
+  function filtered(){
+    return rows.filter(function(r){
+      if (r[COL.custType] !== state.custType) return false;
+      if (state.sale!=='all' && r[COL.sale] !== state.sale) return false;
+      // 子青修正：无消耗的不进九宫格
+      if (r[COL.costTier] === '无消耗') return false;
+      return true;
+    });
+  }
+  function filteredAll(){ // 用于"总览"统计（保留无消耗）
+    return rows.filter(function(r){
+      if (r[COL.custType] !== state.custType) return false;
+      if (state.sale!=='all' && r[COL.sale] !== state.sale) return false;
+      return true;
+    });
+  }
+
+  // 渲染总览（用 filteredAll 保留无消耗的算占比）
+  function renderOverview(){
+    var listAll = filteredAll();
+    var listInGrid = filtered(); // 已剔除无消耗的
+    var totalY = listAll.reduce(function(s,r){ return s + (r[COL.yestCost]||0); }, 0);
+    var totalP = listAll.reduce(function(s,r){ return s + (r[COL.prevCost]||0); }, 0);
+    var headCnt = listAll.filter(function(r){ return r[COL.costTier]==='头部'; }).length;
+    var midCnt  = listAll.filter(function(r){ return r[COL.costTier]==='腰部'; }).length;
+    var tailCnt = listAll.filter(function(r){ return r[COL.costTier]==='尾部'; }).length;
+    var zeroCnt = listAll.filter(function(r){ return r[COL.costTier]==='无消耗'; }).length;
+    var dr = totalP>0 ? ((totalY-totalP)/totalP*100).toFixed(1) : '—';
+    var rateText = (dr==='—') ? '—' : ((totalY>=totalP?'+':'') + dr + '%');
+    var ov = document.getElementById('lcOverview');
+    if (!ov) return;
+    ov.innerHTML = [
+      '<div class="lc-ov-card"><div class="label">总客户数</div><div class="value">'+listAll.length+'</div><div class="sub">头'+headCnt+' 腰'+midCnt+' 尾'+tailCnt+' 零耗'+zeroCnt+'</div></div>',
+      '<div class="lc-ov-card"><div class="label">昨日合计日耗</div><div class="value">'+fmtMoney(totalY)+'</div><div class="sub">本期(T-1=2026-06-10)</div></div>',
+      '<div class="lc-ov-card"><div class="label">较上期(7天前)</div><div class="value" style="color:'+(totalY>=totalP?'#16a34a':'#dc2626')+'">'+rateText+'</div><div class="sub">'+fmtMoney(totalP)+' → '+fmtMoney(totalY)+'</div></div>',
+      '<div class="lc-ov-card"><div class="label">在投客户</div><div class="value">'+listInGrid.length+'</div><div class="sub">占比 '+(listAll.length?Math.round(listInGrid.length*100/listAll.length):0)+'%</div></div>'
+    ].join('');
+  }
+
+  // 九宫格散点图：一个客户一个点（子青 2026-06-11 拍板）
+  function renderGrid(){
+    var el = document.getElementById('lcGridChart');
+    if (!el) return;
+    if (!chart) chart = echarts.init(el);
+    var X = (state.custType==='本') ? X_BUCK_NEW : X_BUCK_OLD;
+    var list = filtered(); // 已剔除无消耗
+
+    // 按格子分组，做格子内随机抖动（jitter），避免完全堆叠
+    var bucket = {};
+    X.forEach(function(x){ Y_TIERS.forEach(function(y){ bucket[x+'|'+y] = []; }); });
+    list.forEach(function(r){
+      var key = r[COL.daysBucket]+'|'+r[COL.costTier];
+      if (bucket[key]) bucket[key].push(r);
+    });
+
+    // 找昨日日耗的最大值（用来做点大小缩放）
+    var maxCost = 1;
+    list.forEach(function(r){ if ((r[COL.yestCost]||0) > maxCost) maxCost = r[COL.yestCost]; });
+
+    var points = [];
+    X.forEach(function(x, xi){
+      Y_TIERS.forEach(function(y, yi){
+        var arr = bucket[x+'|'+y];
+        if (!arr.length) return;
+        // y 反转: yi 越小越上（头部），ECharts 类目轴第 0 项在底，所以反向
+        var yPos = Y_TIERS.length - 1 - yi;
+        // 给每个客户在格子内做抖动，xPos = xi + (-0.4..+0.4)，yPos = yPos + (-0.35..+0.35)
+        // 用稳定的 hash 抖动，刷新顺序也一致
+        arr.forEach(function(r, idx){
+          var seed = hashStr(r[COL.short] + '|' + idx);
+          var jx = ((seed % 1000) / 1000 - 0.5) * 0.78;
+          var jy = (((seed >> 10) % 1000) / 1000 - 0.5) * 0.66;
+          var size = 6 + Math.sqrt((r[COL.yestCost]||1) / Math.max(maxCost,1)) * 22; // 6-28
+          points.push({
+            value: [xi + jx, yPos + jy],
+            symbolSize: size,
+            itemStyle: { color: TIER_COLOR[y], opacity: 0.7, borderColor: '#fff', borderWidth: 1 },
+            cust: r
+          });
+        });
+      });
+    });
+
+    chart.setOption({
+      tooltip: {
+        trigger: 'item',
+        formatter: function(p){
+          var r = p.data.cust;
+          var rate = r[COL.deltaRate];
+          var rateText = (rate===null||rate===undefined) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+          var rateColor = (rate===null||rate===undefined) ? '#6b7280' : (rate>=0?'#16a34a':'#dc2626');
+          return '<div style="font-size:13px;line-height:1.7;max-width:280px;">' +
+            '<b>'+escapeHtml(r[COL.short])+'</b><br/>' +
+            '<span style="color:#6b7280">销售：</span>'+escapeHtml(r[COL.sale])+' <span style="margin-left:6px;color:#6b7280">类目：</span>'+escapeHtml(r[COL.cat])+'<br/>' +
+            '<span style="color:#6b7280">'+r[COL.daysBucket]+' × '+r[COL.costTier]+' · '+r[COL.invest]+'</span><br/>' +
+            '昨日日耗：<b>'+fmtMoney(r[COL.yestCost])+'</b><br/>' +
+            '上期(7天前)：'+fmtMoney(r[COL.prevCost])+'<br/>' +
+            '较上期：<span style="color:'+rateColor+'">'+rateText+'</span><br/>' +
+            '26Q2累计：'+fmtMoney(r[COL.q2Cost])+
+          '</div>';
+        }
+      },
+      grid: { left: 90, right: 30, top: 30, bottom: 64 },
+      xAxis: {
+        type: 'value', name: '引入阶段（首次消耗距今）', nameLocation:'middle', nameGap:50,
+        min: -0.5, max: X.length - 0.5, interval: 1,
+        axisLabel: {
+          fontSize: 12, fontWeight: 700, color: '#1f2937', lineHeight: 16,
+          formatter: function(v){
+            var i = Math.round(v); var key = X[i] || '';
+            return X_LABEL_MAP[key] || key;
+          },
+          rich: {}
+        },
+        axisTick: { show: false },
+        splitLine: { show: true, lineStyle: { type: 'solid', color: '#d1d5db', width: 1 } },
+        minorTick: { show: false },
+        minorSplitLine: { show: false }
+      },
+      yAxis: {
+        type: 'value', name: '昨日日耗层级', nameLocation:'middle', nameGap:62, nameRotate:90,
+        min: -0.5, max: Y_TIERS.length - 0.5, interval: 1,
+        axisLabel: {
+          fontSize: 13, fontWeight: 600, color: '#1f2937',
+          formatter: function(v){ var i = Math.round(v); var rev = Y_TIERS.slice().reverse(); return rev[i] || ''; }
+        },
+        axisTick: { show: false },
+        splitLine: { show: true, lineStyle: { type: 'solid', color: '#d1d5db', width: 1 } }
+      },
+      series: [{
+        type: 'scatter',
+        data: points,
+        large: true, largeThreshold: 1000,
+        z: 5,
+        emphasis: { itemStyle: { borderColor: '#0f172a', borderWidth: 2, opacity: 1 } },
+        // 阶段背景弱底色（按 X 轴分段）
+        markArea: {
+          silent: true, z: -1,
+          data: (function(){
+            // 找出 X 数组中每段连续阶段的起止
+            var segs = [];
+            var prev = null, start = -1;
+            X.forEach(function(x, i){
+              var s = stageOf(x);
+              if (s !== prev){
+                if (prev !== null) segs.push({ stage: prev, from: start, to: i - 1 });
+                prev = s; start = i;
+              }
+            });
+            segs.push({ stage: prev, from: start, to: X.length - 1 });
+            return segs.map(function(seg){
+              return [
+                { xAxis: seg.from - 0.5, yAxis: -0.5, itemStyle: { color: STAGE_BG[seg.stage], opacity: 0.55 } },
+                { xAxis: seg.to + 0.5,   yAxis: Y_TIERS.length - 0.5 }
+              ];
+            });
+          })()
+        }
+      },
+      // 用 markLine 在 0.5/1.5/2.5 处画格子线
+      {
+        type: 'scatter', data: [], silent: true,
+        markLine: {
+          symbol: 'none', silent: true, label: { show: false },
+          lineStyle: { color: '#9ca3af', type: 'dashed', width: 1 },
+          data: (function(){
+            var arr = [];
+            for (var i = 0; i < X.length - 1; i++) arr.push([{ xAxis: i + 0.5, yAxis: -0.5 },{ xAxis: i + 0.5, yAxis: Y_TIERS.length - 0.5 }]);
+            for (var j = 0; j < Y_TIERS.length - 1; j++) arr.push([{ xAxis: -0.5, yAxis: j + 0.5 },{ xAxis: X.length - 0.5, yAxis: j + 0.5 }]);
+            return arr;
+          })()
+        }
+      }]
+    }, true);
+
+    chart.off('click');
+    chart.on('click', function(p){
+      // 点客户散点 → 加亮该客户清单
+      if (p.data && p.data.cust){
+        state.selectedX = p.data.cust[COL.daysBucket];
+        state.selectedY = p.data.cust[COL.costTier];
+        state.selectedShort = p.data.cust[COL.short];
+        renderDetail();
+        // 滚动到详情
+        var d = document.getElementById('lcDetail');
+        if (d) d.scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    });
+  }
+  // 简单字符串 hash → 整数（确保抖动稳定）
+  function hashStr(s){ var h=0,i,c; s=String(s||''); for(i=0;i<s.length;i++){ c=s.charCodeAt(i); h=((h<<5)-h)+c; h|=0; } return Math.abs(h); }
+
+  function renderDetail(){
+    var head = document.getElementById('lcDetailHead');
+    var bar = document.getElementById('lcDetailToolbar');
+    var tbl = document.getElementById('lcDetailTable');
+    if (!head || !bar || !tbl) return;
+
+    // 默认 = 当前 客类+销售 下全部客户; 选了格子 = 该格子内
+    var list = filtered();
+    var hasFilter = !!(state.selectedX && state.selectedY);
+    if (hasFilter){
+      list = list.filter(function(r){ return r[COL.daysBucket]===state.selectedX && r[COL.costTier]===state.selectedY; });
+    }
+    // 投放筛选
+    var iv = (document.getElementById('lcInvest')||{}).value || '';
+    if (iv) list = list.filter(function(r){ return r[COL.invest]===iv; });
+    // 搜索
+    var q = ((document.getElementById('lcSearch')||{}).value || '').trim().toLowerCase();
+    if (q) list = list.filter(function(r){ return (r[COL.short]||'').toLowerCase().indexOf(q)>=0 || (r[COL.cat]||'').toLowerCase().indexOf(q)>=0; });
+    list.sort(function(a,b){ return (b[COL.yestCost]||0) - (a[COL.yestCost]||0); });
+
+    var titleText = hasFilter
+      ? '📋 客户清单 · '+state.selectedX+' × '+state.selectedY
+      : '📋 客户清单 · 全部';
+    var clearBtn = hasFilter
+      ? '<button id="lcClearSel" style="margin-left:auto;padding:4px 12px;font-size:12px;background:#fff;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;">清除选择</button>'
+      : '';
+    head.innerHTML = '<strong>'+titleText+'</strong>'+
+      '<span class="badge">'+list.length+' 个客户 · 销售：'+(state.sale==='all'?'全部':state.sale)+' · '+(state.custType==='本'?'本季度新客':'25Q3-26Q1新客')+'</span>'+
+      clearBtn;
+    if (hasFilter){
+      var btn=document.getElementById('lcClearSel');
+      if (btn) btn.onclick = function(){ state.selectedX=null; state.selectedY=null; state.selectedShort=null; renderDetail(); };
+    }
+
+    bar.style.display = 'flex'; tbl.style.display = '';
+    var tbody = tbl.querySelector('tbody');
+    if (!tbody){ tbody = document.createElement('tbody'); tbl.appendChild(tbody); }
+    if (list.length === 0){
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:36px 0;">暂无符合条件的客户</td></tr>';
+    } else {
+      tbody.innerHTML = list.map(function(r){
+        var rate = r[COL.deltaRate];
+        var rateText = (rate===null||rate===undefined) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+        var rateCls = (rate===null||rate===undefined) ? '' : (rate>=0?'up':'down');
+        var tierCls = r[COL.costTier]==='头部' ? 'tier-head' : (r[COL.costTier]==='腰部' ? 'tier-mid' : '');
+        var inv = r[COL.invest], invCls = inv==='单ADQ'?'invest-adq':(inv==='单全域通'?'invest-qy':(inv==='双投'?'invest-both':'invest-none'));
+        var rowCls = (state.selectedShort && r[COL.short]===state.selectedShort) ? ' style="background:#fef3c7"' : '';
+        return '<tr'+rowCls+'>'+
+          '<td>'+escapeHtml(r[COL.short])+'</td>'+
+          '<td>'+escapeHtml(r[COL.sale])+'</td>'+
+          '<td>'+escapeHtml(r[COL.cat])+'</td>'+
+          '<td>'+escapeHtml(r[COL.daysBucket])+'</td>'+
+          '<td class="'+tierCls+'">'+fmtMoney(r[COL.yestCost])+'</td>'+
+          '<td>'+fmtMoney(r[COL.prevCost])+'</td>'+
+          '<td class="'+rateCls+'">'+rateText+'</td>'+
+          '<td>'+fmtMoney(r[COL.q2Cost])+'</td>'+
+          '<td class="invest-pill"><span class="'+invCls+'">'+inv+'</span></td>'+
+        '</tr>';
+      }).join('');
+    }
+
+    // 工具栏事件
+    var ls=document.getElementById('lcSearch'); if (ls) ls.oninput = renderDetail;
+    var li=document.getElementById('lcInvest'); if (li) li.onchange = renderDetail;
+    var le=document.getElementById('lcDetailExport'); if (le) le.onclick = function(){ exportCsv(list); };
+  }
+
+  function exportCsv(list){
+    var head = ['客户简称','销售','类目','引入天数','昨日日耗','上期(7天前)','环比变化率%','26Q2累计','投放类型'];
+    var lines = [head.join(',')].concat(list.map(function(r){
+      var rate = r[COL.deltaRate];
+      return [
+        '"'+(r[COL.short]||'').replace(/"/g,'""')+'"',
+        r[COL.sale]||'',
+        r[COL.cat]||'',
+        r[COL.daysBucket]||'',
+        r[COL.yestCost]||0,
+        r[COL.prevCost]||0,
+        rate===null||rate===undefined?'':(rate*100).toFixed(2),
+        r[COL.q2Cost]||0,
+        r[COL.invest]||''
+      ].join(',');
+    }));
+    var blob = new Blob(['\ufeff' + lines.join('\n')], { type:'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '客户生命周期_'+state.selectedX+'_'+state.selectedY+'_'+(state.custType==='本'?'本季度新客':'25Q3-26Q1新客')+'_'+(new Date().toISOString().slice(0,10))+'.csv';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  function renderAllLc(){
+    renderOverview();
+    renderGrid();
+    renderDetail();
+  }
+
+  // 绑定 Tab
+  document.querySelectorAll('#lcCustTabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#lcCustTabs button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.custType = b.getAttribute('data-lct');
+      state.selectedX = null; state.selectedY = null;
+      renderAllLc();
+    });
+  });
+  document.querySelectorAll('#lcSalesTabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#lcSalesTabs button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.sale = b.getAttribute('data-lcsale');
+      state.selectedX = null; state.selectedY = null;
+      renderAllLc();
+    });
+  });
+
+  window.addEventListener('resize', function(){ if (chart) chart.resize(); });
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderAllLc);
+  } else {
+    setTimeout(renderAllLc, 100);
+  }
 })();
 </script>
 </body>
