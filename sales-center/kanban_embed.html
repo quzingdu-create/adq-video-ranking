@@ -7,25 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260611u"></script>
+<script src="data/laoke_lookup_data.js?v=20260611v"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260611u"></script>
-<script src="data/tuoke_real_records.js?v=20260611u"></script>
-<script src="data/customer_link_data.js?v=20260611u"></script>
-<script src="data/center_sales_summary.js?v=20260611u"></script>
-<script src="data/center_quarter_summary.js?v=20260611u"></script>
-<script src="data/center_daily_kpi.js?v=20260611u"></script>
-<script src="data/delivery_side_summary.js?v=20260611u"></script>
-<script src="data/top80_effective_metrics.js?v=20260611u"></script>
-<script src="data/top_status_data.js?v=20260611u"></script>
-<script src="data/enough_candidates.js?v=20260611u"></script>
-<script src="data/handover_customers_519.js?v=20260611u"></script>
-<script src="data/first_quarter.js?v=20260611u"></script>
-<script src="data/customer_lifecycle.js?v=20260611u"></script>
+<script src="data/bulk_import_rows.js?v=20260611v"></script>
+<script src="data/tuoke_real_records.js?v=20260611v"></script>
+<script src="data/customer_link_data.js?v=20260611v"></script>
+<script src="data/center_sales_summary.js?v=20260611v"></script>
+<script src="data/center_quarter_summary.js?v=20260611v"></script>
+<script src="data/center_daily_kpi.js?v=20260611v"></script>
+<script src="data/delivery_side_summary.js?v=20260611v"></script>
+<script src="data/top80_effective_metrics.js?v=20260611v"></script>
+<script src="data/top_status_data.js?v=20260611v"></script>
+<script src="data/enough_candidates.js?v=20260611v"></script>
+<script src="data/handover_customers_519.js?v=20260611v"></script>
+<script src="data/first_quarter.js?v=20260611v"></script>
+<script src="data/customer_lifecycle.js?v=20260611v"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611u"></script>
+<script src="cloud_sync.js?v=20260611v"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -778,6 +778,32 @@
   <!-- 「拓客模型链路深度分析」模块已下线（2026-05-21 用户拍板：链路 CSV 字典覆盖不全，
        与销售日耗口径不可对账，先删，等链路标签覆盖完整后再上） -->
 
+  <!-- ========== 拓客登记明细（2026-06-11 子青恢复，替代「客户生命周期一览」位置） ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>📋 拓客登记明细</span><span class="badge">默认展示当天，点击查看其他周期</span></div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <input id="recordSearch" placeholder="搜索客户主体/品牌" />
+        <select id="recordSales"><option value="">全部销售</option></select>
+        <select id="recordCategory"><option value="">全部类目</option></select>
+        <select id="recordRising">
+          <option value="">全部</option>
+          <option value="是">仅新锐</option>
+          <option value="否">仅非新锐</option>
+        </select>
+        <button id="recordToday">今日</button>
+        <button id="record7d">近7天</button>
+        <button id="recordAll" class="active">全部</button>
+      </div>
+      <table class="tbl" id="recordTable">
+        <thead><tr>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
+        </tr></thead>
+      </table>
+    </div>
+  </div>
 
 </div>
 
