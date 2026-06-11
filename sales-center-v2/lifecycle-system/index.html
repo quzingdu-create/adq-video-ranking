@@ -903,31 +903,45 @@ function renderCustomerGrid() {
   }).join('');
 }
 
-/* =============== 弹窗：客户详情 =============== */
+/* =============== 弹窗：客户详情 ===============
+ * 2026-06-11 子青反馈：iframe 嵌在父页面深处时弹窗错位（跑到顶部）。
+ * 新策略：嵌入模式下不再尝试用 absolute 贴合父 viewport，
+ * 改为 fixed 定位 + 通过 postMessage 通知父页面把 iframe 滚到可视中央。
+ * 父页面如果不监听消息，也能用 fixed 兜底（fixed 在 iframe 内 viewport 居中）。
+ */
 function positionModalForEmbed() {
   const mask = document.getElementById('modal-mask');
   if (!mask) return;
-  try {
-    if (window.parent && window.parent !== window && window.frameElement) {
-      const rect = window.frameElement.getBoundingClientRect();
-      const parentH = window.parent.innerHeight || 900;
-      const visibleTop = Math.max(0, -rect.top);
-      const visibleBottom = Math.min(rect.height, parentH - rect.top);
-      const visibleH = Math.max(520, visibleBottom - visibleTop);
-      mask.style.position = 'absolute';
-      mask.style.inset = 'auto 0 auto 0';
-      mask.style.top = visibleTop + 'px';
-      mask.style.height = visibleH + 'px';
-      mask.style.alignItems = 'center';
-      mask.style.justifyContent = 'center';
-      return;
-    }
-  } catch (e) {}
+  // 统一用 fixed，让弹窗永远相对 iframe 自身 viewport 居中
   mask.style.position = 'fixed';
   mask.style.inset = '0';
   mask.style.top = '';
   mask.style.height = '';
+  mask.style.alignItems = 'center';
+  mask.style.justifyContent = 'center';
+  // 嵌入模式：通知父页面把 iframe scrollIntoView，确保用户视野中心落在 iframe 内
+  try {
+    if (window.parent && window.parent !== window && window.frameElement) {
+      // 找到点击客户卡片的相对 Y 坐标（iframe 内）
+      const yInIframe = (window.__lastClickY__ || 0);
+      window.parent.postMessage({
+        type: 'lifecycle-modal-open',
+        iframeY: yInIframe
+      }, '*');
+      // 兜底：直接告诉父页面滚到 iframe 顶部 + clickY 偏移
+      try {
+        const rect = window.frameElement.getBoundingClientRect();
+        const targetTop = window.parent.scrollY + rect.top + yInIframe - 100;
+        window.parent.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      } catch (e) {}
+    }
+  } catch (e) {}
 }
+
+// 记录最后一次点击的 Y 坐标（用于 scrollIntoView 定位）
+document.addEventListener('click', function(e) {
+  window.__lastClickY__ = e.clientY + (window.scrollY || 0);
+}, true);
 
 function openDetail(id) {
   const c = window.MY_CUSTOMERS.find(x => x.id === id);
