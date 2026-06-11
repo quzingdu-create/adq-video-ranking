@@ -7,20 +7,20 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260611s"></script>
+<script src="auth-guard.js?v=20260611t"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260611s"></script>
+<script src="data/current_rising_data.js?v=20260611t"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260611s"></script>
-<script src="data/center_daily_kpi.js?v=20260611s"></script>
-<script src="data/tuoke_real_records.js?v=20260611s"></script>
-<script src="data/top80_effective_metrics.js?v=20260611s"></script>
+<script src="data/center_quarter_summary.js?v=20260611t"></script>
+<script src="data/center_daily_kpi.js?v=20260611t"></script>
+<script src="data/tuoke_real_records.js?v=20260611t"></script>
+<script src="data/top80_effective_metrics.js?v=20260611t"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611s"></script>
-<script src="login_guard_banner.js?v=20260611s"></script>
+<script src="cloud_sync.js?v=20260611t"></script>
+<script src="login_guard_banner.js?v=20260611t"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260611s"></script>
+<script src="export_tuoke.js?v=20260611t"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -657,7 +657,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260611s"
+      src="mobile.html?embed=1&v=20260611t"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1078,16 +1078,16 @@ window.__CASE_DATA__ = [
     <div class="nav-banner">
       <div class="nb-text">
         <strong>🎯 关键客户作战台</strong>
-        <small>按生命周期与考核追赶两套视角管理：新手期/培育期/成熟期、潜在新锐、重点客户消耗监控</small>
+        <small>潜在新锐、重点客户消耗监控</small>
       </div>
     </div>
 
-    <!-- 关键客户两套视角 -->
+    <!-- 关键客户视角（2026-06-11 子青：删除生命周期视角，仅保留考核追赶） -->
     <div class="section">
       <div class="section-title">
         <div class="left">
           <span>🧭 客户作战视角</span>
-          <span class="badge">生命周期 / 考核追赶</span>
+          <span class="badge">考核追赶</span>
         </div>
       </div>
       <div class="layer-grid" id="layerGrid"></div>
@@ -1104,9 +1104,8 @@ window.__CASE_DATA__ = [
       <div class="panel">
         <div class="toolbar">
           <input id="clientSearch" placeholder="搜索客户简称" />
-          <select id="filterClientView">
-            <option value="lifecycle">生命周期视角</option>
-            <option value="assessment">考核追赶视角</option>
+          <select id="filterClientView" style="display:none;">
+            <option value="assessment" selected>考核追赶视角</option>
           </select>
           <select id="filterClientSegment">
             <option value="">全部分组</option>
@@ -1200,7 +1199,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260611s" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260611t" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1715,11 +1714,10 @@ const LAYER_META = {
   others:   { emoji:"📦", label:"其余客户",     desc:"周度跟进即可" }
 };
 
-// 旧 layer → 新 layer 的轻量映射
+// 旧 layer → 新 layer 的轻量映射（2026-06-11 子青：删 lifecycle "newcust" 分支）
 function mapLayerV32(c, idx) {
   if (c.priority === "K800") return "focus";
   if (c.layerOld === "alert") return "focus";
-  if (["开户","首充","冷启"].includes(c.lifecycle)) return "newcust";
   if (c.layerOld === "sprint") return "sprint";
   if (c.cost >= 1000 && c.layerOld !== "mature") return "rising";
   return "others";
@@ -1872,7 +1870,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260611s`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260611t`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
@@ -2006,14 +2004,7 @@ function assignClientRedDot(c) {
       action:"点击查看冲刺动作模板"
     };
   }
-  if (["首充","冷启"].includes(c.lifecycle)) {
-    return {
-      priority: 3, urgency:"boom", clientName:c.name, taskKey:clientTaskKey(c),
-      title:`🚀 ${c.name} · 新客生死期（${c.lifecycle}）`,
-      desc:`新客引入后处于 ${c.lifecycle} 关键阶段，过不去这关 = 流失 · 战役：${c.battle}`,
-      action:"点击查看新客生死期 SOP"
-    };
-  }
+  // 2026-06-11 子青：删除 lifecycle 「首充/冷启」生死期判定（生命周期已下线）
   return null;
 }
 function buildInfoTasks(scopeClients, today=new Date('2026-05-12')) {
@@ -2866,7 +2857,7 @@ function openInfoDetail(id) {
    重点关注 / 近双周新客 / 潜在新锐 / 冲刺客户 / 其余客户
    =========================================================== */
 
-const state = { clientSearch:"", filterTrack:"", filterBattle:"", clientView:"lifecycle", clientSegment:"" };
+const state = { clientSearch:"", filterTrack:"", filterBattle:"", clientView:"assessment", clientSegment:"" };
 const CLIENT_STAGE_META = {
   newbie: { emoji:'🌱', label:'新手期', desc:'登记14天内 · 看累计消耗/停投/ROI波动', cls:'green' },
   nurture:{ emoji:'🌿', label:'培育期', desc:'看日耗是否大于2000和创意ID数', cls:'gold' },
@@ -3042,22 +3033,7 @@ function openClientDetail(name) {
       <div style="font-size:12px;color:var(--text-2);">建议运营/销售在客户卡片更新最新原因，让原因结构化沉淀</div>
     </div>
 
-    <div class="panel" style="margin-bottom:14px;">
-      <h3>🚦 新客生命周期阶段</h3>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
-        ${["开户","首充","冷启","爬坡","冲刺","大哥"].map(s => `
-          <div style="flex:1;text-align:center;padding:8px;border-radius:6px;background:${s===c.lifecycle?'var(--primary)':'var(--panel-2)'};color:${s===c.lifecycle?'#fff':'var(--text-2)'};font-size:12px;font-weight:${s===c.lifecycle?'700':'400'};border:1px solid ${s===c.lifecycle?'var(--primary)':'var(--border)'};">${s}</div>
-        `).join('')}
-      </div>
-      <div style="font-size:12px;color:var(--text-2);margin-top:8px;">${
-        c.lifecycle === "首充" ? "⚠️ 关键期：新客首充未到 5000 = 投放意愿不稳，需推 1v1 跟进 + 首充奖励政策" :
-        c.lifecycle === "冷启" ? "⚠️ 关键期：冷启动期前 7 天没拿到量 = 极易流失，需配合素材代运营" :
-        c.lifecycle === "爬坡" ? "🌱 持续培育期：保持周度跟进，找新4+m 突破口" :
-        c.lifecycle === "冲刺" ? "⭐ 冲刺期：3 天内推到日耗 5k+ROI过盈亏线 = 大哥" :
-        c.lifecycle === "大哥" ? "🚀 已是大哥：放大消耗，启动矩阵复制" :
-        "📊 持续监控波动"
-      }</div>
-    </div>
+    <!-- 2026-06-11 子青：删除「🚦 新客生命周期阶段」整块 -->
 
     <div class="panel">
       <h3>📌 推荐动作（基于 ${c.battle} 战役 + ${LAYER_META[c.layer].label} 档位）</h3>
