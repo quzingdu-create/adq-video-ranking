@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
+<script src="data/mock_data.js"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --panel-2: #f8fafd;
+    --border: #e5e9f0;
+    --border-2: #eef1f6;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --primary: #3b82f6;
+    --primary-2: #2563eb;
+    --primary-bg: #eff6ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --gold: #d97706;
+    --gold-bg: #fef3c7;
+    --purple: #8b5cf6;
+    --purple-bg: #f5f3ff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 60px;
+    font-size: 14px;
+  }
+
+  /* 顶栏 */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    max-width: 1440px; margin: 0 auto; box-sizing: border-box; width: 100%;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar h1 {
+    font-size: 18px; font-weight: 600;
+    background: linear-gradient(90deg, var(--success), var(--primary), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .topbar .meta { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--text-2); }
+  .topbar .badge { background: var(--primary-bg); color: var(--primary); padding: 4px 10px; border-radius: 4px; font-weight: 500; }
+  .topbar .sales-badge { display: inline-flex; align-items: center; gap: 2px; padding: 3px 8px 3px 10px; }
+  .topbar .sales-select {
+    border: none; outline: none; background: transparent;
+    color: var(--primary); font-weight: 600; font-size: 12px;
+    cursor: pointer; padding: 2px 4px; border-radius: 3px;
+  }
+  .topbar .sales-select:hover { background: rgba(255,255,255,0.5); }
+  .topbar .sales-select option { color: var(--text); font-weight: 500; }
+
+  /* 容器 */
+  .container { max-width: 1440px; margin: 0 auto; padding: 24px 28px; }
+
+  /* tabs */
+  .tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    margin-bottom: 24px; background: #fff; padding: 0 8px; border-radius: 8px 8px 0 0;
+  }
+  .tab-btn {
+    background: transparent; border: none; padding: 14px 20px;
+    font-size: 14px; color: var(--text-2); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+    font-weight: 500;
+  }
+  .tab-btn:hover { color: var(--primary); }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+  .tab-page { display: none; }
+  .tab-page.active { display: block; }
+
+  /* 章节大标题（取代旧tab，宏观/微观分隔） */
+  .page-section-header {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 14px 18px; margin-bottom: 16px;
+    background: linear-gradient(135deg, #eff6ff 0%, #fff 70%);
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+  }
+  .page-section-header.micro {
+    background: linear-gradient(135deg, #f0fdf4 0%, #fff 70%);
+    border-left-color: var(--success);
+    margin-top: 28px;
+  }
+  .page-section-header .psh-icon { font-size: 18px; }
+  .page-section-header .psh-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .page-section-header .psh-sub { font-size: 12px; color: var(--text-2); margin-left: 4px; }
+
+  /* ============= 漏斗区 ============= */
+  .funnel-section {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px;
+  }
+  .section-title {
+    font-size: 16px; font-weight: 600; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-sub {
+    font-size: 13px; color: var(--text-2); margin-bottom: 20px;
+  }
+
+  /* 横向流转图：SVG漏斗 + 卡片式阶段标签 */
+  .funnel-wrap {
+    position: relative;
+    margin: 24px 0 8px;
+  }
+  .funnel-svg-wrap {
+    position: relative;
+    height: 140px;
+    margin-bottom: 18px;
+  }
+  .funnel-svg {
+    width: 100%; height: 100%; display: block;
+  }
+  .funnel-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 26px; height: 26px;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-2);
+    font-size: 14px; font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    z-index: 2;
+  }
+  /* 阶段标签卡：3栏均匀 */
+  .funnel-labels {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .funnel-label {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 12px;
+    border-top: 3px solid;
+    transition: all 0.2s;
+  }
+  .funnel-label:hover {
+    transform: translateY(-1px); box-shadow: var(--shadow-hover);
+  }
+  .funnel-label.s1 { border-top-color: var(--success); }
+  .funnel-label.s2 { border-top-color: var(--primary); }
+  .funnel-label.s3 { border-top-color: var(--purple); }
+  .funnel-label .stage-icon-box {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .funnel-label.s1 .stage-icon-box { background: var(--success-bg); }
+  .funnel-label.s2 .stage-icon-box { background: var(--primary-bg); }
+  .funnel-label.s3 .stage-icon-box { background: var(--purple-bg); }
+  .funnel-label .stage-meta { flex: 1; }
+  .funnel-label .stage-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .funnel-label .stage-time { font-size: 12px; color: var(--text-2); }
+  .funnel-label.s1 .stage-name { color: var(--success); }
+  .funnel-label.s2 .stage-name { color: var(--primary); }
+  .funnel-label.s3 .stage-name { color: var(--purple); }
+
+  /* 漏斗下方的指标行 */
+  .funnel-metrics {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 20px;
+  }
+  .stage-metric-card {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; background: var(--panel-2);
+    border-top: 3px solid;
+  }
+  .stage-metric-card.s1 { border-top-color: var(--success); }
+  .stage-metric-card.s2 { border-top-color: var(--primary); }
+  .stage-metric-card.s3 { border-top-color: var(--purple); }
+
+  .stage-metric-card .metric-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 8px 0; border-bottom: 1px dashed var(--border-2);
+  }
+  .stage-metric-card .metric-row:last-child { border-bottom: none; }
+  .stage-metric-card .m-label { font-size: 12px; color: var(--text-2); }
+  .stage-metric-card .m-val { font-size: 18px; font-weight: 700; }
+  .stage-metric-card .m-val .unit { font-size: 12px; font-weight: 400; color: var(--text-2); margin-left: 2px; }
+  .stage-metric-card .m-ratio { font-size: 12px; color: var(--text-2); font-weight: 500; }
+
+  /* 服务三要素：3栏卡片，按阶段差异化设计 */
+  .service-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 8px;
+  }
+  .service-card {
+    border-radius: 12px; padding: 0; overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .service-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+  .service-card .sc-header {
+    padding: 16px 18px;
+    color: #fff;
+    position: relative;
+  }
+  .service-card.s1 .sc-header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+  .service-card.s2 .sc-header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+  .service-card.s3 .sc-header { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+  .service-card .sc-header .sc-icon { font-size: 26px; margin-bottom: 4px; }
+  .service-card .sc-header .sc-stage-name { font-size: 16px; font-weight: 700; }
+  .service-card .sc-header .sc-stage-time { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+  .service-card .sc-header .sc-intensity {
+    position: absolute; top: 12px; right: 14px;
+    font-size: 11px; padding: 3px 8px; border-radius: 10px;
+    background: rgba(255,255,255,0.22); backdrop-filter: blur(6px);
+    font-weight: 500;
+  }
+
+  .service-card .sc-body { padding: 16px 18px; }
+  .service-card .sc-block {
+    padding: 12px 0; border-bottom: 1px dashed var(--border-2);
+  }
+  .service-card .sc-block:last-child { border-bottom: none; padding-bottom: 4px; }
+  .service-card .sc-block:first-child { padding-top: 4px; }
+  .service-card .sc-block-title {
+    font-size: 11px; color: var(--text-3); font-weight: 500;
+    margin-bottom: 8px; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .service-card .sc-block-title .sc-tt-icon { font-size: 13px; }
+
+  .service-card .sc-tag-list {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .service-card .sc-tag {
+    padding: 3px 9px; border-radius: 4px;
+    font-size: 12px; font-weight: 500;
+    border: 1px solid;
+  }
+  .service-card.s1 .sc-tag { background: var(--success-bg); color: var(--success); border-color: #a7f3d0; }
+  .service-card.s2 .sc-tag { background: var(--primary-bg); color: var(--primary); border-color: #bfdbfe; }
+  .service-card.s3 .sc-tag { background: var(--purple-bg); color: var(--purple); border-color: #ddd6fe; }
+
+  .service-card .sc-goal-headline {
+    font-size: 19px; font-weight: 800; color: var(--text);
+    margin-bottom: 10px; margin-top: 4px; line-height: 1.3;
+    letter-spacing: 0.5px;
+  }
+  .service-card.s1 .sc-goal-headline { color: var(--success); }
+  .service-card.s2 .sc-goal-headline { color: var(--primary); }
+  .service-card.s3 .sc-goal-headline { color: var(--purple); }
+  .service-card .sc-goal-list {
+    list-style: none; padding-left: 0;
+  }
+  .service-card .sc-goal-list li {
+    font-size: 12px; color: var(--text-2); line-height: 1.7;
+    padding-left: 14px; position: relative;
+  }
+  .service-card .sc-goal-list li::before {
+    content: ''; position: absolute; left: 0; top: 9px;
+    width: 5px; height: 5px; border-radius: 50%;
+  }
+  .service-card.s1 .sc-goal-list li::before { background: var(--success); }
+  .service-card.s2 .sc-goal-list li::before { background: var(--primary); }
+  .service-card.s3 .sc-goal-list li::before { background: var(--purple); }
+
+  /* ============= 微观客户区 ============= */
+  .filter-bar {
+    display: flex; gap: 12px; align-items: center;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 20px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-bar .lbl { font-size: 13px; color: var(--text-2); margin-right: 4px; }
+  .filter-bar .filter-btn {
+    background: var(--panel-2); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; color: var(--text-2);
+  }
+  .filter-bar .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-bar .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  /* 禁用样式：成熟期暂不支持查找（虚框 + 灰字 + 不可点击） */
+  .filter-bar .filter-btn.disabled {
+    background: transparent;
+    border: 1px dashed var(--border-2);
+    color: var(--text-3);
+    cursor: not-allowed;
+    opacity: 0.7;
+    position: relative;
+  }
+  .filter-bar .filter-btn.disabled:hover {
+    border-color: var(--border-2);
+    color: var(--text-3);
+  }
+  .filter-bar .filter-btn.disabled .tip-tag {
+    display: inline-block;
+    font-size: 10px; padding: 1px 5px; margin-left: 4px;
+    background: #f3f4f6; color: var(--text-3); border-radius: 3px;
+  }
+  .filter-bar .stat { margin-left: auto; font-size: 13px; color: var(--text-2); }
+  .filter-bar .stat strong { color: var(--text); font-size: 15px; }
+  /* 两组筛选之间的竖线分隔符 */
+  .filter-bar .filter-divider {
+    display: inline-block;
+    width: 1px; height: 18px;
+    background: var(--border);
+    margin: 0 8px;
+  }
+  /* 后置 lbl（日耗维度：）需要左侧间距更紧凑 */
+  .filter-bar .filter-divider + .lbl { margin-left: 0; }
+
+  /* 客户卡片网格 */
+  .customer-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;
+  }
+  .customer-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; cursor: pointer; transition: all 0.2s;
+    border-left: 4px solid;
+  }
+  .customer-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+  .customer-card.s1 { border-left-color: var(--success); }
+  .customer-card.s2 { border-left-color: var(--primary); }
+  .customer-card.s3 { border-left-color: var(--purple); }
+
+  .customer-card .c-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .customer-card .c-name { font-size: 15px; font-weight: 700; }
+  .customer-card .c-stage-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+  }
+  .customer-card .c-stage-tag.s1 { background: var(--success-bg); color: var(--success); }
+  .customer-card .c-stage-tag.s2 { background: var(--primary-bg); color: var(--primary); }
+  .customer-card .c-stage-tag.s3 { background: var(--purple-bg); color: var(--purple); }
+
+  .customer-card .c-meta {
+    font-size: 12px; color: var(--text-2); margin-bottom: 12px; line-height: 1.7;
+  }
+  .customer-card .c-data {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    padding: 10px; background: var(--panel-2); border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .customer-card .c-data .dt { font-size: 11px; color: var(--text-2); margin-bottom: 2px; }
+  .customer-card .c-data .dv { font-size: 13px; font-weight: 700; }
+
+  .customer-card .c-light-bar {
+    display: flex; gap: 4px; align-items: center;
+    font-size: 11px; color: var(--text-2);
+  }
+  .customer-card .c-light-bar .lights { display: flex; gap: 3px; }
+  .customer-card .c-light-bar .light {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .light.green { background: var(--success); }
+  .light.yellow { background: var(--warn); }
+  .light.red { background: var(--danger); }
+
+  /* 弹窗：客户详情 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: none; z-index: 1000; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 28px;
+    width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  }
+  .modal .m-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .modal .m-title { font-size: 20px; font-weight: 700; }
+  .modal .m-close {
+    background: var(--panel-2); border: 1px solid var(--border);
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+    font-size: 18px; color: var(--text-2);
+  }
+  .modal .m-close:hover { background: var(--danger-bg); color: var(--danger); }
+  .modal .m-meta {
+    font-size: 13px; color: var(--text-2); margin-bottom: 14px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-2); line-height: 1.8;
+  }
+  .modal .m-meta .stage-pill {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 12px; font-weight: 600; margin-left: 6px;
+  }
+  .modal .m-meta .stage-pill.s1 { background: var(--success-bg); color: var(--success); }
+  .modal .m-meta .stage-pill.s2 { background: var(--primary-bg); color: var(--primary); }
+  .modal .m-meta .stage-pill.s3 { background: var(--purple-bg); color: var(--purple); }
+
+  .modal .m-section-title {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    margin: 18px 0 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .modal .m-section-title .hint {
+    font-size: 12px; font-weight: 400; color: var(--text-2);
+  }
+
+  /* 指标对比表 */
+  .metric-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .metric-table th, .metric-table td {
+    padding: 10px 14px; font-size: 13px; text-align: left;
+    border-bottom: 1px solid var(--border-2);
+  }
+  .metric-table th { background: var(--panel-2); font-weight: 600; color: var(--text-2); font-size: 12px; }
+  .metric-table tbody tr:last-child td { border-bottom: none; }
+  .metric-table .light-cell { width: 60px; text-align: center; }
+  .metric-table .light-cell .light { display: inline-block; width: 14px; height: 14px; border-radius: 50%; }
+  .metric-table .m-name { font-weight: 600; }
+  .metric-table .m-name .desc { font-size: 11px; color: var(--text-2); font-weight: 400; display: block; margin-top: 2px; }
+  .metric-table .v-self { font-size: 15px; font-weight: 700; }
+  .metric-table .v-self.red { color: var(--danger); }
+  .metric-table .v-self.yellow { color: var(--warn); }
+  .metric-table .v-self.green { color: var(--success); }
+  .metric-table .v-bench { color: var(--text-2); font-size: 13px; }
+  /* 对标客户列：用金色突出，区分行业benchmark */
+  .metric-table .v-aspire {
+    color: #b45309; font-size: 13px; font-weight: 600;
+    background: linear-gradient(180deg, transparent 60%, #fef3c7 60%);
+    padding: 0 2px;
+  }
+  .metric-table th.col-aspire {
+    color: #92400e;
+    background: linear-gradient(180deg, var(--panel-2) 0%, #fef3c7 100%);
+  }
+  .metric-table th.col-aspire .col-aspire-sub {
+    display: block; font-size: 11px; font-weight: 500; color: #b45309;
+    margin-top: 2px;
+  }
+
+  /* 服务团队信息条（modal顶部） */
+  .service-team-bar {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    margin: 14px 0 4px;
+  }
+  .service-team-bar.three { grid-template-columns: repeat(3, 1fr); }
+  .service-team-bar .stb-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    background: var(--panel-2); border: 1px solid var(--border-2);
+  }
+  .service-team-bar .stb-icon {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .service-team-bar .stb-card.provider .stb-icon { background: #fef3c7; color: #b45309; }
+  .service-team-bar .stb-card.operator .stb-icon { background: var(--primary-bg); color: var(--primary); }
+  .service-team-bar .stb-meta { flex: 1; min-width: 0; }
+  .service-team-bar .stb-label {
+    font-size: 11px; color: var(--text-3); font-weight: 500;
+    letter-spacing: 0.3px; margin-bottom: 2px;
+  }
+  .service-team-bar .stb-name {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .v01-tip {
+    background: var(--primary-bg); border: 1px solid #bfdbfe; border-radius: 8px;
+    padding: 12px 14px; font-size: 12px; color: var(--primary-2); margin-top: 14px; line-height: 1.7;
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 1024px) {
+    .funnel-metrics { grid-template-columns: 1fr; }
+    .funnel-labels { grid-template-columns: 1fr; }
+    .service-grid { grid-template-columns: 1fr; }
+    .customer-grid { grid-template-columns: 1fr; }
+    .funnel-arrow { display: none; }
+  }
+  @media (max-width: 768px) {
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .topbar h1 { font-size: 16px; }
+    .topbar .meta { font-size: 11px; gap: 8px; flex-wrap: wrap; }
+    .container { padding: 14px; }
+    .tabs { padding: 0 4px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .tab-btn { white-space: nowrap; padding: 12px 12px; font-size: 13px; }
+    .funnel-svg-wrap { height: 80px; }
+    .funnel-svg text { font-size: 14px !important; }
+    .funnel-label { padding: 10px 12px; }
+    .funnel-label .stage-icon-box { width: 36px; height: 36px; font-size: 18px; }
+    .funnel-label .stage-name { font-size: 14px; }
+    .filter-bar { padding: 12px; }
+    .filter-bar .stat { width: 100%; margin-left: 0; margin-top: 6px; }
+    .modal { padding: 18px; max-height: 100vh; height: 100vh; border-radius: 0; max-width: 100%; }
+    .modal .m-title { font-size: 17px; }
+    .metric-table th, .metric-table td { padding: 8px 10px; font-size: 12px; }
+    .metric-table .v-self { font-size: 14px; }
+    .metric-table .v-aspire, .metric-table .v-bench { font-size: 12px; }
+    .service-team-bar { grid-template-columns: 1fr; }
+    .service-team-bar .stb-icon { width: 28px; height: 28px; font-size: 14px; }
+    .service-card .sc-header { padding: 14px 16px; }
+    .service-card .sc-body { padding: 14px 16px; }
+  }
+  @media (max-width: 480px) {
+    /* 超小屏：对标客户列字号再缩，状态列变窄 */
+    .metric-table .light-cell { width: 36px; }
+    .metric-table th.col-aspire .col-aspire-sub { display: none; }
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  body.embed-mode {
+    background:#fff;
+    padding-bottom:18px;
+  }
+  body.embed-mode .topbar {
+    position:static;
+    border-bottom:0;
+    padding:12px 20px 6px;
+    background:#fff;
+  }
+  body.embed-mode .topbar h1 {
+    font-size:16px;
+  }
+  body.embed-mode .topbar .meta {
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  body.embed-mode .container {
+    padding:14px 20px 22px;
+  }
+  body.embed-mode .page-section-header {
+    margin-bottom:12px;
+  }
+</style>
+</head>
+<body>
+<script>
+  if (new URLSearchParams(location.search).get('embed') === '1') {
+    document.body.classList.add('embed-mode');
+  }
+</script>
+
+<header class="topbar">
+  <h1>🌊 客户生命周期系统 v0.1</h1>
+  <div class="meta">
+    <span class="badge sales-badge">
+      销售：
+      <select id="sales-select" class="sales-select">
+        <option value="all">全量销售（团队视图）</option>
+        <option value="金洁（橘子）" selected>金洁（橘子）</option>
+        <option value="王萌">王萌</option>
+        <option value="李明">李明</option>
+      </select>
+    </span>
+    <span>数据日期：2026-06-10</span>
+    <span style="color:var(--success);">✅ v0.5 服务映射+指标对标</span>
+  </div>
+</header>
+
+<div class="container">
+  <!-- ============= 宏观视角｜行业大盘 ============= -->
+  <div class="page-section-header">
+    <span class="psh-icon">🌐</span>
+    <span class="psh-title">宏观视角｜行业大盘</span>
+    <span class="psh-sub">客户分布漏斗 + 各阶段服务策略</span>
+  </div>
+  <div id="page-macro">
+    <!-- 漏斗图 -->
+    <div class="funnel-section">
+      <div class="section-title">📊 客户生命周期分布</div>
+      <div class="section-sub">按入驻时长划分3阶段，从左→右展示客户数→消耗占比的漏斗变化</div>
+
+      <div class="funnel-wrap">
+        <div class="funnel-svg-wrap" id="funnel-svg-wrap"></div>
+        <div class="funnel-labels" id="funnel-labels"></div>
+      </div>
+
+      <div class="funnel-metrics" id="funnel-metrics"></div>
+    </div>
+
+    <!-- 服务三要素 -->
+    <div class="funnel-section">
+      <div class="section-title">🤝 服务三要素</div>
+      <div class="section-sub">不同生命周期阶段的服务团队、服务形式、核心目标 —— 服务强度从重投入逐步过渡到自助化</div>
+      <div class="service-grid" id="service-grid"></div>
+    </div>
+  </div>
+
+  <!-- ============= 微观视角｜我的客户 ============= -->
+  <div class="page-section-header micro">
+    <span class="psh-icon">👥</span>
+    <span class="psh-title">微观视角｜我的客户</span>
+    <span class="psh-sub">按销售/生命周期/日耗维度筛选名下客户，点击卡片查看详情</span>
+  </div>
+  <div id="page-micro">
+    <!-- 筛选栏：生命周期 + 日耗维度（合并为一行） -->
+    <div class="filter-bar">
+      <span class="lbl">生命周期：</span>
+      <button class="filter-btn active" data-stage="all">全部</button>
+      <button class="filter-btn" data-stage="newbie">🌱 新手期</button>
+      <button class="filter-btn" data-stage="growth">🚀 成长期</button>
+      <button class="filter-btn" data-stage="mature">👑 成熟期</button>
+      <span class="filter-divider"></span>
+      <span class="lbl">日耗维度：</span>
+      <button class="filter-btn cost-btn active" data-cost="all">全部</button>
+      <button class="filter-btn cost-btn" data-cost="low">日耗 &lt; 0.1万</button>
+      <button class="filter-btn cost-btn" data-cost="mid">日耗 0.1万 - 1万</button>
+      <button class="filter-btn cost-btn" data-cost="high">日耗 &gt; 1万</button>
+      <span class="stat"><span id="stat-label">名下客户：</span><strong id="stat-count">0</strong> 个</span>
+    </div>
+
+    <!-- 客户卡片 -->
+    <div class="customer-grid" id="customer-grid"></div>
+  </div>
+</div>
+
+<!-- 客户详情弹窗 -->
+<div class="modal-mask" id="modal-mask">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+/* =============== 工具函数 =============== */
+const fmt = {
+  num: n => (n||0).toLocaleString('zh-CN'),
+  wan: n => ((n||0)/10000).toFixed(0),
+  pct: n => (n||0).toFixed(1),
+  cost: n => {
+    if (n >= 10000) return (n/10000).toFixed(1) + '万';
+    return Math.round(n).toLocaleString('zh-CN');
+  }
+};
+const stageMap = { newbie: 's1', growth: 's2', mature: 's3' };
+const stageNameMap = { newbie: '新手期', growth: '成长期', mature: '成熟期' };
+
+function customersForCurrentSales() {
+  const all = window.MY_CUSTOMERS || [];
+  if (currentSalesFilter === 'all') return all;
+  return all.filter(c => c.sales_owner === currentSalesFilter);
+}
+
+function overviewForCurrentSales() {
+  const base = window.LIFECYCLE_OVERVIEW || { stages: [] };
+  const list = customersForCurrentSales();
+  const total = list.length;
+  const totalDaily = list.reduce((s, c) => s + Number(c.daily_cost || 0), 0);
+  const active = list.filter(c => Number(c.week_cost || 0) > 0).length;
+  const stages = (base.stages || []).map(stage => {
+    const rows = list.filter(c => c.stage === stage.key || c.stage === stage.id);
+    const count = rows.length;
+    const daily = rows.reduce((s, c) => s + Number(c.daily_cost || 0), 0);
+    const activeCount = rows.filter(c => Number(c.week_cost || 0) > 0).length;
+    return {
+      ...stage,
+      customer_count: count,
+      customer_ratio: total ? count / total * 100 : 0,
+      daily_cost: daily,
+      cost_ratio: totalDaily ? daily / totalDaily * 100 : 0,
+      active_week_count: activeCount,
+      active_week_ratio: count ? activeCount / count * 100 : 0
+    };
+  });
+  return { ...base, total_customer: total, total_daily_cost: totalDaily, active_week_customer: active, stages };
+}
+
+/* =============== 渲染：漏斗图（SVG柔和过渡）+ 阶段标签 =============== */
+function renderFunnel() {
+  const stages = overviewForCurrentSales().stages;
+
+  // SVG 漏斗：viewBox 1000x110，左宽右窄柔和过渡
+  // 3段渐变区，y轴左侧高度从100%递减到40%
+  const W = 1000, H = 110;
+  // 各阶段 x 范围
+  const xRange = [
+    [0, W/3],
+    [W/3, W*2/3],
+    [W*2/3, W]
+  ];
+  // 各阶段左右 y 轴的"半高"（漏斗上下对称收窄）
+  // s1: 顶=H*0   底=H   --> 全宽
+  // s2: 顶=H*0.10 底=H*0.90
+  // s3: 顶=H*0.22 底=H*0.78 (右端进一步收窄到 0.32~0.68)
+  // 这里用控制点逐段平滑
+  const top = [0, H*0.08, H*0.20, H*0.30];
+  const bot = [H, H*0.92, H*0.80, H*0.70];
+
+  const colors = stages.map(s => {
+    if (s.id === 'newbie') return ['#10b981', '#059669'];
+    if (s.id === 'growth') return ['#3b82f6', '#2563eb'];
+    return ['#8b5cf6', '#7c3aed'];
+  });
+
+  // 3段路径，每段是一个柔和过渡的梯形（用cubic bezier让边缘柔和）
+  const segs = stages.map((s, i) => {
+    const x0 = xRange[i][0], x1 = xRange[i][1];
+    const y0t = top[i], y0b = bot[i];
+    const y1t = top[i+1], y1b = bot[i+1];
+    // 路径：左上 → 右上(平滑) → 右下 → 左下(平滑) → 闭合
+    const d = `M ${x0} ${y0t}
+               L ${x1} ${y1t}
+               L ${x1} ${y1b}
+               L ${x0} ${y0b} Z`;
+    return `
+      <defs>
+        <linearGradient id="grad-s${i+1}" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="${colors[i][0]}" stop-opacity="0.95"/>
+          <stop offset="100%" stop-color="${colors[i][1]}" stop-opacity="0.95"/>
+        </linearGradient>
+      </defs>
+      <path d="${d}" fill="url(#grad-s${i+1})"/>
+    `;
+  }).join('');
+
+  // 阶段中心点上的标签（阶段名 + 时间区间 + 占比 + 客户占比 4层）
+  const centerLabels = stages.map((s, i) => {
+    const cx = (xRange[i][0] + xRange[i][1]) / 2;
+    const cy = (top[i] + top[i+1]) / 2 + ((bot[i] + bot[i+1]) / 2 - (top[i] + top[i+1]) / 2) / 2;
+    return `
+      <text x="${cx}" y="${cy - 26}" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" style="text-shadow:0 1px 3px rgba(0,0,0,0.25)">
+        ${s.icon} ${s.name}
+      </text>
+      <text x="${cx}" y="${cy - 9}" text-anchor="middle" fill="#fff" font-size="11" font-weight="500" opacity="0.92" style="text-shadow:0 1px 2px rgba(0,0,0,0.2)">
+        ${s.time_range}
+      </text>
+      <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="#fff" font-size="22" font-weight="700" style="text-shadow:0 1px 3px rgba(0,0,0,0.25)">
+        ${fmt.pct(s.customer_ratio)}%
+      </text>
+      <text x="${cx}" y="${cy + 30}" text-anchor="middle" fill="#fff" font-size="10" font-weight="500" opacity="0.9">
+        客户占比
+      </text>
+    `;
+  }).join('');
+
+  document.getElementById('funnel-svg-wrap').innerHTML = `
+    <svg class="funnel-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      ${segs}
+      ${centerLabels}
+    </svg>
+    <div class="funnel-arrow" style="left: calc(33.33% - 13px);">›</div>
+    <div class="funnel-arrow" style="left: calc(66.66% - 13px);">›</div>
+  `;
+
+  // 漏斗下方阶段卡片标签（图标+名称+时间）
+  const labelsWrap = document.getElementById('funnel-labels');
+  labelsWrap.innerHTML = stages.map((s, i) => `
+    <div class="funnel-label s${i+1}">
+      <div class="stage-icon-box">${s.icon}</div>
+      <div class="stage-meta">
+        <div class="stage-name">${s.name}</div>
+        <div class="stage-time">${s.time_range}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // 漏斗下方指标卡（保留原有3栏数据）
+  const metricsWrap = document.getElementById('funnel-metrics');
+  metricsWrap.innerHTML = stages.map((s, i) => `
+    <div class="stage-metric-card s${i+1}">
+      <div class="metric-row">
+        <span class="m-label">客户数</span>
+        <span><span class="m-val">${fmt.num(s.customer_count)}<span class="unit">个</span></span>
+        <span class="m-ratio" style="color:${s.color};margin-left:8px;">占${fmt.pct(s.customer_ratio)}%</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="m-label">行业日耗占比</span>
+        <span><span class="m-val">${fmt.cost(s.daily_cost)}<span class="unit">元</span></span>
+        <span class="m-ratio" style="color:${s.color};margin-left:8px;">占${fmt.pct(s.cost_ratio)}%</span></span>
+      </div>
+      <div class="metric-row">
+        <span class="m-label">近一周在投</span>
+        <span><span class="m-val">${fmt.num(s.active_week_count)}<span class="unit">个</span></span>
+        <span class="m-ratio" style="color:${s.color};margin-left:8px;">在投率${fmt.pct(s.active_week_ratio)}%</span></span>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =============== 渲染：服务三要素（3栏卡片，差异化设计） =============== */
+function renderServiceCards() {
+  const stages = overviewForCurrentSales().stages;
+  // 服务强度标签：新手期=重投入 → 成长期=深度协同 → 成熟期=自助化
+  const intensityMap = {
+    newbie: '🔥 重投入',
+    growth: '🤝 深度协同',
+    mature: '🚀 自助化'
+  };
+  const grid = document.getElementById('service-grid');
+  grid.innerHTML = stages.map((s, i) => `
+    <div class="service-card s${i+1}">
+      <div class="sc-header">
+        <div class="sc-intensity">${intensityMap[s.id] || ''}</div>
+        <div class="sc-icon">${s.icon}</div>
+        <div class="sc-stage-name">${s.name}</div>
+      </div>
+      <div class="sc-body">
+        <div class="sc-block">
+          <div class="sc-block-title"><span class="sc-tt-icon">👤</span>谁来服务</div>
+          <div class="sc-tag-list">
+            ${s.service_team.map(t => `<span class="sc-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div class="sc-block">
+          <div class="sc-block-title"><span class="sc-tt-icon">📋</span>服务形式</div>
+          <div class="sc-tag-list">
+            ${s.service_form.map(t => `<span class="sc-tag">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div class="sc-block">
+          <div class="sc-block-title"><span class="sc-tt-icon">🎯</span>核心目标</div>
+          <div class="sc-goal-headline">${s.core_goal}</div>
+          <ul class="sc-goal-list">
+            ${s.goal_detail.map(d => `<li>${d}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* =============== 渲染：微观客户卡片 =============== */
+let currentStageFilter = 'all';
+let currentCostFilter = 'all';
+const __lifeParams = new URLSearchParams(location.search);
+let currentSalesFilter = __lifeParams.get('sales') || '金洁（橘子）'; // 默认登录销售视角；嵌入时可传 sales=all 展示团队视图
+
+// 日耗维度判断：low <0.1万(<1000) / mid 0.1万-1万(1000-10000) / high >1万(>10000)
+function matchCostFilter(c) {
+  if (currentCostFilter === 'all') return true;
+  const cost = c.daily_cost || 0;
+  if (currentCostFilter === 'low') return cost < 1000;
+  if (currentCostFilter === 'mid') return cost >= 1000 && cost <= 10000;
+  if (currentCostFilter === 'high') return cost > 10000;
+  return true;
+}
+
+// 销售归属筛选：all=全量销售（团队视图），具体姓名=只看该销售名下
+function matchSalesFilter(c) {
+  if (currentSalesFilter === 'all') return true;
+  return c.sales_owner === currentSalesFilter;
+}
+
+function renderCustomerGrid() {
+  const list = window.MY_CUSTOMERS.filter(c => 
+    matchSalesFilter(c) &&
+    (currentStageFilter === 'all' || c.stage === currentStageFilter) &&
+    matchCostFilter(c)
+  );
+  document.getElementById('stat-count').textContent = list.length;
+  // 联动文案：全量销售时显示"团队客户"，具体销售时显示"名下客户"
+  const labelEl = document.getElementById('stat-label');
+  if (labelEl) {
+    labelEl.textContent = currentSalesFilter === 'all' ? '团队客户：' : '名下客户：';
+  }
+  
+  const grid = document.getElementById('customer-grid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-2);">该阶段暂无客户</div>';
+    return;
+  }
+  grid.innerHTML = list.map(c => {
+    const lights = Object.values(c.metrics).map(m => m.status);
+    const greenN = lights.filter(s => s === 'green').length;
+    const yellowN = lights.filter(s => s === 'yellow').length;
+    const redN = lights.filter(s => s === 'red').length;
+    const sCls = stageMap[c.stage];
+    return `
+      <div class="customer-card ${sCls}" onclick="openDetail('${c.id}')">
+        <div class="c-head">
+          <div class="c-name">${c.name}</div>
+          <span class="c-stage-tag ${sCls}">${stageNameMap[c.stage]} · 第${c.stage_days}天</span>
+        </div>
+        <div class="c-meta">
+          ${c.track} / ${c.category}　客单 ¥${c.avg_price}<br>
+          主链路：${c.main_link}
+        </div>
+        <div class="c-data">
+          <div><div class="dt">日耗</div><div class="dv">${c.daily_cost === 0 ? '未起量' : '¥'+fmt.cost(c.daily_cost)}</div></div>
+          <div><div class="dt">周耗</div><div class="dv">${c.week_cost === 0 ? '—' : '¥'+fmt.cost(c.week_cost)}</div></div>
+          <div><div class="dt">ROI</div><div class="dv">${c.roi === 0 ? '—' : c.roi.toFixed(1)}</div></div>
+        </div>
+        <div class="c-light-bar">
+          <span>指标体检：</span>
+          <span class="lights">
+            ${Array(greenN).fill('<span class="light green"></span>').join('')}
+            ${Array(yellowN).fill('<span class="light yellow"></span>').join('')}
+            ${Array(redN).fill('<span class="light red"></span>').join('')}
+          </span>
+          <span style="margin-left:6px;">绿${greenN} 黄${yellowN} 红${redN}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* =============== 弹窗：客户详情 =============== */
+function positionModalForEmbed() {
+  const mask = document.getElementById('modal-mask');
+  if (!mask) return;
+  try {
+    if (window.parent && window.parent !== window && window.frameElement) {
+      const rect = window.frameElement.getBoundingClientRect();
+      const parentH = window.parent.innerHeight || 900;
+      const visibleTop = Math.max(0, -rect.top);
+      const visibleBottom = Math.min(rect.height, parentH - rect.top);
+      const visibleH = Math.max(520, visibleBottom - visibleTop);
+      mask.style.position = 'absolute';
+      mask.style.inset = 'auto 0 auto 0';
+      mask.style.top = visibleTop + 'px';
+      mask.style.height = visibleH + 'px';
+      mask.style.alignItems = 'center';
+      mask.style.justifyContent = 'center';
+      return;
+    }
+  } catch (e) {}
+  mask.style.position = 'fixed';
+  mask.style.inset = '0';
+  mask.style.top = '';
+  mask.style.height = '';
+}
+
+function openDetail(id) {
+  const c = window.MY_CUSTOMERS.find(x => x.id === id);
+  if (!c) return;
+  const dict = window.METRIC_DICT;
+  const sCls = stageMap[c.stage];
+  
+  const metricRows = Object.entries(c.metrics).map(([key, m]) => {
+    const d = dict[key] || { name: key, unit: '', desc: '' };
+    const valStr = (typeof m.val === 'number') ? `${m.val}${d.unit}` : m.val;
+    const benchStr = (typeof m.benchmark === 'number') ? `${m.benchmark}${d.unit}` : m.benchmark;
+    const aspireRaw = (m.bench_val !== undefined) ? m.bench_val : m.benchmark;
+    const aspireStr = (typeof aspireRaw === 'number') ? `${aspireRaw}${d.unit}` : aspireRaw;
+    return `
+      <tr>
+        <td class="m-name">${d.name}<span class="desc">${d.desc}</span></td>
+        <td><span class="v-self ${m.status}">${valStr}</span></td>
+        <td><span class="v-bench">${benchStr}</span></td>
+        <td><span class="v-aspire">${aspireStr}</span></td>
+        <td class="light-cell"><span class="light ${m.status}"></span></td>
+      </tr>
+    `;
+  }).join('');
+
+  // 对标客户名称（带说明）
+  const aspireName = c.benchmark_customer || '—';
+  const aspireDesc = c.benchmark_customer_desc ? `（${c.benchmark_customer_desc}）` : '';
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="m-head">
+      <div class="m-title">${c.name}</div>
+      <button class="m-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="m-meta">
+      生命周期：<span class="stage-pill ${sCls}">${stageNameMap[c.stage]}（第${c.stage_days}天）</span><br>
+      赛道/类目：${c.track} / ${c.category}　|　客单价：¥${c.avg_price}<br>
+      主投链路：${c.main_link}<br>
+      日耗 ${c.daily_cost===0?'未起量':'¥'+fmt.cost(c.daily_cost)}　|　
+      周耗 ${c.week_cost===0?'—':'¥'+fmt.cost(c.week_cost)}　|　
+      ROI ${c.roi===0?'—':c.roi.toFixed(1)}
+    </div>
+
+    <!-- 服务团队信息条 -->
+    <div class="service-team-bar ${c.stage === 'mature' ? 'three' : ''}">
+      ${c.stage === 'mature' ? `
+      <div class="stb-card operator">
+        <div class="stb-icon">🤝</div>
+        <div class="stb-meta">
+          <div class="stb-label">KA直客销售</div>
+          <div class="stb-name">${c.ka_direct_sales || '-'}</div>
+        </div>
+      </div>` : ''}
+      <div class="stb-card operator">
+        <div class="stb-icon">👤</div>
+        <div class="stb-meta">
+          <div class="stb-label">行业运营</div>
+          <div class="stb-name">${c.industry_operator || '-'}</div>
+        </div>
+      </div>
+      <div class="stb-card provider">
+        <div class="stb-icon">🏢</div>
+        <div class="stb-meta">
+          <div class="stb-label">服务商</div>
+          <div class="stb-name">${c.service_provider || '-'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-section-title">
+      📊 指标对比 · 红黄绿灯诊断
+      <span class="hint">本客户 vs 行业benchmark vs 对标客户</span>
+    </div>
+    <table class="metric-table">
+      <thead>
+        <tr>
+          <th>指标</th>
+          <th>本客户</th>
+          <th>行业benchmark</th>
+          <th class="col-aspire">🎯 对标客户<span class="col-aspire-sub">${aspireName}${aspireDesc}</span></th>
+          <th class="light-cell">状态</th>
+        </tr>
+      </thead>
+      <tbody>${metricRows}</tbody>
+    </table>
+
+    <div class="v01-tip">
+      💡 <strong>v0.5 说明：</strong>服务映射已按生命周期展示；指标 Benchmark 取同二级运营行业、同消耗层级 Top1 客户。智投消耗占比、4+M、短直双开等待补充字段后自动接入。
+    </div>
+  `;
+  positionModalForEmbed();
+  document.getElementById('modal-mask').classList.add('show');
+}
+
+function closeDetail() {
+  const mask = document.getElementById('modal-mask');
+  mask.classList.remove('show');
+  mask.removeAttribute('style');
+}
+
+/* =============== 事件绑定 =============== */
+// 生命周期筛选（带禁用拦截）
+document.querySelectorAll('.filter-btn[data-stage]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('disabled')) return; // 成熟期暂不支持
+    document.querySelectorAll('.filter-btn[data-stage]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentStageFilter = btn.dataset.stage;
+    renderCustomerGrid();
+  });
+});
+
+// 日耗维度筛选
+document.querySelectorAll('.filter-btn[data-cost]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-cost]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCostFilter = btn.dataset.cost;
+    renderCustomerGrid();
+  });
+});
+
+// 销售归属切换（右上角下拉）：真实数据接入后按 MY_CUSTOMERS 动态生成销售列表
+const salesSelectEl = document.getElementById('sales-select');
+if (salesSelectEl) {
+  const salesOptions = ['all', ...Array.from(new Set((window.MY_CUSTOMERS || []).map(c => c.sales_owner).filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b),'zh-Hans-CN'))];
+  salesSelectEl.innerHTML = salesOptions.map(s => `<option value="${s}">${s === 'all' ? '全量销售（团队视图）' : s}</option>`).join('');
+  if (salesOptions.includes(currentSalesFilter)) salesSelectEl.value = currentSalesFilter;
+  else { currentSalesFilter = 'all'; salesSelectEl.value = 'all'; }
+  salesSelectEl.addEventListener('change', (e) => {
+    currentSalesFilter = e.target.value;
+    renderFunnel();
+    renderServiceCards();
+    renderCustomerGrid();
+  });
+}
+
+document.getElementById('modal-mask').addEventListener('click', e => {
+  if (e.target.id === 'modal-mask') closeDetail();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDetail();
+});
+
+/* =============== 启动 =============== */
+renderFunnel();
+renderServiceCards();
+renderCustomerGrid();
+</script>
+
+</body>
+</html>

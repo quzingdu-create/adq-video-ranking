@@ -1,0 +1,124 @@
+{
+  "_meta": {
+    "purpose": "人工归属覆盖层。当登记系统的归属变更没能写进 CloudBase 时，在此手动登记当前生效归属。脚本加载 records 后用本层强制覆盖匹配 shortName 的 sale 字段，优先级最高。",
+    "format": "shortName -> {sale, reason, date}",
+    "location_note": "2026-06-05 从 /tmp/kanban_0603/ 迁到项目 data 目录持久化，纳入 git，永不丢失。脚本 rebuild_kpi_csv.py 优先读本文件。"
+  },
+  "overrides": {
+    "广州星巢电子商务有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州丰泽区创域商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州鲤城区骁腾商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "泉州丰泽区佑羽商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
+    },
+    "泉州韩依梦诺贸易有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
+    },
+    "泉州市酷旅科技有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu；改简称泉州七匹狼）",
+      "date": "2026-06-06"
+    },
+    "杭州云一绒服饰有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 Jonzhu）",
+      "date": "2026-06-06"
+    },
+    "广州美丽商业有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kinsleyjin）",
+      "date": "2026-06-06"
+    },
+    "佛山市南海区缘芝甄选百货商行(个体工商户)": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 ruilingzhan）",
+      "date": "2026-06-06"
+    },
+    "晋江市谦煜商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-5 用户指定归属 lijunwu（改简称为泉州七匹狼）",
+      "date": "2026-06-05"
+    },
+    "河北雄安塔瑞商贸有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-6 用户名单指定归属 yvaineechen（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "温州市瓯海瞿溪菲盟贸易商行(个体工商户)": {
+      "sale": "yvaineechen",
+      "reason": "6-6 用户名单指定归属 yvaineechen（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "宜兴市九岚紫砂文化有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-6 用户名单指定归属 yvaineechen（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "武汉夺帅服装有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-6 用户名单指定归属 yvaineechen（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "辽源市正曦袜业有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-6 用户名单指定归属 yvaineechen（原 brownfan）",
+      "date": "2026-06-06"
+    },
+    "广州尼茗贸易有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "6-6 用户名单指定归属 ruilingzhan（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "嘉兴柏桢服饰有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "义乌市八兔电子商务有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-6 用户名单指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-06"
+    },
+    "杭州朱炳仁文创有限公司": {
+      "sale": "lijunwu",
+      "reason": "6-7 用户指定归属 lijunwu（原 kaikaigenli）",
+      "date": "2026-06-07"
+    },
+    "义乌市小师哥供应链管理有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-10 用户指定归属 yvaineechen（原 kaikaigenli；云端已改但本地tuoke未同步，加override根治）",
+      "date": "2026-06-10"
+    },
+    "义乌市科茹电子商务有限公司": {
+      "sale": "yvaineechen",
+      "reason": "6-10 用户指定归属 yvaineechen（原 Jonzhu；云端已改但本地tuoke未同步，加override根治）",
+      "date": "2026-06-10"
+    },
+    "广州如一传媒有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "6-10 用户指定归属 ruilingzhan（原 kaikaigenli；云端已改，加override防rebuild打回）",
+      "date": "2026-06-10"
+    },
+    "常熟市未半服装有限公司": {
+      "sale": "brownfan",
+      "reason": "6-10 云端saleHistory确认kaikaigenli→brownfan(6/9改)",
+      "date": "2026-06-10"
+    }
+  }
+}

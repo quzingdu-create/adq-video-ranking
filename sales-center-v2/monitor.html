@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>监察后台 · 销售作战中心</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="data/monitor_session_data.js?v=20260610a"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --border: #e5e9f0;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --primary: #3b82f6;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 20px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .time-window-bar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+    background: var(--panel); border-radius: 10px; padding: 12px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .tw-label { font-size: 13px; color: var(--text-2); font-weight: 500; }
+  .tw-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: white; color: var(--text); font-size: 13px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tw-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .tw-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .custom-range { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+  .custom-range input[type="date"] {
+    padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px;
+    font-size: 13px; color: var(--text);
+  }
+  .custom-range button {
+    padding: 4px 12px; border-radius: 4px; border: none;
+    background: var(--primary); color: white; font-size: 13px; cursor: pointer;
+  }
+  .custom-range button:hover { opacity: 0.9; }
+  .date-display { font-size: 13px; color: var(--primary); font-weight: 600; margin-left: 8px; }
+  .data-note { font-size: 11px; color: var(--text-2); margin-left: auto; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card {
+    background: var(--panel); border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border);
+  }
+  .card-label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .card-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+  .card-value.success { color: var(--success); }
+  .card-value.warn { color: var(--warn); }
+  .card-value.danger { color: var(--danger); }
+  .card-sub { font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .section {
+    background: var(--panel); border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--border);
+  }
+  .section h2 { font-size: 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #f8fafd; font-weight: 600; color: var(--text-2); font-size: 12px; }
+  tr:hover { background: #f8fafd; }
+  .rtx-tag {
+    display: inline-block; background: #eff6ff; color: var(--primary);
+    padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  }
+  .duration-good { color: var(--success); font-weight: 600; }
+  .duration-mid { color: var(--warn); font-weight: 600; }
+  .duration-low { color: var(--text-2); }
+  .loading { text-align: center; padding: 40px; color: var(--text-2); }
+  .error { text-align: center; padding: 40px; color: var(--danger); }
+  #chart { width: 100%; height: 360px; }
+  .refresh-btn {
+    float: right; background: var(--primary); color: white; border: none;
+    padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer;
+  }
+  .refresh-btn:hover { opacity: 0.9; }
+  .login-status {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
+  }
+  .login-status.online { background: var(--success); }
+  .login-status.offline { background: var(--text-2); }
+</style>
+</head>
+<body>
+
+<h1>&#x1F4CA; 监察后台 · 销售作战中心</h1>
+
+<!-- 时间窗口选择器 -->
+<div class="time-window-bar">
+  <span class="tw-label">时间窗口：</span>
+  <button class="tw-btn active" data-range="today" onclick="selectRange('today')">今天</button>
+  <button class="tw-btn" data-range="7d" onclick="selectRange('7d')">最近7天</button>
+  <button class="tw-btn" data-range="30d" onclick="selectRange('30d')">最近30天</button>
+  <button class="tw-btn" data-range="custom" onclick="selectRange('custom')">自定义</button>
+  <div class="custom-range" id="customRange" style="display:none;">
+    <input type="date" id="startDate">
+    <span>至</span>
+    <input type="date" id="endDate">
+    <button onclick="applyCustomRange()">确定</button>
+  </div>
+  <span class="date-display" id="dateDisplay"></span>
+  <span class="data-note" id="dataNote"></span>
+</div>
+
+<!-- 概览卡片 -->
+<div class="grid">
+  <div class="card">
+    <div class="card-label">Session 次数</div>
+    <div class="card-value" id="totalSessions">-</div>
+    <div class="card-sub">人次</div>
+  </div>
+  <div class="card">
+    <div class="card-label">总有效时长</div>
+    <div class="card-value success" id="totalDuration">-</div>
+    <div class="card-sub">分钟</div>
+  </div>
+  <div class="card">
+    <div class="card-label" id="card3Label">独立用户·天</div>
+    <div class="card-value warn" id="card3Value">-</div>
+    <div class="card-sub" id="card3Sub">人·天</div>
+  </div>
+  <div class="card">
+    <div class="card-label">人均有效时长</div>
+    <div class="card-value" id="avgDuration">-</div>
+    <div class="card-sub">分钟/人次</div>
+  </div>
+</div>
+
+<!-- 趋势图 -->
+<div class="section">
+  <h2 id="chartTitle">&#x1F4C8; 登录趋势（按销售）<button class="refresh-btn" onclick="loadAll()">刷新</button></h2>
+  <div id="chart"></div>
+</div>
+
+<!-- 销售对比表 -->
+<div class="section">
+  <h2 id="tableTitle">&#x1F4CA; 销售对比表</h2>
+  <div id="salesTable"><div class="loading">加载中...</div></div>
+</div>
+
+<!-- 登录明细表 -->
+<div class="section">
+  <h2 id="detailTitle">&#x1F464; 登录明细</h2>
+  <div id="detailTable"><div class="loading">加载中...</div></div>
+</div>
+
+<script>
+const SALES_NAMES = ['brownfan','lijunwu','jonzhu','kaikaigenli','kinsleyjin','ruilingzhan','yvaineechen'];
+
+let currentRange = 'today';
+let customStart = null;
+let customEnd = null;
+
+// ============ 本地数据查询（替代 CloudBase） ============
+
+function queryLocalByDates(dateList) {
+  // 从 MONITOR_SESSION_DATA 中按日期筛选，返回与 CloudBase 格式一致的结构
+  const allData = typeof MONITOR_SESSION_DATA !== 'undefined' ? MONITOR_SESSION_DATA : [];
+  const results = dateList.map(date => {
+    const list = allData.filter(s => s.date === date).map(s => {
+      // 有效时长口径（2026-06-08 子青拍板：只认 duration 真操作时长，单次封顶1小时）
+      // duration = 写入端 sessionEnd 按 lastActivityTime-loginTime 算的真操作时长（已扣挂机）
+      // 关标签页未正常退出的 session duration=0，不计入（避免 lastActiveTime 心跳爆表）
+      const CAP = 3600; // 单次有效时长上限 1 小时（秒）
+      let effectiveDuration = Math.min(s.duration || 0, CAP);
+      return Object.assign({}, s, { effectiveDuration: effectiveDuration });
+    });
+    // 聚合统计
+    const stats = { totalSessions: list.length, totalDuration: 0, byDate: {} };
+    list.forEach(r => {
+      stats.totalDuration += r.effectiveDuration;
+      const d = r.date || date;
+      if (!stats.byDate[d]) stats.byDate[d] = { count: 0, duration: 0 };
+      stats.byDate[d].count++;
+      stats.byDate[d].duration += r.effectiveDuration;
+    });
+    return { date: date, res: { list: list, stats: stats } };
+  });
+  return results;
+}
+
+function formatDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function parseDate(s) {
+  const p = s.split('-');
+  return new Date(parseInt(p[0]), parseInt(p[1])-1, parseInt(p[2]));
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function formatDuration(sec) {
+  if (!sec || sec < 60) return '<1分钟';
+  const min = Math.round(sec / 60);
+  if (min < 60) return min + '分钟';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return h + '小时' + (m ? m + '分' : '');
+}
+
+function getDurationClass(sec) {
+  if (!sec) return 'duration-low';
+  const min = sec / 60;
+  if (min >= 30) return 'duration-good';
+  if (min >= 10) return 'duration-mid';
+  return 'duration-low';
+}
+
+const COLORS = {
+  brownfan: '#3b82f6', lijunwu: '#10b981', jonzhu: '#f59e0b',
+  kaikaigenli: '#ef4444', kinsleyjin: '#8b5cf6', ruilingzhan: '#06b6d4', yvaineechen: '#ec4899'
+};
+
+// ============ 时间窗口切换 ============
+
+function selectRange(range) {
+  currentRange = range;
+  document.querySelectorAll('.tw-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.tw-btn[data-range="' + range + '"]').classList.add('active');
+
+  const customEl = document.getElementById('customRange');
+  if (range === 'custom') {
+    customEl.style.display = 'flex';
+    const end = new Date();
+    const start = new Date(); start.setDate(start.getDate() - 6);
+    document.getElementById('startDate').value = formatDate(start);
+    document.getElementById('endDate').value = formatDate(end);
+    return;
+  } else {
+    customEl.style.display = 'none';
+  }
+
+  updateDateDisplay();
+  loadAll();
+}
+
+function applyCustomRange() {
+  const sd = document.getElementById('startDate').value;
+  const ed = document.getElementById('endDate').value;
+  if (!sd || !ed) { alert('请选择开始和结束日期'); return; }
+  if (parseDate(sd) > parseDate(ed)) { alert('开始日期不能晚于结束日期'); return; }
+  customStart = sd;
+  customEnd = ed;
+  updateDateDisplay();
+  loadAll();
+}
+
+function updateDateDisplay() {
+  const el = document.getElementById('dateDisplay');
+  if (currentRange === 'today') {
+    el.textContent = formatDate(new Date()) + '（今天）';
+  } else if (currentRange === '7d') {
+    const end = new Date();
+    const start = new Date(); start.setDate(start.getDate() - 6);
+    el.textContent = formatDate(start) + ' ~ ' + formatDate(end);
+  } else if (currentRange === '30d') {
+    const end = new Date();
+    const start = new Date(); start.setDate(start.getDate() - 29);
+    el.textContent = formatDate(start) + ' ~ ' + formatDate(end);
+  } else if (currentRange === 'custom') {
+    el.textContent = customStart + ' ~ ' + customEnd;
+  }
+}
+
+function getDateRange() {
+  const dates = [];
+  const today = new Date();
+  let start, end;
+
+  if (currentRange === 'today') {
+    start = new Date(today); end = new Date(today);
+  } else if (currentRange === '7d') {
+    start = new Date(today); start.setDate(start.getDate() - 6);
+    end = new Date(today);
+  } else if (currentRange === '30d') {
+    start = new Date(today); start.setDate(start.getDate() - 29);
+    end = new Date(today);
+  } else if (currentRange === 'custom') {
+    start = parseDate(customStart); end = parseDate(customEnd);
+  }
+
+  const cur = new Date(start);
+  while (cur <= end) {
+    dates.push(formatDate(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return dates;
+}
+
+// ============ 数据加载（本地模式） ============
+
+function loadDashboard() {
+  const dates = getDateRange();
+  const isToday = (currentRange === 'today');
+
+  const allResults = queryLocalByDates(dates);
+
+  let totalSessions = 0, totalDuration = 0;
+  const allSessions = [];
+  allResults.forEach(({ res }) => {
+    totalSessions += (res.stats && res.stats.totalSessions) || 0;
+    totalDuration += (res.stats && res.stats.totalDuration) || 0;
+    if (res.list) res.list.forEach(s => allSessions.push(s));
+  });
+
+  const uniqueUserDays = new Set(allSessions.map(s => (s.rtx || '') + '|' + (s.date || ''))).size;
+
+  let onlineCount = 0;
+  if (isToday) {
+    const now = Date.now();
+    const onlineRtms = new Set();
+    allSessions.forEach(s => {
+      if (s.lastActiveTime && (now - s.lastActiveTime) < 30 * 60 * 1000) {
+        onlineRtms.add(s.rtx);
+      }
+    });
+    onlineCount = onlineRtms.size;
+  }
+
+  const avgDuration = totalSessions > 0 ? Math.round((totalDuration / 60) / totalSessions) : 0;
+
+  document.getElementById('totalSessions').textContent = totalSessions;
+  document.getElementById('totalDuration').textContent = Math.round(totalDuration / 60);
+
+  if (isToday) {
+    document.getElementById('card3Label').textContent = '当前在线人数';
+    document.getElementById('card3Value').textContent = onlineCount;
+    document.getElementById('card3Sub').textContent = '30分钟内活跃';
+  } else {
+    document.getElementById('card3Label').textContent = '独立用户·天';
+    document.getElementById('card3Value').textContent = uniqueUserDays;
+    document.getElementById('card3Sub').textContent = '人·天';
+  }
+  document.getElementById('avgDuration').textContent = avgDuration;
+
+  if (isToday) {
+    document.getElementById('detailTitle').textContent = '&#x1F464; 今日登录明细';
+    renderDetailTable(allSessions, dates[0]);
+  } else {
+    document.getElementById('detailTitle').textContent = '&#x1F464; 日期范围登录汇总（' + dates[0] + ' ~ ' + dates[dates.length-1] + '）';
+    renderSummaryTable(allResults);
+  }
+}
+
+function renderDetailTable(list, date) {
+  if (!list || !list.length) {
+    document.getElementById('detailTable').innerHTML = '<div class="loading">暂无数据</div>';
+    return;
+  }
+
+  const rtxMap = {};
+  list.forEach(s => {
+    if (!rtxMap[s.rtx]) rtxMap[s.rtx] = [];
+    rtxMap[s.rtx].push(s);
+  });
+
+  const now = Date.now();
+
+  let html = '<table><thead><tr>' +
+    '<th>用户</th><th>登录次数</th><th>总停留时长</th><th>首次登录</th><th>最后活跃</th><th>设备</th><th>状态</th>' +
+    '</tr></thead><tbody>';
+
+  Object.entries(rtxMap).forEach(([rtx, sessions]) => {
+    const totalDur = sessions.reduce((sum, s) => sum + (s.effectiveDuration || s.duration || 0), 0);
+    const firstLogin = Math.min(...sessions.map(s => s.loginTime));
+    const lastActive = Math.max(...sessions.map(s => s.lastActiveTime || s.loginTime));
+    const isOnline = (now - lastActive) < 30 * 60 * 1000;
+    const device = (sessions[0].deviceInfo || '').match(/(Windows|Mac|iPhone|iPad|Android)/)?.[0] || 'PC';
+
+    html += `<tr>
+      <td><span class="rtx-tag">${rtx}</span></td>
+      <td>${sessions.length}</td>
+      <td class="${getDurationClass(totalDur)}">${formatDuration(totalDur)}</td>
+      <td>${formatTime(firstLogin)}</td>
+      <td>${formatTime(lastActive)}</td>
+      <td>${device}</td>
+      <td><span class="login-status ${isOnline ? 'online' : 'offline'}"></span>${isOnline ? '在线' : '离线'}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('detailTable').innerHTML = html;
+}
+
+function renderSummaryTable(allResults) {
+  const salesDateMap = {};
+  const dates = allResults.map(r => r.date);
+
+  allResults.forEach(({ date, res }) => {
+    const rtxMap = {};
+    (res.list || []).forEach(s => {
+      if (!rtxMap[s.rtx]) rtxMap[s.rtx] = { count: 0, duration: 0 };
+      rtxMap[s.rtx].count++;
+      rtxMap[s.rtx].duration += (s.effectiveDuration || s.duration || 0);
+    });
+    Object.entries(rtxMap).forEach(([rtx, data]) => {
+      if (!salesDateMap[rtx]) salesDateMap[rtx] = {};
+      salesDateMap[rtx][date] = data;
+    });
+  });
+
+  let html = '<table><thead><tr><th>销售</th>';
+  dates.forEach(d => { html += '<th>' + d.slice(5) + '</th>'; });
+  html += '<th>合计次数</th><th>合计时长</th></tr></thead><tbody>';
+
+  SALES_NAMES.forEach(s => {
+    let totalCount = 0, totalDur = 0;
+    html += '<tr><td><span class="rtx-tag" style="background:' + COLORS[s] + '20;color:' + COLORS[s] + '">' + s + '</span></td>';
+    dates.forEach(d => {
+      const data = salesDateMap[s] && salesDateMap[s][d];
+      if (data) {
+        totalCount += data.count;
+        totalDur += data.duration;
+        html += '<td>' + data.count + '次/' + Math.round(data.duration/60) + '分</td>';
+      } else {
+        html += '<td>-</td>';
+      }
+    });
+    html += '<td><strong>' + totalCount + '次</strong></td>';
+    html += '<td>' + Math.round(totalDur/60) + '分钟</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('detailTable').innerHTML = html;
+}
+
+function loadTrend() {
+  const dates = getDateRange();
+  const shortDates = dates.map(d => d.slice(5));
+  const results = queryLocalByDates(dates);
+
+  const salesData = {};
+  SALES_NAMES.forEach(s => { salesData[s] = { counts: [], durations: [] }; });
+
+  results.forEach(({ res }) => {
+    const rtxMap = {};
+    (res.list || []).forEach(s => {
+      if (!rtxMap[s.rtx]) rtxMap[s.rtx] = { count: 0, duration: 0 };
+      rtxMap[s.rtx].count++;
+      rtxMap[s.rtx].duration += (s.effectiveDuration || s.duration || 0);
+    });
+    SALES_NAMES.forEach(s => {
+      salesData[s].counts.push(rtxMap[s] ? rtxMap[s].count : 0);
+      salesData[s].durations.push(rtxMap[s] ? Math.round(rtxMap[s].duration / 60) : 0);
+    });
+  });
+
+  renderChart(salesData, shortDates, dates);
+  renderSalesTable(salesData, shortDates);
+}
+
+function renderChart(salesData, shortDates, fullDates) {
+  const durSeries = SALES_NAMES.map(s => ({
+    name: s, type: 'bar', stack: 'duration',
+    data: salesData[s].durations,
+    itemStyle: { color: COLORS[s] }
+  }));
+
+  const titleText = currentRange === 'today' ? '今日登录时长（按销售）' :
+                    (fullDates[0] + ' ~ ' + fullDates[fullDates.length-1] + ' 登录时长（按销售）');
+
+  document.getElementById('chartTitle').innerHTML = '&#x1F4C8; ' + titleText + ' <button class="refresh-btn" onclick="loadAll()">刷新</button>';
+
+  const chart = echarts.init(document.getElementById('chart'));
+  chart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        let html = '<strong>' + params[0].axisValue + '</strong><br/>';
+        params.forEach(p => {
+          if (p.value > 0) {
+            const idx = p.dataIndex;
+            const sName = p.seriesName;
+            const count = salesData[sName].counts[idx];
+            html += p.marker + ' ' + sName + ': ' + p.value + '分钟 (登录' + count + '次)<br/>';
+          }
+        });
+        return html;
+      }
+    },
+    legend: { data: SALES_NAMES },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { type: 'category', data: shortDates },
+    yAxis: { type: 'value', name: '停留时长(分钟)' },
+    series: durSeries
+  });
+
+  window.addEventListener('resize', () => chart.resize());
+}
+
+function renderSalesTable(salesData, shortDates) {
+  const fullDates = getDateRange();
+  let html = '<table><thead><tr><th>销售</th>';
+  shortDates.forEach(d => { html += '<th>' + d + '</th>'; });
+  html += '<th>合计次数</th><th>合计时长</th></tr></thead><tbody>';
+
+  SALES_NAMES.forEach(s => {
+    const totalCount = salesData[s].counts.reduce((a, b) => a + b, 0);
+    const totalDur = salesData[s].durations.reduce((a, b) => a + b, 0);
+    html += '<tr>';
+    html += '<td><span class="rtx-tag" style="background:' + COLORS[s] + '20;color:' + COLORS[s] + '">' + s + '</span></td>';
+    salesData[s].counts.forEach((c, idx) => {
+      const dur = salesData[s].durations[idx];
+      const cell = (c || dur) ? (c + '次/' + dur + '分') : '-';
+      html += '<td>' + cell + '</td>';
+    });
+    html += '<td><strong>' + totalCount + '次</strong></td>';
+    html += '<td>' + totalDur + '分钟</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('salesTable').innerHTML = html;
+  document.getElementById('tableTitle').textContent = '&#x1F4CA; 销售对比表（' + fullDates[0] + ' ~ ' + fullDates[fullDates.length-1] + '）';
+}
+
+// ============ 主入口 ============
+
+function loadAll() {
+  const allData = typeof MONITOR_SESSION_DATA !== 'undefined' ? MONITOR_SESSION_DATA : [];
+  if (!allData.length) {
+    document.getElementById('detailTable').innerHTML = '<div class="error">&#x26A0;&#xFE0F; 暂无数据，请更新 monitor_session_data.js</div>';
+    return;
+  }
+
+  // 显示数据时间范围
+  const dates = [...new Set(allData.map(s => s.date))].filter(Boolean).sort();
+  document.getElementById('dataNote').textContent = '数据范围：' + (dates[0] || '-') + ' ~ ' + (dates[dates.length-1] || '-') + '（' + allData.length + '条）';
+
+  loadDashboard();
+  loadTrend();
+}
+
+// 页面加载后立即执行（不需要等 CloudBase）
+loadAll();
+// 每60秒自动刷新
+setInterval(loadAll, 60000);
+</script>
+</body>
+</html>

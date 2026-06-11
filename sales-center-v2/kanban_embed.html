@@ -1,0 +1,3849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="data/register_lookup_data.js"></script>
+<script src="data/laoke_lookup_data.js?v=20260611m1"></script>
+<!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
+     相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
+<script src="data/bulk_import_rows.js?v=20260611m1"></script>
+<script src="data/tuoke_real_records.js?v=20260611m1"></script>
+<script src="data/customer_link_data.js?v=20260611m1"></script>
+<script src="data/center_sales_summary.js?v=20260611m1"></script>
+<script src="data/center_quarter_summary.js?v=20260611m1"></script>
+<script src="data/center_daily_kpi.js?v=20260611m1"></script>
+<script src="data/delivery_side_summary.js?v=20260611m1"></script>
+<script src="data/top80_effective_metrics.js?v=20260611m1"></script>
+<script src="data/top_status_data.js?v=20260611m1"></script>
+<script src="data/enough_candidates.js?v=20260611m1"></script>
+<script src="data/handover_customers_519.js?v=20260611m1"></script>
+<script src="data/first_quarter.js?v=20260611m1"></script>
+<script src="data/customer_lifecycle.js?v=20260611m1"></script>
+<!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_sync.js?v=20260611m1"></script>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --panel: #ffffff;
+    --panel-2: #f8fafd;
+    --border: #e5e9f0;
+    --border-2: #eef1f6;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --text-3: #9ca3af;
+    --primary: #3b82f6;
+    --primary-2: #2563eb;
+    --primary-bg: #eff6ff;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warn: #f59e0b;
+    --warn-bg: #fffbeb;
+    --danger: #ef4444;
+    --danger-bg: #fef2f2;
+    --gold: #d97706;
+    --gold-bg: #fef3c7;
+    --purple: #8b5cf6;
+    --purple-bg: #f5f3ff;
+    /* 涨跌色（中国股市习惯：涨=绿、跌=红） */
+    --up: #16a34a;
+    --up-bg: #dcfce7;
+    --down: #dc2626;
+    --down-bg: #fee2e2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    /* min-width removed for mobile */
+    padding-bottom: 60px;
+  }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 28px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar h1 {
+    font-size: 18px; font-weight: 600;
+    background: linear-gradient(90deg, var(--primary), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .topbar h1 .ver { font-size: 12px; color: var(--text-2); margin-left: 8px; -webkit-text-fill-color: var(--text-2); font-weight: 400; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar select, .topbar button, .topbar a.btn-link {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    transition: all 0.2s; text-decoration: none; display: inline-block;
+  }
+  .topbar select:hover, .topbar button:hover, .topbar a.btn-link:hover { border-color: var(--primary); color: var(--primary); }
+  .topbar a.btn-link.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .topbar a.btn-link.primary:hover { color: #fff; background: var(--primary-2); }
+  .view-toggle {
+    display: inline-flex; background: var(--panel-2); border-radius: 8px; padding: 3px;
+    border: 1px solid var(--border);
+  }
+  .view-toggle button {
+    background: transparent; border: none; padding: 5px 14px; border-radius: 6px;
+    color: var(--text-2); font-size: 13px; cursor: pointer;
+  }
+  .view-toggle button.active { background: var(--primary); color: #fff; }
+
+  .container { padding: 20px 28px; }
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title .left { display: flex; align-items: center; gap: 10px; }
+  .section-title .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+    background: var(--primary-bg); color: var(--primary);
+  }
+  .section-title .right { display: flex; gap: 8px; }
+  .section-title .right button {
+    background: #fff; color: var(--text-2); border: 1px solid var(--border);
+    padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .section-title .right button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* KPI 大卡 */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-card.wide { grid-column: span 1; }
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .kpi-card {
+    background: #fff;
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    background: var(--accent, var(--primary));
+  }
+  .kpi-card.gold { --accent: var(--gold); }
+  .kpi-card.purple { --accent: var(--purple); }
+  .kpi-card.success { --accent: var(--success); }
+  .kpi-card .label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .kpi-card .value-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; color: var(--text); }
+  .kpi-card .target { font-size: 13px; color: var(--text-2); }
+  .progress-bar {
+    width: 100%; height: 6px; background: var(--border-2); border-radius: 3px; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent, var(--primary));
+    border-radius: 3px; transition: width 0.6s;
+  }
+  .kpi-card .meta {
+    display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2);
+  }
+  .kpi-card .pct { color: var(--accent, var(--primary)); font-weight: 600; }
+
+  /* 销售 KPI 作战排行 */
+  .sales-progress-list {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 0; box-shadow: var(--shadow); overflow: hidden;
+  }
+  .sales-kpi-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .sales-kpi-table th { background:var(--panel-2); color:var(--text-2); font-weight:600; padding:10px 12px; text-align:left; border-bottom:1px solid var(--border-2); }
+  .sales-kpi-table td { padding:11px 12px; border-bottom:1px dashed var(--border-2); vertical-align:middle; }
+  .sales-kpi-table tr:last-child td { border-bottom:none; }
+  .sales-kpi-table tr.current-sale td { background:#eef4ff; }
+  .sales-kpi-table tr.current-sale .name { color:var(--primary); }
+  .sales-kpi-table .name { font-weight:700; color:var(--text); }
+  .metric-main { font-weight:700; color:var(--text); }
+  .metric-sub { color:var(--text-2); font-size:12px; margin-top:2px; }
+  .delta-up { color:var(--success); font-weight:700; }
+  .delta-down { color:var(--danger); font-weight:700; }
+  .delta-flat { color:var(--text-2); font-weight:700; }
+  .rate-pill { display:inline-block; min-width:48px; text-align:center; padding:3px 8px; border-radius:12px; font-weight:700; background:var(--primary-bg); color:var(--primary); }
+  .rate-pill.gold { background:var(--gold-bg); color:var(--gold); }
+  .status-pill { display:inline-block; padding:3px 8px; border-radius:12px; font-size:12px; font-weight:700; }
+  .status-good { background:var(--success-bg); color:var(--success); }
+  .status-watch { background:var(--danger-bg); color:var(--danger); }
+  .status-mid { background:var(--gold-bg); color:var(--gold); }
+  .mini-bar { background: var(--border-2); height: 5px; border-radius: 3px; overflow: hidden; margin-top:4px; }
+  .mini-bar > div { height: 100%; background: var(--primary); border-radius: 3px; }
+
+  .panel {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; box-shadow: var(--shadow);
+  }
+  .panel h3 { font-size: 14px; margin-bottom: 12px; color: var(--text); font-weight: 600; }
+
+  /* 销售画像 */
+  .portrait-tabs {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .portrait-tabs button {
+    background: #fff; border: 1px solid var(--border); color: var(--text-2);
+    padding: 6px 14px; border-radius: 18px; cursor: pointer; font-size: 13px;
+  }
+  .portrait-tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .portrait-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .chart-box { height: 280px; }
+
+  /* 表格 */
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  table.tbl th, table.tbl td {
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-2);
+  }
+  table.tbl th { color: var(--text-2); font-weight: 500; background: var(--panel-2); }
+  table.tbl tr:hover td { background: var(--primary-bg); }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+  }
+  .tag.gray { background: var(--border-2); color: var(--text-2); }
+  .tag.blue { background: var(--primary-bg); color: var(--primary); }
+  .tag.green { background: var(--success-bg); color: var(--success); }
+  .tag.gold { background: var(--gold-bg); color: var(--gold); }
+  .tag.purple { background: var(--purple-bg); color: var(--purple); }
+  .tag.red { background: var(--danger-bg); color: var(--danger); }
+
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-chips .chip {
+    background: #fff; border: 1px solid var(--border); color: var(--text-2);
+    padding: 4px 10px; border-radius: 14px; font-size: 12px; cursor: pointer;
+  }
+  .filter-chips .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .toolbar input, .toolbar select {
+    background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 6px 10px; border-radius: 6px; font-size: 13px;
+  }
+
+  /* 模态框 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 24px; min-width: 480px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+  .modal h2 { margin-bottom: 16px; font-size: 16px; }
+  .modal .row { margin-bottom: 14px; }
+  .modal .row label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .modal .row input, .modal .row select {
+    width: 100%; background: #fff; color: var(--text); border: 1px solid var(--border);
+    padding: 8px 10px; border-radius: 6px; font-size: 13px;
+  }
+  .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  .hint {
+    font-size: 12px; color: var(--text-2); padding: 10px 14px;
+    background: var(--primary-bg); border-left: 3px solid var(--primary);
+    border-radius: 4px; margin-bottom: 12px;
+  }
+
+  .btn-sm {
+    background: var(--primary); color: #fff; border: none; padding: 4px 10px; border-radius: 5px;
+    font-size: 12px; cursor: pointer;
+  }
+  .btn-sm.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-2); }
+  .btn-sm:hover { opacity: 0.85; }
+
+  /* TOP10 产业带卡片网格 */
+  .zone-top-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px;
+  }
+  .zone-card {
+    background: #fff;
+    border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+    position: relative; overflow: hidden; transition: all 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .zone-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .zone-card .rank-num {
+    position: absolute; top: 10px; right: 12px;
+    font-size: 22px; font-weight: 700; color: var(--border-2);
+  }
+  .zone-card.r1 .rank-num { color: #fcd34d; }
+  .zone-card.r2 .rank-num { color: #d1d5db; }
+  .zone-card.r3 .rank-num { color: #fbbf24; }
+  .zone-card .zone-name {
+    font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .zone-card .zone-loc { font-size: 11px; color: var(--text-2); margin-bottom: 12px; }
+  .zone-card .zone-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+    border-top: 1px dashed var(--border-2); padding-top: 10px;
+  }
+  .zone-card .stat { text-align: center; }
+  .zone-card .stat-num { font-size: 16px; font-weight: 700; color: var(--text); }
+  .zone-card .stat-num.gold { color: var(--gold); }
+  .zone-card .stat-num.purple { color: var(--purple); }
+  .zone-card .stat-label { font-size: 10px; color: var(--text-2); margin-top: 2px; }
+  .maturity-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+  }
+  .maturity-dot.cultiv { background: var(--success); }
+
+  .zone-collapse {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    margin-top: 4px; box-shadow: var(--shadow);
+  }
+  .zone-collapse-header {
+    padding: 12px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--text-2);
+  }
+  .zone-collapse-header:hover { color: var(--text); }
+  .zone-collapse-body { display: none; padding: 0 18px 18px; }
+  .zone-collapse.open .zone-collapse-body { display: block; }
+  .zone-collapse-header .arrow { transition: transform 0.2s; }
+  .zone-collapse.open .arrow { transform: rotate(180deg); }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* 涨跌色 tag/数值通用类（中国股市习惯：涨=绿、跌=红） */
+  .num-up   { color: var(--up)   !important; font-weight: 600; }
+  .num-down { color: var(--down) !important; font-weight: 600; }
+  .num-flat { color: var(--text-2) !important; }
+  .tag.up   { background: var(--up-bg);   color: var(--up); }
+  .tag.down { background: var(--down-bg); color: var(--down); }
+
+  /* ============= 移动端响应式 ============= */
+  @media (max-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    .grid-2   { grid-template-columns: 1fr !important; }
+    .portrait-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .zone-top-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    .container { padding: 14px; }
+    .modal { min-width: 90vw !important; max-width: 95vw !important; padding: 18px; }
+    .toolbar { gap: 6px; }
+    .toolbar input, .toolbar select { font-size: 12px; padding: 5px 8px; }
+    table.tbl { font-size: 12px; }
+    table.tbl th, table.tbl td { padding: 8px 6px; }
+    table.tbl thead { display: none; }
+    table.tbl tr {
+      display: block; margin-bottom: 12px; padding: 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: #fff;
+    }
+    table.tbl td {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px dashed var(--border-2); text-align: right;
+    }
+    table.tbl td:before {
+      content: attr(data-label); color: var(--text-2); font-weight: 500; margin-right: 10px; text-align: left;
+    }
+    table.tbl td:last-child { border-bottom: none; }
+    .chart-box { height: 240px !important; }
+  }
+  @media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: 1fr !important; }
+    .portrait-grid { grid-template-columns: 1fr !important; }
+    .zone-top-grid { grid-template-columns: 1fr !important; }
+    .topbar h1 { font-size: 15px; }
+    .topbar h1 .ver { display: none; }
+    .kpi-card .value { font-size: 22px; }
+    .filter-chips { flex-wrap: wrap; }
+  }
+
+
+  /* ===== v3.2 register 弹窗迁移 ===== */
+  .paste-zone { border:1.5px dashed #d9d9d9; border-radius:8px; padding:16px; text-align:center; color:#8c8c8c; cursor:pointer; transition:all .2s; background:#fafbfc; font-size:12px; }
+  .paste-zone:hover, .paste-zone.drag { border-color:#1677ff; color:#1677ff; background:#f0f7ff; }
+  .paste-zone .thumbs { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-start; margin-top:8px; }
+  .paste-zone .thumb { position:relative; width:72px; height:72px; border-radius:6px; overflow:hidden; border:1px solid #e8e8e8; }
+  .paste-zone .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .paste-zone .thumb .del { position:absolute; top:2px; right:2px; width:18px; height:18px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:60; display:none; align-items:center; justify-content:center; }
+  .lightbox.show { display:flex; }
+  .lightbox img { max-width:92vw; max-height:92vh; border-radius:8px; }
+  .name-hint { margin-top:6px; font-size:12px; line-height:1.6; }
+  .name-hint .row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .badge-laoke { display:inline-block; padding:1px 7px; border-radius:10px; background:#fff1f0; color:#cf1322; font-size:11px; font-weight:500; border:1px solid #ffa39e; }
+  .badge-newk  { display:inline-block; padding:1px 7px; border-radius:10px; background:#f6ffed; color:#389e0d; font-size:11px; font-weight:500; border:1px solid #b7eb8f; }
+  .badge-short { display:inline-block; padding:1px 7px; border-radius:10px; background:#e6f7ff; color:#1677ff; font-size:11px; font-weight:500; border:1px solid #91caff; }
+  .hint-dup    { margin-top:4px; padding:6px 10px; border-radius:6px; background:#fffbe6; color:#ad6800; border:1px solid #ffe58f; font-size:12px; }
+  .hint-dup b  { color:#d48806; }
+  .field input, .field select { width:100%; border:1px solid #d9d9d9; border-radius:6px; padding:6px 10px; font-size:13px; background:#fff; }
+  .field input:focus, .field select:focus { outline:none; border-color:#1677ff; box-shadow:0 0 0 2px rgba(22,119,255,.1); }
+  .field input:disabled { background:#f5f5f5; color:#bfbfbf; cursor:not-allowed; }
+  .field label.req::after { content:" *"; color:#ff4d4f; }
+  .checkbox-group label { display:inline-flex; align-items:center; gap:4px; margin-right:12px; font-size:13px; cursor:pointer; }
+
+
+  .top80-panel { padding:0; overflow:hidden; border:1px solid #dbeafe; box-shadow:0 10px 30px rgba(37,99,235,.08); }
+  .top80-table { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; }
+  .top80-table thead th { position:sticky; top:0; z-index:1; background:linear-gradient(180deg,#eff6ff,#dbeafe); color:#1e3a8a; font-weight:700; padding:10px 8px; border-bottom:1px solid #bfdbfe; white-space:nowrap; }
+  .top80-table tbody td { padding:10px 8px; border-bottom:1px solid #eef2ff; color:#1f2937; vertical-align:middle; white-space:nowrap; }
+  .top80-table tbody tr:nth-child(even) { background:#f8fafc; }
+  .top80-table tbody tr:hover { background:#eff6ff; }
+  .top80-table .name { max-width:260px; white-space:normal; font-weight:700; color:#111827; }
+  .top80-table td:nth-child(2) { font-weight:800; color:#2563eb; }
+  .top80-table td:nth-child(4) { font-weight:700; color:#7c3aed; }
+  .top80-table td:last-child { font-weight:700; }
+  .top80-table .status-ok { color:#059669; background:#ecfdf5; padding:3px 8px; border-radius:999px; }
+  .top80-table .status-miss { color:#b45309; background:#fffbeb; padding:3px 8px; border-radius:999px; }
+  /* 5/19 客户诊断按钮 */
+  .btn-diag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;
+    text-decoration: none; cursor: pointer; transition: background .15s;
+    white-space: nowrap;
+  }
+  .btn-diag:hover { background: #dbeafe; }
+  /* 修改/补充按钮（用户 2026-05-19） */
+  .btn-edit-record {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .btn-edit-record:hover { background: #dcfce7; }
+  .tag.orange { background:#fff7ed; color:#9a3412; border:1px solid #fed7aa; }
+  .tag.green  { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+  .tag.gray   { background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }
+
+  /* 客户投放状态打卡 - pill / 加状态按钮 / 历史徽标 */
+  .user-status-pill {
+    display:inline-block; padding:3px 10px; font-size:12px; font-weight:600;
+    color:#1d4ed8; background:#eff6ff; border:1px solid #bfdbfe;
+    border-radius:999px; cursor:pointer; user-select:none;
+    transition:all .15s ease;
+  }
+  .user-status-pill:hover { background:#dbeafe; border-color:#93c5fd; transform:translateY(-1px); }
+  .user-status-pill[data-status="待跟进"] { color:#92400e; background:#fef3c7; border-color:#fde68a; }
+  .user-status-pill[data-status="已建联"] { color:#1d4ed8; background:#eff6ff; border-color:#bfdbfe; }
+  .user-status-pill[data-status="投放中"] { color:#065f46; background:#d1fae5; border-color:#6ee7b7; }
+  .user-status-pill[data-status="已转化"] { color:#fff;    background:#10b981; border-color:#10b981; }
+  .user-status-pill[data-status="暂搁置"] { color:#6b7280; background:#f3f4f6; border-color:#d1d5db; }
+  .user-status-pill[data-status="流失"]   { color:#b91c1c; background:#fee2e2; border-color:#fca5a5; }
+
+  .btn-add-status {
+    display:inline-block; padding:3px 10px; font-size:12px; font-weight:600;
+    color:#6b7280; background:transparent; border:1px dashed #d1d5db;
+    border-radius:999px; cursor:pointer; user-select:none;
+    transition:all .15s ease;
+  }
+  .btn-add-status:hover { color:#2563eb; border-color:#2563eb; background:#eff6ff; }
+
+  .history-badge {
+    display:inline-block; min-width:18px; height:18px; line-height:18px;
+    padding:0 6px; margin-left:6px; font-size:11px; font-weight:700;
+    color:#fff; background:#f97316; border-radius:999px;
+    cursor:pointer; text-align:center; user-select:none;
+  }
+  .history-badge:hover { background:#ea580c; }
+
+  /* 状态选择器弹窗 */
+  .status-modal-mask {
+    position:fixed; inset:0; background:rgba(15,23,42,.45);
+    z-index:9999; display:flex; align-items:center; justify-content:center;
+  }
+  .status-modal {
+    background:#fff; border-radius:12px; width:min(420px,92vw);
+    box-shadow:0 20px 60px rgba(0,0,0,.25); overflow:hidden;
+  }
+  .status-modal-head {
+    padding:14px 20px; border-bottom:1px solid #e5e7eb;
+    display:flex; justify-content:space-between; align-items:center;
+    background:linear-gradient(180deg,#f8fafc,#fff);
+  }
+  .status-modal-head h3 { margin:0; font-size:15px; color:#111827; font-weight:700; }
+  .status-modal-head .close { cursor:pointer; color:#9ca3af; font-size:20px; line-height:1; }
+  .status-modal-body { padding:18px 20px; }
+  .status-modal-body .opt-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+  }
+  .status-opt {
+    padding:10px 6px; font-size:13px; font-weight:600;
+    color:#374151; background:#f9fafb; border:1px solid #e5e7eb;
+    border-radius:8px; cursor:pointer; transition:all .15s ease;
+  }
+  .status-opt:hover { background:#eff6ff; border-color:#93c5fd; color:#2563eb; }
+  .status-opt.active { background:#2563eb; border-color:#2563eb; color:#fff; }
+  .status-modal-body .note {
+    margin-top:14px; padding:8px 12px; font-size:12px; color:#6b7280;
+    background:#f9fafb; border-radius:6px;
+  }
+  .status-history-list {
+    max-height:320px; overflow-y:auto; margin:0; padding:0; list-style:none;
+  }
+  .status-history-list li {
+    padding:10px 0; border-bottom:1px dashed #e5e7eb;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:13px;
+  }
+  .status-history-list li:last-child { border-bottom:none; }
+  .status-history-list .ts { color:#9ca3af; font-size:11px; }
+
+  /* 销售明细行 - 交接客户黄色 tag / 合计行高亮 */
+  .sales-kpi-table tr.handover-row td { background:#fffbeb; }
+  .sales-kpi-table tr.handover-row .name::after {
+    content:"交接"; display:inline-block; margin-left:6px;
+    padding:1px 6px; font-size:10px; font-weight:600;
+    color:#b45309; background:#fef3c7; border:1px solid #fde68a;
+    border-radius:4px; vertical-align:middle;
+  }
+
+  /* 5/19 销售明细新表头：主指标大字 + 环比小字 + 「更多 ›」横向展开参考列 */
+  .sales-detail-wrap { overflow-x:auto; }
+  .sales-detail-tbl { width:100%; border-collapse:collapse; font-size:13px; min-width:880px; }
+  .sales-detail-tbl thead th {
+    background:linear-gradient(180deg,#eff6ff,#dbeafe);
+    color:#1e3a8a; font-weight:700; padding:10px 10px;
+    text-align:center; border-bottom:1px solid #bfdbfe; white-space:nowrap;
+  }
+  .sales-detail-tbl tbody td { padding:10px 10px; border-bottom:1px dashed var(--border-2); vertical-align:middle; text-align:center; white-space:nowrap; }
+  .sales-detail-tbl tbody tr:hover { background:#fafbff; }
+  .sales-detail-tbl tbody tr.current-sale td { background:#eef4ff; }
+  .sales-detail-tbl tbody tr.total-row td { background:#f0f9ff !important; font-weight:700; border-top:2px solid #7dd3fc; }
+  .sales-detail-tbl .name { text-align:left; font-weight:700; color:var(--text); }
+  .sales-detail-tbl .main-num { font-size:18px; font-weight:700; color:var(--text); line-height:1.1; }
+  .sales-detail-tbl .main-num.rising { color:#dc2626; }
+  .sales-detail-tbl .main-num.cost { color:#7c3aed; }
+  .sales-detail-tbl .sub-meta { font-size:10.5px; color:#9ca3af; margin-top:2px; line-height:1.2; }
+  .sales-detail-tbl .sub-meta .delta-up { color:#dc2626; }
+  .sales-detail-tbl .sub-meta .delta-down { color:#16a34a; }
+  .sales-detail-tbl .sub-meta .delta-flat { color:#9ca3af; }
+  .sales-detail-tbl .more-btn {
+    cursor:pointer; padding:4px 10px; font-size:12px; color:var(--primary);
+    border:1px solid #c7d2fe; background:#eef2ff; border-radius:14px;
+    user-select:none; transition:background .15s;
+  }
+  .sales-detail-tbl .more-btn:hover { background:#c7d2fe; }
+  .sales-detail-tbl tr.expanded .more-btn { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+  .sales-detail-tbl .ref-cell {
+    background:#fffbeb; border-left:2px solid #fbbf24;
+    transition:opacity .2s, transform .2s;
+  }
+  .sales-detail-tbl .ref-col-hidden { display:none; }
+  .sales-detail-tbl .ref-cell .label-tip {
+    font-size:10px; color:#92400e; margin-bottom:2px;
+  }
+  .sales-kpi-table tr.total-row td {
+    background:#f0f9ff !important; color:#0c4a6e !important;
+    font-weight:700 !important; border-top:2px solid #7dd3fc;
+  }
+
+</style>
+<style>
+  /* embed 模式：隐藏 Demo 提示条；topbar 保留但精简（只留功能按钮，藏标题和重复入口） */
+  body.embed-mode #demoBanner { display: none !important; }
+  body.embed-mode .topbar { padding: 8px 20px !important; min-height: auto !important; background: transparent !important; border: none !important; box-shadow: none !important; }
+  body.embed-mode .topbar h1,
+  body.embed-mode .topbar .btn-link,
+  body.embed-mode .topbar .view-toggle { display: none !important; }
+  body.embed-mode .topbar .topbar-right { width: 100%; justify-content: flex-end; }
+
+  /* ============= 客户生命周期模块 ============= */
+  .lc-tab-row { margin-bottom: 10px; }
+  .lc-cust-tabs, .lc-sales-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lc-cust-tabs button, .lc-sales-tabs button {
+    padding: 7px 14px; border: 1px solid #d1d5db; background: #fff; color: #4b5563;
+    border-radius: 18px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s;
+  }
+  .lc-cust-tabs button:hover, .lc-sales-tabs button:hover { border-color: #2563eb; color: #2563eb; }
+  .lc-cust-tabs button.active { background: linear-gradient(135deg,#2563eb,#7c3aed); color: #fff; border-color: transparent; }
+  .lc-sales-tabs button.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .lc-overview {
+    margin: 14px 0 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  .lc-ov-card {
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px;
+  }
+  .lc-ov-card .label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+  .lc-ov-card .value { font-size: 22px; font-weight: 700; color: #1f2937; }
+  .lc-ov-card .sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .lc-grid-wrap { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; margin-top: 10px; }
+  /* 服务三要素紧凑卡 */
+  .lc-service-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0 6px; }
+  .lc-svc-card { border-radius: 10px; padding: 10px 12px; border: 1px solid; transition: all .15s; }
+  .lc-svc-card:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.05); }
+  .lc-svc-card.stage-newbie { background: #ecfdf5; border-color: #a7f3d0; }
+  .lc-svc-card.stage-growth { background: #eff6ff; border-color: #bfdbfe; }
+  .lc-svc-card.stage-mature { background: #f5f3ff; border-color: #ddd6fe; }
+  .lc-svc-head { display: flex; align-items: center; gap: 6px; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.08); flex-wrap: wrap; }
+  .lc-svc-icon { font-size: 20px; }
+  .lc-svc-name { font-size: 14px; font-weight: 800; }
+  .stage-newbie .lc-svc-name { color: #059669; }
+  .stage-growth .lc-svc-name { color: #2563eb; }
+  .stage-mature .lc-svc-name { color: #7c3aed; }
+  .lc-svc-time { font-size: 11px; color: #6b7280; padding: 1px 6px; background: rgba(255,255,255,0.7); border-radius: 6px; }
+  .lc-svc-intensity { font-size: 10px; padding: 1px 7px; background: rgba(255,255,255,0.85); border-radius: 8px; margin-left: auto; font-weight: 600; color: #4b5563; }
+  .lc-svc-body { display: flex; flex-direction: column; gap: 6px; }
+  .lc-svc-block { display: flex; flex-direction: column; gap: 2px; font-size: 11px; }
+  .lc-svc-bt { font-weight: 600; color: #4b5563; font-size: 11px; }
+  .lc-svc-tags { color: #1f2937; line-height: 1.5; }
+  .lc-svc-goal { font-weight: 700; color: #111827; font-size: 12px; }
+  .lc-svc-detail { color: #6b7280; font-size: 10px; line-height: 1.5; margin-top: 2px; }
+  @media (max-width: 900px) { .lc-service-row { grid-template-columns: 1fr; } }
+  .lc-grid-legend { display: flex; gap: 10px; flex-wrap: wrap; padding: 10px 6px 0; font-size: 11px; color: #6b7280; }
+  .lg-tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+  .lg-tag::before { content: ''; width: 8px; height: 8px; border-radius: 50%; }
+  .lg-head::before { background: #ef4444; } .lg-head { color: #b91c1c; background: #fef2f2; }
+  .lg-mid::before  { background: #f59e0b; } .lg-mid  { color: #b45309; background: #fffbeb; }
+  .lg-tail::before { background: #3b82f6; } .lg-tail { color: #1d4ed8; background: #eff6ff; }
+  .lg-zero::before { background: #9ca3af; } .lg-zero { color: #4b5563; background: #f3f4f6; }
+  .lc-detail { margin-top: 18px; }
+  .lc-detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+  .lc-detail-head .badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #eff6ff; color: #2563eb; font-weight: 500; }
+  #lcDetailTable td.up { color: #16a34a; font-weight: 600; }
+  #lcDetailTable td.down { color: #dc2626; font-weight: 600; }
+  #lcDetailTable td.tier-head { color: #b91c1c; font-weight: 700; }
+  #lcDetailTable td.tier-mid { color: #b45309; font-weight: 600; }
+  #lcDetailTable td.invest-pill { padding: 0; }
+  #lcDetailTable td.invest-pill span { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .invest-adq { background: #eff6ff; color: #1d4ed8; }
+  .invest-qy  { background: #ecfdf5; color: #059669; }
+  .invest-both { background: #fef3c7; color: #b45309; }
+  .invest-none { background: #f3f4f6; color: #6b7280; }
+  /* === 客户详情弹窗（简版） === */
+  #lcModalMask { position: fixed; inset: 0; background: rgba(15,23,42,.45); backdrop-filter: blur(2px); z-index: 9999; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+  #lcModalMask.show { display: flex; }
+  .lc-modal { background: #fff; width: 100%; max-width: 560px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.25); overflow: hidden; animation: lcModalIn .18s ease; }
+  @keyframes lcModalIn { from { opacity: 0; transform: translateY(-12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .lc-modal-head { padding: 18px 20px 14px; color: #fff; position: relative; }
+  .lc-modal-head .stage-pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 12px; background: rgba(255,255,255,.22); margin-bottom: 8px; }
+  .lc-modal-head .cust-name { font-size: 18px; font-weight: 800; line-height: 1.35; padding-right: 32px; }
+  .lc-modal-head .cust-sub { font-size: 12px; opacity: .9; margin-top: 5px; }
+  .lc-modal-close { position: absolute; top: 14px; right: 16px; width: 28px; height: 28px; border: none; border-radius: 8px; background: rgba(255,255,255,.2); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; transition: background .15s; }
+  .lc-modal-close:hover { background: rgba(255,255,255,.35); }
+  .lc-modal-body { padding: 16px 20px 20px; }
+  .lc-modal-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .lc-mm { background: #f9fafb; border: 1px solid #f1f5f9; border-radius: 10px; padding: 10px 12px; }
+  .lc-mm .lbl { font-size: 11px; color: #6b7280; margin-bottom: 3px; }
+  .lc-mm .val { font-size: 19px; font-weight: 800; color: #1f2937; }
+  .lc-mm .val.up { color: #16a34a; } .lc-mm .val.down { color: #dc2626; }
+  .lc-mm .ext { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .lc-modal-sec-title { font-size: 12px; font-weight: 700; color: #374151; margin: 4px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .lc-svc-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .lc-svc-mini { border-radius: 10px; padding: 9px 10px; border: 1px solid #e5e7eb; background: #fff; text-align: center; }
+  .lc-svc-mini .t { font-size: 10px; color: #9ca3af; margin-bottom: 3px; }
+  .lc-svc-mini .v { font-size: 13px; font-weight: 700; color: #1f2937; }
+  .lc-cmp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .lc-cmp-table th, .lc-cmp-table td { padding: 7px 8px; border-bottom: 1px solid #f1f5f9; text-align: right; }
+  .lc-cmp-table th:first-child, .lc-cmp-table td:first-child { text-align: left; color: #6b7280; }
+  .lc-cmp-table thead th { font-size: 11px; color: #9ca3af; font-weight: 600; }
+  .lc-cmp-table .me { font-weight: 800; color: #1f2937; }
+  .lc-cmp-table .diff.up { color: #16a34a; } .lc-cmp-table .diff.down { color: #dc2626; }
+  .lc-cmp-hint { font-size: 11px; color: #9ca3af; margin-top: 7px; line-height: 1.5; }
+  #lcDetailTable tbody tr { cursor: pointer; }
+  #lcDetailTable tbody tr:hover { background: #f0f9ff !important; }
+  /* === 客户清单筛选工具栏（增强版） === */
+  .lc-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; background: linear-gradient(180deg,#f8fafc,#f1f5f9); border-radius: 10px; margin: 12px 0; }
+  .lc-toolbar input, .lc-toolbar select, .lc-toolbar button { font-size: 12.5px; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #1f2937; transition: all .15s; cursor: pointer; outline: none; }
+  .lc-toolbar input { cursor: text; }
+  .lc-toolbar input:focus, .lc-toolbar select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
+  .lc-toolbar select:hover, .lc-toolbar button:hover { border-color: #94a3b8; background: #fafbfc; }
+  .lc-toolbar button#lcDetailExport { background: #1f2937; color: #fff; border-color: #1f2937; font-weight: 600; }
+  .lc-toolbar button#lcDetailExport:hover { background: #111827; }
+  .lc-toolbar button.lc-btn-ghost { background: #fff; color: #6b7280; font-weight: 500; }
+  .lc-toolbar button.lc-btn-ghost:hover { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+  #lcFilterCount { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; padding: 0 4px; margin-left: auto; }
+  #lcFilterCount b { color: #1f2937; font-weight: 700; }
+  @media (max-width: 720px) {
+    .lc-overview { grid-template-columns: repeat(2, 1fr); }
+    #lcGridChart { height: 380px !important; }
+  }
+</style>
+<script>
+  // embed=1 参数下进入 embed-mode
+  (function(){
+    const sp = new URLSearchParams(location.search);
+    if (sp.get('embed') === '1' || sp.get('embed') === 'pc') {
+      document.documentElement.dataset.embed = '1';
+      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embed-mode'));
+    }
+    // 顶栏显示今日 + 数据日
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const today = new Date();
+        const ymd = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        const dataDate = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || '';
+        const el = document.getElementById('todayInfo');
+        if (el) el.textContent = `📅 今日 ${ymd}${dataDate ? ' · 数据日 ' + dataDate + '（最后更新）' : ''}`;
+      } catch(e){}
+    });
+  })();
+</script>
+</head>
+<body>
+
+<!-- 云端同步状态横幅 -->
+<div id="exportReminderBanner" style="background:linear-gradient(90deg,#dcfce7,#bbf7d0);border-bottom:2px solid #16a34a;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#14532d;">
+  <div>
+    ☁️ <b>云端实时同步</b> · 提交即生效，明早数据日报自动汇总（无需手动导出）
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="btnCloudRefresh" onclick="window.cloudRefresh && window.cloudRefresh()" style="background:#16a34a;color:#fff;border:none;padding:5px 12px;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;" title="立即拉取云端最新登记（其他销售刚登记的也能马上看到）">🔄 刷新最新</button>
+    <div id="banner-today-count-pc" style="background:#fff;padding:3px 10px;border-radius:12px;font-weight:600;color:#15803d;">今日 0 条</div>
+  </div>
+</div>
+
+<!-- Demo 提示条已移除（云端正式上线 2026-05-21） -->
+<div id="demoBanner" style="display:none;"></div>
+
+<div class="topbar">
+  <h1>拓客作战看板 <span class="ver" id="kanbanVer">v3.2</span></h1>
+  <div class="topbar-right">
+    <span id="todayInfo" style="font-size:12px;color:#6b7280;margin-right:8px;"></span>
+    <select id="snapshotSel" title="切换历史快照（用户 2026-05-19 拍板）" style="background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-weight:600;">
+      <option value="" selected>📅 当前数据</option>
+      <option value="2026-05-21">2026-05-21 快照</option>
+      <option value="2026-05-20">2026-05-20 快照</option>
+      <option value="2026-05-19">2026-05-19 快照</option>
+      <option value="2026-05-18">2026-05-18 快照</option>
+      <option value="2026-05-17">2026-05-17 快照</option>
+      <option value="2026-05-15">2026-05-15 快照</option>
+    </select>
+    <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
+    <select id="quarterSel">
+      <option value="2026Q2">2026 Q2（当前）</option>
+      <option value="2026Q1">2026 Q1</option>
+      <option value="2025Q4">2025 Q4</option>
+      <option value="2025Q3">2025 Q3</option>
+    </select>
+    <select id="compareSel" style="display:none;">
+      <option value="qoq">环比上季度</option>
+      <option value="dod">环比前一天</option>
+    </select>
+    <button id="btnAddRecord" style="background: var(--primary); color: #fff; border-color: var(--primary);">+ 新增登记</button>
+    <button id="btnBatchPaste" style="background:#f3f4f6;border:1px solid #e5e7eb;" title="一次粘贴多行客户（从 Excel/腾讯文档复制）">📋 批量粘贴</button>
+    <button id="btnExportToday" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;font-size:12px;" title="云端故障时应急用：下载今日本地 JSON 备份">⬇️ 应急备份</button>
+    <button id="btnBulkImport">📥 上传导入</button>
+    <input id="bulkImportFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" />
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ========== 第一屏：其他参考指标（固定 2026Q2，不随季度切换） ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left">
+        <span>📊 其他参考指标</span>
+        <span class="badge" id="quarterTag">2026 Q2</span>
+      </div>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <!-- ========== 销售明细行 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>👥 销售明细</span><span class="badge">点行末「更多 ›」横向展开参考指标</span></div>
+    </div>
+    <div class="sales-progress-list">
+      <div id="salesProgress"></div>
+    </div>
+  </div>
+
+  <!-- ========== 第二屏：销售拓客模型画像 ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>🎯 销售拓客模型画像</span></div>
+      <div class="right">
+        <button class="active" data-portrait="all">全部新客</button>
+        <button data-portrait="rising">仅新锐新客</button>
+        <span style="color:#cbd5e1;margin:0 6px;">|</span>
+        <button class="active" data-metric="count">按数量占比</button>
+        <button data-metric="cost">按季度消耗占比</button>
+      </div>
+    </div>
+    <div class="portrait-tabs" id="portraitTabs"></div>
+    <div class="portrait-grid">
+      <div class="panel"><h3>类目分布</h3><div id="chartCategory" class="chart-box"></div></div>
+      <div class="panel"><h3>客户来源分布</h3><div id="chartSource" class="chart-box"></div></div>
+      <div class="panel"><h3>投放端分布</h3><div id="chartDelivery" class="chart-box"></div></div>
+      <div class="panel"><h3>链路分布</h3><div id="chartLink" class="chart-box"></div></div>
+    </div>
+  </div>
+
+  <!-- 「拓客模型链路深度分析」模块已下线（2026-05-21 用户拍板：链路 CSV 字典覆盖不全，
+       与销售日耗口径不可对账，先删，等链路标签覆盖完整后再上） -->
+
+  <!-- ========== 拓客登记明细（2026-06-11 子青恢复，替代「客户生命周期一览」位置） ========== -->
+  <div class="section">
+    <div class="section-title">
+      <div class="left"><span>📋 拓客登记明细</span><span class="badge">默认展示当天，点击查看其他周期</span></div>
+    </div>
+    <div class="panel">
+      <div class="toolbar">
+        <input id="recordSearch" placeholder="搜索客户主体/品牌" />
+        <select id="recordSales"><option value="">全部销售</option></select>
+        <select id="recordCategory"><option value="">全部类目</option></select>
+        <select id="recordRising">
+          <option value="">全部</option>
+          <option value="是">仅新锐</option>
+          <option value="否">仅非新锐</option>
+        </select>
+        <button id="recordToday">今日</button>
+        <button id="record7d">近7天</button>
+        <button id="recordAll" class="active">全部</button>
+      </div>
+      <table class="tbl" id="recordTable">
+        <thead><tr>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
+        </tr></thead>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== 客户生命周期系统（2026-06-11 同事傻福移交，iframe 嵌入隔离 CSS/JS） ========== -->
+  <div class="section" id="lifecycleSystemSection" style="margin-top:24px;">
+    <div class="section-title">
+      <div class="left"><span>🌊 客户生命周期系统</span><span class="badge" style="background:#ecfdf5;color:#10b981;">v0.5 · 2026-06-10 数据</span></div>
+      <div class="right"><a href="lifecycle-system/index.html?embed=1&sales=all" target="_blank" style="color:#3b82f6;font-size:13px;text-decoration:none;">独立窗口打开 ↗</a></div>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden;border-radius:12px;">
+      <iframe
+        id="lifecycleSystemFrame"
+        src="lifecycle-system/index.html?embed=1&sales=all"
+        title="客户生命周期系统"
+        loading="lazy"
+        style="width:100%;height:1200px;border:0;background:#f5f7fb;display:block;"
+      ></iframe>
+    </div>
+  </div>
+
+</div>
+
+<!-- 2026-06-11 子青：客户详情弹窗（生命周期）已删 -->
+
+<!-- 目标管理弹窗 -->
+<div class="modal-mask" id="modalTarget">
+  <div class="modal">
+    <h2>⚙️ 季度目标管理</h2>
+    <div class="row"><label>新锐新客数（团队总目标）</label><input id="goalRising" type="number" /></div>
+    <div class="row"><label>新客消耗（团队总目标，万元日耗汇总）</label><input id="goalCost" type="number" /></div>
+    <div class="actions">
+      <button class="btn-sm ghost" onclick="closeModal('modalTarget')">取消</button>
+      <button class="btn-sm" onclick="saveGoals()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增登记弹窗（v3.2 · 14 字段，与 register_v3.2.html 表头严格对齐） -->
+<div id="modalRecord" class="modal-mask">
+  <div class="bg-white rounded-xl" style="background:#fff;border-radius:12px;width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f0f0;position:sticky;top:0;background:#fff;z-index:10;">
+      <div style="font-size:15px;font-weight:600;">新增拓客登记</div>
+      <button onclick="closeModal('modalRecord')" style="color:#bfbfbf;font-size:20px;border:none;background:transparent;cursor:pointer;">×</button>
+    </div>
+    <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+      <div class="field" style="grid-column:span 2;">
+        <label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户主体名称</label>
+        <input id="m-name" placeholder="公司 / 店铺全称（输入后自动匹配客户简称与老客/历史重复）" autocomplete="off" />
+        <div id="m-name-hint" class="name-hint"></div>
+      </div>
+      <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">类目</label><select id="m-category"></select></div>
+      <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">销售</label><select id="m-sales"></select><div id="m-sales-hint"></div></div>
+      <div class="field" style="grid-column:span 2;">
+        <label style="display:block;color:#595959;margin-bottom:4px;">链路 <span style="color:#bfbfbf;font-weight:normal;">（无需填写，登记成功后系统每日匹配 AData 链路明细自动更新）</span></label>
+        <div id="m-link" class="checkbox-group" style="padding-top:4px;color:#bfbfbf;font-size:12px;">
+          系统每日凌晨从 AData 抓取 T-1 链路数据并匹配
+        </div>
+      </div>
+      <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="m-channel" onchange="onChannelChange()"></select></div>
+      <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
+      <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source"></select></div>
+      <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
+      <div class="field" style="grid-column:span 2;">
+        <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
+        <input id="m-evidence" type="file" accept="image/*" multiple style="font-size:12px;" onchange="onEvidenceChange(event)" />
+        <div id="m-evidence-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;position:sticky;bottom:0;background:#fff;">
+      <button class="btn-sm ghost" onclick="closeModal('modalRecord')">取消</button>
+      <button class="btn-sm" id="m-submit" onclick="submitRecord()">提交</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightbox-img" src="" />
+</div>
+
+<script>
+/* =========================
+   共享虚拟数据 · v3 原型
+   ========================= */
+const SALES = ["brownfan","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+let CURRENT_USER = new URLSearchParams(window.location.search).get("user") || "kinsleyjin";
+const CATEGORIES = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
+const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店直购","视频号橱窗"];
+const AGENTS = ["蓝色光标","利欧数字","引力传媒","华扬联众","天与空","直接对接"];
+const SOURCES = ["沙龙拓客","1v1走访","全域通电销","服务商转介绍","客户转介绍","主动来询"]; // 兼容旧字段（实际是「拓客途径」）
+const TUOKE_WAYS = SOURCES; // v3.2 别名：拓客途径
+const CUSTOMER_SOURCES = ["26年4月后产业带拓客", "26年4月后CID专项引入", "26年4月后竞媒靶向名单", "全域通反向拓客", "竞媒top靶向名单", "小店高GMV", "小店动销客户"]; // v3.2 真·客户来源
+const CHANNELS = ["自拓", "小店服务商转介绍", "广告服务商转介绍", "二代转介绍", "客户转介绍", "同事转介绍", "其他"]; // register 原口径：拓客途径
+const PRIORITIES = ["S","A","B"];
+
+// 季度目标（注意：cost 单位为「万元」，是季度内日耗的累计汇总值）
+let GOALS = {
+  rising: 60,
+  cost: 1500,
+  newCust: 140
+};
+
+// 50 个虚拟靶向品牌
+const TARGET_BRAND_NAMES = [
+  "茵曼","裂帛","太平鸟","拉夏贝尔","JNBY","ONLY","欧时力","伊芙丽","朗姿","赫莲娜",
+  "海澜之家","马克华菲","柒牌","劲霸","利郎","九牧王","报喜鸟","雅戈尔","希努尔",
+  "周大福","周生生","老凤祥","六福","谢瑞麟","潮宏基","明牌","金至尊",
+  "李宁","安踏","特步","361度","鸿星尔克","FILA","始祖鸟",
+  "百丽","千百度","达芙妮","奥康","红蜻蜓","新秀丽",
+  "都市丽人","曼妮芬","爱慕","三枪",
+  "波司登","蕉下","蕉内","Ubras","内外NEIWAI","始祖鸟"
+];
+
+// 靶向品牌：去掉「认领」逻辑，改为「建联状态 + 投放状态」
+//  - 建联状态：未建联 / 已建联（销售已接触上对应客户）
+//  - 投放状态：未投放 / 投放中 / 投放断档（曾投放但近30天无消耗）
+const targetBrands = [...new Set(TARGET_BRAND_NAMES)].slice(0, 50).map((name, i) => {
+  const cat = i < 10 ? "女装" : i < 19 ? "男装" : i < 27 ? "珠宝文玩" : i < 34 ? "运动户外" : i < 40 ? "箱包鞋靴" : i < 44 ? "贴身衣物" : "未打标";
+
+  // 建联 / 投放分布
+  // 30% 未建联；30% 已建联未投放；30% 投放中；10% 投放断档
+  let contactStatus, deliveryStatus, contactSale = "", contactDate = "", dailyCost = 0, totalCost = 0;
+  const r = Math.random();
+  if (r < 0.30) {
+    contactStatus = "未建联"; deliveryStatus = "—";
+  } else if (r < 0.60) {
+    contactStatus = "已建联"; deliveryStatus = "未投放";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-04-" + String(5 + (i%20)).padStart(2,'0');
+  } else if (r < 0.90) {
+    contactStatus = "已建联"; deliveryStatus = "投放中";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-03-" + String(10 + (i%20)).padStart(2,'0');
+    dailyCost = Math.round((Math.random()*8 + 0.5)*1000); // 500-8500元/日耗
+    totalCost = Math.round(dailyCost * (Math.random()*60 + 20));
+  } else {
+    contactStatus = "已建联"; deliveryStatus = "投放断档";
+    contactSale = SALES[i % 7];
+    contactDate = "2026-02-" + String(10 + (i%18)).padStart(2,'0');
+    dailyCost = 0;
+    totalCost = Math.round((Math.random()*30 + 5)*10000);
+  }
+
+  return {
+    name, category: cat,
+    priority: i < 12 ? "S" : i < 30 ? "A" : "B",
+    contactStatus, deliveryStatus,
+    contactSale, contactDate,
+    dailyCost, totalCost
+  };
+});
+
+// 30 个产业带（扩充原 15 个，让 TOP10 + 折叠展示效果更明显）
+const INDUSTRIAL_ZONES = [
+  { prov:"广东省", city:"东莞市", dist:"虎门镇", cat:"女装", maturity:"成熟" },
+  { prov:"浙江省", city:"杭州市", dist:"四季青", cat:"女装", maturity:"成熟" },
+  { prov:"广东省", city:"广州市", dist:"沙河", cat:"女装", maturity:"成熟" },
+  { prov:"福建省", city:"晋江市", dist:"陈埭镇", cat:"运动户外", maturity:"成熟" },
+  { prov:"福建省", city:"泉州市", dist:"石狮市", cat:"男装", maturity:"成熟" },
+  { prov:"广东省", city:"深圳市", dist:"水贝", cat:"珠宝文玩", maturity:"成熟" },
+  { prov:"河北省", city:"保定市", dist:"白沟新城", cat:"箱包鞋靴", maturity:"成熟" },
+  { prov:"浙江省", city:"义乌市", dist:"廿三里", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"江苏省", city:"常熟市", dist:"招商城", cat:"男装", maturity:"成熟" },
+  { prov:"广东省", city:"汕头市", dist:"潮南区", cat:"贴身衣物", maturity:"成熟" },
+  { prov:"山东省", city:"青岛市", dist:"即墨区", cat:"男装", maturity:"培育" },
+  { prov:"江苏省", city:"苏州市", dist:"盛泽镇", cat:"女装", maturity:"培育" },
+  { prov:"广东省", city:"中山市", dist:"沙溪镇", cat:"男装", maturity:"培育" },
+  { prov:"浙江省", city:"温州市", dist:"瓯海区", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"广东省", city:"佛山市", dist:"南海区", cat:"贴身衣物", maturity:"培育" },
+  { prov:"浙江省", city:"金华市", dist:"义乌市", cat:"未打标", maturity:"培育" },
+  { prov:"江苏省", city:"无锡市", dist:"江阴市", cat:"女装", maturity:"培育" },
+  { prov:"福建省", city:"莆田市", dist:"涵江区", cat:"运动户外", maturity:"培育" },
+  { prov:"山东省", city:"烟台市", dist:"龙口市", cat:"珠宝文玩", maturity:"培育" },
+  { prov:"广东省", city:"惠州市", dist:"博罗县", cat:"箱包鞋靴", maturity:"培育" },
+  { prov:"河南省", city:"郑州市", dist:"二七区", cat:"女装", maturity:"培育" },
+  { prov:"湖北省", city:"武汉市", dist:"汉正街", cat:"女装", maturity:"培育" },
+  { prov:"四川省", city:"成都市", dist:"金牛区", cat:"女装", maturity:"培育" },
+  { prov:"辽宁省", city:"大连市", dist:"中山区", cat:"贴身衣物", maturity:"培育" },
+  { prov:"安徽省", city:"合肥市", dist:"瑶海区", cat:"男装", maturity:"培育" }
+];
+
+// 报备记录
+function genRecords() {
+  const records = [];
+  const today = new Date();
+  for (let i = 0; i < 180; i++) {
+    const sale = SALES[i % 7];
+    const cat = CATEGORIES[Math.floor(Math.random()*CATEGORIES.length)];
+    const link = LINKS[Math.floor(Math.random()*LINKS.length)];
+    const agent = AGENTS[Math.floor(Math.random()*AGENTS.length)];
+    const source = SOURCES[Math.floor(Math.random()*SOURCES.length)];
+    const isRising = Math.random() < 0.4 ? "是" : "否";
+    const inZone = Math.random() < 0.7;
+    const zone = inZone ? INDUSTRIAL_ZONES[Math.floor(Math.random()*INDUSTRIAL_ZONES.length)] : null;
+    const isTarget = Math.random() < 0.4;
+    const targetBrand = isTarget ? targetBrands[Math.floor(Math.random()*targetBrands.length)].name : "";
+    const d = new Date(today);
+    d.setDate(d.getDate() - Math.floor(Math.random()*60));
+    records.push({
+      date: d.toISOString().slice(0,10),
+      sale,
+      name: zone ? `${zone.city}${zone.dist}${["丽人","风尚","天匠","锦绣","云裳"][i%5]}${cat}有限公司` : `${["北京","上海","成都","重庆","武汉"][i%5]}${["华美","乐尚","潮兮","朗格","知行"][i%5]}${cat}有限公司`,
+      brand: isTarget ? targetBrand : ["乐尚","天匠","云裳","知行","锦绣"][i%5] + cat,
+      cat, link, agent, source,
+      isRising,
+      isTarget,
+      cost: Math.round((Math.random()*8 + 0.5) * 10000) / 10000, // 万元 · 季度日耗汇总
+      zone: zone ? `${zone.prov}·${zone.city}·${zone.dist}·${cat}` : "",
+      maturity: zone ? zone.maturity : ""
+    });
+  }
+  return records;
+}
+const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
+
+/* 一次性清除子青 5/17 试用导入（执行一次后自动跳过） */
+(function cleanTrial_2026_05_17(){
+  const FLAG_KEY = "trial_cleaned_2026_05_17_kanban";
+  if (localStorage.getItem(FLAG_KEY)) return;
+  try {
+    const raw = localStorage.getItem(RECORD_LS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      const before = arr.length;
+      const filtered = arr.filter(r => !(r.date === "2026-05-17" && r._batchPaste));
+      const removed = before - filtered.length;
+      if (removed > 0) {
+        localStorage.setItem(RECORD_LS_KEY, JSON.stringify(filtered));
+        console.info("✅ 已清除子青 5/17 试用导入 " + removed + " 条本地记录");
+      }
+    }
+    localStorage.setItem(FLAG_KEY, "1");
+  } catch(e) { console.warn("清理试用数据失败", e); }
+})();
+
+let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
+const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
+// 2026-06-02 登记日期年份修正死规矩：月份 7-12 应为 2025（拓新组从 25Q3 起），
+// 误录成 2026-07~2026-12 的归一回 2025。1-6 月保持 2026 不动。
+window.fixRegYear = function(d){
+  var s = String(d || '').slice(0, 10);
+  var m = /^2026-(0[7-9]|1[0-2])-(\d{2})$/.exec(s);
+  return m ? ('2025-' + m[1] + '-' + m[2]) : (d || '');
+};
+function applyFixRegYear(list){
+  (list || []).forEach(function(r){ if (r && r.date) r.date = window.fixRegYear(r.date); });
+  return list;
+}
+applyFixRegYear(RECORDS);
+window.RECORDS = RECORDS;
+
+/* ============================================================
+   交接客户判定（217 条版，2026-05-19 用户拍板）
+   规则：
+     1) 命中 24 老客名单 → 不算交接（24 老客优先）
+     2) 命中 217 条 union & 原销售 ∈ 7 拓新销售 → 真正交接，打 tag
+     3) 命中 217 条但原销售不在拓新组（含 sale=null 的非补丁项）→ 不打 tag
+     4) 义乌皮哥补丁：sale=null → kaikaigenli（已在 data 里 override）
+   KPI 是否计入：
+     首投季度 == 当前 KPI 季度（26Q2）→ 计入
+     首投季度 != 当前 KPI 季度 → 仅展示 tag，不入 KPI
+   ============================================================ */
+const TUOXIN_7_SET = new Set(["brownfan","Jonzhu","kaikaigenli","yvaineechen","lijunwu","ruilingzhan","kinsleyjin"]);
+const HANDOVER_LIST_217 = Array.isArray(window.__HANDOVER_CUSTOMERS_519__) ? window.__HANDOVER_CUSTOMERS_519__ : [];
+const HANDOVER_MAP_217 = {};
+HANDOVER_LIST_217.forEach(x => { if (x && x.name) HANDOVER_MAP_217[String(x.name).trim()] = x; });
+const OLD24_SET_217 = new Set((Array.isArray(window.__OLD24_NAMES__) ? window.__OLD24_NAMES__ : []).map(s=>String(s).trim()));
+const FIRST_QUARTER_MAP = window.__FIRST_QUARTER__ || {};
+// 用户 2026-05-19 拍板：把交接 / 24老客 / 首投季度 map 挂到 window，让销售明细参考列能读到
+window.__HANDOVER_MAP_217__ = HANDOVER_MAP_217;
+window.__OLD24_SET_217__ = OLD24_SET_217;
+window.__FIRST_QUARTER_MAP__ = FIRST_QUARTER_MAP;
+function _normalizeFQ(s) {
+  // '2026/Q2' / '2026Q2' → '2026Q2'
+  return String(s || '').replace(/[/\s-]/g,'').toUpperCase();
+}
+/** 是否真正交接客户（剔 24 老客 + 必须是拓新组 7 销售之一） */
+function isHandoverCustomer217(r) {
+  if (!r) return false;
+  const name = String(r.shortName || r.name || '').trim();
+  if (!name) return false;
+  if (OLD24_SET_217.has(name)) return false;          // 24 老客优先剔
+  const rec = HANDOVER_MAP_217[name];
+  if (!rec) return false;
+  return TUOXIN_7_SET.has(rec.sale);                  // 必须原销售 ∈ 拓新 7
+}
+/** 交接客户的首投季度（normalized 如 2026Q2） */
+function handoverFirstQuarter(r) {
+  if (!r) return '';
+  const name = String(r.shortName || r.name || '').trim();
+  return _normalizeFQ(FIRST_QUARTER_MAP[name] || r.firstQuarter || '');
+}
+/** 交接客户是否计入当前 KPI 季度（state.quarter 形如 '2026Q2'） */
+function isHandoverCountInQuarter(r) {
+  const fq = handoverFirstQuarter(r);
+  return fq && fq === (typeof state !== 'undefined' ? state.quarter : '2026Q2');
+}
+window.isHandoverCustomer217 = isHandoverCustomer217;
+window.isHandoverCountInQuarter = isHandoverCountInQuarter;
+window.handoverFirstQuarter = handoverFirstQuarter;
+function persistUserRecordsBestEffort() {
+  try {
+    localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 2000)));
+  } catch (e) {
+    try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 500))); } catch (_) {}
+    console.warn('批量导入数据过大，已保留本次内存展示并仅持久化前500条', e);
+  }
+}
+function saveUserRecord(rec) {
+  USER_RECORDS.unshift(rec);
+  persistUserRecordsBestEffort();
+  RECORDS.unshift(rec);
+  // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55）：本地写完立即推一条到后端
+  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推（对齐 register_v3.2 逻辑）
+  try {
+    if (window.cloud && window.cloud.isLoggedIn()) {
+      window.cloud.upload([rec]).then(function(d){
+        console.info('[cloud] saved single ok created=' + d.created + ' updated=' + d.updated);
+      }).catch(function(e){
+        console.warn('[cloud] save single fail:', e && e.message);
+        var msg = (e && e.message) || '';
+        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
+          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
+          try {
+            window.cloud.requireLogin(function(){
+              window.cloud.upload([rec]).then(function(d){
+                console.info('[cloud] save single retry ok created=' + d.created + ' updated=' + d.updated);
+                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 1 条', false);
+              }).catch(function(e2){
+                console.warn('[cloud] save single retry fail:', e2 && e2.message);
+                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
+              });
+            });
+          } catch(_) {}
+        } else {
+          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
+        }
+      });
+    }
+  } catch(_){}
+}
+function saveUserRecordsBulk(records) {
+  USER_RECORDS = [...records, ...USER_RECORDS];
+  persistUserRecordsBestEffort();
+  RECORDS.unshift(...records);
+  // 🦞 云端双写
+  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推
+  try {
+    if (records && records.length && window.cloud && window.cloud.isLoggedIn()) {
+      window.cloud.upload(records).then(function(d){
+        console.info('[cloud] saved bulk ok n=' + records.length + ' created=' + d.created);
+      }).catch(function(e){
+        console.warn('[cloud] save bulk fail:', e && e.message);
+        var msg = (e && e.message) || '';
+        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
+          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
+          try {
+            window.cloud.requireLogin(function(){
+              window.cloud.upload(records).then(function(d){
+                console.info('[cloud] save bulk retry ok n=' + records.length + ' created=' + d.created);
+                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 ' + records.length + ' 条', false);
+              }).catch(function(e2){
+                console.warn('[cloud] save bulk retry fail:', e2 && e2.message);
+                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
+              });
+            });
+          } catch(_) {}
+        } else {
+          if (window.cloud.toast) window.cloud.toast('云端批量保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
+        }
+      });
+    }
+  } catch(_){}
+}
+
+</script>
+<script>
+/* =========================
+   一、视图状态
+   ========================= */
+const state = {
+  view: "team",
+  quarter: "2026Q2",
+  compareMode: "qoq",
+  portrait: "all",
+  portraitMetric: "count", // count | cost  （5/19 加 tab）
+  portraitSale: "团队总览",
+  industrialMaturity: "",
+  zoneSort: "cost", // cost | new
+  recordSearch: "", recordSales: "", recordCategory: "", recordRising: "", recordRange: "today"
+};
+
+function filteredRecords() {
+  let list = RECORDS;
+  if (state.view === "mine") list = list.filter(r => r.sale === CURRENT_USER);
+  return list;
+}
+
+/* =========================
+   二、KPI 渲染
+   ========================= */
+function isKnownNewRecord(r) {
+  return r && r.isNew === true;
+}
+function isRisingRecord(r) {
+  return r && r.isRising === "是";
+}
+function hasNumber(v) {
+  return v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
+}
+function toNumber(v) {
+  return hasNumber(v) ? Number(v) : 0;
+}
+function formatDeltaWan(v) {
+  if (!hasNumber(v)) return '';
+  const n = Number(v);
+  if (n === 0) return '0.0万';
+  return `${n > 0 ? '+' : ''}${n.toFixed(1)}万`;
+}
+function normalizeQuarter(v) {
+  const m = String(v || '').toUpperCase().replace(/\s/g,'').match(/(20\d{2})\D*Q([1-4])/);
+  return m ? `${m[1]}Q${m[2]}` : '';
+}
+function quarterLabel(v) {
+  const q = normalizeQuarter(v);
+  return q ? `${q.slice(0,4)} Q${q.slice(-1)}` : '';
+}
+function centerSummaryRows() {
+  const multi = Array.isArray(window.__CENTER_QUARTER_SUMMARY__) ? window.__CENTER_QUARTER_SUMMARY__ : [];
+  if (multi.length) return multi.filter(r => normalizeQuarter(r.quarter) === state.quarter);
+  return Array.isArray(window.__CENTER_SALES_SUMMARY__) ? window.__CENTER_SALES_SUMMARY__ : [];
+}
+function deliveryShareText(row) {
+  const rows = Array.isArray(window.__DELIVERY_SIDE_SUMMARY__) ? window.__DELIVERY_SIDE_SUMMARY__ : [];
+  const qRows = rows.filter(r => normalizeQuarter(r.quarter) === state.quarter && ['ADQ','全域通','双投放'].includes(r.side));
+  const total = qRows.reduce((s,r)=>s + Number(r.newCount || 0), 0);
+  if (!total) return '';
+  return qRows.map(r => `${r.side}${Math.round(Number(r.newCount || 0) / total * 100)}%`).join(' / ');
+}
+function fmtSigned(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const v = Number(n);
+  if (Number.isNaN(v)) return '—';
+  if (v === 0) return '+0';
+  return `${v > 0 ? '+' : ''}${v}`;
+}
+function fmtPct(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  const n = Number(v) * 100;
+  return `${n > 0 ? '+' : ''}${n.toFixed(1)}%`;
+}
+function fmtWan(v) {
+  const n = Number(v || 0) / 10000;
+  return `${n.toFixed(1)}万`;
+}
+function deltaCls(v) {
+  if (v === null || v === undefined || v === '') return 'delta-flat';
+  const n = Number(v);
+  return n === 0 ? 'delta-flat' : n > 0 ? 'delta-up' : 'delta-down';
+}
+function activeCompareLabel() { return state.compareMode === 'dod' ? '较前一天' : '较上季度'; }
+function pickDelta(r, qoqKey, dodKey) { return state.compareMode === 'dod' ? r[dodKey] : r[qoqKey]; }
+
+/* 5/19 客户诊断一键跳转 ChatBI（用户 2026-05-19 拍板：跳转后直接引用 customer-global-diagnosis skill，
+   预填 prompt 模板「帮我全面诊断【XXX】在昨天的投放情况」） */
+function diagCustomer(customerName, problemHint, ev) {
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  if (!customerName) return;
+  const promptStr = `帮我全面诊断【${customerName}】在昨天的投放情况`;
+  // 用户 2026-05-19 拍板：除了引用 skill，prompt 文字也要预填到输入框。
+  // ChatBI 同时尝试 prompt/q/query 三种参数名 + hash 兜底，兼容不同前端读取方式。
+  const enc = encodeURIComponent(promptStr);
+  const url = `https://adata.woa.com/bi/chatbi?skill=customer-global-diagnosis&prompt=${enc}&q=${enc}&query=${enc}#prompt=${enc}`;
+  window.open(url, '_blank');
+}
+window.diagCustomer = diagCustomer;
+
+function renderKPI() {
+  const rows = centerSummaryRows();
+  if (rows.length) {
+    // 用户 2026-05-22 11:31 拍板：恢复周一基线 4 卡（撤销 11:00 加的"新锐 + 小红点"两卡）
+    // 1) 服饰中心日耗 2) 本季度新客数 3) 新客昨日消耗 4) 累计新客昨日消耗（季耗÷已过天数·新客累计日均消耗）
+    const FIX_Q = '2026Q2';
+    const fixRow = rows.find(r => r.sale === '合计' && (!r.quarter || r.quarter === FIX_Q))
+      || rows.find(r => r.sale === '合计')
+      || rows[0];
+    const dailyKpi = window.__CENTER_DAILY_KPI__ || {};
+    const centerCost = dailyKpi.centerYestCost || 0;
+    const centerChg = dailyKpi.centerDayCostRate;
+
+    // 1) 服饰中心日耗（固定显示 2026Q2，环比前一天）
+    const centerCard = `
+      <div class="kpi-card wide">
+        <div class="label">服饰中心日耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026Q2 · 服饰中心全量 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${(centerCost/10000).toFixed(1)}万</div></div>
+        <div class="meta"><span class="${centerChg >= 0 ? 'delta-up' : 'delta-down'}">环比前一天 ${centerChg === undefined ? '—' : (centerChg >= 0 ? '+' : '') + (centerChg * 100).toFixed(1) + '%'}</span></div>
+      </div>`;
+
+    // 2) 本季度新客数
+    const newCntCard = `
+      <div class="kpi-card success">
+        <div class="label">本季度新客数 <span style="color:#9ca3af;font-size:11px;font-weight:400;">2026 Q2</span></div>
+        <div class="value-row"><div class="value">${fixRow.newCount || 0}</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.newDelta)}">较上季度 ${fmtSigned(fixRow.newDelta)}</span>
+          <span class="${deltaCls(fixRow.newDayDelta)}">日Δ ${fmtSigned(fixRow.newDayDelta)}</span>
+        </div>
+      </div>`;
+
+    // 3) 新客昨日消耗（合计·昨耗）
+    const yestWan = Number(fixRow.yestCost || 0) / 10000;
+    const newYestCard = `
+      <div class="kpi-card gold">
+        <div class="label">新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${yestWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span class="${deltaCls(fixRow.dayCostRate)}">环比前一天 ${fmtPct(fixRow.dayCostRate)}</span>
+        </div>
+      </div>`;
+
+    // 4) 累计新客昨日消耗（25Q3-26Q2 全部新客昨日消耗合计）
+    // 死规矩 2026-05-24：用 window.__CENTER_QUARTER_SUMMARY__ 全量原始数组（rows 已被 state.quarter 过滤掉非当前季度）
+    // 5/25 修：之前是「季耗÷已过天数」算日均，完全偏题，已纠正为 4 季度合计行 yestCost 加和
+    const ALL_QS = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const CUM_QS = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const cumYestSum = CUM_QS.reduce((s, q) => {
+      const r = ALL_QS.find(x => x.quarter === q && x.sale === '合计');
+      return s + Number(r ? r.yestCost : 0);
+    }, 0);
+    const cumYestWan = cumYestSum / 10000;
+    const cumCard = `
+      <div class="kpi-card purple">
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3-26Q2 合计 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="value-row"><div class="value">${cumYestWan.toFixed(1)}万</div></div>
+        <div class="meta">
+          <span style="color:#6b7280;">25Q3-26Q2 全部新客昨日消耗合计</span>
+        </div>
+      </div>`;
+
+    document.getElementById('kpiGrid').innerHTML = centerCard + newCntCard + newYestCard + cumCard;
+    return;
+  }
+  const list = filteredRecords().filter(isKnownNewRecord);
+  const risingCnt = list.filter(isRisingRecord).length;
+  const totalCost = list.reduce((s,r)=>s + toNumber(r.cost), 0);
+  const diffWan = list.reduce((s,r)=>s + toNumber(r.diffAmt), 0) / 10000;
+  const cards = [
+    {label:"新锐客户数", value:risingCnt, target:GOALS.rising, unit:"个", cls:"gold", subText:""},
+    {label:"日耗", value:totalCost.toFixed(1), target:GOALS.cost, unit:"万元", cls:"purple", subText:`较昨日 ${formatDeltaWan(diffWan)}`}
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c => {
+    const pct = Math.min(100, Math.round((parseFloat(c.value) / c.target) * 100));
+    return `<div class="kpi-card ${c.cls}"><div class="label">${c.label}</div><div class="value-row"><div class="value">${c.value}</div><div class="target">/ ${c.target} ${c.unit}</div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="meta"><span>${c.subText || ''}</span><span class="pct">${pct}%</span></div></div>`;
+  }).join('');
+}
+
+function renderSalesProgress() {
+  if (!document.getElementById('salesProgress')) return;  // DOM 已删，跳过
+  const rows = centerSummaryRows();
+  if (!rows.length) {
+    const html = `<table class="sales-kpi-table"><thead><tr><th>销售</th><th>新锐客户数</th><th>环比昨日</th><th>日耗</th><th>环比昨日</th></tr></thead><tbody>${SALES.map(s => {
+      const list = RECORDS.filter(r => r.sale === s && isKnownNewRecord(r));
+      const rising = list.filter(isRisingRecord).length;
+      const cost = list.reduce((sum,r)=>sum + toNumber(r.cost), 0);
+      const diffWan = list.reduce((sum,r)=>sum + toNumber(r.diffAmt), 0) / 10000;
+      return `<tr class="${s === CURRENT_USER ? 'current-sale' : ''}"><td class="name">${s}</td><td><div class="metric-main">${rising}</div><div class="metric-sub">季度累计</div></td><td></td><td><div class="metric-main">${cost.toFixed(1)}万</div><div class="metric-sub">昨日消耗</div></td><td><span class="${deltaCls(diffWan)}">${formatDeltaWan(diffWan)}</span></td></tr>`;
+    }).join('')}</tbody></table>`;
+    document.getElementById('salesProgress').innerHTML = html;
+    return;
+  }
+
+  // ============================================================
+  // 5/19 重排 销售明细新表头
+  // KPI（默认显示）：销售 / 新锐客户数 / 新客季度日耗 / 累计日均（季耗÷已过天数） / 更多 ›
+  // 参考列（点更多向右展开）：新客数 / 新客昨耗(环比) / 交接客户数 / 交接昨耗(环比) / 交接季耗(环比)
+  // ============================================================
+  const CORE_SALES = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+  const coreRows = rows.filter(r => CORE_SALES.includes(r.sale));
+  const otherRow = rows.find(r => r.sale === '其他');
+  const totalRow = rows.find(r => r.sale === '合计');
+
+  // 2026-05-27 修正：与 index.html 紫色 KPI 卡 _qDays 对齐，含数据日当天
+  // 例：dataDate=2026-05-26 → 4-1 到 5-26 共 56 天 → 季耗÷56 与紫色卡 73.7 一致
+  function quarterDays(quarter, dataDate) {
+    const m = quarter.match(/^(\d{4})Q(\d)$/);
+    if (!m) return 1;
+    const y = +m[1], q = +m[2];
+    const startMonth = (q - 1) * 3 + 1; // Q1=1, Q2=4
+    const start = new Date(y, startMonth - 1, 1);
+    let end = dataDate ? new Date(dataDate) : new Date();
+    const diff = Math.max(1, Math.floor((end - start) / 86400000) + 1);
+    return diff;
+  }
+  const dataDate = (window.__CENTER_DAILY_KPI__ || {}).dataDate || '';
+  const days = quarterDays(state.quarter, dataDate);
+
+  // 交接客户名单（217 条 union）— 已加载在 window.__HANDOVER_MAP_217__
+  const HANDOVER_MAP = window.__HANDOVER_MAP_217__ || {};
+  const OLD24 = window.__OLD24_SET_217__ || new Set();
+  const FQ = window.__FIRST_QUARTER_MAP__ || {};
+  // 用户 2026-05-19 拍板：交接客户固定显示 217 名单全量，不随季度切换。
+  // 「交接昨耗 / 交接季耗」从 RECORDS 里按客户简称匹配 217 名单后聚合（之前一直显示"建设中"=漏数据源连线）。
+  const _handoverNames = new Set(Object.keys(HANDOVER_MAP));
+  const _handoverRecCache = {};
+  function handoverStatsForSale(saleName) {
+    if (_handoverRecCache[saleName]) return _handoverRecCache[saleName];
+    let cnt = 0, yestCost = 0, qCost = 0;
+    // 仅交接客户中的新客（isNew=true）累计：
+    let newYestCost = 0, newQCost = 0, newCnt = 0;
+    // 217 名单里归属该销售的客户数（不剔除 OLD24，因为名单本身已剔除）
+    Object.entries(HANDOVER_MAP).forEach(([name, rec]) => {
+      if (rec.sale !== saleName) return;
+      cnt += 1;
+    });
+    // 实际投放数据：从 RECORDS 里匹配 217 名单（按 name 或 shortName 命中）
+    const records = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+    records.forEach(r => {
+      if ((r.sale || '') !== saleName) return;
+      const n = String(r.name || '').trim();
+      const sn = String(r.shortName || '').trim();
+      if (!_handoverNames.has(n) && !_handoverNames.has(sn)) return;
+      yestCost += Number(r.yestCost || 0);
+      qCost += Number(r.quarterCost || 0);
+      if (r.isNew === true || r.isNew === 'true' || r.isNew === 1) {
+        newYestCost += Number(r.yestCost || 0);
+        newQCost += Number(r.quarterCost || 0);
+        newCnt += 1;
+      }
+    });
+    _handoverRecCache[saleName] = { count: cnt, yestCost, qCost, newYestCost, newQCost, newCnt };
+    return _handoverRecCache[saleName];
+  }
+
+  function fmtMain(num, unit) {
+    return `<div class="main-num">${num}${unit || ''}</div>`;
+  }
+  function fmtMeta(deltaQoQ, dayDelta, mode) {
+    // mode='count': 显示"较上季 +N · 日Δ +M"（用户 2026-05-21 拍板：销售明细新锐/新客列保留）
+    if (mode === 'count') {
+      const parts = [];
+      if (deltaQoQ !== null && deltaQoQ !== undefined) {
+        parts.push(`较上季<span class="${deltaCls(deltaQoQ)}">${fmtSigned(deltaQoQ)}</span>`);
+      }
+      if (dayDelta !== null && dayDelta !== undefined) {
+        parts.push(`日Δ<span class="${deltaCls(dayDelta)}">${fmtSigned(dayDelta)}</span>`);
+      }
+      return `<div class="sub-meta">${parts.join(' · ') || '—'}</div>`;
+    }
+    if (mode === 'pct') {
+      const a = `较前一天 <span class="${deltaCls(dayDelta)}">${fmtPct(dayDelta)}</span>`;
+      return `<div class="sub-meta">${a}</div>`;
+    }
+    return '';
+  }
+
+  const renderRow = (r, rowKind) => {
+    // rowKind: 'core' | 'other' | 'total'
+    const trCls = rowKind === 'total' ? 'total-row' : (r.sale === CURRENT_USER ? 'current-sale' : '');
+    const saleLabel = rowKind === 'total' ? '合计（服饰中心）' : (rowKind === 'other' ? '其他档' : r.sale);
+    const dayAvgWan = r.quarterCost ? (Number(r.quarterCost) / days / 10000) : 0;
+    const handoverStats = (rowKind === 'core') ? handoverStatsForSale(r.sale) : { count: 0, yestCost: 0, qCost: 0, newYestCost: 0, newQCost: 0, newCnt: 0 };
+
+    // KPI 5 列 + 更多按钮
+    const cells = `
+      <td class="name">${saleLabel}</td>
+      <td>
+        ${fmtMain(r.risingCount)}
+        ${fmtMeta(r.risingDelta, r.risingDayDelta, 'count')}
+      </td>
+      <td>
+        ${fmtMain(fmtWan(r.yestCost))}
+        ${fmtMeta(null, r.dayCostRate, 'pct')}
+      </td>
+      <td>
+        <div class="main-num cost">${dayAvgWan.toFixed(1)}万</div>
+        <div class="sub-meta">季耗÷${days}天</div>
+      </td>
+      <td>
+        ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
+      </td>`;
+
+    // 参考列（默认隐藏，2026-05-21 拍板：删交接3列、加 2 列累计新客 = 现有新客 + 交接客户中的新客）
+    // 2026-05-25 17:11 修：副标写"25Q3-26Q2"但代码只算了当前季度+交接，名实不符
+    //   → 改为 25Q3-26Q2 该销售四个季度 yestCost 加和 + 交接客户中新客的昨耗
+    const _allQs = window.__CENTER_QUARTER_SUMMARY__ || [];
+    const _cumQs = ['2025Q3','2025Q4','2026Q1','2026Q2'];
+    const saleKey = (rowKind === 'total') ? '合计' : (rowKind === 'other' ? '其他' : r.sale);
+    const cumSaleYest = _cumQs.reduce((s, q) => {
+      const rr = _allQs.find(x => x.quarter === q && x.sale === saleKey);
+      return s + Number(rr ? rr.yestCost : 0);
+    }, 0);
+    const cumYestCost = cumSaleYest + Number(handoverStats.newYestCost || 0);
+    const cumSaleQ = _cumQs.reduce((s, q) => {
+      const rr = _allQs.find(x => x.quarter === q && x.sale === saleKey);
+      return s + Number(rr ? rr.quarterCost : 0);
+    }, 0);
+    const cumQCost    = cumSaleQ + Number(handoverStats.newQCost || 0);
+    const cumDayAvgWan = days ? (cumQCost / days / 10000) : 0;
+    const refCells = `
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">本季度新客数</div>
+        ${fmtMain(r.newCount)}
+        ${fmtMeta(r.newDelta, r.newDayDelta, 'count')}
+      </td>
+      <td class="ref-cell ref-col-hidden">
+        <div class="label-tip">累计新客昨日消耗</div>
+        ${fmtMain(fmtWan(cumYestCost))}
+        <div class="sub-meta">25Q3-26Q2 合计 + 交接</div>
+      </td>`;
+
+    return `<tr class="${trCls}">${cells}${refCells}</tr>`;
+  };
+
+  const head = `
+    <thead><tr>
+      <th style="text-align:left;">销售</th>
+      <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
+      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
+      <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
+      <th>详细</th>
+      <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
+      <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
+    </tr></thead>`;
+
+  const body = [
+    ...coreRows.map(r => renderRow(r, 'core')),
+    otherRow ? renderRow(otherRow, 'other') : '',
+    totalRow ? renderRow(totalRow, 'total') : ''
+  ].join('');
+
+  document.getElementById('salesProgress').innerHTML = `
+    <div class="sales-detail-wrap">
+      <table class="sales-detail-tbl">${head}<tbody>${body}</tbody></table>
+    </div>`;
+
+  // 行级"更多 ›"绑定（向右展开参考列）
+  document.querySelectorAll('.sales-detail-tbl .more-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tr = btn.closest('tr');
+      const tbl = btn.closest('table');
+      const isOpen = tbl.classList.contains('ref-open');
+      tbl.classList.toggle('ref-open');
+      // 切换所有 ref 列的显示
+      tbl.querySelectorAll('.ref-cell').forEach(c => c.classList.toggle('ref-col-hidden', isOpen));
+      // 按钮文本切换
+      tbl.querySelectorAll('.more-btn').forEach(b => b.textContent = isOpen ? '更多 ›' : '‹ 收起');
+      e.stopPropagation();
+    });
+  });
+}
+
+let charts = {};
+
+function renderTop80Metrics() {
+  const rows = Array.isArray(window.__TOP80_EFFECTIVE_METRICS__) ? window.__TOP80_EFFECTIVE_METRICS__ : [];
+  const sel = document.getElementById('topSaleFilter');
+  if (sel && sel.options.length === 1) {
+    [...new Set(rows.map(r=>r.sale).filter(Boolean))].forEach(s => sel.innerHTML += `<option value="${s}">${s}</option>`);
+    sel.onchange = renderTop80Metrics;
+  }
+  const sale = sel ? sel.value : '';
+  const list = sale ? rows.filter(r => r.sale === sale) : rows;
+  // rate 字段都是小数(0.168 = +16.8%)，显示为 +16.8%
+  const fmtRate = v => {
+    if (v === null || v === undefined || v === '') return '';
+    let n = Number(v);
+    if (!isFinite(n)) return '';
+    if (Math.abs(n) <= 1) n = n * 100;
+    const sign = n >= 0 ? '+' : '';
+    return `${sign}${n.toFixed(1)}%`;
+  };
+  const cls = v => {
+    const n = Number(v);
+    if (!isFinite(n) || n === 0) return 'delta-flat';
+    return n > 0 ? 'delta-up' : 'delta-down';
+  };
+  const body = list.map(r => `<tr>
+    <td>${r.sale}</td><td>${r.rank}</td><td class="name">${r.name}</td><td>${r.deliverySide || ''}</td>
+    <td>${Number(r.yestCostWan || 0).toFixed(2)}万</td>
+    <td>${Number(r.bidCost || 0).toFixed(0)}</td><td><span class="${cls(r.costRate)}">${fmtRate(r.costRate)}</span></td>
+    <td>${Number(r.roi || 0).toFixed(2)}</td><td><span class="${cls(r.roiRate)}">${fmtRate(r.roiRate)}</span></td>
+    <td>${Number(r.ctr || 0).toFixed(2)}%</td><td><span class="${cls(r.ctrRate)}">${fmtRate(r.ctrRate)}</span></td>
+    <td>${Number(r.cvr || 0).toFixed(2)}%</td><td><span class="${cls(r.cvrRate)}">${fmtRate(r.cvrRate)}</span></td>
+    <td><span class="${r.matchStatus === '已匹配' ? 'status-ok' : 'status-miss'}">${r.matchStatus || ''}</span></td>
+    <td><a class="btn-diag" href="javascript:void(0)" onclick="diagCustomer('${(r.name||'').replace(/'/g,'\\\'')}','top80异常',event)">🩺 诊断</a></td>
+  </tr>`).join('');
+  const tbody = document.querySelector('#top80Table tbody');
+  if (tbody) tbody.innerHTML = body || '<tr><td colspan="15" style="text-align:center;color:var(--text-2);padding:24px;">暂无数据</td></tr>';
+}
+
+function renderPortrait() {
+  const teamLabel = "团队总览";
+  const tabs = [teamLabel, ...SALES];
+  if (!tabs.includes(state.portraitSale)) state.portraitSale = teamLabel;
+  document.getElementById('portraitTabs').innerHTML = tabs.map(t =>
+    `<button class="${t===state.portraitSale?'active':''}" data-sale="${t}">${t}</button>`
+  ).join('');
+  document.querySelectorAll('#portraitTabs button').forEach(b => {
+    b.onclick = () => { state.portraitSale = b.dataset.sale; renderPortrait(); };
+  });
+
+  let list = RECORDS.filter(r => !normalizeQuarter(r.firstQuarter) || normalizeQuarter(r.firstQuarter) === state.quarter);
+  if (state.portraitSale !== teamLabel) list = list.filter(r => r.sale === state.portraitSale);
+  if (state.portrait === "rising") list = list.filter(isRisingRecord);
+
+  const colorPool = ["#3b82f6","#8b5cf6","#d97706","#10b981","#ef4444","#06b6d4","#f59e0b"];
+
+  function pieOption(field) {
+    const map = {};
+    const useCost = state.portraitMetric === 'cost';
+    list.forEach(r => {
+      const raw = r && r[field] !== undefined && r[field] !== null ? String(r[field]).trim() : '';
+      const key = raw || '未填写';
+      // 按数量：每条 +1；按消耗：累加昨耗（季度日均的代理变量）
+      const w = useCost ? Number(r.cost || 0) : 1;
+      map[key] = (map[key] || 0) + w;
+    });
+    const data = Object.entries(map)
+      .filter(([_,v]) => v > 0)
+      .map(([k,v])=>({name:k,value: useCost ? Math.round(v) : v}))
+      .sort((a,b)=>b.value-a.value);
+    const tipFmt = useCost ? '{b}: ¥{c} ({d}%)' : '{b}: {c} ({d}%)';
+    return {
+      tooltip: { trigger: 'item', formatter: tipFmt },
+      legend: { bottom: 0, textStyle:{color:'#6b7280',fontSize:11}, itemWidth:8, itemHeight:8 },
+      color: colorPool,
+      series: [{
+        type: 'pie', radius: ['40%','65%'],
+        center: ['50%','45%'],
+        label: { color:'#1f2937', fontSize:11 },
+        data
+      }]
+    };
+  }
+  // chartLink 特殊处理：用 AData s=4695Or 链路明细字典（按消耗汇总，不是记录数）
+  function pieOptionByLink() {
+    const linkMap = window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {};
+    // 用户 2026-05-21 拍板：链路分布跟随上方"按数量占比/按季度消耗占比"切换
+    const useCost = state.portraitMetric === 'cost';
+    const aggByLink = {};   // 按消耗累计
+    const cntByLink = {};   // 按客户数累计（同一客户在同一链路上只算一次）
+    list.forEach(r => {
+      const short = (r.shortName || r.name || '').trim();
+      const arr = linkMap[short];
+      if (Array.isArray(arr) && arr.length) {
+        const seen = new Set();
+        arr.forEach(item => {
+          const k = item.link || '未填写';
+          aggByLink[k] = (aggByLink[k] || 0) + Number(item.cost || 0);
+          if (!seen.has(k)) {
+            cntByLink[k] = (cntByLink[k] || 0) + 1;
+            seen.add(k);
+          }
+        });
+      }
+    });
+    const src = useCost ? aggByLink : cntByLink;
+    const data = Object.entries(src)
+      .filter(([_, v]) => v > 0)
+      .map(([k, v]) => ({ name: k, value: useCost ? Math.round(v) : v }))
+      .sort((a, b) => b.value - a.value);
+    // 给最高占比链路加粗（echarts label.fontWeight=bold）
+    if (data.length) data[0].label = { fontWeight: 'bold', fontSize: 12, color: '#111' };
+    const tipFmt = useCost ? '{b}: ¥{c} ({d}%)' : '{b}: {c} 个 ({d}%)';
+    return {
+      tooltip: { trigger: 'item', formatter: tipFmt },
+      legend: { bottom: 0, textStyle: { color: '#6b7280', fontSize: 11 }, itemWidth: 8, itemHeight: 8 },
+      color: colorPool,
+      series: [{
+        type: 'pie', radius: ['40%', '65%'], center: ['50%', '45%'],
+        label: { color: '#1f2937', fontSize: 11 },
+        data
+      }]
+    };
+  }
+
+  const fields = {Category:'cat', Source:'source', Delivery:'deliverySide'};
+  Object.entries(fields).forEach(([k,field]) => {
+    const id = 'chart' + k;
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (!charts[id]) charts[id] = echarts.init(el);
+    charts[id].setOption(pieOption(field), true);
+  });
+  // chartLink 单独用 link map
+  const linkEl = document.getElementById('chartLink');
+  if (linkEl) {
+    if (!charts['chartLink']) charts['chartLink'] = echarts.init(linkEl);
+    charts['chartLink'].setOption(pieOptionByLink(), true);
+  }
+  // renderLinkDeep(); // 模块已下线 2026-05-21
+}
+
+/* 拓客模型链路深度分析（已下线 2026-05-21）—— 函数保留壳，避免外部误调 */
+function renderLinkDeep() { return; /* eslint-disable-line */
+  // ===== 以下为旧实现，保留用于将来恢复 =====
+  /*
+  const linkMap = window.__CUSTOMER_LINK_DATA__ || {};
+  const records = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  // —— 本季度日均口径：cost(本季度累计) / Q2 至今天数 ——
+  // Q2 起始 = 2026-04-01；分母 = (dataDate - 2026-04-01) + 1
+  const dataDateStr = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || '';
+  let q2Days = 0;
+  if (dataDateStr) {
+    const dd = new Date(dataDateStr + 'T00:00:00');
+    const q2Start = new Date('2026-04-01T00:00:00');
+    q2Days = Math.max(1, Math.round((dd - q2Start) / 86400000) + 1);
+  }
+  if (q2Days <= 0) q2Days = 1; // 兜底
+  // 全量按消耗汇总（不限制 records，跑全量字典）
+  const costByLink = {};
+  let totalCost = 0;
+  Object.values(linkMap).forEach(arr => {
+    if (!Array.isArray(arr)) return;
+    arr.forEach(it => {
+      const k = it.link || '未填写';
+      const c = Number(it.cost || 0);
+      costByLink[k] = (costByLink[k] || 0) + c;
+      totalCost += c;
+    });
+  });
+  // 转成日均
+  const avgByLink = {};
+  Object.entries(costByLink).forEach(([k,v]) => { avgByLink[k] = v / q2Days; });
+  const totalAvg = totalCost / q2Days;
+  const badge = document.getElementById('linkTotalBadge');
+  if (badge) badge.textContent = `${Object.keys(linkMap).length.toLocaleString()} 客户 · ${(totalAvg/10000).toFixed(1)}万/日（本季度日均）`;
+
+  // 1. 核心链路占比饼图（按本季度日均消耗）
+  const coreEl = document.getElementById('chartLinkCore');
+  if (coreEl) {
+    if (!charts['chartLinkCore']) charts['chartLinkCore'] = echarts.init(coreEl);
+    const pieData = Object.entries(avgByLink)
+      .filter(([_,v]) => v > 0)
+      .map(([k,v]) => ({name:k, value:Math.round(v)}))
+      .sort((a,b)=>b.value-a.value);
+    charts['chartLinkCore'].setOption({
+      tooltip:{trigger:'item', formatter:p => `${p.name}: ¥${p.value.toLocaleString()}/日 (${p.percent}%)`},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
+      series:[{
+        type:'pie', radius:['38%','68%'], center:['50%','45%'],
+        label:{fontSize:12, formatter:'{b}\n{d}%'},
+        data: pieData
+      }]
+    }, true);
+  }
+
+  // 2. 各销售链路对比堆叠柱图（按本季度日均消耗）
+  const bySaleEl = document.getElementById('chartLinkBySale');
+  if (bySaleEl) {
+    if (!charts['chartLinkBySale']) charts['chartLinkBySale'] = echarts.init(bySaleEl);
+    const SALES_LIST = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+    // sale → {link → cost}
+    const matrix = {};
+    SALES_LIST.forEach(s => matrix[s] = {});
+    records.forEach(r => {
+      if (!SALES_LIST.includes(r.sale)) return;
+      const short = (r.shortName || r.name || '').trim();
+      const arr = linkMap[short];
+      if (!Array.isArray(arr)) return;
+      arr.forEach(it => {
+        const k = it.link || '未填写';
+        matrix[r.sale][k] = (matrix[r.sale][k] || 0) + Number(it.cost || 0);
+      });
+    });
+    // 转日均
+    SALES_LIST.forEach(s => {
+      Object.keys(matrix[s]).forEach(k => { matrix[s][k] = matrix[s][k] / q2Days; });
+    });
+    const allLinks = Array.from(new Set(Object.values(matrix).flatMap(m => Object.keys(m))));
+    const series = allLinks.map(link => ({
+      name: link, type: 'bar', stack: 'total',
+      emphasis: { focus: 'series' },
+      data: SALES_LIST.map(s => Math.round(matrix[s][link] || 0))
+    }));
+    charts['chartLinkBySale'].setOption({
+      tooltip:{trigger:'axis', axisPointer:{type:'shadow'}, valueFormatter:v => `¥${Number(v).toLocaleString()}/日`},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      grid:{left:48, right:16, top:20, bottom:48},
+      xAxis:{type:'category', data:SALES_LIST, axisLabel:{fontSize:11, rotate:20}},
+      yAxis:{type:'value', name:'日均消耗(元/日)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#06b6d4','#ec4899'],
+      series
+    }, true);
+  }
+
+  // 3. 5 月快照趋势（如果有 snapshots 数据则用，没有就用当前单点 + 模拟）
+  const trendEl = document.getElementById('chartLinkTrend');
+  if (trendEl) {
+    if (!charts['chartLinkTrend']) charts['chartLinkTrend'] = echarts.init(trendEl);
+    // 如果有快照数据
+    const snapshots = window.__LINK_SNAPSHOTS__ || null;
+    let dates, series;
+    if (snapshots && Array.isArray(snapshots.dates) && snapshots.dates.length) {
+      dates = snapshots.dates;
+      series = snapshots.series; // [{name, data:[...]}]
+    } else {
+      // 临时：用当前一日数据，待 snapshots 目录建好后用真实数据
+      dates = ['5-15','5-16','5-17','5-18','5-19'];
+      const top3Links = Object.entries(avgByLink).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      series = top3Links.map(([name, cur]) => ({
+        name, type:'line', smooth:true, symbolSize:6,
+        data: [Math.round(cur*0.9), Math.round(cur*0.93), Math.round(cur*0.96), Math.round(cur*0.98), Math.round(cur)]
+      }));
+    }
+    charts['chartLinkTrend'].setOption({
+      tooltip:{trigger:'axis', valueFormatter:v => `¥${Number(v).toLocaleString()}/日`},
+      legend:{bottom:0, textStyle:{fontSize:11}, itemWidth:10, itemHeight:10},
+      grid:{left:60, right:16, top:20, bottom:48},
+      xAxis:{type:'category', data:dates, axisLabel:{fontSize:11}},
+      yAxis:{type:'value', name:'日均消耗(元/日)', axisLabel:{fontSize:11, formatter:v => v >= 10000 ? (v/10000).toFixed(0)+'万' : v}},
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'],
+      series
+    }, true);
+  }
+  */
+}
+
+/* =========================
+   五、产业带渗透（核心改造）
+   ========================= */
+function aggregateZones(list) {
+  const map = {};
+  list.filter(r=>r.zone && r.isNew !== false).forEach(r => {
+    if (!map[r.zone]) map[r.zone] = {
+      zone:r.zone, maturity:r.maturity,
+      customers:0, rising:0, cost:0, sales:new Set()
+    };
+    map[r.zone].customers++;
+    if (r.isRising === "是") map[r.zone].rising++;
+    map[r.zone].cost += r.cost;
+    map[r.zone].sales.add(r.sale);
+  });
+  let zones = Object.values(map);
+  if (state.industrialMaturity) zones = zones.filter(z=>z.maturity === state.industrialMaturity);
+  if (state.zoneSort === "cost") zones.sort((a,b)=> b.cost - a.cost);
+  else zones.sort((a,b)=> b.customers - a.customers);
+  return zones;
+}
+
+function renderIndustrial() {
+  const zones = aggregateZones(filteredRecords());
+  const top10 = zones.slice(0,10);
+  const others = zones.slice(10);
+
+  // TOP10 卡片
+  document.getElementById('zoneTopGrid').innerHTML = top10.map((z,i) => {
+    const parts = z.zone.split('·');
+    const matCls = z.maturity === '成熟' ? '' : 'cultiv';
+    const rankCls = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    return `
+      <div class="zone-card ${rankCls}">
+        <div class="rank-num">${i+1}</div>
+        <div class="zone-name">
+          <span class="maturity-dot ${matCls}"></span>
+          ${parts[2]}·${parts[3]}
+        </div>
+        <div class="zone-loc">${parts[0]} ${parts[1]} · ${z.maturity==='成熟'?'🏆 成熟':'🌱 培育'}</div>
+        <div class="zone-stats">
+          <div class="stat">
+            <div class="stat-num">${z.customers}</div>
+            <div class="stat-label">新客数</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num gold">${z.rising}</div>
+            <div class="stat-label">新锐</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num purple">${(z.cost*10000/90).toFixed(0)}</div>
+            <div class="stat-label">日耗(元)</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;color:var(--text-2);padding:40px;">暂无匹配数据</div>';
+
+  // 其他产业带（折叠）
+  document.getElementById('zoneOtherCount').textContent = others.length;
+  document.querySelector('#zoneOtherTable tbody').innerHTML = others.map(z => `
+    <tr>
+      <td><b>${z.zone}</b></td>
+      <td><span class="tag ${z.maturity==='成熟'?'gold':'green'}">${z.maturity==='成熟'?'🏆 成熟':'🌱 培育'}</span></td>
+      <td>${z.customers}</td>
+      <td><span style="color:var(--gold);font-weight:600;">${z.rising}</span></td>
+      <td>${(z.cost*10000/90).toFixed(0)}</td>
+      <td>${[...z.sales].join('、')}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-2);padding:30px;">暂无更多产业带</td></tr>';
+}
+
+/* =========================
+   六、报备明细
+   ========================= */
+function customerTypeForQuarter(r) {
+  if (!r) return '';
+  // 2026-06-11 用户拍板：删除「24年老客」口径，客户一律按首投季度归类
+  const fq = normalizeQuarter(r.firstQuarter || r.customerType || r.status || '');
+  if (fq && fq === state.quarter) return `${fq.slice(0,4)}Q${fq.slice(-1)}新客`;
+  if (fq) return `非本季度新客 ${fq.slice(0,4)}Q${fq.slice(-1)}老客`;
+  return r.customerType || r.status || '';
+}
+function recordDedupKey(r) {
+  const raw = String(r && (r.name || r.shortName || r.brand) || '').trim();
+  return raw.replace(/\s+/g, '').toLowerCase();
+}
+function latestRecordDate(records) {
+  const dates = (records || []).map(r => String(r.date || '').slice(0,10)).filter(Boolean).sort();
+  return dates.length ? dates[dates.length - 1] : new Date().toISOString().slice(0,10);
+}
+function dedupeRecordsByEarliest(records) {
+  const map = new Map();
+  (records || []).forEach(r => {
+    const k = recordDedupKey(r);
+    if (!k) return;
+    const prev = map.get(k);
+    if (!prev || String(r.date || '') < String(prev.date || '')) map.set(k, r);
+  });
+  return Array.from(map.values());
+}
+
+function currentRecordList() {
+  let list = dedupeRecordsByEarliest(RECORDS);
+  if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
+  const todayStr = latestRecordDate(list);
+  if (state.recordRange === 'today') {
+    list = list.filter(r => r.date === todayStr);
+  } else if (state.recordRange === '7d') {
+    const d = new Date(todayStr); d.setDate(d.getDate()-6);
+    const start = d.toISOString().slice(0,10);
+    list = list.filter(r => r.date >= start && r.date <= todayStr);
+  }
+  if (state.recordSearch) {
+    const q = state.recordSearch.toLowerCase();
+    list = list.filter(r => [r.name, r.brand, r.shortName].some(v => String(v || '').toLowerCase().includes(q)));
+  }
+  if (state.recordSales) list = list.filter(r => r.sale === state.recordSales);
+  if (state.recordCategory) list = list.filter(r => r.cat === state.recordCategory);
+  if (state.recordRising) list = list.filter(r => r.isRising === state.recordRising);
+  list.sort((a,b)=> String(b.date || '').localeCompare(String(a.date || '')));
+  return list;
+}
+function csvEscape(v) {
+  const s = String(v ?? '');
+  return (s.includes(',') || s.includes('"') || s.includes(String.fromCharCode(10)) || s.includes(String.fromCharCode(13))) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function exportRecordsCsv() {
+  const rows = currentRecordList();
+  const headers = ['日期','销售','客户主体','系统识别简称','类目','链路','投放端','季度累计(元)','昨耗(元)','日环比','拓客途径','资源方','客户来源','客户口径'];
+  const body = rows.map(r => {
+    const linkArr = (window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    const linkText = (Array.isArray(linkArr) && linkArr.length)
+      ? linkArr.map(x => x.bold ? `*${x.link}*` : x.link).join(' / ')
+      : (r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
+    const vals = [r.date,r.sale,r.name,r.shortName,r.cat,linkText,r.deliverySide,
+                  Number(r.quarterCost || 0).toFixed(2),
+                  Number(r.yestCost || 0).toFixed(2),
+                  r.costChg || '',
+                  r.channel,r.resource,r.source,customerTypeForQuarter(r)];
+    return vals.map(csvEscape).join(',');
+  });
+  const csv = String.fromCharCode(0xFEFF) + [headers.join(','), ...body].join(String.fromCharCode(10));
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `拓客报备明细_${state.quarter}_${state.recordRange || 'all'}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function renderRecords() {
+  // 「拓客报备明细」UI 已下线，DOM 不存在时直接返回（保留函数避免外部调用爆栈）
+  if (!document.getElementById('recordTable')) return;
+  const salesSel = document.getElementById('recordSales');
+  if (salesSel && salesSel.options.length === 1) {
+    SALES.forEach(s => salesSel.innerHTML += `<option>${s}</option>`);
+  }
+  const catSel = document.getElementById('recordCategory');
+  if (catSel && catSel.options.length === 1) {
+    CATEGORIES.forEach(c => catSel.innerHTML += `<option>${c}</option>`);
+  }
+
+  let list = currentRecordList();
+
+  const display = v => (v === null || v === undefined) ? '' : String(v);
+  const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
+  tbody.innerHTML = list.map(r => {
+    // 链路列优先用 AData s=4695Or 字典（按消耗占比降序，最高消耗加粗）
+    const linkArr = (window.__CUSTOMER_LINK_DATA__ || window.__CUSTOMER_LINK_MAP__ || {})[(r.shortName || r.name || '').trim()];
+    let linkText;
+    if (Array.isArray(linkArr) && linkArr.length) {
+      linkText = linkArr.map(x => x.bold ? `<strong>${x.link}</strong>` : x.link).join(' / ');
+    } else {
+      linkText = display(r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
+    }
+    const customerType = display(customerTypeForQuarter(r));
+    // 交接 tag（217 条版判定）
+    const isHd = isHandoverCustomer217(r);
+    const handoverTag = isHd ? `<span class="tag" style="background:#fef3c7;color:#b45309;margin-left:4px;font-size:11px;" title="217 条交接名单 · 原销售 ${(HANDOVER_MAP_217[String(r.shortName||r.name||'').trim()]||{}).sale||''} · 首投 ${handoverFirstQuarter(r)||'—'}${isHandoverCountInQuarter(r)?' · 本季首投·计入KPI':' · 历史客户·不入KPI'}">交接</span>` : '';
+    // 用户状态打卡（可被任何销售修改，自动写 history）
+    const userStatus = getUserStatus(r);
+    const userStatusHtml = userStatus
+      ? `<span class="user-status-pill clickable-status" data-rid="${r.id}" title="点击修改 / 查看历史">${userStatus}</span>`
+      : `<button class="btn-add-status clickable-status" data-rid="${r.id}" title="点击新增状态">+ 标记</button>`;
+    const histCnt = (r.userStatusHistory && r.userStatusHistory.length) || 0;
+    const histBadge = histCnt ? `<span class="history-badge clickable-status" data-rid="${r.id}" data-act="history" title="查看历史变更">${histCnt}</span>` : '';
+    // 客户投放状态四档（用户 2026-05-22 11:31 拍板：文案统一 = ${当前季度}新客，不读销售登记字段）
+    // 2026-05-26 12:35 修复：firstQuarter 大量为空时(8468/12711)，必须用 isNew/quarterCost/status 兜底
+    let stateLabel = '', stateCls = 'gray';
+    const nm = String(r.shortName || r.name || '').trim();
+    const fq = String(r.firstQuarter || '').replace('/', ''); // "2025/Q2" -> "2025Q2"
+    const curQ = window.CURRENT_QUARTER || '2026Q2';
+    const curQDisp = `${curQ.slice(0,4)}Q${curQ.slice(-1)}新客`; // "2026Q2新客"
+    const qcW = Number(r.quarterCost || 0); // 季度累计消耗
+    // 2026-06-11 用户拍板：删除「24年老客」灰标，命中老客名单的客户改按首投季度归类
+    if (r.isLaoke === true || (fq && fq < curQ)) {
+      // 历史季度新客（用户 2026-05-21 拍板：从「2025Q2存量」改为「2025Q2新客」标红）
+      stateLabel = fq ? `${fq.slice(0,4)}Q${fq.slice(-1)}新客` : '历史新客';
+      stateCls = 'red';
+    } else if (fq && fq === curQ) {
+      // AData 命中本季度首投 → 文案强制 "2026Q2新客"，不读销售登记字段
+      stateLabel = curQDisp;
+      stateCls = 'green';
+    } else if (r.isNew === true) {
+      // 兜底：rebuild 回写的 isNew=true（明确是本季度新客）
+      // 走到这里说明 firstQuarter 字段没回写但底层标已就位 → 仍然标为本季度新客
+      stateLabel = curQDisp;
+      stateCls = 'green';
+    } else if (Number(r.quarterCost || 0) > 0) {
+      // 二级兜底：本季度有消耗(>0)但首投季度未知 → 至少标"已投放"，不要再标"新增未投放"
+      stateLabel = '已投放'; stateCls = 'green';
+    } else {
+      // 季度消耗表里没有这条客户 → 新增未投放
+      stateLabel = '新增未投放'; stateCls = 'orange';
+    }
+    const editBtn = `<button class="btn-edit-record" data-rid="${r.id}" title="修改/补充该客户的登记信息（含建联截图）">修改/补充</button>`;
+    // 拓客报备明细每日刷新的 3 个新列：季度累计 / 昨耗 / 日环比
+    const fmtMoney = v => {
+      const n = Number(v || 0);
+      if (!n) return '<span style="color:#9ca3af;">—</span>';
+      if (n >= 10000) return (n/10000).toFixed(1) + '万';
+      return n.toFixed(0);
+    };
+    const fmtChg = s => {
+      if (s === null || s === undefined || s === '') return '<span style="color:#9ca3af;">—</span>';
+      if (s === '新增') return '<span style="color:#dc2626;font-weight:600;">新增</span>';
+      const m = String(s).match(/(-?[\d.]+)%/);
+      if (!m) return String(s);
+      const n = parseFloat(m[1]);
+      const color = n > 0 ? '#dc2626' : (n < 0 ? '#059669' : '#6b7280');
+      const sign = n > 0 ? '+' : '';
+      return `<span style="color:${color};">${sign}${m[1]}%</span>`;
+    };
+    return `
+      <tr>
+        <td>${display(r.date)}</td>
+        <td>${display(r.sale)}${(function(){var h=getSaleHistory(r);return h.length?`<span class="history-badge clickable-status" data-rid="${r.id}" data-act="saleHistory" title="查看归属变更历史" style="margin-left:4px;">↔${h.length}</span>`:'';})()}</td>
+        <td>${display(r.name)}</td>
+        <td>${display(r.shortName)}</td>
+        <td>${display(r.cat)}</td>
+        <td>${linkText}</td>
+        <td>${display(r.deliverySide)}</td>
+        <td style="text-align:right;">${fmtMoney(r.quarterCost)}</td>
+        <td style="text-align:right;">${fmtMoney(r.yestCost)}</td>
+        <td style="text-align:right;">${fmtChg(r.costChg)}</td>
+        <td>${display(r.channel)}</td>
+        <td>${display(r.resource)}</td>
+        <td>${display(r.source)}</td>
+        <td>
+          <span class="tag ${stateCls}">${stateLabel}</span>${handoverTag}
+          <div style="margin-top:4px;">${editBtn}</div>
+        </td>
+      </tr>`;
+  }).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
+}
+
+/* 用户状态打卡（用户 2026-05-19 拍板）：全销售可见可改，自动写 history */
+const USER_STATUS_OPTIONS = ['待跟进','已建联','投放中','已转化','暂搁置','流失'];
+function loadUserStatusMap() {
+  try { return JSON.parse(localStorage.getItem('USER_STATUS_MAP_v1') || '{}'); }
+  catch(e){ return {}; }
+}
+function saveUserStatusMap(map) {
+  try { localStorage.setItem('USER_STATUS_MAP_v1', JSON.stringify(map)); } catch(e){}
+}
+/* 归属(销售)变更留痕（2026-06-06）：独立 map，随客户 id 记录每次改归属的 原→新/操作人/时间。
+   全量 RECORDS 改归属时 USER_RECORDS 不一定含该客户，故用独立 localStorage map 持久化留痕。 */
+function loadSaleChgMap() {
+  try { return JSON.parse(localStorage.getItem('SALE_CHANGE_MAP_v1') || '{}'); }
+  catch(e){ return {}; }
+}
+function saveSaleChgMap(map) {
+  try { localStorage.setItem('SALE_CHANGE_MAP_v1', JSON.stringify(map)); } catch(e){}
+}
+function getSaleHistory(r) {
+  const map = loadSaleChgMap();
+  const local = (map[r.id] && map[r.id].history) || [];
+  const onRec = Array.isArray(r.saleHistory) ? r.saleHistory : [];
+  // 合并去重(以 when+after 为键)，本地与记录自带的都显示
+  const seen = {}, out = [];
+  onRec.concat(local).forEach(h => { const k=(h.when||'')+'|'+(h.after||''); if(!seen[k]){seen[k]=1;out.push(h);} });
+  out.sort((a,b)=>String(a.when).localeCompare(String(b.when)));
+  return out;
+}
+function recordSaleChange(r, beforeSale, afterSale, who) {
+  if (beforeSale === afterSale) return;
+  const entry = { who: who || CURRENT_USER || 'unknown', when: new Date().toISOString().slice(0,19).replace('T',' '), before: beforeSale || '', after: afterSale || '' };
+  const map = loadSaleChgMap();
+  if (!map[r.id]) map[r.id] = { history: [] };
+  map[r.id].history.push(entry);
+  saveSaleChgMap(map);
+  // 同步写到记录对象自身(随 cloud.upload 落云端 → 跨设备/rebuild 可读)
+  if (!Array.isArray(r.saleHistory)) r.saleHistory = [];
+  r.saleHistory.push(entry);
+}
+function openSaleHistory(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const hist = getSaleHistory(r);
+  const html = hist.length ? hist.slice().reverse().map(h => `
+    <div style="display:flex;gap:10px;padding:8px 10px;border-bottom:1px dashed var(--border-2);font-size:12px;">
+      <span style="color:var(--text-2);min-width:130px;">${h.when}</span>
+      <span style="color:var(--primary);min-width:80px;font-weight:600;">${h.who}</span>
+      <span style="color:var(--text);">${h.before || '未分配'} <span style="color:#9ca3af;">→</span> <b>${h.after || '未分配'}</b></span>
+    </div>`).join('') : '<div style="text-align:center;color:var(--text-2);padding:20px;">暂无归属变更记录</div>';
+  showModal('归属变更历史', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b> · 当前归属 <b style="color:var(--primary);">${r.sale || '未分配'}</b></div>
+    <div style="max-height:360px;overflow-y:auto;">${html}</div>
+  `, null);
+}
+function getUserStatus(r) {
+  if (r.userStatus) return r.userStatus;
+  const map = loadUserStatusMap();
+  return (map[r.id] && map[r.id].current) || '';
+}
+function setUserStatus(r, newStatus, who) {
+  const map = loadUserStatusMap();
+  const before = (map[r.id] && map[r.id].current) || '';
+  if (before === newStatus) return;
+  if (!map[r.id]) map[r.id] = { current: '', history: [] };
+  map[r.id].history.push({
+    who: who || CURRENT_USER || 'unknown',
+    when: new Date().toISOString().slice(0,19).replace('T',' '),
+    before, after: newStatus
+  });
+  map[r.id].current = newStatus;
+  saveUserStatusMap(map);
+  // 同步到 RECORDS（用于 UI 直接读）
+  r.userStatus = newStatus;
+  r.userStatusHistory = map[r.id].history;
+}
+function openStatusEditor(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const cur = getUserStatus(r);
+  const html = USER_STATUS_OPTIONS.map(opt =>
+    `<button class="status-opt ${opt===cur?'active':''}" data-opt="${opt}">${opt}</button>`
+  ).join('');
+  showModal('客户状态打卡', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:8px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">${html}</div>
+    <div style="border-top:1px dashed var(--border);padding-top:10px;font-size:12px;color:var(--text-2);">当前：${cur || '— 尚未标记'}</div>
+  `, (modalEl) => {
+    modalEl.querySelectorAll('.status-opt').forEach(btn => {
+      btn.onclick = () => {
+        setUserStatus(r, btn.dataset.opt);
+        closeQuickModal();
+        renderRecords();
+      };
+    });
+  });
+}
+function openStatusHistory(rid) {
+  const r = (window.RECORDS || []).find(x => String(x.id) === String(rid));
+  if (!r) return;
+  const map = loadUserStatusMap();
+  const hist = (map[r.id] && map[r.id].history) || [];
+  const html = hist.length ? hist.slice().reverse().map(h => `
+    <div style="display:flex;gap:10px;padding:8px 10px;border-bottom:1px dashed var(--border-2);font-size:12px;">
+      <span style="color:var(--text-2);min-width:130px;">${h.when}</span>
+      <span style="color:var(--primary);min-width:80px;font-weight:600;">${h.who}</span>
+      <span style="color:var(--text);">${h.before || '—'} <span style="color:#9ca3af;">→</span> <b>${h.after}</b></span>
+    </div>`).join('') : '<div style="text-align:center;color:var(--text-2);padding:20px;">暂无历史变更</div>';
+  showModal('状态变更历史', `
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:10px;">客户：<b style="color:var(--text);">${r.name || r.shortName}</b></div>
+    <div style="max-height:360px;overflow-y:auto;">${html}</div>
+  `, null);
+}
+let _quickModalEl = null;
+function showModal(title, html, onMounted) {
+  closeQuickModal();
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  mask.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(15,23,42,0.4);z-index:9999;';
+  mask.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:18px 22px;width:480px;max-width:92vw;box-shadow:0 12px 40px rgba(0,0,0,0.18);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;">${title}</div>
+        <button class="qm-close" style="background:transparent;border:none;font-size:20px;color:#9ca3af;cursor:pointer;">×</button>
+      </div>
+      <div class="qm-body">${html}</div>
+    </div>`;
+  document.body.appendChild(mask);
+  _quickModalEl = mask;
+  mask.querySelector('.qm-close').onclick = closeQuickModal;
+  mask.addEventListener('click', e => { if (e.target === mask) closeQuickModal(); });
+  if (typeof onMounted === 'function') onMounted(mask);
+}
+function closeQuickModal() {
+  if (_quickModalEl) { _quickModalEl.remove(); _quickModalEl = null; }
+}
+// 委托点击事件
+document.addEventListener('click', e => {
+  const t = e.target.closest('.clickable-status');
+  if (!t) return;
+  e.stopPropagation();
+  const rid = t.dataset.rid;
+  const act = t.dataset.act;
+  if (act === 'history') openStatusHistory(rid);
+  else if (act === 'saleHistory') openSaleHistory(rid);
+  else openStatusEditor(rid);
+});
+
+/* =========================
+   七、交互绑定
+   ========================= */
+
+document.getElementById('quarterSel').onchange = (e) => {
+  state.quarter = normalizeQuarter(e.target.value) || '2026Q2';
+  document.getElementById('quarterTag').textContent = quarterLabel(state.quarter);
+  renderAll();
+};
+document.getElementById('compareSel').onchange = (e) => {
+  state.compareMode = e.target.value || 'qoq';
+  renderAll();
+};
+
+document.querySelectorAll('[data-portrait]').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-portrait]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.portrait = b.dataset.portrait;
+    renderPortrait();
+  };
+});
+
+// 5/19 新增：拓客模型「数量占比 / 季度消耗占比」二选一
+document.querySelectorAll('[data-metric]').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-metric]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.portraitMetric = b.dataset.metric;
+    renderPortrait();
+  };
+});
+
+// 「拓客报备明细」UI 已下线，绑定加 null 守卫，避免 JS 抛错
+(function bindRecordHandlersIfPresent(){
+  const $ = id => document.getElementById(id);
+  if ($('recordSearch')) $('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
+  if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
+  if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
+  if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; renderRecords(); };
+  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
+  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
+  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+})();
+
+
+document.getElementById('btnTarget') && (document.getElementById('btnTarget').onclick = () => {
+  document.getElementById('goalRising').value = GOALS.rising;
+  document.getElementById('goalCost').value = GOALS.cost;
+  openModal('modalTarget');
+});
+
+function isEmbedMode() {
+  return new URLSearchParams(window.location.search).get('embed') === '1';
+}
+function applyEmbedMode() {
+  if (!isEmbedMode()) return;
+  document.body.classList.add('embed-mode');
+  // 只隐藏产业带深度模块本身，不隐藏 KPI 区里的“TOP10产业带渗透客户”指标卡
+  const zoneGrid = document.getElementById('zoneTopGrid');
+  if (zoneGrid) {
+    const zoneSection = zoneGrid.closest('.section');
+    if (zoneSection) zoneSection.style.display = 'none';
+  }
+  // embed 模式保留顶部新增登记按钮，只隐藏返回首页和靶向品牌池入口
+  document.querySelectorAll('.topbar .btn-link').forEach(a => {
+    const t = a.textContent || '';
+    if (t.includes('返回作战中心') || t.includes('靶向品牌池')) a.style.display = 'none';
+  });
+}
+window.openModal = id => document.getElementById(id).classList.add('show');
+window.closeModal = id => document.getElementById(id).classList.remove('show');
+window.saveGoals = () => {
+  GOALS.rising = +document.getElementById('goalRising').value || GOALS.rising;
+  GOALS.cost = +document.getElementById('goalCost').value || GOALS.cost;
+  closeModal('modalTarget');
+  renderAll();
+};
+
+/* ===== 新增拓客登记：lookupEntity 重构 v2 (2026-05-19) =====
+ * 修复：
+ *  1. 字典走错：33408 大字典 __MAPPING_DATA__（精确命中），不再用 969 小字典
+ *  2. 老客判定口径：isOld24 || firstQuarter < CURRENT_QUARTER（不是 !!firstQuarter）
+ *  3. CURRENT_QUARTER 按今日自动算（2026-05 → 2026Q2）
+ *  4. 删 PRESET_CLIENTS 12 条 includes 模糊匹配（大字典已覆盖）
+ *  5. 主体名兜底（matched=false）逻辑保留，等回扫脚本第二天补回
+ *  6. 字段去空格归一
+ */
+function getCurrentQuarter() {
+  const d = new Date();
+  return d.getFullYear() + 'Q' + (Math.floor(d.getMonth() / 3) + 1);
+}
+const CURRENT_QUARTER = getCurrentQuarter();
+const ENTITY_MAP  = window.__MAPPING_DATA__ || (window.__ENTITY_DATA__ && window.__ENTITY_DATA__.m) || {};   // 33408 主体→简称大字典
+const LAOKE_SET   = new Set((window.__ENTITY_DATA__ && window.__ENTITY_DATA__.k) || []);                      // 兼容旧种子
+const HISTORY_MAP = (window.__HISTORY_DATA__) || {};
+const SHORT_FIRST_QUARTER_MAP = window.__SHORT_FIRST_QUARTER_MAP__ || {};
+const OLD_SUBJECT_QUARTER_MAP = window.__OLD_SUBJECT_QUARTER_MAP__ || {};
+const OLD24_CUSTOMER_SET = window.__OLD24_CUSTOMER_SET__ || (window.__OLD24_SET__ ? new Set(window.__OLD24_SET__) : new Set());
+const OLD24_CUSTOMER_SPEND_MAP = window.__OLD24_CUSTOMER_SPEND_MAP__ || {};
+function lookupEntity(name) {
+  if (!name) return { short:"", isLaoke:false, matched:false, firstQuarter:"", isOld24:false, needReconcile:false };
+  const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
+  // 2026-06-11 子青拍板：优先用 REGISTERED 真源（拓客登记表的 shortName），
+  // AData MAPPING_DATA 有错粘风险（如 5 个泉州/晋江主体被错粘到「泉州七匹狼」），
+  // 必须以"客户登记表的主体-简称真源"为准。
+  // 优先级：REGISTERED.shortName > MAPPING_DATA > 主体名兜底
+  const REGISTERED_SUBJECTS = window.__REGISTERED_SUBJECTS__ || {};
+  const regShort = (REGISTERED_SUBJECTS[n] && REGISTERED_SUBJECTS[n].shortName) ? REGISTERED_SUBJECTS[n].shortName : "";
+  const mappedShort = regShort || (Object.prototype.hasOwnProperty.call(ENTITY_MAP, n) ? ENTITY_MAP[n] : "");
+  const matched = !!mappedShort;
+  const short = mappedShort || n;  // 兜底：用主体名当简称
+  // 2026-06-11 用户拍板：删除「24年老客」判定（原 Step2），登记时不再提示24老客，
+  // 一律走首投季度查询。
+  // Step 3: 首投季度查询（主体优先 → 简称兜底）
+  const firstQuarter = OLD_SUBJECT_QUARTER_MAP[n] || SHORT_FIRST_QUARTER_MAP[short] || SHORT_FIRST_QUARTER_MAP[n] || "";
+  // Step 4: 老客 = 首投季度 < 当前季度（本季度首投属新客，不是老客）
+  const isLaokeNonCurrent = !!(firstQuarter && firstQuarter < CURRENT_QUARTER);
+  // Step 5: matched=false 时标记 needReconcile=true，等次日回扫脚本补回
+  return { short, isLaoke:isLaokeNonCurrent, matched, firstQuarter, isOld24:false, needReconcile: !matched };
+}
+function lookupDuplicates(name) {
+  const n = (name || "").trim().replace(/\s+/g, '');  // 空格归一
+  if (!n) return { total:0, entries:[] };
+  const entries = [];
+  // 2026-05-26 12:39 修复：只有 7 名真销售登记的才算「先登记先归属」硬卡
+  // 归属"其他/未分配"的是 AData 拉来的种子记录，不算销售登记，跳过判重
+  const isRealSale = (s) => {
+    if (!s) return false;
+    const sl = String(s).trim().toLowerCase();
+    if (!sl) return false;
+    // 命中 7 销售集合（大小写不敏感）
+    const SALE7 = ["brownfan","lijunwu","jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+    return SALE7.includes(sl);
+  };
+  // 1. 拓新组底表（最新，每天重建）—— 只算真销售归属
+  const REGISTERED_SUBJECTS = window.__REGISTERED_SUBJECTS__ || {};
+  if (Object.prototype.hasOwnProperty.call(REGISTERED_SUBJECTS, n)) {
+    const r = REGISTERED_SUBJECTS[n];
+    if (isRealSale(r.sale)) {
+      entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+    }
+  }
+  // 2. 历史表（兼容旧种子）—— 只算真销售归属
+  if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) {
+    (HISTORY_MAP[n] || []).forEach(s => { if (isRealSale(s)) entries.push({ sales:s, date:"", src:"历史" }); });
+  }
+  // 3. 本地 records —— 只算真销售归属
+  if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) {
+    RECORDS.forEach(r => {
+      if ((r.name || "").trim().replace(/\s+/g,'') === n && isRealSale(r.sale)) {
+        entries.push({ sales:r.sale, date:r.date || "", src:"本地" });
+      }
+    });
+  }
+  return { total:entries.length, entries };
+}
+/* 2026-06-10 子青拍板：判重命中多个销售时，区分「真·先登记先归属」与「归属被改过」。
+   优先级 本地(date最新) > 底表 > 历史 = 当前归属，其余视为历史归属。 */
+function _dupCurrentOwner(entries){
+  const local = (entries||[]).filter(e=>e.src==='本地' && e.date).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(local.length) return local[0].sales;
+  const localAny = (entries||[]).filter(e=>e.src==='本地');
+  if(localAny.length) return localAny[localAny.length-1].sales;
+  const base = (entries||[]).filter(e=>e.src==='底表');
+  if(base.length) return base[base.length-1].sales;
+  return (entries&&entries.length) ? entries[entries.length-1].sales : '';
+}
+let pendingImages = [];
+function fillModalSelect(id, arr) { const el = document.getElementById(id); if (el) el.innerHTML = arr.map(x => `<option>${x}</option>`).join(''); }
+function initRegisterModal() {
+  fillModalSelect('m-category', CATEGORIES);
+  fillModalSelect('m-sales', SALES);
+  fillModalSelect('m-channel', CHANNELS);
+  fillModalSelect('m-source', CUSTOMER_SOURCES);
+  // 销售身份优先从 CloudBase 登录态读，URL 参数次之，否则 fallback CURRENT_USER
+  // 修复 2026-05-21 19:50：解决"顶栏 Jonzhu 但销售锁 kinsleyjin"的矛盾
+  let actualUser = CURRENT_USER;
+  try {
+    if (window.cloud && cloud.rtx) {
+      const r = cloud.rtx();
+      if (r) {
+        // SALES 数组里大小写敏感，逐一匹配
+        const matched = SALES.find(s => s.toLowerCase() === r.toLowerCase());
+        if (matched) actualUser = matched;
+        // ziqingdu 是管理员，不在 SALES 里，保持 CURRENT_USER 兜底
+      }
+    }
+  } catch(e){}
+  document.getElementById('m-sales').value = actualUser;
+  document.getElementById('m-date').value = new Date().toISOString().slice(0,10);
+  ['m-name','m-resource'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  // 链路已改为系统自动匹配，无需重置
+  pendingImages = []; renderThumbs();
+  // 清空建联截图遗留 + 同步给 cloud_sync 的全局 pending
+  try {
+    window.__EDIT_PENDING_EVIDENCE__ = [];
+    const ev = document.getElementById('m-evidence'); if (ev) ev.value = '';
+    const prev = document.getElementById('m-evidence-preview'); if (prev) prev.innerHTML = '';
+  } catch(e){}
+  document.getElementById('m-name-hint').innerHTML = '';
+  onChannelChange();
+  // 销售身份锁定：普通销售=锁本人；管理员=可改
+  try {
+    const isAdmin = (window.cloud && cloud.isAdmin && cloud.isAdmin()) ||
+                    (window.cloud && cloud.rtx && (cloud.rtx() === 'ziqingdu' || cloud.rtx() === 'kinsleyjin' || cloud.rtx() === 'edcchen'));
+    const sel = document.getElementById('m-sales');
+    const hint = document.getElementById('m-sales-hint');
+    if (sel) {
+      sel.disabled = !isAdmin;
+      sel.style.background = isAdmin ? '#fff' : '#f3f4f6';
+      sel.style.color = isAdmin ? '#1f2937' : '#6b7280';
+    }
+    if (hint) {
+      hint.innerHTML = isAdmin
+        ? '🔓 <b style="color:#7c3aed;">管理员模式</b> · 可替任意销售补登（系统会自动记录是你操作的）'
+        : '🔒 已锁定为 <b>' + actualUser + '</b>，如需替别人登记请联系子青/Kinsley';
+      hint.style.cssText = 'font-size:11px;color:#6b7280;margin-top:4px;';
+    }
+  } catch(e){}
+}
+document.getElementById('btnAddRecord').onclick = () => { initRegisterModal(); openModal('modalRecord'); };
+
+// 「📋 批量粘贴」打开粘贴 modal
+const _btnBatchPaste = document.getElementById('btnBatchPaste');
+if (_btnBatchPaste) _btnBatchPaste.onclick = () => openBatchPasteModal();
+
+// 「📤 导出今日」一键导出今日新登记 JSON
+const _btnExportToday = document.getElementById('btnExportToday');
+if (_btnExportToday) _btnExportToday.onclick = () => exportTodayJson();
+
+// 顶部红黄横幅"今日 N 条"实时计数
+function updateExportBannerCount(){
+  const el = document.getElementById('banner-today-count-pc');
+  if (!el) return;
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const list = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+  const todayCount = list.filter(r => r.date === todayStr).length;
+  el.textContent = '今日 ' + todayCount + ' 条';
+  el.style.color = todayCount > 0 ? '#dc2626' : '#92400e';
+  el.style.background = todayCount > 0 ? '#fee2e2' : '#fff';
+}
+window.addEventListener('DOMContentLoaded', function(){ try{ updateExportBannerCount(); }catch(e){} });
+window.updateExportBannerCount = updateExportBannerCount;
+
+function exportTodayJson() {
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  const list = (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) ? RECORDS : [];
+  const todayRows = list.filter(r => r.date === todayStr);
+  if (!todayRows.length) {
+    alert('今日（' + todayStr + '）暂无新登记。');
+    return;
+  }
+  const sales = [...new Set(todayRows.map(r => r.sale).filter(Boolean))];
+  const saleTag = sales.length === 1 ? sales[0] : (sales.length === 0 ? 'unknown' : 'mixed');
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    saleTag,
+    date: todayStr,
+    count: todayRows.length,
+    records: todayRows
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'register_' + saleTag + '_' + todayStr + '_' + todayRows.length + '条.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('💾 已导出今日 ' + todayRows.length + ' 条新登记（应急本地备份）。\n云端上线后无需手动发送，明早自动汇总。');
+}
+
+// 批量粘贴 modal（动态创建一次）
+function openBatchPasteModal() {
+  let modal = document.getElementById('modalBatchPaste');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modalBatchPaste';
+    modal.className = 'modal-mask';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:12px;width:780px;max-height:92vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:15px;font-weight:600;">📋 批量粘贴登记</div>
+          <button onclick="closeModal('modalBatchPaste')" style="color:#bfbfbf;font-size:20px;border:none;background:transparent;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:18px 20px;">
+          <div style="font-size:12px;color:#6b7280;margin-bottom:8px;">从 Excel / 腾讯文档复制（含表头）→ 粘贴到下方文本框（支持 Tab/逗号 分隔）：</div>
+          <div style="font-size:11px;color:#9ca3af;margin-bottom:6px;">必填 7 列（与「+ 新增登记」完全一致）：客户主体名称 / 类目 / 销售 / 拓客途径 / 资源方 / 客户来源 / 日期</div>
+          <textarea id="bp-text" rows="6" style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:8px;font-size:12px;font-family:Menlo,monospace;" placeholder="客户主体名称&#9;类目&#9;销售&#9;拓客途径&#9;资源方&#9;客户来源&#9;日期&#10;广州XX服装有限公司&#9;女装&#9;kinsleyjin&#9;广告服务商转介绍&#9;某某传媒&#9;26年4月后产业带拓客&#9;2026-05-18"></textarea>
+          <div style="margin-top:8px;display:flex;gap:8px;">
+            <button class="btn-sm" onclick="parseBatchPaste()">🔍 解析并校验</button>
+            <span style="font-size:11px;color:#6b7280;align-self:center;">解析后下方会显示每行状态</span>
+          </div>
+          <div id="bp-preview" style="margin-top:12px;display:none;">
+            <div style="font-size:13px;margin-bottom:6px;">
+              <span id="bp-stat-total">0</span> 行：<span style="color:#16a34a;" id="bp-stat-ok">0</span> 通过 · 
+              <span style="color:#d97706;" id="bp-stat-warn">0</span> 老客 · 
+              <span style="color:#dc2626;" id="bp-stat-err">0</span> 重复/错误
+            </div>
+            <div style="max-height:280px;overflow:auto;border:1px solid #e5e7eb;border-radius:6px;">
+              <table style="width:100%;font-size:12px;border-collapse:collapse;">
+                <thead style="position:sticky;top:0;background:#f9fafb;">
+                  <tr>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">#</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">状态</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户主体名称</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">类目</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">销售</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">拓客途径</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">资源方</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">客户来源</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">日期</th>
+                    <th style="text-align:left;padding:6px 8px;border-bottom:1px solid #e5e7eb;">说明</th>
+                  </tr>
+                </thead>
+                <tbody id="bp-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid #f0f0f0;">
+          <button class="btn-sm ghost" onclick="closeModal('modalBatchPaste')">取消</button>
+          <button class="btn-sm" id="bp-submit" disabled onclick="submitBatchPaste()" style="background:var(--primary);color:#fff;">✅ 一键入库</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('bp-text').value = '';
+  document.getElementById('bp-preview').style.display = 'none';
+  document.getElementById('bp-submit').disabled = true;
+  openModal('modalBatchPaste');
+}
+
+let _bpRows = [];
+function parseBatchPaste() {
+  const txt = document.getElementById('bp-text').value.trim();
+  if (!txt) { alert('请先粘贴数据'); return; }
+  const lines = txt.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { alert('至少需要 1 行表头 + 1 行数据'); return; }
+  // 自动识别分隔符
+  let sep = '\t';
+  if (!lines[0].includes('\t')) sep = lines[0].includes(',') ? ',' : (lines[0].includes('，') ? '，' : '\t');
+  const header = lines[0].split(sep).map(c => c.trim());
+  // 列识别：宽松匹配
+  const findCol = (keys) => {
+    for (let i = 0; i < header.length; i++) {
+      for (const k of keys) if (header[i].includes(k)) return i;
+    }
+    return -1;
+  };
+  const idx = {
+    name: findCol(['客户主体', '主体名']),
+    sale: findCol(['销售', '归属']),
+    date: findCol(['日期', '登记']),
+    cat: findCol(['类目', '行业']),
+    link: findCol(['链路']),
+    channel: findCol(['拓客途径', '途径', '渠道']),
+    resource: findCol(['资源方', '资源']),
+    source: findCol(['来源']),
+    status: findCol(['状态', '投放状态']),
+    rising: findCol(['新锐', '是否新锐']),
+  };
+  if (idx.name < 0) { alert('未识别到「客户主体」列'); return; }
+  const today = new Date(); const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+  _bpRows = lines.slice(1).map((line, i) => {
+    const cells = line.split(sep).map(c => c.trim());
+    const r = {
+      lineNo: i + 1,
+      name: cells[idx.name] || '',
+      sale: idx.sale >= 0 ? (cells[idx.sale] || '') : (typeof CURRENT_USER !== 'undefined' ? CURRENT_USER : ''),
+      date: idx.date >= 0 ? (cells[idx.date] || todayStr) : todayStr,
+      cat: idx.cat >= 0 ? (cells[idx.cat] || '') : '',
+      link: idx.link >= 0 ? (cells[idx.link] || '') : '',
+      channel: idx.channel >= 0 ? (cells[idx.channel] || '') : '',
+      resource: idx.resource >= 0 ? (cells[idx.resource] || '') : '',
+      source: idx.source >= 0 ? (cells[idx.source] || '') : '',
+      status: idx.status >= 0 ? (cells[idx.status] || '') : '',
+      rising: idx.rising >= 0 ? (cells[idx.rising] || '否') : '否',
+    };
+    // 校验
+    const issues = [];
+    let level = 'ok';
+    if (!r.name) { issues.push('客户主体必填'); level = 'err'; }
+    else {
+      const look = lookupEntity(r.name);
+      r.shortName = look.short;
+      r.isLaoke = look.isLaoke;
+      r.isOld24 = look.isOld24;
+      r.matched = look.matched;
+      // 2026-06-11 用户拍板：删除24老客提示，命中老客名单的客户按首投季度归类
+      if (look.isLaoke && look.firstQuarter) {
+        const qLabel = look.firstQuarter.replace(/^20(\d{2})Q(\d)$/, '$1Q$2');
+        issues.push(`⚠ ${qLabel}老客（剔除新客统计）`);
+        if (level === 'ok') level = 'warn';
+      }
+      else if (!look.matched) {
+        // 未命中字典是合法路径（用主体名兜底），仅提示不告警
+        issues.push(`📍 客户简称(主体兜底): ${look.short}`);
+      }
+      const dup = lookupDuplicates(r.name);
+      const hard = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
+      if (hard.length > 0) {
+        issues.push('已被 ' + hard.map(d => d.sales).join('、') + ' 登记（拒绝入库）');
+        level = 'err';
+      }
+    }
+    if (!r.sale) { issues.push('销售必填'); level = 'err'; }
+    if (!r.cat) { issues.push('类目必填'); level = 'err'; }
+    if (!r.channel) { issues.push('拓客途径必填'); level = 'err'; }
+    if (r.channel && r.channel !== '自拓' && !r.resource) { issues.push('非自拓途径建议填资源方'); if (level === 'ok') level = 'warn'; }
+    if (!r.source) { issues.push('客户来源必填'); level = 'err'; }
+    if (!r.date) { issues.push('日期必填'); level = 'err'; }
+    return { ...r, issues, level };
+  });
+  // 渲染预览
+  const total = _bpRows.length;
+  const ok = _bpRows.filter(r => r.level === 'ok').length;
+  const warn = _bpRows.filter(r => r.level === 'warn').length;
+  const err = _bpRows.filter(r => r.level === 'err').length;
+  document.getElementById('bp-stat-total').textContent = total;
+  document.getElementById('bp-stat-ok').textContent = ok;
+  document.getElementById('bp-stat-warn').textContent = warn;
+  document.getElementById('bp-stat-err').textContent = err;
+  document.getElementById('bp-preview').style.display = 'block';
+  // 状态标签：根据真实原因展示，不再把所有 warn 都写成"老客"
+  function bpWarnTag(row) {
+    // 2026-06-11 用户拍板：删除24老客标签
+    if (row.isLaoke) return '<span style="color:#d97706;">⚠ 非本季度新客</span>';
+    return '<span style="color:#d97706;">⚠ 警告</span>';
+  }
+  const okTag  = '<span style="color:#16a34a;">✅ 通过</span>';
+  const errTag = '<span style="color:#dc2626;">❌ 拒绝</span>';
+  document.getElementById('bp-tbody').innerHTML = _bpRows.map(r => {
+    const bg = r.level === 'err' ? 'background:#fef2f2;' : (r.level === 'warn' ? 'background:#fefce8;' : '');
+    const tag = r.level === 'err' ? errTag : (r.level === 'warn' ? bpWarnTag(r) : okTag);
+    return '<tr style="' + bg + '">'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + r.lineNo + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + tag + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.name || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.cat || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.sale || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.channel || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.resource || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.source || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;">' + (r.date || '') + '</td>'
+      + '<td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;color:#6b7280;font-size:11px;">' + r.issues.join('；') + '</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('bp-submit').disabled = (ok + warn) === 0;
+}
+
+function submitBatchPaste() {
+  const valid = _bpRows.filter(r => r.level === 'ok' || r.level === 'warn');
+  if (!valid.length) { alert('没有可入库的行'); return; }
+  if (!confirm('即将入库 ' + valid.length + ' 条（错误行已跳过）。确认？')) return;
+  const baseId = Date.now();
+  if (typeof RECORDS === 'undefined' || !Array.isArray(RECORDS)) {
+    alert('当前看板未加载 RECORDS 数组，请刷新页面再试');
+    return;
+  }
+  valid.forEach((r, i) => {
+    RECORDS.unshift({
+      id: baseId + i,
+      name: r.name,
+      shortName: r.shortName || r.name,
+      sale: r.sale,
+      date: r.date,
+      cat: r.cat,
+      link: r.link,
+      channel: r.channel,
+      resource: r.resource,
+      source: r.source,
+      status: r.status || (r.isLaoke ? '存量' : '新客'),
+      rising: r.rising,
+      isLaoke: !!r.isLaoke,
+      old24: !!r.isOld24,
+      matched: !!r.matched,
+      firstQuarter: r.firstQuarter || "",
+      needReconcile: !r.matched,         // 主体兜底待回扫
+      matchedAt: r.matched ? r.date : "", // 命中字典的日期，便于回扫追溯
+      _batchPaste: true,
+      images: '[]',
+      links: r.link ? '["' + r.link + '"]' : '[]',
+    });
+  });
+  // 持久化：批量必须用 saveUserRecordsBulk（暴露在 window）
+  const newRecs = valid.map((r, i) => RECORDS[i]).filter(Boolean);
+  if (typeof saveUserRecordsBulk === 'function') saveUserRecordsBulk([]);  // 仅触发持久化，RECORDS 已 unshift
+  else if (typeof persistUserRecordsBestEffort === 'function') persistUserRecordsBestEffort();
+  else if (typeof saveRecords === 'function') saveRecords();
+  if (typeof renderAll === 'function') renderAll();
+  closeModal('modalBatchPaste');
+  alert('✅ 已入库 ' + valid.length + ' 条');
+}
+function onNameInput() {
+  const raw = document.getElementById('m-name').value.trim();
+  const hintEl = document.getElementById('m-name-hint');
+  const submitBtn = document.getElementById('m-submit');
+  if (!raw) { 
+    hintEl.innerHTML = '';
+    if (submitBtn) submitBtn.disabled = false;
+    return; 
+  }
+  const look = lookupEntity(raw);
+  const shortName = look.short || raw;
+  const dup = lookupDuplicates(raw);
+  let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
+  // 2026-06-11 用户拍板：删除24老客badge。badge：非本季度新客（黄）/ 本季度新客（绿）/ 主体兜底待回扫（灰）
+  if (look.isLaoke) {
+    hint += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">非本季度新客（首投 ${look.firstQuarter || '-'}）</span>`;
+  } else if (look.needReconcile) {
+    hint += `<span class="badge-newk" style="background:#f3f4f6;color:#6b7280;">⏳ 主体兜底（次日回扫补简称）</span>`;
+  } else {
+    hint += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客</span>`;
+  }
+  const DSM = window.__DELIVERY_SIDE_MAP__ || {};
+  const ds = DSM[shortName] || DSM[raw] || '';
+  if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
+  if (!look.matched) hint += `<span style="font-size:11px;color:#bfbfbf;">（未命中字典，默认以主体作为简称）</span>`;
+  hint += `</div>`;
+  // 重复登记：底表/本地 = 强重复，禁用提交
+  let hasHardDup = false;
+  if (dup.total) {
+    const hardDups = dup.entries.filter(d => d.src === "底表" || d.src === "本地");
+    hasHardDup = hardDups.length > 0;
+    const salesList = dup.entries.map(d => {
+      const tag = d.src === "底表" ? '<span style="font-size:11px;color:#6b7280;">[底表]</span>'
+                : d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>' 
+                : `<span style="font-size:11px;color:#bfbfbf;">[${d.date}]</span>`;
+      return `<b>${d.sales}</b>${tag}`;
+    }).join('、');
+    if (hasHardDup) {
+      const _owner = _dupCurrentOwner(dup.entries);
+      const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
+      const _changed = _others.length > 0;  // 出现过别的销售 = 归属被改过
+      const _ownerHtml = `<b>${_owner}</b>`;
+      const _bodyHtml = _changed
+        ? `❌ <b>主体重复</b>：该客户当前归属 ${_ownerHtml}（销售已由 ${_others.map(s=>`<span style="text-decoration:line-through;color:#9ca3af;">${s}</span>`).join('、')} 修改为 ${_ownerHtml}）。按「先登记先归属」规则<b>本次拒绝提交</b>。`
+        : `❌ <b>主体重复</b>：该客户已被 ${_ownerHtml} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。`;
+      hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
+        ${_bodyHtml}
+      </div>`;
+    } else {
+      hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
+        ⚠️ 该主体在历史表出现 <b>${dup.total}</b> 次：${salesList}。如确为同一客户请确认是否继续。
+      </div>`;
+    }
+  }
+  hintEl.innerHTML = hint;
+  if (submitBtn) submitBtn.disabled = hasHardDup;
+}
+function onChannelChange() {
+  const v = document.getElementById('m-channel').value;
+  const inp = document.getElementById('m-resource');
+  const lbl = document.getElementById('m-resource-label');
+  if (v === '自拓') { inp.disabled = true; inp.value = ''; if (lbl) lbl.classList.remove('req'); }
+  else { inp.disabled = false; if (lbl) lbl.classList.add('req'); }
+}
+function renderThumbs() {
+  const el = document.getElementById('paste-thumbs'); if (!el) return;
+  el.innerHTML = pendingImages.map(img => `<div class="thumb"><img src="${img.dataUrl}" onclick="event.stopPropagation(); openLightbox('${img.dataUrl}')" /><div class="del" onclick="event.stopPropagation(); removePendingImg('${img.id}')">×</div></div>`).join('');
+}
+function removePendingImg(id) { pendingImages = pendingImages.filter(x => x.id !== id); renderThumbs(); }
+function addImageFromFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => { pendingImages.push({ id:'img'+Date.now()+Math.random().toString(36).slice(2,5), dataUrl:e.target.result }); renderThumbs(); };
+  reader.readAsDataURL(file);
+}
+function openLightbox(dataUrl) { document.getElementById('lightbox-img').src = dataUrl; document.getElementById('lightbox').classList.add('show'); }
+function bindRegisterModalEvents() {
+  const nameEl = document.getElementById('m-name');
+  if (nameEl && !nameEl.dataset.bound) { nameEl.addEventListener('input', onNameInput); nameEl.addEventListener('change', onNameInput); nameEl.dataset.bound='1'; }
+  const zone = document.getElementById('paste-zone'); const fin = document.getElementById('m-files');
+  if (zone && fin && !zone.dataset.bound) {
+    zone.addEventListener('click', () => fin.click());
+    fin.addEventListener('change', e => { Array.from(e.target.files).forEach(f => { if (f.type.startsWith('image/')) addImageFromFile(f); }); fin.value=''; });
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); Array.from(e.dataTransfer.files).forEach(f => { if (f.type.startsWith('image/')) addImageFromFile(f); }); });
+    zone.dataset.bound='1';
+  }
+}
+bindRegisterModalEvents();
+document.addEventListener('paste', e => {
+  const modal = document.getElementById('modalRecord'); if (!modal || !modal.classList.contains('show')) return;
+  Array.from(e.clipboardData?.items || []).forEach(it => { if (it.type.startsWith('image/')) { const f=it.getAsFile(); if (f) addImageFromFile(f); } });
+});
+window.submitRecord = () => {
+  // EDIT 模式：补充已有记录的字段（含建联截图）
+  if (window.__EDITING_RID__) {
+    const rec = (window.RECORDS || []).find(r => String(r.id) === String(window.__EDITING_RID__));
+    if (rec) {
+      rec.cat = document.getElementById('m-category').value || rec.cat;
+      var __saleChgInfo = '';
+      var __newSale = document.getElementById('m-sales').value || rec.sale;
+      if (__newSale !== rec.sale) {
+        var __whoChg = (window.cloud && cloud.rtx && cloud.rtx()) || CURRENT_USER || 'unknown';
+        recordSaleChange(rec, rec.sale, __newSale, __whoChg);  // 留痕(原→新/操作人/时间)
+        __saleChgInfo = '\n\n🔄 归属已修改：' + (rec.sale || '未分配') + ' → ' + __newSale
+          + '\n• 明细已即时更新、变更已留痕\n• 当天 KPI / 日报不变\n• 次日数据刷新后自动计入新销售';
+        rec.sale = __newSale;
+        // 2026-06-06 归属生效时间戳:rebuild双层模型据此认准"最新归属",彻底替代手动override。
+        // upsert是update覆盖同id、_createdAt不变,故必须独立标记本次归属变更的真实时间。
+        rec.saleEffectiveAt = Date.now();
+      }
+      rec.channel = document.getElementById('m-channel').value || rec.channel;
+      rec.resource = document.getElementById('m-resource').value.trim() || rec.resource;
+      rec.source = document.getElementById('m-source').value || rec.source;
+      rec.date = document.getElementById('m-date').value || rec.date;
+      // 建联截图合并：保留已有 + 新增
+      const existImgs = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
+      const newImgs = Array.isArray(window.__EDIT_PENDING_EVIDENCE__) ? window.__EDIT_PENDING_EVIDENCE__ : [];
+      rec.evidenceImages = existImgs.concat(newImgs);
+      window.__EDIT_PENDING_EVIDENCE__ = [];
+      window.__EDITING_RID__ = null;
+      if (typeof persistUserRecordsBestEffort === 'function') persistUserRecordsBestEffort();
+      else if (typeof saveRecords === 'function') saveRecords();
+      // 2026-06-06 改归属/编辑后云端双写：整条 rec(含 sale/saleHistory)推 CloudBase,改完即生效,跨设备同步,rebuild可读,无需手动 override
+      try {
+        if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn() && window.cloud.upload) {
+          window.cloud.upload([rec]).then(function(d){ console.info('[cloud] edit saved ok', d && (d.created+'/'+d.updated)); })
+            .catch(function(e){ console.warn('[cloud] edit save fail:', e && e.message); });
+        }
+      } catch(e){ console.warn('[cloud] edit upload exception:', e); }
+      closeModal('modalRecord');
+      if (typeof renderAll === 'function') renderAll();
+      alert('✅ 已更新：' + (rec.name || rec.shortName) + (newImgs.length ? `（新增 ${newImgs.length} 张建联截图）` : '') + __saleChgInfo);
+      return;
+    }
+  }
+  const name = document.getElementById('m-name').value.trim();
+  const category = document.getElementById('m-category').value;
+  const sales = document.getElementById('m-sales').value;
+  // 链路不再由销售手动选，登记后由系统每日抓 AData 链路接口（s=4695Or）匹配填充
+  const links = [];
+  const channel = document.getElementById('m-channel').value;
+  const resource = document.getElementById('m-resource').value.trim();
+  const source = document.getElementById('m-source').value;
+  const date = document.getElementById('m-date').value;
+  if (!name) return alert('客户主体名称必填');
+  if (channel !== '自拓' && !resource) return alert('拓客途径为「' + channel + '」时，资源方需要填写');
+  const look = lookupEntity(name);
+  const shortName = look.short || name;
+  const dup = lookupDuplicates(name);
+  // 「先登记先归属」硬卡：底表/本地命中即拒绝
+  const hardDup = dup.entries.filter(d => d.src === '底表' || d.src === '本地');
+  if (hardDup.length > 0) {
+    const _owner = _dupCurrentOwner(dup.entries);
+    const _others = [...new Set(dup.entries.map(d => d.sales).filter(s => s && s !== _owner))];
+    const msg = _others.length > 0
+      ? `❌ 主体重复：该客户当前归属 ${_owner}（销售已由 ${_others.join('、')} 修改为 ${_owner}）。\n按「先登记先归属」规则拒绝提交。`
+      : `❌ 主体重复：该客户已被 ${_owner} 登记。\n按「先登记先归属」规则拒绝提交。`;
+    return alert(msg);
+  }
+  if (dup.total) {
+    const salesList = dup.entries.map(d => d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`).join('、');
+    if (!confirm(`客户主体「${name}」在历史表出现 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
+  }
+  const finalBrand = shortName;
+  // 自动匹配投放端（基于今晚的字典；查不到 = 未匹配投放）
+  const DELIVERY_SIDE_MAP = window.__DELIVERY_SIDE_MAP__ || {};
+  const deliverySide = DELIVERY_SIDE_MAP[shortName] || DELIVERY_SIDE_MAP[name] || '未匹配投放';
+  const rec = {
+    id:Date.now(), date, sale:sales, name, shortName,
+    brand:finalBrand, cat:category, link:links.join('、'), links,
+    agent:resource || '自拓', source, channel, resource,
+    isRising:'否', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
+    firstQuarter:look.firstQuarter || '', customerType:look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客', status:look.isLaoke ? '存量' : '新客',
+    cost:0, zone:'', maturity:'', deliverySide, images:[]
+  };
+  saveUserRecord(rec);
+  closeModal('modalRecord');
+  renderAll();
+  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}`);
+};
+
+
+function pickField(row, names) {
+  for (const n of names) {
+    if (row[n] !== undefined && row[n] !== null && String(row[n]).trim() !== '') return String(row[n]).trim();
+  }
+  return '';
+}
+function splitLinks(v) {
+  return String(v || '').split(/[、,，\/|；;\s]+/).map(x=>x.trim()).filter(Boolean);
+}
+function normalizeExcelDate(v) {
+  if (v === undefined || v === null || String(v).trim() === '') return new Date().toISOString().slice(0,10);
+  if (v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  const s = String(v).trim();
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = Number(s);
+    if (n > 30000) {
+      const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+      return d.toISOString().slice(0,10);
+    }
+  }
+  const d = new Date(s);
+  if (!isNaN(d)) return d.toISOString().slice(0,10);
+  return s.slice(0,10);
+}
+function parseCsvLine(line) {
+  const out=[]; let cur=''; let inQ=false;
+  for (let i=0;i<line.length;i++) {
+    const ch=line[i];
+    if (ch === '"') { if (inQ && line[i+1] === '"') { cur+='"'; i++; } else inQ=!inQ; }
+    else if (ch === ',' && !inQ) { out.push(cur); cur=''; }
+    else cur += ch;
+  }
+  out.push(cur); return out;
+}
+function recordFromRow(row) {
+  const name = pickField(row, ['客户主体','主体名称','客户主体名称(OPS)','主体名称（红色主体代表重复，请自查去重）','客户名称','客户','公司名称','客户简称']);
+  if (!name) return null;
+  const look = lookupEntity(name);
+  const category = pickField(row, ['类目','行业类目','客户类目']) || '';
+  let sales = pickField(row, ['销售','销售名称','归属销售']) || CURRENT_USER;
+  sales = sales.replace(/-存量销售$/, '');
+  let resource = pickField(row, ['资源方','服务商','代理商']);
+  if (resource === '0' || resource === '0.0' || resource === '自拓') resource = '';
+  const links = splitLinks(pickField(row, ['链路','投放链路','客户链路']));
+  const channel = pickField(row, ['拓客途径','渠道来源']) || (resource ? '服务商转介绍' : '自拓');
+  const source = pickField(row, ['客户来源','来源']) || '';
+  const date = normalizeExcelDate(pickField(row, ['日期','登记日期']));
+  const recognizedShort = look.matched ? (look.short || '') : '';
+  const finalBrand = pickField(row, ['品牌名称','品牌/店铺名','品牌']) || recognizedShort || name;
+  // 2026-06-11 用户拍板：删除24老客口径，customerType/status 不再有「24年老客」
+  const customerType = look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客';
+  return {
+    id:Date.now()+Math.random(), date, sale:sales, name, shortName:recognizedShort,
+    brand:finalBrand, cat:category, link:(links.length ? links.join('、') : ''), links,
+    agent:resource, source, channel, resource,
+    isRising:'', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
+    firstQuarter:look.firstQuarter || '', old24:false,
+    customerType,
+    status:look.isLaoke ? '老客' : '新客', cost:0, zone:'', maturity:'', images:[]
+  };
+}
+function showAllImportedRecords() {
+  state.recordRange = 'all';
+  state.recordSearch = '';
+  state.recordSales = '';
+  state.recordCategory = '';
+  state.recordRising = '';
+  state.recordRange = 'today';
+  ['recordToday','record7d','recordAll'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('active', id === 'recordToday');
+  });
+  ['recordSearch','recordSales','recordCategory','recordRising'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+function importRows(rows) {
+  const records = rows.map(recordFromRow).filter(Boolean);
+  if (!records.length) return alert('未识别到可导入客户主体，请检查表头是否包含「客户主体/主体名称」等字段。');
+  saveUserRecordsBulk(records);
+  showAllImportedRecords();
+  renderAll();
+  setTimeout(() => document.getElementById('recordTable')?.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+  alert(`批量导入完成：${records.length} 条；已自动切换到「全部」周期并清空筛选。缺少字段已留空。数据量较大时仅前2000条持久化，当前页面已载入全部导入记录。`);
+}
+function importPresetBulkRows() {
+  const rows = window.__BULK_IMPORT_ROWS__ || [];
+  if (!rows.length) return alert('未找到预置批量数据，请确认 data/bulk_import_rows.js 已加载');
+  if (!confirm(`确认导入预置批量.xlsx 数据 ${rows.length} 条？\n缺少字段将留空。`)) return;
+  importRows(rows);
+}
+function handleBulkFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const reader = new FileReader();
+  reader.onload = e => {
+    let rows = [];
+    if (ext === 'csv') {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(x=>x.trim());
+      const headers = parseCsvLine(lines.shift()).map(h=>h.trim().replace(/^\ufeff/,''));
+      rows = lines.map(line => {
+        const vals = parseCsvLine(line);
+        const obj = {}; headers.forEach((h,i)=>obj[h]=vals[i]||''); return obj;
+      });
+    } else {
+      if (typeof XLSX === 'undefined') {
+        const preset = window.__BULK_IMPORT_ROWS__ || [];
+        if (preset.length && confirm('当前环境未加载 XLSX 解析库，是否直接导入已预置的「批量.xlsx」数据？')) return importRows(preset);
+        return alert('批量导入需要 XLSX 解析库；当前网络未加载成功，且没有预置数据。');
+      }
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const sheets = wb.SheetNames.map(n => XLSX.utils.sheet_to_json(wb.Sheets[n], {defval:''}));
+      rows = sheets.sort((a,b) => b.filter(recordFromRow).length - a.filter(recordFromRow).length)[0] || [];
+    }
+    importRows(rows);
+  };
+  if (ext === 'csv') reader.readAsText(file, 'utf-8');
+  else reader.readAsArrayBuffer(file);
+}
+const exportBtn = document.getElementById('btnExportRecords'); if (exportBtn) exportBtn.onclick = exportRecordsCsv;
+document.getElementById('btnBulkImport').onclick = () => document.getElementById('bulkImportFile').click();
+document.getElementById('btnBulkImportPreset') && (document.getElementById('btnBulkImportPreset').onclick = importPresetBulkRows);
+document.getElementById('bulkImportFile').onchange = e => {
+  const f = e.target.files && e.target.files[0];
+  if (f) handleBulkFile(f);
+  e.target.value = '';
+};
+
+/* =========================
+   八、统一入口
+   ========================= */
+function renderAll() {
+  renderKPI();
+  renderSalesProgress();
+  renderTop80Metrics();
+  renderPortrait();
+  renderRecords();
+}
+renderAll();
+applyEmbedMode();
+
+/* 历史快照切换（用户 2026-05-19 拍板）：
+   切换会从 data/snapshots/<date>/ 动态加载并覆盖 window.__CENTER_*__，
+   并保留当前 window 全局以便切回当前日期。 */
+(function(){
+  const sel = document.getElementById('snapshotSel');
+  if (!sel) return;
+  // 备份当前数据（"当前"视图）
+  const SNAPSHOT_KEYS = [
+    '__CENTER_DAILY_KPI__','__CENTER_QUARTER_SUMMARY__','__CENTER_SALES_SUMMARY__',
+    '__TOP80_EFFECTIVE_METRICS__','__CURRENT_RISING_DATA__','__DELIVERY_SIDE_SUMMARY__',
+    '__TOP_STATUS_DATA__','__ENOUGH_CANDIDATES__','__BULK_IMPORT_ROWS__'
+  ];
+  const CURRENT_SNAPSHOT = {};
+  SNAPSHOT_KEYS.forEach(k => { CURRENT_SNAPSHOT[k] = window[k]; });
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src + '?_t=' + Date.now();
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('load fail: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  sel.addEventListener('change', async (e) => {
+    const date = e.target.value;
+    const banner = document.getElementById('todayInfo');
+    if (!date) {
+      // 回到当前
+      SNAPSHOT_KEYS.forEach(k => { window[k] = CURRENT_SNAPSHOT[k]; });
+      if (banner) banner.style.color = '#6b7280';
+      renderAll();
+      return;
+    }
+    try {
+      const files = ['center_daily_kpi.js','center_quarter_summary.js','center_sales_summary.js',
+                     'top80_effective_metrics.js','current_rising_data.js','delivery_side_summary.js',
+                     'top_status_data.js','enough_candidates.js','bulk_import_rows.js'];
+      for (const f of files) {
+        await loadScript(`data/snapshots/${date}/${f}`).catch(err => console.warn(err.message));
+      }
+      if (banner) {
+        banner.textContent = `📅 历史快照 · ${date}`;
+        banner.style.color = '#9a3412';
+        banner.style.fontWeight = '700';
+      }
+      renderAll();
+    } catch(err){
+      alert('加载快照失败：' + err.message);
+    }
+  });
+})();
+
+window.addEventListener('resize', () => {
+  Object.values(charts).forEach(c => c && c.resize());
+});
+
+/* ===== 修改/补充按钮（用户 2026-05-19 拍板）：点击表格行内按钮 → 打开登记弹窗回填 ===== */
+window.__EDITING_RID__ = null;
+window.__EDIT_PENDING_EVIDENCE__ = [];
+function openEditRecord(rid) {
+  const rec = (window.RECORDS || []).find(r => String(r.id) === String(rid));
+  if (!rec) { alert('未找到该客户的登记记录'); return; }
+  if (typeof initRegisterModal === 'function') initRegisterModal();
+  // 回填字段
+  setTimeout(() => {
+    const $ = id => document.getElementById(id);
+    if ($('m-name'))     { $('m-name').value = rec.name || ''; $('m-name').readOnly = true; }
+    if ($('m-category')) $('m-category').value = rec.cat || '';
+    if ($('m-sales'))    $('m-sales').value = rec.sale || '';
+    if ($('m-channel'))  $('m-channel').value = rec.channel || '自拓';
+    if ($('m-resource')) $('m-resource').value = rec.resource || '';
+    if ($('m-source'))   $('m-source').value = rec.source || '';
+    if ($('m-date'))     $('m-date').value = rec.date || '';
+    if (typeof onChannelChange === 'function') onChannelChange();
+    // 修改模式销售下拉权限（2026-05-26 12:25 用户拍板，业务死规矩）：
+    //   1. 管理员 (ziqingdu/kinsleyjin) → 解锁，可任意改
+    //   2. 当前登录销售 === rec.sale 本人 → 解锁，可把客户转交给其他销售
+    //   3. 当前登录销售 ≠ rec.sale → 锁死为 rec.sale，"想要别人的客户请去找对应销售改"
+    let __isAdmin = false, __curRtx = '';
+    try {
+      __isAdmin = (window.cloud && cloud.isAdmin && cloud.isAdmin()) ||
+                  (window.cloud && cloud.rtx && (cloud.rtx() === 'ziqingdu' || cloud.rtx() === 'kinsleyjin' || cloud.rtx() === 'edcchen'));
+      if (window.cloud && cloud.rtx) __curRtx = (cloud.rtx() || '').toLowerCase();
+    } catch(e){}
+    const __isOwner = !!rec.sale && __curRtx && (rec.sale.toLowerCase() === __curRtx);
+    const __canEditSale = __isAdmin || __isOwner;
+    const saleSel = $('m-sales');
+    if (saleSel) {
+      saleSel.disabled = !__canEditSale;
+      saleSel.style.background = __canEditSale ? '#fff' : '#f3f4f6';
+      saleSel.style.color = __canEditSale ? '#1f2937' : '#6b7280';
+      // 非本人/非管理员：强制把下拉锁回 rec.sale，禁止任何切换
+      if (!__canEditSale) saleSel.value = rec.sale || '';
+    }
+    const saleHint = $('m-sales-hint');
+    if (saleHint) {
+      if (__isAdmin) {
+        saleHint.innerHTML = '🔓 <b style="color:#7c3aed;">管理员模式</b> · 可任意改归属（原归属：' + (rec.sale || '未分配') + '）';
+        saleHint.style.cssText = 'font-size:11px;color:#7c3aed;margin-top:4px;';
+      } else if (__isOwner) {
+        saleHint.innerHTML = '✏️ <b style="color:#0369a1;">修改模式</b> · 这是你名下的客户，可重新分配给其他销售（系统会记录变更：原 ' + rec.sale + ' → 新归属）';
+        saleHint.style.cssText = 'font-size:11px;color:#0369a1;margin-top:4px;';
+      } else {
+        saleHint.innerHTML = '🔒 该客户归属 <b>' + (rec.sale || '未分配') + '</b>，你只能修改类目/资源/链路等字段。<br>想把客户改到自己名下，请联系 <b>' + (rec.sale || '管理员') + '</b> 在 ta 自己的账号下修改归属。';
+        saleHint.style.cssText = 'font-size:11px;color:#b45309;margin-top:4px;line-height:1.5;';
+      }
+    }
+    // 改弹窗标题
+    const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
+    if (titleEl) titleEl.textContent = '修改/补充：' + (rec.shortName || rec.name);
+    // 提交按钮文案
+    const btn = $('m-submit'); if (btn) { btn.textContent = '保存修改'; btn.disabled = false; }
+    // 已有建联截图回显
+    const prev = $('m-evidence-preview');
+    if (prev) {
+      const exist = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
+      prev.innerHTML = exist.map(u => `<img src="${u}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;" onclick="openLightbox('${u}')" />`).join('') || '<span style="font-size:12px;color:#9ca3af;">暂无建联截图，可在下方上传</span>';
+    }
+    window.__EDIT_PENDING_EVIDENCE__ = [];
+    window.__EDITING_RID__ = rec.id;
+  }, 30);
+  if (typeof openModal === 'function') openModal('modalRecord');
+}
+window.openEditRecord = openEditRecord;
+
+function onEvidenceChange(ev) {
+  const files = Array.from(ev.target.files || []);
+  files.forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      window.__EDIT_PENDING_EVIDENCE__ = window.__EDIT_PENDING_EVIDENCE__ || [];
+      window.__EDIT_PENDING_EVIDENCE__.push(e.target.result);
+      const prev = document.getElementById('m-evidence-preview');
+      if (prev) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;';
+        img.onclick = () => openLightbox(e.target.result);
+        prev.appendChild(img);
+      }
+    };
+    reader.readAsDataURL(f);
+  });
+}
+window.onEvidenceChange = onEvidenceChange;
+
+// 事件代理：点击 .btn-edit-record → openEditRecord
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-edit-record');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openEditRecord(btn.dataset.rid);
+});
+
+// 修改弹窗的 × 关闭时复位标题
+(function patchCloseRegister(){
+  const m = document.getElementById('modalRecord'); if (!m) return;
+  const observer = new MutationObserver(() => {
+    if (!m.classList.contains('show')) {
+      window.__EDITING_RID__ = null;
+      window.__EDIT_PENDING_EVIDENCE__ = [];
+      const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
+      if (titleEl) titleEl.textContent = '新增拓客登记';
+      const nameInp = document.getElementById('m-name'); if (nameInp) nameInp.readOnly = false;
+      const btn = document.getElementById('m-submit'); if (btn) btn.textContent = '提交';
+    }
+  });
+  observer.observe(m, { attributes: true, attributeFilter: ['class'] });
+})();
+
+/* 🦞 云端同步顶栏（橘橘有500w加，2026-05-20 19:55） */
+(function initCloudToolbar(){
+  if (!window.cloud) return;
+  window.cloud.injectToolbar({
+    getLocalRecords: function(){
+      try { return JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]'); }
+      catch(e){ return []; }
+    },
+    applyRemoteRecords: function(list){
+      // 把云端记录覆盖到本地 + 立即重渲染
+      try {
+        localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
+      } catch(e){
+        try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 500))); } catch(_){}
+      }
+      USER_RECORDS = list;
+      // 重建 RECORDS：云端 + tuoke_real_records
+      const real = (window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : [];
+      window.RECORDS.length = 0;
+      window.RECORDS.push(...USER_RECORDS, ...real);
+      if (typeof renderAll === 'function') renderAll();
+    }
+  });
+})();
+
+/* 🦞 云端开机自动拉取（2026-05-26 14:58 子青拍板）
+   目标：
+   1) 销售实时登记的客户 → 看板进来就能在「拓客报备明细」看到（实时同步）
+   2) 任意销售再登记同名 → lookupDuplicates 命中云端记录显示重复（写入 __REGISTERED_SUBJECTS__）
+   3) 5 分钟会话缓存：同一会话内反复刷新只首次拉云，避免洪水
+   4) 失败/未登录都静默不弹框
+*/
+(function pullCloudOnBoot(){
+  // 2026-06-02 抽成具名函数 window.cloudRefresh(force)，供「🔄刷新」按钮手动强制拉取
+  function doPull(force){
+    try {
+    if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) return;
+    var TS_KEY = 'kanban_cloud_pull_ts';
+    var CACHE_MS = 30 * 1000;   // 2026-06-02 5分钟→30秒，让别人登记后更快可见
+    var last = 0;
+    try { last = parseInt(sessionStorage.getItem(TS_KEY) || '0', 10) || 0; } catch(_){}
+    if (!force && Date.now() - last < CACHE_MS) {
+      console.info('[cloud] pull skipped (30s cache)');
+      return;
+    }
+    window.cloud.download().then(function(res){
+      var cloudList = (res && res.list) || [];
+      if (!cloudList.length) return;
+      // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
+      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); });
+      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出）
+      if (!window.__REGISTERED_SUBJECTS__) window.__REGISTERED_SUBJECTS__ = {};
+      cloudList.forEach(function(r){
+        var n = (r.name || '').toString().trim().replace(/\s+/g, '');
+        if (!n) return;
+        // 只有云端比本地字典更新或字典里没有时才写
+        var exist = window.__REGISTERED_SUBJECTS__[n];
+        if (!exist || (r.date && (!exist.date || r.date >= exist.date))) {
+          window.__REGISTERED_SUBJECTS__[n] = {
+            sale: r.sale,
+            date: r.date || '',
+            shortName: n
+          };
+        }
+      });
+      // 2) 合并进 RECORDS：按 id 去重，云端独有的 unshift 到顶
+      //    2026-06-10 子青拍板修 bug：旧逻辑只 unshift 云端"新客户"，对已存在客户的归属(sale)更新视而不见
+      //    → 销售A改了归属、云端对了，但销售B开机同步不更新本地已有记录 → B永远看到旧归属。
+      //    新逻辑：①已存在记录 → 用云端值更新 sale/_rtx/deliverySide 等(云端是唯一真源) ②云端新客户 → unshift。
+      var idMap = {};   // id -> 本地 record 引用（含 RECORDS + USER_RECORDS）
+      (window.RECORDS || []).forEach(function(r){
+        if (r && r.id != null) idMap[String(r.id)] = r;
+      });
+      var fresh = [];
+      var updated = 0;
+      cloudList.forEach(function(cr){
+        if (!cr || cr.id == null) return;
+        var key = String(cr.id);
+        var lr = idMap[key];
+        if (lr) {
+          // 已存在：云端为准，更新归属相关字段（防止本地旧归属盖不掉）
+          ['sale','_rtx','_recorded_by','deliverySide','cat','firstQuarter','saleHistory','saleEffectiveAt'].forEach(function(f){
+            if (cr[f] !== undefined && cr[f] !== null && cr[f] !== '') {
+              if (lr[f] !== cr[f]) updated++;
+              lr[f] = cr[f];
+            }
+          });
+        } else {
+          fresh.push(cr);
+        }
+      });
+      if (fresh.length) {
+        // 同步进 USER_RECORDS（持久化）+ RECORDS（展示）
+        if (typeof USER_RECORDS !== 'undefined' && Array.isArray(USER_RECORDS)) {
+          USER_RECORDS.unshift.apply(USER_RECORDS, fresh);
+          try {
+            localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 2000)));
+          } catch(_){
+            try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 500))); } catch(__){}
+          }
+        }
+        window.RECORDS.unshift.apply(window.RECORDS, fresh);
+      }
+      console.info('[cloud] pull ok cloud=' + cloudList.length + ' fresh=' + fresh.length + ' updated=' + updated + ' subjects=' + Object.keys(window.__REGISTERED_SUBJECTS__).length);
+      try { sessionStorage.setItem(TS_KEY, String(Date.now())); } catch(_){}
+      // 3) 重渲染
+      if (typeof renderAll === 'function') {
+        try { renderAll(); } catch(e){ console.warn('[cloud] renderAll fail', e); }
+      }
+    }).catch(function(e){
+      console.warn('[cloud] pull fail:', e && e.message);
+      if (force) { try { alert('刷新失败：' + (e && e.message || '请确认已登录')); } catch(_){} }
+    });
+  } catch(e) {
+    console.warn('[cloud] pullCloudOnBoot exception', e);
+  }
+  }
+  // 暴露给「🔄刷新」按钮：强制跳过缓存拉云端最新
+  window.cloudRefresh = function(){
+    if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) {
+      try { alert('未登录云端，无法刷新。请先登录。'); } catch(_){}
+      return;
+    }
+    var btn = document.getElementById('btnCloudRefresh');
+    if (btn){ btn.disabled = true; var old = btn.textContent; btn.textContent = '⏳ 刷新中…';
+      setTimeout(function(){ btn.disabled = false; btn.textContent = old; }, 2500); }
+    doPull(true);
+  };
+  doPull(false);
+})();
+</script>
+
+<!-- ============= 客户生命周期模块 JS（2026-06-11 模块B） ============= -->
+<script>
+(function(){
+  var DATA = window.__CUSTOMER_LIFECYCLE__;
+  if (!DATA || !DATA.rows) return;
+  var rows = DATA.rows;
+  var COL = { short:0, sale:1, cat:2, custType:3, daysBucket:4, costTier:5, yestCost:6, prevCost:7, deltaAmt:8, deltaRate:9, q2Cost:10, invest:11 };
+  // 2026-06-11 子青修正：纵轴只3档（头/腰/尾），无消耗=0直接挤到尾部底部
+  var Y_TIERS = ['头部','腰部','尾部'];
+  // 2026-06-11 19:23 吸收「客户生命周期系统」命名：新手期(0-30)/成长期(31-90)/成熟期(90+)
+  var X_BUCK_NEW = ['<=30天','31-60天','61-90天'];
+  var X_BUCK_OLD = ['90+天','61-90天','31-60天','<=30天'];
+  var X_LABEL_MAP = {
+    '<=30天':  '🌱 新手期\n0-30天',
+    '31-60天': '🚀 成长期\n31-60天',
+    '61-90天': '🚀 成长期\n61-90天',
+    '90+天':   '👑 成熟期\n90+天'
+  };
+  function stageOf(db){
+    if (db==='<=30天') return 'newbie';
+    if (db==='31-60天' || db==='61-90天') return 'growth';
+    return 'mature';
+  }
+  var STAGE_COLOR = { newbie:'#10b981', growth:'#3b82f6', mature:'#8b5cf6' };
+  var STAGE_BG    = { newbie:'#ecfdf5', growth:'#eff6ff', mature:'#f5f3ff' };
+  var TIER_COLOR = { '头部':'#ef4444','腰部':'#f59e0b','尾部':'#3b82f6' };
+  var state = { custType:'本', sale:'all', selectedX:null, selectedY:null };
+  var chart = null;
+
+  function fmtMoney(v){
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    if (Math.abs(v)>=10000) return (v/10000).toFixed(2)+'万';
+    return Math.round(v).toLocaleString();
+  }
+  function fmtPct(v){
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    return (v>0?'+':'') + (v*100).toFixed(1) + '%';
+  }
+  function filtered(){
+    return rows.filter(function(r){
+      if (r[COL.custType] !== state.custType) return false;
+      if (state.sale!=='all' && r[COL.sale] !== state.sale) return false;
+      // 子青修正：无消耗的不进九宫格
+      if (r[COL.costTier] === '无消耗') return false;
+      return true;
+    });
+  }
+  function filteredAll(){ // 用于"总览"统计（保留无消耗）
+    return rows.filter(function(r){
+      if (r[COL.custType] !== state.custType) return false;
+      if (state.sale!=='all' && r[COL.sale] !== state.sale) return false;
+      return true;
+    });
+  }
+
+  // 渲染总览（用 filteredAll 保留无消耗的算占比）
+  function renderOverview(){
+    var listAll = filteredAll();
+    var listInGrid = filtered(); // 已剔除无消耗的
+    var totalY = listAll.reduce(function(s,r){ return s + (r[COL.yestCost]||0); }, 0);
+    var totalP = listAll.reduce(function(s,r){ return s + (r[COL.prevCost]||0); }, 0);
+    var headCnt = listAll.filter(function(r){ return r[COL.costTier]==='头部'; }).length;
+    var midCnt  = listAll.filter(function(r){ return r[COL.costTier]==='腰部'; }).length;
+    var tailCnt = listAll.filter(function(r){ return r[COL.costTier]==='尾部'; }).length;
+    var zeroCnt = listAll.filter(function(r){ return r[COL.costTier]==='无消耗'; }).length;
+    var dr = totalP>0 ? ((totalY-totalP)/totalP*100).toFixed(1) : '—';
+    var rateText = (dr==='—') ? '—' : ((totalY>=totalP?'+':'') + dr + '%');
+    var ov = document.getElementById('lcOverview');
+    if (!ov) return;
+    ov.innerHTML = [
+      '<div class="lc-ov-card"><div class="label">总客户数</div><div class="value">'+listAll.length+'</div><div class="sub">头'+headCnt+' 腰'+midCnt+' 尾'+tailCnt+' 零耗'+zeroCnt+'</div></div>',
+      '<div class="lc-ov-card"><div class="label">昨日合计日耗</div><div class="value">'+fmtMoney(totalY)+'</div><div class="sub">本期(T-1=2026-06-10)</div></div>',
+      '<div class="lc-ov-card"><div class="label">较上期(7天前)</div><div class="value" style="color:'+(totalY>=totalP?'#16a34a':'#dc2626')+'">'+rateText+'</div><div class="sub">'+fmtMoney(totalP)+' → '+fmtMoney(totalY)+'</div></div>',
+      '<div class="lc-ov-card"><div class="label">在投客户</div><div class="value">'+listInGrid.length+'</div><div class="sub">占比 '+(listAll.length?Math.round(listInGrid.length*100/listAll.length):0)+'%</div></div>'
+    ].join('');
+  }
+
+  // 九宫格散点图：一个客户一个点（子青 2026-06-11 拍板）
+  function renderGrid(){
+    var el = document.getElementById('lcGridChart');
+    if (!el) return;
+    if (!chart) chart = echarts.init(el);
+    var X = (state.custType==='本') ? X_BUCK_NEW : X_BUCK_OLD;
+    var list = filtered(); // 已剔除无消耗
+
+    // 按格子分组，做格子内随机抖动（jitter），避免完全堆叠
+    var bucket = {};
+    X.forEach(function(x){ Y_TIERS.forEach(function(y){ bucket[x+'|'+y] = []; }); });
+    list.forEach(function(r){
+      var key = r[COL.daysBucket]+'|'+r[COL.costTier];
+      if (bucket[key]) bucket[key].push(r);
+    });
+
+    // 找昨日日耗的最大值（用来做点大小缩放）
+    var maxCost = 1;
+    list.forEach(function(r){ if ((r[COL.yestCost]||0) > maxCost) maxCost = r[COL.yestCost]; });
+
+    var points = [];
+    X.forEach(function(x, xi){
+      Y_TIERS.forEach(function(y, yi){
+        var arr = bucket[x+'|'+y];
+        if (!arr.length) return;
+        // y 反转: yi 越小越上（头部），ECharts 类目轴第 0 项在底，所以反向
+        var yPos = Y_TIERS.length - 1 - yi;
+        // 给每个客户在格子内做抖动，xPos = xi + (-0.4..+0.4)，yPos = yPos + (-0.35..+0.35)
+        // 用稳定的 hash 抖动，刷新顺序也一致
+        arr.forEach(function(r, idx){
+          var seed = hashStr(r[COL.short] + '|' + idx);
+          var jx = ((seed % 1000) / 1000 - 0.5) * 0.78;
+          var jy = (((seed >> 10) % 1000) / 1000 - 0.5) * 0.66;
+          var size = 6 + Math.sqrt((r[COL.yestCost]||1) / Math.max(maxCost,1)) * 22; // 6-28
+          points.push({
+            value: [xi + jx, yPos + jy],
+            symbolSize: size,
+            itemStyle: { color: TIER_COLOR[y], opacity: 0.7, borderColor: '#fff', borderWidth: 1 },
+            cust: r
+          });
+        });
+      });
+    });
+
+    chart.setOption({
+      tooltip: {
+        trigger: 'item',
+        formatter: function(p){
+          var r = p.data.cust;
+          var rate = r[COL.deltaRate];
+          var rateText = (rate===null||rate===undefined) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+          var rateColor = (rate===null||rate===undefined) ? '#6b7280' : (rate>=0?'#16a34a':'#dc2626');
+          return '<div style="font-size:13px;line-height:1.7;max-width:280px;">' +
+            '<b>'+escapeHtml(r[COL.short])+'</b><br/>' +
+            '<span style="color:#6b7280">销售：</span>'+escapeHtml(r[COL.sale])+' <span style="margin-left:6px;color:#6b7280">类目：</span>'+escapeHtml(r[COL.cat])+'<br/>' +
+            '<span style="color:#6b7280">'+r[COL.daysBucket]+' × '+r[COL.costTier]+' · '+r[COL.invest]+'</span><br/>' +
+            '昨日日耗：<b>'+fmtMoney(r[COL.yestCost])+'</b><br/>' +
+            '上期(7天前)：'+fmtMoney(r[COL.prevCost])+'<br/>' +
+            '较上期：<span style="color:'+rateColor+'">'+rateText+'</span><br/>' +
+            '26Q2累计：'+fmtMoney(r[COL.q2Cost])+
+          '</div>';
+        }
+      },
+      grid: { left: 90, right: 30, top: 30, bottom: 64 },
+      xAxis: {
+        type: 'value', name: '引入阶段（首次消耗距今）', nameLocation:'middle', nameGap:50,
+        min: -0.5, max: X.length - 0.5, interval: 1,
+        axisLabel: {
+          fontSize: 12, fontWeight: 700, color: '#1f2937', lineHeight: 16,
+          formatter: function(v){
+            var i = Math.round(v); var key = X[i] || '';
+            return X_LABEL_MAP[key] || key;
+          },
+          rich: {}
+        },
+        axisTick: { show: false },
+        splitLine: { show: true, lineStyle: { type: 'solid', color: '#d1d5db', width: 1 } },
+        minorTick: { show: false },
+        minorSplitLine: { show: false }
+      },
+      yAxis: {
+        type: 'value', name: '昨日日耗层级', nameLocation:'middle', nameGap:62, nameRotate:90,
+        min: -0.5, max: Y_TIERS.length - 0.5, interval: 1,
+        axisLabel: {
+          fontSize: 13, fontWeight: 600, color: '#1f2937',
+          formatter: function(v){ var i = Math.round(v); var rev = Y_TIERS.slice().reverse(); return rev[i] || ''; }
+        },
+        axisTick: { show: false },
+        splitLine: { show: true, lineStyle: { type: 'solid', color: '#d1d5db', width: 1 } }
+      },
+      series: [{
+        type: 'scatter',
+        data: points,
+        large: true, largeThreshold: 1000,
+        z: 5,
+        emphasis: { itemStyle: { borderColor: '#0f172a', borderWidth: 2, opacity: 1 } },
+        // 阶段背景弱底色（按 X 轴分段）
+        markArea: {
+          silent: true, z: -1,
+          data: (function(){
+            // 找出 X 数组中每段连续阶段的起止
+            var segs = [];
+            var prev = null, start = -1;
+            X.forEach(function(x, i){
+              var s = stageOf(x);
+              if (s !== prev){
+                if (prev !== null) segs.push({ stage: prev, from: start, to: i - 1 });
+                prev = s; start = i;
+              }
+            });
+            segs.push({ stage: prev, from: start, to: X.length - 1 });
+            return segs.map(function(seg){
+              return [
+                { xAxis: seg.from - 0.5, yAxis: -0.5, itemStyle: { color: STAGE_BG[seg.stage], opacity: 0.55 } },
+                { xAxis: seg.to + 0.5,   yAxis: Y_TIERS.length - 0.5 }
+              ];
+            });
+          })()
+        }
+      },
+      // 用 markLine 在 0.5/1.5/2.5 处画格子线
+      {
+        type: 'scatter', data: [], silent: true,
+        markLine: {
+          symbol: 'none', silent: true, label: { show: false },
+          lineStyle: { color: '#9ca3af', type: 'dashed', width: 1 },
+          data: (function(){
+            var arr = [];
+            for (var i = 0; i < X.length - 1; i++) arr.push([{ xAxis: i + 0.5, yAxis: -0.5 },{ xAxis: i + 0.5, yAxis: Y_TIERS.length - 0.5 }]);
+            for (var j = 0; j < Y_TIERS.length - 1; j++) arr.push([{ xAxis: -0.5, yAxis: j + 0.5 },{ xAxis: X.length - 0.5, yAxis: j + 0.5 }]);
+            return arr;
+          })()
+        }
+      }]
+    }, true);
+
+    chart.off('click');
+    chart.on('click', function(p){
+      // 点客户散点 → 直接打开客户详情弹窗
+      if (p.data && p.data.cust){
+        openCustModal(p.data.cust);
+      }
+    });
+  }
+  // 简单字符串 hash → 整数（确保抖动稳定）
+  function hashStr(s){ var h=0,i,c; s=String(s||''); for(i=0;i<s.length;i++){ c=s.charCodeAt(i); h=((h<<5)-h)+c; h|=0; } return Math.abs(h); }
+
+  function renderDetail(){
+    var head = document.getElementById('lcDetailHead');
+    var bar = document.getElementById('lcDetailToolbar');
+    var tbl = document.getElementById('lcDetailTable');
+    if (!head || !bar || !tbl) return;
+
+    // 默认 = 当前 客类+销售 下全部客户; 选了格子 = 该格子内
+    var list = filtered();
+    var hasFilter = !!(state.selectedX && state.selectedY);
+    if (hasFilter){
+      list = list.filter(function(r){ return r[COL.daysBucket]===state.selectedX && r[COL.costTier]===state.selectedY; });
+    }
+    // ===== 多维筛选 =====
+    var iv  = (document.getElementById('lcInvest')||{}).value || '';
+    var dd  = (document.getElementById('lcDays')  ||{}).value || '';
+    var tt  = (document.getElementById('lcTier')  ||{}).value || '';
+    var cc  = (document.getElementById('lcCat')   ||{}).value || '';
+    var tr  = (document.getElementById('lcTrend') ||{}).value || '';
+    var so  = (document.getElementById('lcSort')  ||{}).value || 'yest_desc';
+    var q   = ((document.getElementById('lcSearch')||{}).value || '').trim().toLowerCase();
+
+    if (iv) list = list.filter(function(r){ return r[COL.invest]===iv; });
+    if (dd) list = list.filter(function(r){ return r[COL.daysBucket]===dd; });
+    if (tt) list = list.filter(function(r){ return r[COL.costTier]===tt; });
+    if (cc) list = list.filter(function(r){ return r[COL.cat]===cc; });
+    if (tr) list = list.filter(function(r){
+      var rate = r[COL.deltaRate];
+      if (tr==='up')   return rate!==null && rate!==undefined && !isNaN(rate) && rate >  0;
+      if (tr==='down') return rate!==null && rate!==undefined && !isNaN(rate) && rate <  0;
+      if (tr==='flat') return rate===null || rate===undefined || isNaN(rate) || rate === 0;
+      return true;
+    });
+    if (q) list = list.filter(function(r){ return (r[COL.short]||'').toLowerCase().indexOf(q)>=0 || (r[COL.cat]||'').toLowerCase().indexOf(q)>=0 || (r[COL.sale]||'').toLowerCase().indexOf(q)>=0; });
+
+    // 排序
+    var sortMap = {
+      'yest_desc': function(a,b){ return (b[COL.yestCost]||0) - (a[COL.yestCost]||0); },
+      'yest_asc':  function(a,b){ return (a[COL.yestCost]||0) - (b[COL.yestCost]||0); },
+      'rate_desc': function(a,b){ var ra=a[COL.deltaRate], rb=b[COL.deltaRate]; if (ra===null||isNaN(ra)) ra=-9; if (rb===null||isNaN(rb)) rb=-9; return rb-ra; },
+      'rate_asc':  function(a,b){ var ra=a[COL.deltaRate], rb=b[COL.deltaRate]; if (ra===null||isNaN(ra)) ra=9; if (rb===null||isNaN(rb)) rb=9; return ra-rb; },
+      'q2_desc':   function(a,b){ return (b[COL.q2Cost]||0) - (a[COL.q2Cost]||0); },
+      'q2_asc':    function(a,b){ return (a[COL.q2Cost]||0) - (b[COL.q2Cost]||0); }
+    };
+    list.sort(sortMap[so] || sortMap.yest_desc);
+
+    var titleText = hasFilter
+      ? '📋 客户清单 · '+state.selectedX+' × '+state.selectedY
+      : '📋 客户清单 · 全部';
+    var clearBtn = hasFilter
+      ? '<button id="lcClearSel" style="margin-left:auto;padding:4px 12px;font-size:12px;background:#fff;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;">清除选择</button>'
+      : '';
+    // 是否有任何二级筛选（搜索/天数/分层/投放/类目/环比/排序非默认）激活
+    var anyFilter = !!(q || dd || tt || iv || cc || tr || (so && so!=='yest_desc'));
+    var filterTag = anyFilter ? '<span class="badge" style="background:#fef3c7;color:#b45309;">已激活筛选</span>' : '';
+    head.innerHTML = '<strong>'+titleText+'</strong>'+
+      '<span class="badge">'+list.length+' 个客户 · 销售：'+(state.sale==='all'?'全部':state.sale)+' · '+(state.custType==='本'?'本季度新客':'25Q3-26Q1新客')+'</span>'+
+      filterTag +
+      clearBtn;
+    if (hasFilter){
+      var btn=document.getElementById('lcClearSel');
+      if (btn) btn.onclick = function(){ state.selectedX=null; state.selectedY=null; state.selectedShort=null; renderDetail(); };
+    }
+
+    bar.style.display = 'flex'; tbl.style.display = '';
+    var tbody = tbl.querySelector('tbody');
+    if (!tbody){ tbody = document.createElement('tbody'); tbl.appendChild(tbody); }
+    if (list.length === 0){
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:36px 0;">暂无符合条件的客户</td></tr>';
+    } else {
+      tbody.innerHTML = list.map(function(r){
+        var rate = r[COL.deltaRate];
+        var rateText = (rate===null||rate===undefined) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+        var rateCls = (rate===null||rate===undefined) ? '' : (rate>=0?'up':'down');
+        var tierCls = r[COL.costTier]==='头部' ? 'tier-head' : (r[COL.costTier]==='腰部' ? 'tier-mid' : '');
+        var inv = r[COL.invest], invCls = inv==='单ADQ'?'invest-adq':(inv==='单全域通'?'invest-qy':(inv==='双投'?'invest-both':'invest-none'));
+        var rowCls = (state.selectedShort && r[COL.short]===state.selectedShort) ? ' style="background:#fef3c7"' : '';
+        return '<tr data-short="'+escapeHtml(r[COL.short])+'"'+rowCls+'>'+
+          '<td>'+escapeHtml(r[COL.short])+'</td>'+
+          '<td>'+escapeHtml(r[COL.sale])+'</td>'+
+          '<td>'+escapeHtml(r[COL.cat])+'</td>'+
+          '<td>'+escapeHtml(r[COL.daysBucket])+'</td>'+
+          '<td class="'+tierCls+'">'+fmtMoney(r[COL.yestCost])+'</td>'+
+          '<td>'+fmtMoney(r[COL.prevCost])+'</td>'+
+          '<td class="'+rateCls+'">'+rateText+'</td>'+
+          '<td>'+fmtMoney(r[COL.q2Cost])+'</td>'+
+          '<td class="invest-pill"><span class="'+invCls+'">'+inv+'</span></td>'+
+        '</tr>';
+      }).join('');
+    }
+
+    // 类目下拉(首次渲染时填充)
+    var catSel = document.getElementById('lcCat');
+    if (catSel && catSel.options.length <= 1){
+      var allCats = {};
+      rows.forEach(function(r){ if (r[COL.cat]) allCats[r[COL.cat]] = (allCats[r[COL.cat]]||0)+1; });
+      var catList = Object.keys(allCats).sort(function(a,b){ return allCats[b]-allCats[a]; });
+      var prev = catSel.value;
+      catList.forEach(function(c){
+        var opt = document.createElement('option'); opt.value = c; opt.textContent = c+' ('+allCats[c]+')';
+        catSel.appendChild(opt);
+      });
+      if (prev) catSel.value = prev;
+    }
+    // 工具栏事件
+    var ls=document.getElementById('lcSearch'); if (ls) ls.oninput = renderDetail;
+    ['lcInvest','lcDays','lcTier','lcCat','lcTrend','lcSort'].forEach(function(id){
+      var el=document.getElementById(id); if (el) el.onchange = renderDetail;
+    });
+    var lr=document.getElementById('lcReset'); if (lr) lr.onclick = function(){
+      ['lcSearch','lcInvest','lcDays','lcTier','lcCat','lcTrend'].forEach(function(id){
+        var el=document.getElementById(id); if (el) el.value = '';
+      });
+      var ss=document.getElementById('lcSort'); if (ss) ss.value = 'yest_desc';
+      renderDetail();
+    };
+    var le=document.getElementById('lcDetailExport'); if (le) le.onclick = function(){ exportCsv(list); };
+    // 点表格行 → 打开客户详情弹窗
+    if (tbody) tbody.onclick = function(e){
+      var tr = e.target.closest('tr'); if (!tr) return;
+      var sh = tr.getAttribute('data-short'); if (!sh) return;
+      var r = rows.filter(function(x){ return x[COL.short]===sh && x[COL.custType]===state.custType; })[0];
+      if (r) openCustModal(r);
+    };
+  }
+
+  // === 客户详情弹窗（简版）===
+  function openCustModal(r){
+    var mask = document.getElementById('lcModalMask');
+    var box = document.getElementById('lcModalBox');
+    if (!mask || !box) return;
+    var stg = stageOf(r[COL.daysBucket]);
+    var stgName = stg==='newbie' ? '🌱 新手期' : (stg==='growth' ? '🚀 成长期' : '👑 成熟期');
+    var headColor = STAGE_COLOR[stg];
+    var rate = r[COL.deltaRate];
+    var rateText = (rate===null||rate===undefined||isNaN(rate)) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
+    var rateCls = (rate===null||rate===undefined||isNaN(rate)) ? '' : (rate>=0?'up':'down');
+    var deltaAmt = r[COL.deltaAmt];
+    var deltaTxt = (deltaAmt===null||deltaAmt===undefined||isNaN(deltaAmt)) ? '—' : ((deltaAmt>=0?'+':'')+fmtMoney(deltaAmt));
+    var inv = r[COL.invest];
+
+    // 对标：同客类 + 同消耗层 的客户群（剔自己）
+    var peers = rows.filter(function(x){
+      return x[COL.custType]===r[COL.custType] && x[COL.costTier]===r[COL.costTier] && x[COL.short]!==r[COL.short];
+    });
+    function avg(col){
+      var vals = peers.map(function(x){ return x[col]; }).filter(function(v){ return v!==null&&v!==undefined&&!isNaN(v); });
+      if (!vals.length) return null;
+      return vals.reduce(function(s,v){ return s+v; },0)/vals.length;
+    }
+    function cmpRow(label, mine, peerAvg, isMoney){
+      var mTxt = isMoney ? fmtMoney(mine) : ((mine===null||isNaN(mine))?'—':Math.round(mine).toLocaleString());
+      var pTxt = (peerAvg===null) ? '—' : (isMoney ? fmtMoney(peerAvg) : Math.round(peerAvg).toLocaleString());
+      var diffCls = '', diffTxt = '—';
+      if (peerAvg!==null && mine!==null && !isNaN(mine)){
+        var d = mine - peerAvg;
+        diffCls = d>=0 ? 'up' : 'down';
+        diffTxt = (d>=0?'▲ ':'▼ ') + (isMoney ? fmtMoney(Math.abs(d)) : Math.round(Math.abs(d)).toLocaleString());
+      }
+      return '<tr><td>'+label+'</td><td class="me">'+mTxt+'</td><td>'+pTxt+'</td><td class="diff '+diffCls+'">'+diffTxt+'</td></tr>';
+    }
+
+    var custTypeName = r[COL.custType]==='本' ? '本季度新客' : '25Q3-26Q1新客';
+    box.innerHTML =
+      '<div class="lc-modal-head" style="background:linear-gradient(135deg,'+headColor+','+headColor+'cc);">'+
+        '<button class="lc-modal-close" onclick="window.__closeLcModal()">×</button>'+
+        '<div class="stage-pill">'+stgName+' · '+escapeHtml(r[COL.daysBucket])+'</div>'+
+        '<div class="cust-name">'+escapeHtml(r[COL.short])+'</div>'+
+        '<div class="cust-sub">'+escapeHtml(r[COL.sale])+' · '+escapeHtml(r[COL.cat])+' · '+custTypeName+' · '+escapeHtml(r[COL.costTier])+'</div>'+
+      '</div>'+
+      '<div class="lc-modal-body">'+
+        '<div class="lc-modal-metrics">'+
+          '<div class="lc-mm"><div class="lbl">昨日日耗 (T-1)</div><div class="val">'+fmtMoney(r[COL.yestCost])+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">上期 (7天前)</div><div class="val">'+fmtMoney(r[COL.prevCost])+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">环比变化</div><div class="val '+rateCls+'">'+rateText+'</div><div class="ext">'+deltaTxt+'</div></div>'+
+          '<div class="lc-mm"><div class="lbl">26Q2累计消耗</div><div class="val">'+fmtMoney(r[COL.q2Cost])+'</div></div>'+
+        '</div>'+
+        '<div class="lc-modal-sec-title">🛠 服务三要素</div>'+
+        '<div class="lc-svc-row">'+
+          '<div class="lc-svc-mini"><div class="t">归属销售</div><div class="v">'+escapeHtml(r[COL.sale])+'</div></div>'+
+          '<div class="lc-svc-mini"><div class="t">所属赛道</div><div class="v">'+escapeHtml(r[COL.cat])+'</div></div>'+
+          '<div class="lc-svc-mini"><div class="t">投放方式</div><div class="v">'+escapeHtml(inv)+'</div></div>'+
+        '</div>'+
+        '<div class="lc-modal-sec-title">📊 同分层对标 <span style="font-weight:400;color:#9ca3af;">('+r[COL.costTier]+' · '+peers.length+'家同层客户均值)</span></div>'+
+        '<table class="lc-cmp-table">'+
+          '<thead><tr><th>指标</th><th>本客户</th><th>同层均值</th><th>差异</th></tr></thead>'+
+          '<tbody>'+
+            cmpRow('昨日日耗', r[COL.yestCost], avg(COL.yestCost), true)+
+            cmpRow('26Q2累计', r[COL.q2Cost], avg(COL.q2Cost), true)+
+            cmpRow('上期日耗', r[COL.prevCost], avg(COL.prevCost), true)+
+          '</tbody>'+
+        '</table>'+
+        '<div class="lc-cmp-hint">对标口径：同「'+custTypeName+'」+ 同「'+r[COL.costTier]+'」分层的客户群均值。差异为正(▲)代表高于同层平均水平。</div>'+
+      '</div>';
+    mask.classList.add('show');
+  }
+  window.__closeLcModal = function(){
+    var mask = document.getElementById('lcModalMask');
+    if (mask) mask.classList.remove('show');
+  };
+  // 点遮罩空白 / ESC 关闭
+  (function(){
+    var mask = document.getElementById('lcModalMask');
+    if (mask) mask.addEventListener('click', function(e){ if (e.target===mask) window.__closeLcModal(); });
+    document.addEventListener('keydown', function(e){ if (e.key==='Escape') window.__closeLcModal(); });
+  })();
+
+  function exportCsv(list){
+    var head = ['客户简称','销售','类目','引入天数','昨日日耗','上期(7天前)','环比变化率%','26Q2累计','投放类型'];
+    var lines = [head.join(',')].concat(list.map(function(r){
+      var rate = r[COL.deltaRate];
+      return [
+        '"'+(r[COL.short]||'').replace(/"/g,'""')+'"',
+        r[COL.sale]||'',
+        r[COL.cat]||'',
+        r[COL.daysBucket]||'',
+        r[COL.yestCost]||0,
+        r[COL.prevCost]||0,
+        rate===null||rate===undefined?'':(rate*100).toFixed(2),
+        r[COL.q2Cost]||0,
+        r[COL.invest]||''
+      ].join(',');
+    }));
+    var blob = new Blob(['\ufeff' + lines.join('\n')], { type:'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '客户生命周期_'+state.selectedX+'_'+state.selectedY+'_'+(state.custType==='本'?'本季度新客':'25Q3-26Q1新客')+'_'+(new Date().toISOString().slice(0,10))+'.csv';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  function renderAllLc(){
+    renderOverview();
+    renderGrid();
+    renderDetail();
+  }
+
+  // 绑定 Tab
+  document.querySelectorAll('#lcCustTabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#lcCustTabs button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.custType = b.getAttribute('data-lct');
+      state.selectedX = null; state.selectedY = null;
+      renderAllLc();
+    });
+  });
+  document.querySelectorAll('#lcSalesTabs button').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('#lcSalesTabs button').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.sale = b.getAttribute('data-lcsale');
+      state.selectedX = null; state.selectedY = null;
+      renderAllLc();
+    });
+  });
+
+  window.addEventListener('resize', function(){ if (chart) chart.resize(); });
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderAllLc);
+  } else {
+    setTimeout(renderAllLc, 100);
+  }
+})();
+</script>
+</body>
+</html>
