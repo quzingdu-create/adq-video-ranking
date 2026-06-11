@@ -7,20 +7,20 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260611m9"></script>
+<script src="auth-guard.js?v=20260611m10"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260611m9"></script>
+<script src="data/current_rising_data.js?v=20260611m10"></script>
 <!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260611m9"></script>
-<script src="data/center_daily_kpi.js?v=20260611m9"></script>
-<script src="data/tuoke_real_records.js?v=20260611m9"></script>
-<script src="data/top80_effective_metrics.js?v=20260611m9"></script>
+<script src="data/center_quarter_summary.js?v=20260611m10"></script>
+<script src="data/center_daily_kpi.js?v=20260611m10"></script>
+<script src="data/tuoke_real_records.js?v=20260611m10"></script>
+<script src="data/top80_effective_metrics.js?v=20260611m10"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260611m9"></script>
-<script src="login_guard_banner.js?v=20260611m9"></script>
+<script src="cloud_sync.js?v=20260611m10"></script>
+<script src="login_guard_banner.js?v=20260611m10"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260611m9"></script>
+<script src="export_tuoke.js?v=20260611m10"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -658,7 +658,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260611m9"
+      src="mobile.html?embed=1&v=20260611m10"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1201,7 +1201,7 @@ window.__CASE_DATA__ = [
     </div>
     <div class="section" style="padding:0;overflow:visible;margin-top:14px;">
       <!-- 2026-06-11 子青：iframe 不能内部滚动，否则上方 KPI 看起来像冻结。改为自适应内容高度，外层页面自然滚动。 -->
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260611m9" scrolling="no" onload="resizeBattleFrame()" style="width:100%;min-height:1200px;height:5200px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260611m10" scrolling="no" onload="resizeBattleFrame()" style="width:100%;min-height:1200px;height:5200px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="拓客作战看板深度页"></iframe>
     </div>
     <script>
       // 让拓客作战 iframe 高度跟随内容，禁止 iframe 内部滚动；这样 KPI 卡会随外层页面自然滚走，不再产生冻结效果
@@ -1217,15 +1217,48 @@ window.__CASE_DATA__ = [
             1200
           );
           f.style.height = (h + 80) + 'px';
+          updateBattlePortalVisibility();
         }catch(e){}
       }
+
+      // 2026-06-11 子青明确：团队 KPI 进度只在拓客作战顶部展示；滚到「客户生命周期系统」前后必须消失，不占顶部视野。
+      // 做法：计算 iframe 内 lifecycleSystemSection 折算到父页面的 Y；外层 scrollY 到达该 Y 前 80px 时隐藏 KPI 区。
+      var __battlePortalCutoffY = null;
+      function getBattlePortalCutoffY(){
+        var f = document.getElementById('battleFrame');
+        if(!f) return null;
+        try{
+          var doc = f.contentDocument || (f.contentWindow && f.contentWindow.document);
+          var sec = doc && doc.getElementById('lifecycleSystemSection');
+          if(!sec) return null;
+          var frameRect = f.getBoundingClientRect();
+          var secRect = sec.getBoundingClientRect();
+          return (window.scrollY || window.pageYOffset || 0) + frameRect.top + secRect.top;
+        }catch(e){ return null; }
+      }
+      function updateBattlePortalVisibility(){
+        var portal = document.getElementById('battlePortal');
+        if(!portal) return;
+        var y = getBattlePortalCutoffY();
+        if(y !== null && !portal.classList.contains('is-auto-hidden')) __battlePortalCutoffY = y;
+        var cutoff = __battlePortalCutoffY;
+        if(cutoff === null) return;
+        var sy = window.scrollY || window.pageYOffset || 0;
+        // 到生命周期前直接隐藏；往上回滚一段再恢复，避免抖动
+        if(sy >= cutoff - 80) portal.classList.add('is-auto-hidden');
+        else if(sy < cutoff - 240) portal.classList.remove('is-auto-hidden');
+      }
+      window.addEventListener('scroll', updateBattlePortalVisibility, {passive:true});
+      window.addEventListener('resize', function(){ __battlePortalCutoffY = null; updateBattlePortalVisibility(); });
       window.addEventListener('message', function(e){
         if(e.data && (e.data.type === 'kanban-resize' || e.data.type === 'lifecycle-resize' || e.data.type === 'lifecycle-modal-open')){
           setTimeout(resizeBattleFrame, 80);
+          setTimeout(updateBattlePortalVisibility, 120);
         }
       });
       setTimeout(resizeBattleFrame, 300);
       setTimeout(resizeBattleFrame, 1200);
+      setTimeout(updateBattlePortalVisibility, 1500);
       setInterval(resizeBattleFrame, 1500);
     </script>
   </div>
@@ -1253,6 +1286,16 @@ window.__CASE_DATA__ = [
     border-radius: 16px;
     padding: 16px 18px 18px;
     box-shadow: 0 4px 20px rgba(37,99,235,0.06);
+  }
+  /* 到达客户生命周期系统前后，团队 KPI 完成进度彻底消失，不再占顶部视野 */
+  .battle-portal.is-auto-hidden {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
   }
   .bp-topbar {
     display: flex; align-items: center; justify-content: space-between;
@@ -1909,7 +1952,7 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260611m9`;
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260611m10`;
   if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
