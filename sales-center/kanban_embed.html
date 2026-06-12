@@ -555,6 +555,13 @@
   .placeholder-card { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; min-height:112px; }
   .placeholder-card h3 { margin:0 0 8px; font-size:15px; color:#0f172a; }
   .placeholder-card p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
+  /* 靶向名单可点击入口卡 */
+  .entry-card { display:block; text-decoration:none; background:linear-gradient(135deg,#5b3ff0 0%,#7657f6 55%,#8a6bf8 100%); border:none; border-radius:12px; padding:18px 20px; min-height:112px; color:#fff; position:relative; overflow:hidden; box-shadow:0 8px 22px rgba(91,63,240,.22); transition:.18s; }
+  .entry-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(91,63,240,.32); }
+  .entry-card h3 { margin:0 0 8px; font-size:15px; color:#fff; display:flex; align-items:center; gap:7px; }
+  .entry-card p { margin:0; color:rgba(255,255,255,.85); font-size:13px; line-height:1.6; }
+  .entry-card .go { position:absolute; right:16px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.32); border-radius:20px; padding:6px 14px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px; }
+  .entry-card .badge2 { display:inline-block; margin-top:9px; font-size:11px; background:rgba(255,255,255,.18); border-radius:14px; padding:3px 10px; }
   .register-entry-card { background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 12px 32px rgba(15,23,42,.08); }
   .register-entry-head { padding:18px 22px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#ffffff 0%,#f8fbff 52%,#eef6ff 100%); }
   .register-entry-head b { font-size:18px; color:#0f172a; letter-spacing:.2px; }
@@ -820,10 +827,12 @@
       <div class="left"><span>🧭 专项进展</span><span class="badge">先预留，晚点接入真实数据</span></div>
     </div>
     <div class="placeholder-grid">
-      <div class="placeholder-card">
+      <a class="entry-card" href="pursuit.html?v=20260613b" target="_blank" rel="noopener">
         <h3>🎯 靶向拓客名单</h3>
-        <p>预留模块。后续接入名单分层、认领进度、触达状态和销售跟进结果。</p>
-      </div>
+        <p>渗透漏斗 + By 销售跟踪 + 名单分类明细，全组实时共享。</p>
+        <span class="badge2">竞媒P序列 / 竞媒千万+ / 行业补充 / 销售补充</span>
+        <span class="go">进入看板 ›</span>
+      </a>
       <div class="placeholder-card">
         <h3>🧵 产业带进展</h3>
         <p>预留模块。后续接入产业带覆盖、客户新增、消耗起量和重点城市进度。</p>
