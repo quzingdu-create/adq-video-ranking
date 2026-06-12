@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260612j"></script>
+<script src="data/mock_data.js?v=20260612k"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -320,6 +320,11 @@
   /* 后置 lbl（日耗维度：）需要左侧间距更紧凑 */
   .filter-bar .filter-divider + .lbl { margin-left: 0; }
 
+  .micro-sales-tabs { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:-2px 0 14px; padding:10px 12px; background:#fff; border:1px solid var(--border); border-radius:10px; }
+  .micro-sales-tabs .sales-tab { border:1px solid var(--border); background:var(--panel-2); color:var(--text-2); border-radius:999px; padding:7px 13px; font-size:12.5px; font-weight:700; cursor:pointer; transition:all .15s; }
+  .micro-sales-tabs .sales-tab:hover { border-color:var(--primary); color:var(--primary); }
+  .micro-sales-tabs .sales-tab.active { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 4px 10px rgba(59,130,246,.18); }
+
   /* 客户卡片网格 */
   .customer-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;
@@ -617,6 +622,7 @@
     <span class="psh-title">微观视角｜我的客户</span>
     <span class="psh-sub">按销售/生命周期/日耗维度筛选名下客户，点击卡片查看详情</span>
   </div>
+  <div class="micro-sales-tabs" id="micro-sales-tabs"></div>
   <div id="page-micro">
     <!-- 筛选栏：生命周期 + 日耗维度（合并为一行） -->
     <div class="filter-bar">
@@ -848,7 +854,7 @@ let currentStageFilter = 'all';
 let currentCostFilter = 'all';
 let customerGridExpanded = false;
 const __lifeParams = new URLSearchParams(location.search);
-let currentSalesFilter = __lifeParams.get('sales') || '金洁（橘子）'; // 默认登录销售视角；嵌入时可传 sales=all 展示团队视图
+let currentSalesFilter = __lifeParams.get('sales') || 'all'; // 嵌入时由父看板传入云端登录销售；无参数则展示团队视图
 
 // 日耗维度判断：low <0.1万(<1000) / mid 0.1万-1万(1000-10000) / high >1万(>10000)
 function matchCostFilter(c) {
@@ -866,6 +872,31 @@ function matchSalesFilter(c) {
   return c.sales_owner === currentSalesFilter;
 }
 
+function renderMicroSalesTabs() {
+  const box = document.getElementById('micro-sales-tabs');
+  if (!box) return;
+  const owners = Array.from(new Set((window.MY_CUSTOMERS || []).map(c => c.sales_owner).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  const options = ['all', ...owners];
+  if (!options.includes(currentSalesFilter)) currentSalesFilter = 'all';
+  box.innerHTML = options.map(s => {
+    const label = s === 'all' ? '全量' : s;
+    const cnt = s === 'all' ? (window.MY_CUSTOMERS || []).length : (window.MY_CUSTOMERS || []).filter(c => c.sales_owner === s).length;
+    return `<button class="sales-tab ${currentSalesFilter === s ? 'active' : ''}" data-sales="${s}">${label} <span style="opacity:.78;font-weight:600;">${cnt}</span></button>`;
+  }).join('');
+  box.querySelectorAll('[data-sales]').forEach(btn => {
+    btn.onclick = () => {
+      currentSalesFilter = btn.dataset.sales;
+      const sel = document.getElementById('sales-select');
+      if (sel) sel.value = currentSalesFilter;
+      customerGridExpanded = false;
+      renderFunnel();
+      renderServiceCards();
+      renderMicroSalesTabs();
+      renderCustomerGrid();
+    };
+  });
+}
+
 function renderCustomerGrid() {
   const list = window.MY_CUSTOMERS.filter(c => 
     matchSalesFilter(c) &&
@@ -874,6 +905,7 @@ function renderCustomerGrid() {
   );
   document.getElementById('stat-count').textContent = list.length;
   // 联动文案：全量销售时显示"团队客户"，具体销售时显示"名下客户"
+  renderMicroSalesTabs();
   const labelEl = document.getElementById('stat-label');
   if (labelEl) {
     labelEl.textContent = currentSalesFilter === 'all' ? '团队客户：' : '名下客户：';
@@ -1123,6 +1155,7 @@ if (salesSelectEl) {
     customerGridExpanded = false;
     renderFunnel();
     renderServiceCards();
+    renderMicroSalesTabs();
     renderCustomerGrid();
   });
 }
@@ -1138,6 +1171,7 @@ document.addEventListener('keydown', e => {
 /* =============== 启动 =============== */
 renderFunnel();
 renderServiceCards();
+renderMicroSalesTabs();
 renderCustomerGrid();
 </script>
 
