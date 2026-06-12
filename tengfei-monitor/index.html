@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>腾飞监控看板</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:linear-gradient(135deg,#eef2f7 0%,#f5f7fa 100%);color:#1f2937;}
+  .wrap{max-width:1680px;margin:0 auto;padding:28px 24px 60px;}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800;letter-spacing:.5px;}
+  .sub{color:#6b7280;font-size:12.5px;}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;}
+  .meta .pill{background:#fff;border:1px solid #e5e7eb;padding:6px 12px;border-radius:999px;font-size:12px;color:#374151;
+              box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .meta .pill b{color:#4338ca;}
+  .ctrl{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .ctrl input,.ctrl select{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:13px;background:#fff;}
+  .ctrl input{width:240px;}
+  .ctrl .lbl{font-size:12px;color:#6b7280;}
+
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+  @media (max-width:1280px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:760px){.grid{grid-template-columns:1fr;}}
+
+  .card{background:#fff;border-radius:16px;padding:18px 20px 16px;border:1px solid #eef2f7;
+        box-shadow:0 4px 14px rgba(15,23,42,.05);position:relative;overflow:hidden;
+        transition:transform .15s ease, box-shadow .15s ease;}
+  .card:hover{transform:translateY(-2px); box-shadow:0 8px 22px rgba(15,23,42,.08);}
+  .card.overall{background:linear-gradient(135deg,#1e3a8a 0%,#4338ca 100%);color:#fff;border:none;grid-column:1/-1;}
+  .card.overall .label,.card.overall .ratio,.card.overall .ops-tag,.card.overall .foot{color:rgba(255,255,255,.85);}
+  .card.overall .val{color:#fff;}
+  .card.overall .kpi-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);}
+  .card.overall .metric-row{border-color:rgba(255,255,255,.12);}
+
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px;}
+  .nick{font-size:18px;font-weight:800;line-height:1.2;}
+  .ops-tag{font-size:11px;color:#6b7280;margin-top:4px;}
+  .date-tag{font-size:11px;color:#9ca3af;font-weight:500;flex-shrink:0;text-align:right;line-height:1.3;}
+  .date-tag .d{font-size:12px;color:#6b7280;font-weight:600;}
+  .card.overall .date-tag,.card.overall .date-tag .d{color:rgba(255,255,255,.85);}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+  .kpi-box{background:#f8fafc;border:1px solid #f1f5f9;border-radius:10px;padding:8px 10px;text-align:left;}
+  .kpi-box .label{font-size:11px;color:#6b7280;}
+  .kpi-box .val{font-size:17px;font-weight:800;margin-top:2px;color:#0f172a;font-variant-numeric:tabular-nums;line-height:1.15;}
+  .kpi-box .ratio{font-size:10.5px;margin-top:1px;font-variant-numeric:tabular-nums;}
+  .kpi-box .bench{font-size:10px;color:#9ca3af;margin-top:4px;padding-top:4px;border-top:1px dashed #e5e7eb;
+                  font-variant-numeric:tabular-nums;display:flex;justify-content:space-between;gap:4px;}
+  .kpi-box .bench .bk{color:#a78bfa;font-weight:600;}
+  .kpi-box .bench .bv{color:#6b7280;font-weight:700;}
+  .card.overall .kpi-box .bench{border-top-color:rgba(255,255,255,.22);}
+  .card.overall .kpi-box .bench .bk{color:#fde68a;}
+  .card.overall .kpi-box .bench .bv{color:rgba(255,255,255,.92);}
+
+  .metric-list{margin-top:6px;border-top:1px dashed #e5e7eb;padding-top:8px;}
+  .metric-list .mhead{display:grid;grid-template-columns:1fr 70px 60px 70px;gap:6px;font-size:10px;color:#9ca3af;
+                      padding:0 0 6px;border-bottom:1px solid #eef2f7;margin-bottom:4px;}
+  .metric-list .mhead .h-bench{color:#a78bfa;font-weight:700;}
+  .metric-row{display:grid;grid-template-columns:1fr 70px 60px 70px;gap:6px;font-size:12px;padding:5px 0;
+              border-bottom:1px dashed #f1f5f9;align-items:center;}
+  .metric-row:last-child{border-bottom:none;}
+  .metric-row .nm{color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .metric-row .vv{font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;text-align:right;}
+  .metric-row .rr{font-size:10.5px;font-variant-numeric:tabular-nums;text-align:right;}
+  .metric-row .bb{font-size:11px;color:#6b7280;font-variant-numeric:tabular-nums;text-align:right;font-weight:600;
+                  border-left:1px dashed #e5e7eb;padding-left:6px;}
+  .card.overall .metric-row .nm{color:rgba(255,255,255,.92);}
+  .card.overall .metric-row .vv{color:#fff;}
+  .card.overall .metric-row .bb{color:rgba(255,255,255,.78);border-left-color:rgba(255,255,255,.2);}
+  .card.overall .metric-list .mhead{color:rgba(255,255,255,.7);border-bottom-color:rgba(255,255,255,.18);}
+  .card.overall .metric-list .mhead .h-bench{color:#fde68a;}
+
+  .ratio-up{color:#dc2626;}
+  .ratio-dn{color:#059669;}
+  .arrow-up::before{content:"▲ ";font-size:9px;}
+  .arrow-dn::before{content:"▼ ";font-size:9px;}
+  .card.overall .ratio-up{color:#fecaca;} .card.overall .ratio-dn{color:#bbf7d0;}
+
+  .bench-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:6px;
+               background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);color:#92400e;
+               font-weight:700;margin-left:6px;vertical-align:middle;}
+  .card.overall .bench-badge{background:rgba(254,243,199,.95);color:#b45309;}
+
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:11px;color:#9ca3af;gap:8px;flex-wrap:wrap;}
+  .ops-list{font-size:11px;color:#6b7280;}
+  .ops-list summary{cursor:pointer;color:#4338ca;outline:none;}
+  .card.overall .ops-list summary{color:#fde68a;}
+  .ops-list ul{margin:6px 0 0;padding-left:18px;}
+  .ops-list li{margin:2px 0;}
+
+  .legend{margin:10px 0 6px;font-size:11px;color:#6b7280;display:flex;gap:14px;flex-wrap:wrap;}
+  .legend b{color:#dc2626;} .legend .g b{color:#059669;}
+
+  .note{font-size:11px;color:#92400e;background:#fef3c7;border:1px solid #fde68a;padding:6px 10px;border-radius:8px;display:inline-block;margin-bottom:14px;}
+
+  @media print { .card{break-inside:avoid;} body{background:#fff;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>🚀 腾飞监控看板</h1>
+      <div class="sub">按客户名称聚合 · 求和类指标 sum｜比率/ROI/单价/成本类按消耗加权平均 · Benchmark 取消耗最高客户 <b id="benchName" style="color:#4338ca;"></b></div>
+    </div>
+    <div class="meta" id="meta"></div>
+  </div>
+
+  <div class="note">📌 环比变化率为加权估算（按各 OPS 当期消耗作权重）；红▲ 表示上涨，绿▼ 表示下降。每张卡片右侧灰色数值为 Benchmark（消耗最高客户）同指标值，便于横向对照。</div>
+
+  <div class="ctrl">
+    <span class="lbl">搜索：</span>
+    <input id="search" placeholder="客户简称 / OPS主体..." />
+    <span class="lbl">排序：</span>
+    <select id="sort"></select>
+    <select id="dir">
+      <option value="desc" selected>降序</option>
+      <option value="asc">升序</option>
+    </select>
+  </div>
+
+  <div class="legend">
+    <span>核心 KPI（顶部 4 格）：消耗(万元) · 下单ROI · CTR · 下单率（若数据无对应列将自动取前 4 个指标）</span>
+    <span>环比：<b class="ratio-up arrow-up">上涨</b> ｜ <span class="g"><b class="ratio-dn arrow-dn">下降</b></span></span>
+    <span>📐 <b style="color:#a78bfa;">Bench</b> = 消耗最高客户「<b id="benchName2" style="color:#a78bfa;"></b>」同指标值</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const DATA = {"title": "腾飞监控看板", "metric_names": ["消耗(万元)", "有消耗创意指纹数(唯一性项目)", "消耗创意唯一性ID数", "曝光创意唯一性ID数", "新建创意唯一性ID数", "天有消耗广告数(个)", "新广告占比(%)", "新建创意重复度(TID级别)(%)", "艾米场景化智投消耗(元)", "下单ROI", "下单率(%)", "下单单价(元)", "下单成本(元)", "ctr(%)", "3s快滑率(%)"], "sum_cols": ["消耗(万元)", "有消耗创意指纹数(唯一性项目)", "天有消耗广告数(个)", "艾米场景化智投消耗(元)"], "consume_col": "消耗(万元)", "overall": {"nick": "整体大盘", "ops_list": ["—（全行业）"], "ops_count": 0, "metrics": [{"name": "消耗(万元)", "v": 25.16096297, "r": 27.63365233602004, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 6606.0, "r": -5.263157894736842, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 9348.0, "r": -2.594560800250078, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 13346.0, "r": -3.8264754629963247, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 13474.0, "r": 2.4482968369829683, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 2270.0, "r": 7.024988213107025, "has_ratio": true}, {"name": "新广告占比(%)", "v": 16.82819383259912, "r": 24.36445686042763, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 69.0098822340795, "r": 16.9986192413671, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 50536.14529, "r": 1.040945556828414, "has_ratio": true}, {"name": "下单ROI", "v": 3.8929321233367724, "r": 2.416744232099009, "has_ratio": true}, {"name": "下单率(%)", "v": 10.16948008558373, "r": 46.68194269593145, "has_ratio": true}, {"name": "下单单价(元)", "v": 65.00957124842371, "r": -25.08449412682464, "has_ratio": true}, {"name": "下单成本(元)", "v": 16.69938472821398, "r": -26.85228725548993, "has_ratio": true}, {"name": "ctr(%)", "v": 2.666788343305958, "r": -11.961704763897856, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 40.26701654659512, "r": 18.87702689466551, "has_ratio": true}], "is_overall": true}, "cards": [{"nick": "猫小橙", "ops_list": ["杭州益霖电子商务有限公司", "余姚市枫亭电子商务有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 16.274881978, "r": 2873.9835624876046, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 1894.0, "r": 201.84335557701442, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 1323.7536537841925, "r": 213.6511701824885, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 1637.9319074380082, "r": 207.45512903885725, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 1859.8569998780242, "r": 75.44337770699256, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 258.0, "r": 180.45326116824108, "has_ratio": true}, {"name": "新广告占比(%)", "v": 54.93993442829362, "r": -27.165100386910087, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 54.920308286564335, "r": -6.547268232979857, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 3005.42676, "r": 90.27771939543054, "has_ratio": true}, {"name": "下单ROI", "v": 2.5734134389800856, "r": 45.32135127263577, "has_ratio": true}, {"name": "下单率(%)", "v": 7.9911743529745625, "r": 61.72302290351194, "has_ratio": true}, {"name": "下单单价(元)", "v": 57.1059531470772, "r": -0.04412993521602833, "has_ratio": true}, {"name": "下单成本(元)", "v": 22.147323347520654, "r": -27.425515208877997, "has_ratio": true}, {"name": "ctr(%)", "v": 2.601059634197333, "r": 16.642306715824795, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 40.2481576412026, "r": 6.955206947605854, "has_ratio": true}]}, {"nick": "茉寻", "ops_list": ["宜宾市鸿曜商贸有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 2.202816418, "r": -25.420093374058155, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 953.0, "r": -6.01577909270217, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 1225.0, "r": -3.543307086614173, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 2478.0, "r": -2.132701421800948, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 2718.0, "r": 45.50321199143469, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 669.0, "r": 9.852216748768473, "has_ratio": true}, {"name": "新广告占比(%)", "v": 11.80866965620329, "r": 176.59537771645395, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 56.68562696323966, "r": 23.54428423966536, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 10532.0468, "r": -8.711696490393429, "has_ratio": true}, {"name": "下单ROI", "v": 5.584695074666908, "r": 4.424850217885774, "has_ratio": true}, {"name": "下单率(%)", "v": 5.488110765526237, "r": -13.583106927633215, "has_ratio": true}, {"name": "下单单价(元)", "v": 224.9005118829982, "r": -6.316250625776093, "has_ratio": true}, {"name": "下单成本(元)", "v": 40.2708668738574, "r": -10.285962413400847, "has_ratio": true}, {"name": "ctr(%)", "v": 1.7746211547946107, "r": -14.88070138498271, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 24.017387827865093, "r": -27.16955875145628, "has_ratio": true}]}, {"nick": "浙锦", "ops_list": ["杭州荣锦祥丝绸科技有限公司", "杭州荣锦祥丝绸有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 1.684619, "r": 191.7520274309383, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 365.0, "r": 37.50008415451368, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 308.403240139165, "r": 36.880289071962615, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 392.31278645201076, "r": 29.127474678309756, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 450.0064305341445, "r": 82.9810578645453, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 239.0, "r": 5.358853335411156, "has_ratio": true}, {"name": "新广告占比(%)", "v": 18.88521259094371, "r": -18.773129022318, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 68.88691320905565, "r": -5.668195166183671, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 13731.508730000001, "r": 118.37341987515323, "has_ratio": true}, {"name": "下单ROI", "v": 5.740170329314818, "r": -16.086410294715687, "has_ratio": true}, {"name": "下单率(%)", "v": 3.892459284098292, "r": 20.33884854636298, "has_ratio": true}, {"name": "下单单价(元)", "v": 1157.130472016698, "r": 11.644532918995047, "has_ratio": true}, {"name": "下单成本(元)", "v": 206.99745442447602, "r": 42.214836698344385, "has_ratio": true}, {"name": "ctr(%)", "v": 2.671242426582908, "r": -13.129780872444663, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 47.73730563769643, "r": 44.476265829444664, "has_ratio": true}]}, {"nick": "义乌皮哥", "ops_list": ["义乌市椰暄电子商务商行(个体工商户)", "义乌市芝托电子商务商行(个体工商户)"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 0.892112, "r": -22.14565104538328, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 747.0, "r": -12.119341400892864, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 456.3882595458866, "r": -12.106197689807422, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 656.4866373280486, "r": -8.615069048176103, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 451.5490330810481, "r": -2.55113269721101, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 137.0, "r": -9.644006318383656, "has_ratio": true}, {"name": "新广告占比(%)", "v": 3.050507079415147, "r": 31.735512934355345, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 40.39472554951744, "r": -24.434673666028385, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 2684.41, "r": -19.28603043607776, "has_ratio": true}, {"name": "下单ROI", "v": 2.456530121778431, "r": 2.6845245667726565, "has_ratio": true}, {"name": "下单率(%)", "v": 5.034925555863644, "r": 1.668551299976115, "has_ratio": true}, {"name": "下单单价(元)", "v": 63.53526445271542, "r": -0.14158630172729425, "has_ratio": true}, {"name": "下单成本(元)", "v": 26.53635978363697, "r": -2.542977549759396, "has_ratio": true}, {"name": "ctr(%)", "v": 4.068026776012084, "r": 10.869566097075207, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 30.03998679255518, "r": -11.103273948599412, "has_ratio": true}]}, {"nick": "主曼", "ops_list": ["杭州瑾笙服饰有限公司", "杭州芷歆服饰有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 0.7973565809999998, "r": -39.155137589262026, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 706.0, "r": -8.094642631447888, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 510.98848220956745, "r": -7.227217874361171, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 727.0788219329941, "r": -7.664823793714628, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 1240.4310154856553, "r": 130.3275566684461, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 208.0, "r": 4.978289130092475, "has_ratio": true}, {"name": "新广告占比(%)", "v": 24.69084032614068, "r": 752.8476821192054, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 85.55008588026034, "r": 46.420681638557156, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 6792.29581, "r": -36.92672691719191, "has_ratio": true}, {"name": "下单ROI", "v": 6.134784758238548, "r": -1.669199340370411, "has_ratio": true}, {"name": "下单率(%)", "v": 6.73564721329064, "r": -24.071270867576377, "has_ratio": true}, {"name": "下单单价(元)", "v": 157.19607398094854, "r": 2.4308215639878563, "has_ratio": true}, {"name": "下单成本(元)", "v": 26.280731414887526, "r": 4.509319522551959, "has_ratio": true}, {"name": "ctr(%)", "v": 2.8450849078895564, "r": 2.018869083055872, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 35.07890102129473, "r": -23.238620527524787, "has_ratio": true}]}, {"nick": "阿宝服饰", "ops_list": ["石狮市瑞内网络服装商行(个体工商户)", "石狮市史幻鸟服装商行(个体工商户)", "石狮市桃嫚秀服饰商行(个体工商户)", "石狮市天百佳顺电子商务有限公司", "石狮市月纱纪服饰商行(个体工商户)"], "ops_count": 5, "metrics": [{"name": "消耗(万元)", "v": 0.646698492, "r": 54866.88279260769, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 100.0, "r": 178.18302034561077, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 24.95755703725995, "r": 184.44948773653746, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 33.89485952288257, "r": 110.06066501065706, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 6.49771276720404, "r": -21.46583567104281, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 62.0, "r": 39.56605557412866, "has_ratio": true}, {"name": "新广告占比(%)", "v": 4.313151942749323, "r": -47.07131961255454, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 45.359345685408485, "r": -17.97508340439358, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 1183.45, "r": 138426.27359692377, "has_ratio": true}, {"name": "下单ROI", "v": 18.823018996617666, "r": 349.3541071934167, "has_ratio": true}, {"name": "下单率(%)", "v": 42.86370874841248, "r": 123.98051793991637, "has_ratio": true}, {"name": "下单单价(元)", "v": 37.44456088288485, "r": 16.178653607537317, "has_ratio": true}, {"name": "下单成本(元)", "v": 2.1154951541519798, "r": 409.23378909660215, "has_ratio": true}, {"name": "ctr(%)", "v": 5.391592595506681, "r": 152.619648778566, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 70.0235105671884, "r": 68.46421932790383, "has_ratio": true}]}, {"nick": "特际直购", "ops_list": ["杭州白锦绒服饰有限公司", "杭州袖尚服饰有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 0.628657, "r": 51.66518767230544, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 234.0, "r": 63.81411735442725, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 199.4778853969653, "r": 48.80843949024536, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 258.02815048587706, "r": 46.429221758698134, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 324.13121940899407, "r": 253.3774597955484, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 50.0, "r": 5.412931970103588, "has_ratio": true}, {"name": "新广告占比(%)", "v": 5.476501775166089, "r": 75.24805680531487, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 31.910704603783167, "r": -33.98645456853096, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 190.69, "r": -14.699016936206268, "has_ratio": true}, {"name": "下单ROI", "v": 1.9465972700534633, "r": -4.497928477790206, "has_ratio": true}, {"name": "下单率(%)", "v": 10.857860840993297, "r": 22.169603684887715, "has_ratio": true}, {"name": "下单单价(元)", "v": 66.53018695039492, "r": -3.9558526539600707, "has_ratio": true}, {"name": "下单成本(元)", "v": 34.17413755563678, "r": 1.1501300617235968, "has_ratio": true}, {"name": "ctr(%)", "v": 1.5281616770688056, "r": -36.37734764742691, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 75.18736539166304, "r": 15.528228543547488, "has_ratio": true}]}, {"nick": "花猫张芸", "ops_list": ["晋江市德曼经纪有限公司", "晋江市兆飞商贸有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 0.522920261, "r": 266.5602996018394, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 44.0, "r": 37.5, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 73.0, "r": 65.9090909090909, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 73.0, "r": 58.69565217391305, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 67.0, "r": -10.666666666666668, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 127.0, "r": 149.01960784313727, "has_ratio": true}, {"name": "新广告占比(%)", "v": 66.92913385826772, "r": -25.79596028757275, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 87.29508196721312, "r": 8.91863438110994, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 5229.1604, "r": 266.55734073575593, "has_ratio": true}, {"name": "下单ROI", "v": 12.757245219840506, "r": -57.23699804497306, "has_ratio": true}, {"name": "下单率(%)", "v": 36.53467512579304, "r": -43.08317247950747, "has_ratio": true}, {"name": "下单单价(元)", "v": 39.94623952095809, "r": 2.968353490623147, "has_ratio": true}, {"name": "下单成本(元)", "v": 3.1312590479041917, "r": 140.78841237318437, "has_ratio": true}, {"name": "ctr(%)", "v": 6.012891344383057, "r": 33.047095487329024, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 37.34184232896796, "r": -27.530745204332685, "has_ratio": true}]}, {"nick": "谭总", "ops_list": ["海口秀英诗娟电子商务中心"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.368334, "r": -56.21170184545004, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 335.0, "r": 3.7151702786377707, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 511.0, "r": -4.485981308411215, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 697.0, "r": -4.781420765027322, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 854.0, "r": 27.46268656716418, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 158.0, "r": -8.13953488372093, "has_ratio": true}, {"name": "新广告占比(%)", "v": 2.5316455696202533, "r": -12.91139240506328, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 61.85536455245999, "r": 2.715028077018727, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 3338.98679, "r": -57.29281063907907, "has_ratio": true}, {"name": "下单ROI", "v": 3.3904282526185474, "r": 25.055417804552626, "has_ratio": true}, {"name": "下单率(%)", "v": 5.404589371980676, "r": 15.529295749678676, "has_ratio": true}, {"name": "下单单价(元)", "v": 69.7659217877095, "r": 0.035765478116955046, "has_ratio": true}, {"name": "下单成本(元)", "v": 20.57731843575419, "r": -20.006851974648974, "has_ratio": true}, {"name": "ctr(%)", "v": 3.6218095925464207, "r": 8.933566084029609, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 52.311777723137446, "r": -2.12890564870292, "has_ratio": true}]}, {"nick": "羽鑫曼尔", "ops_list": ["东阳市蒂之妍电子商务商行(个体工商户)", "东阳市福爱电子商务有限公司"], "ops_count": 2, "metrics": [{"name": "消耗(万元)", "v": 0.27183724, "r": -57.22556548438494, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 175.0, "r": 1.496668697903402, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 182.03469237695322, "r": 12.427147396772293, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 189.9894631066737, "r": 15.09132552807339, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 173.43679975561847, "r": 426.4705882352941, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 28.0, "r": 64.78569119955561, "has_ratio": true}, {"name": "新广告占比(%)", "v": 57.142857142857146, "r": 642.8571428571429, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 61.91395438287229, "r": -5.573457453156689, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 52.06, "r": 2.4452363054306976, "has_ratio": true}, {"name": "下单ROI", "v": 5.8358082211252595, "r": 13.267031652719927, "has_ratio": true}, {"name": "下单率(%)", "v": 6.492675314079349, "r": -9.508102321376633, "has_ratio": true}, {"name": "下单单价(元)", "v": 58.75639231285687, "r": 1.280793559325778, "has_ratio": true}, {"name": "下单成本(元)", "v": 10.069917590791452, "r": -10.534063331288692, "has_ratio": true}, {"name": "ctr(%)", "v": 2.6645974293849566, "r": 17.833978032539875, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 42.410149918394964, "r": -11.065492182240819, "has_ratio": true}]}, {"nick": "哥弟商元", "ops_list": ["哥弟商元贸易有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.19759200000000002, "r": -0.17127180684176718, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 274.0, "r": -1.083032490974729, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 322.0, "r": 1.257861635220126, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 391.0, "r": -1.0126582278481013, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 304.0, "r": -44.01473296500921, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 92.0, "r": 1.098901098901099, "has_ratio": true}, {"name": "新广告占比(%)", "v": 6.521739130434782, "r": -65.08951406649616, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 63.37295690936107, "r": -22.21218523284382, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 1969.55, "r": -0.3410430655420009, "has_ratio": true}, {"name": "下单ROI", "v": 4.121629418195068, "r": 12.589428932808906, "has_ratio": true}, {"name": "下单率(%)", "v": 5.32724505327245, "r": -8.353326625906133, "has_ratio": true}, {"name": "下单单价(元)", "v": 116.34300000000002, "r": -5.265727085282741, "has_ratio": true}, {"name": "下单成本(元)", "v": 28.22742857142857, "r": -15.858643380052348, "has_ratio": true}, {"name": "ctr(%)", "v": 2.7799521865149046, "r": -9.469419139838767, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 19.77218564446419, "r": -44.977964838671525, "has_ratio": true}]}, {"nick": "晚年之美", "ops_list": ["苏州晚年之美科技有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.185687, "r": 133.07894109229667, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 301.0, "r": -24.181360201511335, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 339.0, "r": -26.46420824295011, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 483.0, "r": -34.4640434192673, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 14.999999999999998, "r": -98.73096446700508, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 53.0, "r": -31.16883116883117, "has_ratio": true}, {"name": "新广告占比(%)", "v": 11.320754716981131, "r": -70.94339622641509, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 17.647058823529413, "r": -65.3229123817359, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 722.6, "r": 224.06493855951206, "has_ratio": true}, {"name": "下单ROI", "v": 3.1628493109372227, "r": 25.48541636177078, "has_ratio": true}, {"name": "下单率(%)", "v": 4.174067495559503, "r": 262.1003552397869, "has_ratio": true}, {"name": "下单单价(元)", "v": 124.95744680851065, "r": -0.43231329999152285, "has_ratio": true}, {"name": "下单成本(元)", "v": 39.50787234042553, "r": -20.65397750049475, "has_ratio": true}, {"name": "ctr(%)", "v": 1.7176678768648748, "r": -48.08880972714138, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 43.570046578287354, "r": 48.9985542343131, "has_ratio": true}]}, {"nick": "腾叶服饰", "ops_list": ["宁波市希盟贸易有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.181991, "r": 22.863951824147346, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 147.0, "r": -14.035087719298245, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 192.99999999999997, "r": -16.810344827586206, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 305.0, "r": -8.408408408408409, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 143.0, "r": 130.64516129032256, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 41.0, "r": 17.142857142857142, "has_ratio": true}, {"name": "新广告占比(%)", "v": 14.634146341463415, "r": 156.09756097560978, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 70.48543689320388, "r": -10.67192156108815, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 107.79, "r": -71.97785056933395, "has_ratio": true}, {"name": "下单ROI", "v": 2.3825903478743453, "r": 8.794267624113969, "has_ratio": true}, {"name": "下单率(%)", "v": 14.37435367114788, "r": 41.84801754605271, "has_ratio": true}, {"name": "下单单价(元)", "v": 31.19496402877698, "r": -12.490120668615791, "has_ratio": true}, {"name": "下单成本(元)", "v": 13.092877697841727, "r": -19.563887654694913, "has_ratio": true}, {"name": "ctr(%)", "v": 2.05055345858603, "r": 32.36802103264475, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 61.645103445616336, "r": -6.454807873365646, "has_ratio": true}]}, {"nick": "特际直播", "ops_list": ["广州泮夏文化传媒有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.178056, "r": 42.443660450716386, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 124.0, "r": -17.333333333333336, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 158.0, "r": -14.594594594594595, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 326.0, "r": 25.868725868725868, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 12.0, "r": -76.47058823529412, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 17.0, "r": 6.25, "has_ratio": true}, {"name": "新广告占比(%)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 0.0, "r": -100.0, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 8.43, "r": 103.1325301204819, "has_ratio": true}, {"name": "下单ROI", "v": 1.7722514265175, "r": 7.181383021004406, "has_ratio": true}, {"name": "下单率(%)", "v": 6.6869300911854115, "r": -3.2624113475177237, "has_ratio": true}, {"name": "下单单价(元)", "v": 71.71818181818182, "r": 4.095285429650892, "has_ratio": true}, {"name": "下单成本(元)", "v": 40.46727272727273, "r": -2.8793224199660954, "has_ratio": true}, {"name": "ctr(%)", "v": 1.8360911906688617, "r": -10.001917283182728, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 62.11558385768074, "r": -3.8625006494820058, "has_ratio": true}]}, {"nick": "常熟梅李镇彭奶奶", "ops_list": ["常熟市梅李镇彭奶奶服装商行(个体工商户)"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.091241, "r": 44.024561569667405, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 72.0, "r": 5.88235294117647, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 116.0, "r": 4.504504504504505, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 136.0, "r": 5.426356589147287, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 86.0, "r": -12.244897959183675, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 91.0, "r": -4.2105263157894735, "has_ratio": true}, {"name": "新广告占比(%)", "v": 3.2967032967032965, "r": -60.85164835164834, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 61.56405990016639, "r": -23.936826438353112, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 832.65, "r": 46.3639719453673, "has_ratio": true}, {"name": "下单ROI", "v": 3.035970671079887, "r": -13.487986585169907, "has_ratio": true}, {"name": "下单率(%)", "v": 4.323570432357044, "r": 24.30264993026501, "has_ratio": true}, {"name": "下单单价(元)", "v": 89.35645161290323, "r": -3.5366079800251153, "has_ratio": true}, {"name": "下单成本(元)", "v": 29.432580645161288, "r": 11.502886376516699, "has_ratio": true}, {"name": "ctr(%)", "v": 2.892295280354982, "r": -12.023922689724115, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 54.81743487712317, "r": 30.01872402832874, "has_ratio": true}]}, {"nick": "俞兆林", "ops_list": ["苏州市必晨服饰有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.036163, "r": -8.856516369685199, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 160.0, "r": -1.8404907975460123, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 213.0, "r": -4.484304932735426, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 406.0, "r": -6.235565819861432, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 375.0, "r": 38.88888888888889, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 40.0, "r": -11.11111111111111, "has_ratio": true}, {"name": "新广告占比(%)", "v": 5.0, "r": 125.00000000000001, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 63.08089500860584, "r": 18.771559639634454, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 155.09, "r": -48.37560748285733, "has_ratio": true}, {"name": "下单ROI", "v": 2.828581699527141, "r": -56.424136636715836, "has_ratio": true}, {"name": "下单率(%)", "v": 1.3157894736842106, "r": -21.898496240601503, "has_ratio": true}, {"name": "下单单价(元)", "v": 170.48333333333332, "r": -7.328026920339105, "has_ratio": true}, {"name": "下单成本(元)", "v": 60.27166666666667, "r": 112.66812847073453, "has_ratio": true}, {"name": "ctr(%)", "v": 2.609143445671454, "r": -36.94726994467612, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 58.66483767718336, "r": 9.64726006929631, "has_ratio": true}]}, {"nick": "澳洲鸟", "ops_list": ["东阳市澳洲鸟服饰有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 110.0, "r": 35.80246913580247, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "新广告占比(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 83.41772151898735, "r": 18.669561993538508, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "下单ROI", "v": null, "r": 0.0, "has_ratio": true}, {"name": "下单率(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "下单单价(元)", "v": 159.0, "r": null, "has_ratio": true}, {"name": "下单成本(元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "ctr(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "3s快滑率(%)", "v": null, "r": 0.0, "has_ratio": true}]}, {"nick": "丫头", "ops_list": ["泉州聚通服饰有限公司"], "ops_count": 1, "metrics": [{"name": "消耗(万元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": null, "r": 0.0, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "新广告占比(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "下单ROI", "v": null, "r": 0.0, "has_ratio": true}, {"name": "下单率(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "下单单价(元)", "v": 59.9, "r": -9.173616376042462, "has_ratio": true}, {"name": "下单成本(元)", "v": 0.0, "r": 0.0, "has_ratio": true}, {"name": "ctr(%)", "v": null, "r": 0.0, "has_ratio": true}, {"name": "3s快滑率(%)", "v": null, "r": 0.0, "has_ratio": true}]}], "benchmark": {"nick": "猫小橙", "metrics": [{"name": "消耗(万元)", "v": 16.274881978, "r": 2873.9835624876046, "has_ratio": true}, {"name": "有消耗创意指纹数(唯一性项目)", "v": 1894.0, "r": 201.84335557701442, "has_ratio": true}, {"name": "消耗创意唯一性ID数", "v": 1323.7536537841925, "r": 213.6511701824885, "has_ratio": true}, {"name": "曝光创意唯一性ID数", "v": 1637.9319074380082, "r": 207.45512903885725, "has_ratio": true}, {"name": "新建创意唯一性ID数", "v": 1859.8569998780242, "r": 75.44337770699256, "has_ratio": true}, {"name": "天有消耗广告数(个)", "v": 258.0, "r": 180.45326116824108, "has_ratio": true}, {"name": "新广告占比(%)", "v": 54.93993442829362, "r": -27.165100386910087, "has_ratio": true}, {"name": "新建创意重复度(TID级别)(%)", "v": 54.920308286564335, "r": -6.547268232979857, "has_ratio": true}, {"name": "艾米场景化智投消耗(元)", "v": 3005.42676, "r": 90.27771939543054, "has_ratio": true}, {"name": "下单ROI", "v": 2.5734134389800856, "r": 45.32135127263577, "has_ratio": true}, {"name": "下单率(%)", "v": 7.9911743529745625, "r": 61.72302290351194, "has_ratio": true}, {"name": "下单单价(元)", "v": 57.1059531470772, "r": -0.04412993521602833, "has_ratio": true}, {"name": "下单成本(元)", "v": 22.147323347520654, "r": -27.425515208877997, "has_ratio": true}, {"name": "ctr(%)", "v": 2.601059634197333, "r": 16.642306715824795, "has_ratio": true}, {"name": "3s快滑率(%)", "v": 40.2481576412026, "r": 6.955206947605854, "has_ratio": true}]}, "date_label": "今天 6月12日", "summary": {"n_customers": 18, "n_ops_total": 29, "n_unmatched": 0}, "unmatched_ops": []};
+const SUM_COLS = new Set(DATA.sum_cols);
+const BENCH = DATA.benchmark;
+const BENCH_BY_NAME = {};
+BENCH.metrics.forEach(m=>{BENCH_BY_NAME[m.name]=m;});
+document.getElementById("benchName").textContent = BENCH.nick;
+document.getElementById("benchName2").textContent = BENCH.nick;
+
+const fmtCompact = (v, digits=2)=>{
+  if (v===null||v===undefined||isNaN(v)) return "-";
+  const a = Math.abs(v);
+  if (a>=1e8) return (v/1e8).toFixed(2)+"亿";
+  if (a>=1e4) return (v/1e4).toFixed(2)+"万";
+  if (a>=100) return v.toLocaleString("zh-CN",{maximumFractionDigits:0});
+  return Number(v).toLocaleString("zh-CN",{minimumFractionDigits:digits,maximumFractionDigits:digits});
+};
+const fmtNum2 = v => v===null||v===undefined||isNaN(v) ? "-" : Number(v).toLocaleString("zh-CN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtPct = v => v===null||v===undefined||isNaN(v) ? "-" : v.toFixed(2)+"%";
+const ratioHtml = (r)=>{
+  if (r===null||r===undefined||isNaN(r)) return `<span style="color:#9ca3af;">-</span>`;
+  if (r>=0) return `<span class="ratio-up arrow-up">${r.toFixed(1)}%</span>`;
+  return `<span class="ratio-dn arrow-dn">${Math.abs(r).toFixed(1)}%</span>`;
+};
+
+function formatMetric(name, v){
+  if (v===null||v===undefined||isNaN(v)) return "-";
+  if (name===DATA.consume_col) return fmtNum2(v);
+  if (name.endsWith("(%)")) return fmtPct(v);
+  if (name.includes("元") && !name.includes("万元")) return fmtCompact(v);
+  if (name.toLowerCase().includes("roi")) return fmtNum2(v);
+  if (SUM_COLS.has(name)) return Math.round(v).toLocaleString("zh-CN");
+  return fmtNum2(v);
+}
+
+const s = DATA.summary;
+document.getElementById("meta").innerHTML = `
+  <div class="pill">客户数 <b>${s.n_customers}</b></div>
+  <div class="pill">合并主体数 <b>${s.n_ops_total}</b></div>
+  <div class="pill">未匹配 <b>${s.n_unmatched}</b></div>
+  ${DATA.overall ? `<div class="pill">整体消耗 <b>${fmtNum2((DATA.overall.metrics.find(m=>m.name===DATA.consume_col)||{}).v)} 万元</b></div>` : ''}
+`;
+
+// 自动选择 KPI4：优先固定列名，其次取前 4 个指标
+const PREFERRED_KPI = ["消耗(万元)","下单ROI","ctr(%)","下单率(%)"];
+const allMetricNames = DATA.metric_names;
+let KPI4 = PREFERRED_KPI.filter(n=>allMetricNames.includes(n));
+if (KPI4.length < 4) {
+  for (const n of allMetricNames) {
+    if (KPI4.length>=4) break;
+    if (!KPI4.includes(n)) KPI4.push(n);
+  }
+}
+const KPI4_LABEL = {"消耗(万元)":"消耗(万元)","下单ROI":"下单ROI","ctr(%)":"CTR","下单率(%)":"下单率"};
+
+// 排序下拉
+const sortSel = document.getElementById("sort");
+const sortCandidates = KPI4.concat(allMetricNames.filter(n=>!KPI4.includes(n))).slice(0, 12);
+sortSel.innerHTML = sortCandidates.map((n,i)=>`<option value="${n}" ${i===0?'selected':''}>${n}</option>`).join("");
+
+function metricByName(card, n){ return card.metrics.find(m=>m.name===n); }
+
+function cardHtml(card, idx, isOverall=false){
+  const isBench = !isOverall && card.nick === BENCH.nick;
+  const kpi4 = KPI4.map(name=>{
+    const m = metricByName(card, name);
+    if(!m) return "";
+    const bm = BENCH_BY_NAME[name];
+    const benchTxt = bm ? formatMetric(name, bm.v) : "-";
+    return `<div class="kpi-box">
+      <div class="label">${KPI4_LABEL[name]||name}</div>
+      <div class="val">${formatMetric(name, m.v)}</div>
+      <div class="ratio">${m.has_ratio? ratioHtml(m.r) : '<span style="color:#9ca3af;">-</span>'}</div>
+      <div class="bench"><span class="bk">Bench</span><span class="bv">${benchTxt}</span></div>
+    </div>`;
+  }).join("");
+
+  const others = card.metrics.filter(m=>!KPI4.includes(m.name));
+  const otherHeader = `<div class="mhead">
+    <span>指标</span><span style="text-align:right;">本客户</span>
+    <span style="text-align:right;">环比</span>
+    <span class="h-bench" style="text-align:right;">Bench</span>
+  </div>`;
+  const otherHtml = others.map(m=>{
+    const bm = BENCH_BY_NAME[m.name];
+    const benchTxt = bm ? formatMetric(m.name, bm.v) : "-";
+    return `<div class="metric-row">
+      <div class="nm" title="${m.name}">${m.name}</div>
+      <div class="vv">${formatMetric(m.name, m.v)}</div>
+      <div class="rr">${m.has_ratio? ratioHtml(m.r) : '<span style="color:#9ca3af;">-</span>'}</div>
+      <div class="bb">${benchTxt}</div>
+    </div>`;
+  }).join("");
+
+  let opsBlock = "";
+  if (!isOverall){
+    if (card.ops_count>1){
+      opsBlock = `<details class="ops-list"><summary>包含 ${card.ops_count} 个 OPS 主体（点击展开）</summary>
+        <ul>${card.ops_list.map(o=>`<li>${o}</li>`).join("")}</ul></details>`;
+    } else {
+      opsBlock = `<div class="ops-list">${card.ops_list[0]||""}</div>`;
+    }
+  } else {
+    opsBlock = `<div class="ops-list">全行业 ${DATA.summary.n_ops_total} 个主体合计</div>`;
+  }
+
+  const dateBlock = `<div class="date-tag"><div class="d">${DATA.date_label}</div><div>数据更新</div></div>`;
+  const benchBadge = isBench ? '<span class="bench-badge">📐 Benchmark</span>' : '';
+
+  return `<div class="card ${isOverall?'overall':''}" data-name="${card.nick}" data-ops="${(card.ops_list||[]).join(' ')}">
+    <div class="card-head">
+      <div>
+        <div class="nick">${isOverall?'📊 ':''}${card.nick}${benchBadge}</div>
+        <div class="ops-tag">${isOverall?'整体大盘汇总':(isBench?'消耗最高客户 · 作为 Benchmark 基准':'客户简称')}</div>
+      </div>
+      ${dateBlock}
+    </div>
+    <div class="kpi-grid">${kpi4}</div>
+    <div class="metric-list">${otherHeader}${otherHtml}</div>
+    <div class="foot">${opsBlock}</div>
+  </div>`;
+}
+
+const grid = document.getElementById("grid");
+function render(){
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const sortKey = document.getElementById("sort").value;
+  const dir = document.getElementById("dir").value;
+  let cards = DATA.cards.slice();
+  if (q){
+    cards = cards.filter(c=>{
+      if (c.nick.toLowerCase().includes(q)) return true;
+      return (c.ops_list||[]).some(o=>o.toLowerCase().includes(q));
+    });
+  }
+  cards.sort((a,b)=>{
+    const va = (a.metrics.find(m=>m.name===sortKey)||{}).v;
+    const vb = (b.metrics.find(m=>m.name===sortKey)||{}).v;
+    if (va===null||va===undefined||isNaN(va)) return 1;
+    if (vb===null||vb===undefined||isNaN(vb)) return -1;
+    return dir==="asc"? va-vb : vb-va;
+  });
+  let html = DATA.overall ? cardHtml(DATA.overall, 0, true) : "";
+  cards.forEach((c,i)=>{ html += cardHtml(c, i+1, false); });
+  grid.innerHTML = html;
+}
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("sort").addEventListener("change", render);
+document.getElementById("dir").addEventListener("change", render);
+render();
+</script>
+</body>
+</html>
