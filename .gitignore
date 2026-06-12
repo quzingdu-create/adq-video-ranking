@@ -3,3 +3,6 @@ sales-center/data/snapshots/
 
 # Ignore archive directory (legacy files moved out of sales-center/)
 archive/
+
+# 性能优化备份（仅本地保留）
+.freeze_*

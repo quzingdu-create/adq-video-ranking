@@ -61,7 +61,16 @@
 
   function exportXlsx(records, sheetName, filenamePrefix) {
     if (!records.length) { alert('没有命中数据'); return; }
-    if (typeof XLSX === 'undefined') { alert('xlsx 库未加载，请刷新页面'); return; }
+    // 2026-06-13 性能优化：xlsx 改按需加载，导出前确保库已就绪
+    if (typeof XLSX === 'undefined') {
+      if (typeof window.ensureXLSX === 'function') {
+        window.ensureXLSX().then(function () {
+          exportXlsx(records, sheetName, filenamePrefix);
+        }).catch(function (e) { alert('xlsx 库加载失败：' + e.message); });
+        return;
+      }
+      alert('xlsx 库未加载，请刷新页面'); return;
+    }
     var sorted = records.slice().sort(function (a, b) {
       return ((a.date || '') + '').localeCompare((b.date || '') + '')
           || ((a.sale || '') + '').localeCompare((b.sale || '') + '');

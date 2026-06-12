@@ -937,7 +937,15 @@
     };
 
     function exportRecordsToXlsx(list) {
-      if (typeof XLSX === 'undefined') throw new Error('XLSX 库未加载');
+      // 2026-06-13 性能优化：xlsx 改按需加载，导出前确保库已就绪
+      if (typeof XLSX === 'undefined') {
+        if (typeof window.ensureXLSX === 'function') {
+          window.ensureXLSX().then(function () { exportRecordsToXlsx(list); })
+            .catch(function (e) { alert('xlsx 库加载失败：' + e.message); });
+          return;
+        }
+        throw new Error('XLSX 库未加载');
+      }
       var headers = [
         '序号','登记日期','销售','客户主体','客户简称',
         '新老客身份','客户标签','是否新锐',
