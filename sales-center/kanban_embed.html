@@ -7,22 +7,22 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260612l"></script>
+<script src="data/laoke_lookup_data.js?v=20260612m"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260612l"></script>
-<script src="data/tuoke_real_records.js?v=20260612l"></script>
-<script src="data/customer_link_data.js?v=20260612l"></script>
-<script src="data/center_sales_summary.js?v=20260612l"></script>
-<script src="data/center_quarter_summary.js?v=20260612l"></script>
-<script src="data/center_daily_kpi.js?v=20260612l"></script>
-<script src="data/delivery_side_summary.js?v=20260612l"></script>
-<script src="data/top80_effective_metrics.js?v=20260612l"></script>
-<script src="data/top_status_data.js?v=20260612l"></script>
-<script src="data/enough_candidates.js?v=20260612l"></script>
-<script src="data/handover_customers_519.js?v=20260612l"></script>
-<script src="data/first_quarter.js?v=20260612l"></script>
-<script src="data/customer_lifecycle.js?v=20260612l"></script>
+<script src="data/bulk_import_rows.js?v=20260612m"></script>
+<script src="data/tuoke_real_records.js?v=20260612m"></script>
+<script src="data/customer_link_data.js?v=20260612m"></script>
+<script src="data/center_sales_summary.js?v=20260612m"></script>
+<script src="data/center_quarter_summary.js?v=20260612m"></script>
+<script src="data/center_daily_kpi.js?v=20260612m"></script>
+<script src="data/delivery_side_summary.js?v=20260612m"></script>
+<script src="data/top80_effective_metrics.js?v=20260612m"></script>
+<script src="data/top_status_data.js?v=20260612m"></script>
+<script src="data/enough_candidates.js?v=20260612m"></script>
+<script src="data/handover_customers_519.js?v=20260612m"></script>
+<script src="data/first_quarter.js?v=20260612m"></script>
+<script src="data/customer_lifecycle.js?v=20260612m"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
 <script src="cloud_sync.js?v=20260612m"></script>
@@ -550,6 +550,19 @@
   body.embed-mode .topbar .btn-link,
   body.embed-mode .topbar .view-toggle { display: none !important; }
   body.embed-mode .topbar .topbar-right { width: 100%; justify-content: flex-end; }
+  body.mode-ops .life-section { display:none !important; }
+  body.mode-life .ops-section { display:none !important; }
+  body.mode-ops #btnAddRecord, body.mode-ops #btnBatchPaste, body.mode-ops #btnBulkImport, body.mode-ops #bulkImportFile { display:none !important; }
+  .placeholder-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+  .placeholder-card { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; min-height:112px; }
+  .placeholder-card h3 { margin:0 0 8px; font-size:15px; color:#0f172a; }
+  .placeholder-card p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
+  .register-entry-card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 6px 18px rgba(15,23,42,.04); }
+  .register-entry-head { padding:14px 18px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#f8fafc,#eff6ff); }
+  .register-entry-head b { font-size:15px; color:#0f172a; }
+  .register-entry-head span { color:#64748b; font-size:12px; }
+  .register-entry-body { padding:18px; display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:13px; }
+  .register-entry-foot { padding:12px 18px; border-top:1px solid #eef2f7; display:flex; justify-content:flex-end; gap:8px; background:#fff; }
 
   /* ============= 客户生命周期模块 ============= */
   .lc-tab-row { margin-bottom: 10px; }
@@ -666,9 +679,15 @@
   // embed=1 参数下进入 embed-mode
   (function(){
     const sp = new URLSearchParams(location.search);
+    const mode = sp.get('mode') || 'all';
+    document.documentElement.dataset.viewMode = mode;
     if (sp.get('embed') === '1' || sp.get('embed') === 'pc') {
       document.documentElement.dataset.embed = '1';
-      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('embed-mode'));
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('embed-mode');
+        if (mode === 'ops') document.body.classList.add('mode-ops');
+        else if (mode === 'life') document.body.classList.add('mode-life');
+      });
     }
     // 顶栏显示今日 + 数据日
     document.addEventListener('DOMContentLoaded', () => {
@@ -693,9 +712,9 @@
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260612l`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260612m`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612l')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612m')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -778,7 +797,7 @@
 <div class="container">
 
   <!-- ========== 第一屏：其他参考指标（固定 2026Q2，不随季度切换） ========== -->
-  <div class="section">
+  <div class="section ops-section">
     <div class="section-title">
       <div class="left">
         <span>📊 其他参考指标</span>
@@ -789,7 +808,7 @@
   </div>
 
   <!-- ========== 销售明细行 ========== -->
-  <div class="section">
+  <div class="section ops-section">
     <div class="section-title">
       <div class="left"><span>👥 销售明细</span><span class="badge">点行末「更多 ›」横向展开参考指标</span></div>
     </div>
@@ -798,8 +817,68 @@
     </div>
   </div>
 
+  <!-- ========== 专项进展（预留，等子青补设计） ========== -->
+  <div class="section ops-section" id="specialProgressSection">
+    <div class="section-title">
+      <div class="left"><span>🧭 专项进展</span><span class="badge">先预留，晚点接入真实数据</span></div>
+    </div>
+    <div class="placeholder-grid">
+      <div class="placeholder-card">
+        <h3>🎯 靶向拓客名单</h3>
+        <p>预留模块。后续接入名单分层、认领进度、触达状态和销售跟进结果。</p>
+      </div>
+      <div class="placeholder-card">
+        <h3>🧵 产业带进展</h3>
+        <p>预留模块。后续接入产业带覆盖、客户新增、消耗起量和重点城市进度。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 拓客登记入口（原新增登记展开版，沿用真实提交逻辑） ========== -->
+  <div class="section life-section" id="registerEntrySection">
+    <div class="section-title">
+      <div class="left"><span>📝 拓客登记入口</span><span class="badge">原登记版本展开 · 提交写入云端</span></div>
+      <div class="right">
+        <button id="inlineBatchPaste" type="button">📋 批量粘贴</button>
+        <button id="inlineBulkImport" type="button">📥 上传导入</button>
+      </div>
+    </div>
+    <div class="register-entry-card">
+      <div class="register-entry-head">
+        <div><b>新增拓客登记</b><br><span>字段、查重、链路说明、截图上传与提交逻辑沿用原版登记系统</span></div>
+        <span id="inlineRegisterUserHint">销售锁定当前登录用户</span>
+      </div>
+      <div class="register-entry-body">
+        <div class="field" style="grid-column:span 2;">
+          <label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户主体名称</label>
+          <input id="inline-m-name" placeholder="公司 / 店铺全称（输入后自动匹配客户简称与老客/历史重复）" autocomplete="off" />
+          <div id="inline-m-name-hint" class="name-hint"></div>
+        </div>
+        <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">类目</label><select id="inline-m-category"></select></div>
+        <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">销售</label><select id="inline-m-sales"></select><div id="inline-m-sales-hint"></div></div>
+        <div class="field" style="grid-column:span 2;">
+          <label style="display:block;color:#595959;margin-bottom:4px;">链路 <span style="color:#bfbfbf;font-weight:normal;">（无需填写，登记成功后系统每日匹配 AData 链路明细自动更新）</span></label>
+          <div class="checkbox-group" style="padding-top:4px;color:#94a3b8;font-size:12px;">系统每日凌晨从 AData 抓取 T-1 链路数据并匹配</div>
+        </div>
+        <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="inline-m-channel"></select></div>
+        <div class="field"><label id="inline-m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="inline-m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
+        <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="inline-m-source"></select></div>
+        <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="inline-m-date" type="date" /></div>
+        <div class="field" style="grid-column:span 2;">
+          <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
+          <input id="inline-m-evidence" type="file" accept="image/*" multiple style="font-size:12px;" />
+          <div id="inline-m-evidence-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+        </div>
+      </div>
+      <div class="register-entry-foot">
+        <button class="btn-sm ghost" id="inlineResetRegister" type="button">清空</button>
+        <button class="btn-sm" id="inlineSubmitRegister" type="button">提交</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========== 第二屏：销售拓客模型画像 ========== -->
-  <div class="section">
+  <div class="section life-section">
     <div class="section-title">
       <div class="left"><span>🎯 销售拓客模型画像</span></div>
       <div class="right">
@@ -822,8 +901,18 @@
   <!-- 「拓客模型链路深度分析」模块已下线（2026-05-21 用户拍板：链路 CSV 字典覆盖不全，
        与销售日耗口径不可对账，先删，等链路标签覆盖完整后再上） -->
 
-  <!-- ========== 拓客登记明细（2026-06-11 子青恢复，替代「客户生命周期一览」位置） ========== -->
-  <div class="section">
+  <!-- ========== 客户生命周期系统（2026-06-12 子青新增） ========== -->
+  <div class="section life-section" id="lifecycleSystemSection">
+    <div class="section-title">
+      <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden;">
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260612m" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+    </div>
+  </div>
+
+  <!-- ========== 拓客全量登记明细（2026-06-11 子青恢复，替代「客户生命周期一览」位置） ========== -->
+  <div class="section life-section">
     <div class="section-title">
       <div class="left"><span>📋 拓客登记明细</span><span class="badge">默认展示当天，点击查看其他周期</span></div>
     </div>
@@ -847,16 +936,6 @@
         </tr></thead>
       </table>
       <div id="recordMoreWrap" style="display:none;align-items:center;justify-content:center;gap:10px;padding:12px 0 4px;color:#6b7280;font-size:12px;"></div>
-    </div>
-  </div>
-
-  <!-- ========== 客户生命周期系统（2026-06-12 子青新增，放在拓客登记明细下方） ========== -->
-  <div class="section" id="lifecycleSystemSection">
-    <div class="section-title">
-      <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
-    </div>
-    <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260612l" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -2502,7 +2581,90 @@ function initRegisterModal() {
     }
   } catch(e){}
 }
-document.getElementById('btnAddRecord').onclick = () => { initRegisterModal(); openModal('modalRecord'); };
+function fillInlineSelect(id, arr) { const el = document.getElementById(id); if (el) el.innerHTML = arr.map(x => `<option>${x}</option>`).join(''); }
+function currentRegisterUser(){
+  let actualUser = CURRENT_USER;
+  try {
+    if (window.cloud && cloud.rtx) {
+      const r = cloud.rtx();
+      const matched = SALES.find(s => String(s).toLowerCase() === String(r || '').toLowerCase());
+      if (matched) actualUser = matched;
+    }
+  } catch(e){}
+  return actualUser;
+}
+function initInlineRegisterEntry(){
+  if (!document.getElementById('inline-m-name')) return;
+  fillInlineSelect('inline-m-category', CATEGORIES);
+  fillInlineSelect('inline-m-sales', SALES);
+  fillInlineSelect('inline-m-channel', CHANNELS);
+  fillInlineSelect('inline-m-source', CUSTOMER_SOURCES);
+  const actualUser = currentRegisterUser();
+  const sale = document.getElementById('inline-m-sales');
+  const date = document.getElementById('inline-m-date');
+  if (sale) sale.value = actualUser;
+  if (date) date.value = new Date().toISOString().slice(0,10);
+  try {
+    const isAdmin = (window.cloud && cloud.isAdmin && cloud.isAdmin()) ||
+                    (window.cloud && cloud.rtx && (cloud.rtx() === 'ziqingdu' || cloud.rtx() === 'kinsleyjin' || cloud.rtx() === 'edcchen'));
+    const hint = document.getElementById('inline-m-sales-hint');
+    const userHint = document.getElementById('inlineRegisterUserHint');
+    if (sale) {
+      sale.disabled = !isAdmin;
+      sale.style.background = isAdmin ? '#fff' : '#f3f4f6';
+      sale.style.color = isAdmin ? '#1f2937' : '#6b7280';
+    }
+    const msg = isAdmin ? '🔓 管理员模式 · 可替任意销售补登' : '🔒 已锁定为 ' + actualUser;
+    if (hint) { hint.innerHTML = msg; hint.style.cssText = 'font-size:11px;color:#6b7280;margin-top:4px;'; }
+    if (userHint) userHint.textContent = msg.replace(/<[^>]+>/g, '');
+  } catch(e){}
+  inlineChannelChange();
+}
+function inlineChannelChange(){
+  const v = (document.getElementById('inline-m-channel') || {}).value;
+  const inp = document.getElementById('inline-m-resource');
+  const lbl = document.getElementById('inline-m-resource-label');
+  if (!inp) return;
+  if (v === '自拓') { inp.value=''; inp.disabled=true; if (lbl) lbl.classList.remove('req'); }
+  else { inp.disabled=false; if (lbl) lbl.classList.add('req'); }
+}
+function resetInlineRegister(){
+  ['inline-m-name','inline-m-resource'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  const hint = document.getElementById('inline-m-name-hint'); if (hint) hint.innerHTML='';
+  const ev = document.getElementById('inline-m-evidence'); if (ev) ev.value='';
+  const prev = document.getElementById('inline-m-evidence-preview'); if (prev) prev.innerHTML='';
+  pendingImages = []; renderThumbs();
+  const date = document.getElementById('inline-m-date'); if (date) date.value = new Date().toISOString().slice(0,10);
+}
+function copyInlineToModalAndSubmit(){
+  if (!document.getElementById('inline-m-name')) return;
+  fillModalSelect('m-category', CATEGORIES); fillModalSelect('m-sales', SALES); fillModalSelect('m-channel', CHANNELS); fillModalSelect('m-source', CUSTOMER_SOURCES);
+  const map = [['inline-m-name','m-name'],['inline-m-category','m-category'],['inline-m-sales','m-sales'],['inline-m-channel','m-channel'],['inline-m-resource','m-resource'],['inline-m-source','m-source'],['inline-m-date','m-date']];
+  map.forEach(([a,b]) => { const src=document.getElementById(a), dst=document.getElementById(b); if(src&&dst) dst.value=src.value; });
+  onChannelChange();
+  submitRecord();
+  setTimeout(resetInlineRegister, 250);
+}
+function bindInlineRegisterEntry(){
+  initInlineRegisterEntry();
+  const ch = document.getElementById('inline-m-channel'); if (ch && !ch.dataset.bound) { ch.addEventListener('change', inlineChannelChange); ch.dataset.bound='1'; }
+  const nm = document.getElementById('inline-m-name'); if (nm && !nm.dataset.bound) {
+    nm.addEventListener('input', () => { const h=document.getElementById('inline-m-name-hint'); if(h) h.innerHTML='输入完成后提交时将沿用原查重逻辑校验'; });
+    nm.dataset.bound='1';
+  }
+  const ev = document.getElementById('inline-m-evidence'); if (ev && !ev.dataset.bound) { ev.addEventListener('change', onEvidenceChange); ev.dataset.bound='1'; }
+  const sub = document.getElementById('inlineSubmitRegister'); if (sub && !sub.dataset.bound) { sub.onclick = copyInlineToModalAndSubmit; sub.dataset.bound='1'; }
+  const reset = document.getElementById('inlineResetRegister'); if (reset && !reset.dataset.bound) { reset.onclick = resetInlineRegister; reset.dataset.bound='1'; }
+  const bp = document.getElementById('inlineBatchPaste'); if (bp && !bp.dataset.bound) { bp.onclick = () => openBatchPasteModal(); bp.dataset.bound='1'; }
+  const bi = document.getElementById('inlineBulkImport'); if (bi && !bi.dataset.bound) { bi.onclick = () => document.getElementById('bulkImportFile')?.click(); bi.dataset.bound='1'; }
+}
+document.addEventListener('DOMContentLoaded', bindInlineRegisterEntry);
+document.getElementById('btnAddRecord').onclick = () => {
+  if (document.body.classList.contains('mode-life') && document.getElementById('registerEntrySection')) {
+    bindInlineRegisterEntry();
+    document.getElementById('registerEntrySection').scrollIntoView({behavior:'smooth', block:'start'});
+  } else { initRegisterModal(); openModal('modalRecord'); }
+};
 
 // 「📋 批量粘贴」打开粘贴 modal
 const _btnBatchPaste = document.getElementById('btnBatchPaste');
