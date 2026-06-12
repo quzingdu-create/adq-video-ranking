@@ -7,20 +7,20 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260612d"></script>
+<script src="auth-guard.js?v=20260612e"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/current_rising_data.js?v=20260612d"></script>
-<!-- PC 总入口卡片所需数据 -->
-<script src="data/center_quarter_summary.js?v=20260612d"></script>
-<script src="data/center_daily_kpi.js?v=20260612d"></script>
-<script src="data/tuoke_real_records.js?v=20260612d"></script>
-<script src="data/top80_effective_metrics.js?v=20260612d"></script>
+<script src="data/current_rising_data.js?v=20260612e"></script>
+<!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
+<script src="data/dashboard_runtime_summary.js?v=20260612e"></script>
+<script src="data/center_quarter_summary.js?v=20260612e"></script>
+<script src="data/center_daily_kpi.js?v=20260612e"></script>
+<script src="data/top80_effective_metrics.js?v=20260612e"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260612d"></script>
-<script src="login_guard_banner.js?v=20260612d"></script>
+<script src="cloud_sync.js?v=20260612e"></script>
+<script src="login_guard_banner.js?v=20260612e"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260612d"></script>
+<script src="export_tuoke.js?v=20260612e"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -658,7 +658,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260612d"
+      src="mobile.html?embed=1&v=20260612e"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1200,7 +1200,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260612d" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&user=kinsleyjin&v=20260612e" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="拓客作战看板深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1836,17 +1836,40 @@ const TUOKE_TASKS = [
 /* ===========================================================
    二、Tab 切换
    =========================================================== */
+function ensureBattleFrameLoaded(forceUser) {
+  const frame = document.getElementById('battleFrame');
+  if (!frame) return;
+  const user = forceUser || CURRENT_USER || 'kinsleyjin';
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(user)}&v=20260612e`;
+  frame.setAttribute('data-src', target);
+  const src = frame.getAttribute('src') || '';
+  if (!src || src === 'about:blank' || !src.includes(`user=${encodeURIComponent(user)}`)) {
+    frame.setAttribute('src', target);
+  }
+}
+function scheduleBattlePreload() {
+  if (window.__battlePreloadScheduled) return;
+  window.__battlePreloadScheduled = true;
+  const run = () => {
+    const active = document.getElementById('page-battle')?.classList.contains('active');
+    if (!active) ensureBattleFrameLoaded();
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(run, {timeout: 5000});
+  else setTimeout(run, 4500);
+}
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-page').forEach(p => p.classList.toggle('active', p.id === `page-${tab}`));
+  if (tab === 'battle') ensureBattleFrameLoaded();
+  else scheduleBattlePreload();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 document.querySelectorAll('.tab-btn').forEach(b => {
   b.onclick = () => switchTab(b.dataset.tab);
 });
 
-// 用户 2026-05-17 拍板：PC 端默认打开「销售作战中心」(battle tab)
-switchTab('battle');
+// 2026-06-12 首屏瘦身：默认先打开今日待办，小而快；拓客作战看板 iframe 按需/空闲预加载
+switchTab('home');
 
 /* ===========================================================
    三、视图切换（DOM 已删，全部 nullish 保护）
@@ -1871,8 +1894,11 @@ function updateLiveDate() {
 function updateBattleFrameUser() {
   const frame = document.getElementById('battleFrame');
   if (!frame) return;
-  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260612d`;
-  if (!frame.getAttribute('src').includes(`user=${encodeURIComponent(CURRENT_USER)}`)) frame.setAttribute('src', target);
+  const target = `kanban_embed.html?embed=1&user=${encodeURIComponent(CURRENT_USER)}&v=20260612e`;
+  frame.setAttribute('data-src', target);
+  const src = frame.getAttribute('src') || '';
+  const battleActive = document.getElementById('page-battle')?.classList.contains('active');
+  if (battleActive && (!src || src === 'about:blank' || !src.includes(`user=${encodeURIComponent(CURRENT_USER)}`))) frame.setAttribute('src', target);
 }
 function updateViewToggle() {
   const vt = document.getElementById('viewTeam'); if (vt) vt.classList.toggle('active', viewMode==="team");
