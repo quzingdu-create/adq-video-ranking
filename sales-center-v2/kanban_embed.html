@@ -812,13 +812,13 @@
   <div class="section" id="lifecycleSystemSection" style="margin-top:24px;">
     <div class="section-title">
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge" style="background:#ecfdf5;color:#10b981;">v0.5 · 2026-06-10 数据</span></div>
-      <div class="right"><a href="lifecycle-system/index.html?embed=1&sales=all&v=20260612m1" target="_blank" style="color:#3b82f6;font-size:13px;text-decoration:none;">独立窗口打开 ↗</a></div>
+      <div class="right"><a href="lifecycle-system/index.html?embed=1&sales=all&v=20260612m2" target="_blank" style="color:#3b82f6;font-size:13px;text-decoration:none;">独立窗口打开 ↗</a></div>
     </div>
     <div class="panel" style="padding:0;overflow:visible;border-radius:12px;">
       <!-- 2026-06-11 子青：生命周期 iframe 也必须自适应内容高度，禁止内部滚动/冻结错觉 -->
       <iframe
         id="lifecycleSystemFrame"
-        src="lifecycle-system/index.html?embed=1&sales=all&v=20260612m1"
+        src="lifecycle-system/index.html?embed=1&sales=all&v=20260612m2"
         title="客户生命周期系统"
         loading="lazy"
         scrolling="no"
@@ -2021,6 +2021,13 @@ function renderRecords() {
 
   let list = currentRecordList();
 
+  // 2026-06-12 子青：默认折叠，只展示 10 条；点击「展开更多」按钮才展开全部
+  const RECORD_COLLAPSE_LIMIT = 10;
+  if (typeof window.__recordExpanded__ === 'undefined') window.__recordExpanded__ = false;
+  const totalCount = list.length;
+  const collapsed = !window.__recordExpanded__ && totalCount > RECORD_COLLAPSE_LIMIT;
+  if (collapsed) list = list.slice(0, RECORD_COLLAPSE_LIMIT);
+
   const display = v => (v === null || v === undefined) ? '' : String(v);
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = list.map(r => {
@@ -2111,6 +2118,33 @@ function renderRecords() {
         </td>
       </tr>`;
   }).join('') || '<tr><td colspan="14" style="text-align:center;color:var(--text-2);padding:30px;">暂无符合条件的报备记录</td></tr>';
+
+  // 折叠/展开按钮（2026-06-12 子青）
+  const tbl = document.getElementById('recordTable');
+  if (tbl) {
+    let footer = document.getElementById('recordTableFooter');
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.id = 'recordTableFooter';
+      footer.style.cssText = 'text-align:center;padding:14px 0 4px;';
+      tbl.parentNode.insertBefore(footer, tbl.nextSibling);
+    }
+    if (totalCount > RECORD_COLLAPSE_LIMIT) {
+      const btnLabel = window.__recordExpanded__
+        ? `▲ 收起（共 ${totalCount} 条）`
+        : `▼ 展开更多（剩余 ${totalCount - RECORD_COLLAPSE_LIMIT} 条）`;
+      footer.innerHTML = `<button id="recordToggleBtn" style="padding:8px 22px;font-size:13px;background:#fff;border:1px solid #e5e9f0;border-radius:6px;cursor:pointer;color:#3b82f6;font-weight:500;">${btnLabel}</button>`;
+      const btn = document.getElementById('recordToggleBtn');
+      if (btn) {
+        btn.onclick = () => {
+          window.__recordExpanded__ = !window.__recordExpanded__;
+          renderRecords();
+        };
+      }
+    } else {
+      footer.innerHTML = '';
+    }
+  }
 }
 
 /* 用户状态打卡（用户 2026-05-19 拍板）：全销售可见可改，自动写 history */
@@ -2296,13 +2330,14 @@ document.querySelectorAll('[data-metric]').forEach(b => {
 // 「拓客报备明细」UI 已下线，绑定加 null 守卫，避免 JS 抛错
 (function bindRecordHandlersIfPresent(){
   const $ = id => document.getElementById(id);
-  if ($('recordSearch')) $('recordSearch').oninput = e => { state.recordSearch = e.target.value; renderRecords(); };
-  if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; renderRecords(); };
-  if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; renderRecords(); };
-  if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; renderRecords(); };
-  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
-  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
-  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+  // 2026-06-12 子青：任一筛选变化都重置展开状态（默认折叠到 10 条）
+  if ($('recordSearch')) $('recordSearch').oninput = e => { state.recordSearch = e.target.value; window.__recordExpanded__=false; renderRecords(); };
+  if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; window.__recordExpanded__=false; renderRecords(); };
+  if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; window.__recordExpanded__=false; renderRecords(); };
+  if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; window.__recordExpanded__=false; renderRecords(); };
+  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); window.__recordExpanded__=false; renderRecords(); };
+  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); window.__recordExpanded__=false; renderRecords(); };
+  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); window.__recordExpanded__=false; renderRecords(); };
 })();
 
 
