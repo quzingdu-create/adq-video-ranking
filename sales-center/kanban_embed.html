@@ -7,25 +7,25 @@
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260612m"></script>
+<script src="data/laoke_lookup_data.js?v=20260612n"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260612m"></script>
-<script src="data/tuoke_real_records.js?v=20260612m"></script>
-<script src="data/customer_link_data.js?v=20260612m"></script>
-<script src="data/center_sales_summary.js?v=20260612m"></script>
-<script src="data/center_quarter_summary.js?v=20260612m"></script>
-<script src="data/center_daily_kpi.js?v=20260612m"></script>
-<script src="data/delivery_side_summary.js?v=20260612m"></script>
-<script src="data/top80_effective_metrics.js?v=20260612m"></script>
-<script src="data/top_status_data.js?v=20260612m"></script>
-<script src="data/enough_candidates.js?v=20260612m"></script>
-<script src="data/handover_customers_519.js?v=20260612m"></script>
-<script src="data/first_quarter.js?v=20260612m"></script>
-<script src="data/customer_lifecycle.js?v=20260612m"></script>
+<script src="data/bulk_import_rows.js?v=20260612n"></script>
+<script src="data/tuoke_real_records.js?v=20260612n"></script>
+<script src="data/customer_link_data.js?v=20260612n"></script>
+<script src="data/center_sales_summary.js?v=20260612n"></script>
+<script src="data/center_quarter_summary.js?v=20260612n"></script>
+<script src="data/center_daily_kpi.js?v=20260612n"></script>
+<script src="data/delivery_side_summary.js?v=20260612n"></script>
+<script src="data/top80_effective_metrics.js?v=20260612n"></script>
+<script src="data/top_status_data.js?v=20260612n"></script>
+<script src="data/enough_candidates.js?v=20260612n"></script>
+<script src="data/handover_customers_519.js?v=20260612n"></script>
+<script src="data/first_quarter.js?v=20260612n"></script>
+<script src="data/customer_lifecycle.js?v=20260612n"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260612m"></script>
+<script src="cloud_sync.js?v=20260612n"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -543,13 +543,10 @@
 
 </style>
 <style>
-  /* embed 模式：隐藏 Demo 提示条；topbar 保留但精简（只留功能按钮，藏标题和重复入口） */
-  body.embed-mode #demoBanner { display: none !important; }
-  body.embed-mode .topbar { padding: 8px 20px !important; min-height: auto !important; background: transparent !important; border: none !important; box-shadow: none !important; }
-  body.embed-mode .topbar h1,
-  body.embed-mode .topbar .btn-link,
-  body.embed-mode .topbar .view-toggle { display: none !important; }
-  body.embed-mode .topbar .topbar-right { width: 100%; justify-content: flex-end; }
+  /* embed 模式：顶层 index 已负责导航；子页隐藏历史快照/云端横幅/旧顶部按钮，避免垃圾控件干扰 */
+  body.embed-mode #demoBanner,
+  body.embed-mode #exportReminderBanner,
+  body.embed-mode .topbar { display: none !important; }
   body.mode-ops .life-section { display:none !important; }
   body.mode-life .ops-section { display:none !important; }
   body.mode-ops #btnAddRecord, body.mode-ops #btnBatchPaste, body.mode-ops #btnBulkImport, body.mode-ops #bulkImportFile { display:none !important; }
@@ -557,12 +554,20 @@
   .placeholder-card { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; min-height:112px; }
   .placeholder-card h3 { margin:0 0 8px; font-size:15px; color:#0f172a; }
   .placeholder-card p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
-  .register-entry-card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 6px 18px rgba(15,23,42,.04); }
-  .register-entry-head { padding:14px 18px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#f8fafc,#eff6ff); }
-  .register-entry-head b { font-size:15px; color:#0f172a; }
+  .register-entry-card { background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 12px 32px rgba(15,23,42,.08); }
+  .register-entry-head { padding:18px 22px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#ffffff 0%,#f8fbff 52%,#eef6ff 100%); }
+  .register-entry-head b { font-size:18px; color:#0f172a; letter-spacing:.2px; }
   .register-entry-head span { color:#64748b; font-size:12px; }
-  .register-entry-body { padding:18px; display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:13px; }
-  .register-entry-foot { padding:12px 18px; border-top:1px solid #eef2f7; display:flex; justify-content:flex-end; gap:8px; background:#fff; }
+  #inlineRegisterUserHint { display:inline-flex;align-items:center;gap:6px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:999px;padding:6px 12px;font-weight:700;white-space:nowrap; }
+  .register-entry-body { padding:22px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px 20px; font-size:13px; background:#fff; }
+  .register-entry-body .field { min-width:0; }
+  .register-entry-body label { font-weight:700;color:#334155!important;margin-bottom:7px!important; }
+  .register-entry-body input, .register-entry-body select { width:100%; min-height:40px; border:1px solid #dbe3ee; border-radius:10px; padding:8px 11px; background:#fbfdff; color:#0f172a; box-sizing:border-box; transition:border-color .15s, box-shadow .15s; }
+  .register-entry-body input:focus, .register-entry-body select:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); background:#fff; }
+  .register-entry-body .checkbox-group { background:#f8fafc;border:1px dashed #cbd5e1;border-radius:10px;padding:10px 12px!important; }
+  .register-entry-foot { padding:14px 22px; border-top:1px solid #eef2f7; display:flex; justify-content:flex-end; gap:10px; background:#f8fafc; }
+  .register-entry-foot .btn-sm { min-width:108px;border-radius:10px;font-weight:800; }
+  .register-entry-foot .btn-sm:not(.ghost) { background:linear-gradient(135deg,#2563eb,#3b82f6); box-shadow:0 8px 18px rgba(37,99,235,.18); }
 
   /* ============= 客户生命周期模块 ============= */
   .lc-tab-row { margin-bottom: 10px; }
@@ -712,9 +717,9 @@
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260612m`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260612n`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612m')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612n')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -837,7 +842,7 @@
   <!-- ========== 拓客登记入口（原新增登记展开版，沿用真实提交逻辑） ========== -->
   <div class="section life-section" id="registerEntrySection">
     <div class="section-title">
-      <div class="left"><span>📝 拓客登记入口</span><span class="badge">原登记版本展开 · 提交写入云端</span></div>
+      <div class="left"><span>📝 拓客登记入口</span><span class="badge">单客登记</span></div>
       <div class="right">
         <button id="inlineBatchPaste" type="button">📋 批量粘贴</button>
         <button id="inlineBulkImport" type="button">📥 上传导入</button>
@@ -845,8 +850,8 @@
     </div>
     <div class="register-entry-card">
       <div class="register-entry-head">
-        <div><b>新增拓客登记</b><br><span>字段、查重、链路说明、截图上传与提交逻辑沿用原版登记系统</span></div>
-        <span id="inlineRegisterUserHint">销售锁定当前登录用户</span>
+        <div><b>新增拓客登记</b><br><span>填写客户主体、类目、来源和建联材料</span></div>
+        <span id="inlineRegisterUserHint">当前销售</span>
       </div>
       <div class="register-entry-body">
         <div class="field" style="grid-column:span 2;">
@@ -907,7 +912,7 @@
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260612m" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260612n" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
