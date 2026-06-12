@@ -6,27 +6,27 @@
 <title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <!-- 2026-06-13 性能优化：xlsx 改按需加载（导入/导出时才加载，见 lib_loader.js）；echarts 首屏渲染图表故保留 -->
-<script src="lib_loader.js?v=20260613c"></script>
+<script src="lib_loader.js?v=20260613d"></script>
 <script src="data/register_lookup_data.js"></script>
-<script src="data/laoke_lookup_data.js?v=20260613c"></script>
+<script src="data/laoke_lookup_data.js?v=20260613d"></script>
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。laoke_lookup_data.js 是首投季度字典(非24老客)，保留。 -->
-<script src="data/bulk_import_rows.js?v=20260613c"></script>
-<script src="data/tuoke_real_records.js?v=20260613c"></script>
-<script src="data/customer_link_data.js?v=20260613c"></script>
-<script src="data/center_sales_summary.js?v=20260613c"></script>
-<script src="data/center_quarter_summary.js?v=20260613c"></script>
-<script src="data/center_daily_kpi.js?v=20260613c"></script>
-<script src="data/delivery_side_summary.js?v=20260613c"></script>
-<script src="data/top80_effective_metrics.js?v=20260613c"></script>
-<script src="data/top_status_data.js?v=20260613c"></script>
-<script src="data/enough_candidates.js?v=20260613c"></script>
-<script src="data/handover_customers_519.js?v=20260613c"></script>
-<script src="data/first_quarter.js?v=20260613c"></script>
-<script src="data/customer_lifecycle.js?v=20260613c"></script>
+<script src="data/bulk_import_rows.js?v=20260613d"></script>
+<script src="data/tuoke_real_records.js?v=20260613d"></script>
+<script src="data/customer_link_data.js?v=20260613d"></script>
+<script src="data/center_sales_summary.js?v=20260613d"></script>
+<script src="data/center_quarter_summary.js?v=20260613d"></script>
+<script src="data/center_daily_kpi.js?v=20260613d"></script>
+<script src="data/delivery_side_summary.js?v=20260613d"></script>
+<script src="data/top80_effective_metrics.js?v=20260613d"></script>
+<script src="data/top_status_data.js?v=20260613d"></script>
+<script src="data/enough_candidates.js?v=20260613d"></script>
+<script src="data/handover_customers_519.js?v=20260613d"></script>
+<script src="data/first_quarter.js?v=20260613d"></script>
+<script src="data/customer_lifecycle.js?v=20260613d"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613c"></script>
+<script src="cloud_sync.js?v=20260613d"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -732,7 +732,7 @@
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260613c`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260613d`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612n')) frame.setAttribute('src', target);
   }
@@ -834,13 +834,13 @@
       <div class="left"><span>🧭 专项进展</span><span class="badge">先预留，晚点接入真实数据</span></div>
     </div>
     <div class="placeholder-grid">
-      <a class="entry-card" href="pursuit.html?v=20260613c" target="_blank" rel="noopener">
+      <a class="entry-card" href="pursuit.html?v=20260613d" target="_blank" rel="noopener">
         <h3>🎯 靶向拓客名单</h3>
         <p>渗透漏斗 + By 销售跟踪 + 名单分类明细，全组实时共享。</p>
         <span class="badge2">竞媒P序列 / 竞媒千万+ / 行业补充 / 销售补充</span>
         <span class="go">进入看板 ›</span>
       </a>
-      <a class="entry-card belt-card" href="industry-belt.html?v=20260613c" target="_blank" rel="noopener">
+      <a class="entry-card belt-card" href="industry-belt.html?v=20260613d" target="_blank" rel="noopener">
         <h3>🧵 产业带进展</h3>
         <p>核心城市×类目产业带覆盖、客户新增、消耗起量与重点城市进度，含中国地图聚集度。</p>
         <span class="belt-stats">
@@ -926,7 +926,7 @@
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260613c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260613d" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
