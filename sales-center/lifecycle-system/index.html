@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260612i"></script>
+<script src="data/mock_data.js?v=20260612j"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -349,6 +349,10 @@
   .customer-card .c-meta {
     font-size: 12px; color: var(--text-2); margin-bottom: 12px; line-height: 1.7;
   }
+  .customer-more-wrap { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:14px; color:var(--text-2); font-size:12px; }
+  .customer-more-wrap button { border:1px solid var(--primary); background:var(--primary-bg); color:var(--primary-2); border-radius:999px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer; }
+  .customer-more-wrap button:hover { background:#dbeafe; }
+
   .customer-card .c-data {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
     padding: 10px; background: var(--panel-2); border-radius: 6px;
@@ -632,6 +636,7 @@
 
     <!-- 客户卡片 -->
     <div class="customer-grid" id="customer-grid"></div>
+    <div class="customer-more-wrap" id="customer-more-wrap" style="display:none;"></div>
   </div>
 </div>
 
@@ -841,6 +846,7 @@ function renderServiceCards() {
 /* =============== 渲染：微观客户卡片 =============== */
 let currentStageFilter = 'all';
 let currentCostFilter = 'all';
+let customerGridExpanded = false;
 const __lifeParams = new URLSearchParams(location.search);
 let currentSalesFilter = __lifeParams.get('sales') || '金洁（橘子）'; // 默认登录销售视角；嵌入时可传 sales=all 展示团队视图
 
@@ -874,11 +880,15 @@ function renderCustomerGrid() {
   }
   
   const grid = document.getElementById('customer-grid');
+  const moreWrap = document.getElementById('customer-more-wrap');
   if (list.length === 0) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-2);">该阶段暂无客户</div>';
+    if (moreWrap) { moreWrap.style.display = 'none'; moreWrap.innerHTML = ''; }
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
     return;
   }
-  grid.innerHTML = list.map(c => {
+  const visibleList = customerGridExpanded ? list : list.slice(0, 10);
+  grid.innerHTML = visibleList.map(c => {
     const lights = Object.values(c.metrics).map(m => m.status);
     const greenN = lights.filter(s => s === 'green').length;
     const yellowN = lights.filter(s => s === 'yellow').length;
@@ -911,6 +921,22 @@ function renderCustomerGrid() {
       </div>
     `;
   }).join('');
+  if (moreWrap) {
+    if (list.length > 10) {
+      moreWrap.style.display = 'flex';
+      moreWrap.innerHTML = customerGridExpanded
+        ? `<span>已展开全部 ${list.length} 个客户</span><button id="customer-collapse-btn">收起，只看前10个</button>`
+        : `<span>默认展示前 10 个客户，共 ${list.length} 个</span><button id="customer-expand-btn">查看更多</button>`;
+      const ex = document.getElementById('customer-expand-btn');
+      const co = document.getElementById('customer-collapse-btn');
+      if (ex) ex.onclick = () => { customerGridExpanded = true; renderCustomerGrid(); };
+      if (co) co.onclick = () => { customerGridExpanded = false; renderCustomerGrid(); };
+    } else {
+      moreWrap.style.display = 'none';
+      moreWrap.innerHTML = '';
+    }
+  }
+  try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
 }
 
 /* =============== 弹窗：客户详情 ===============
@@ -1069,6 +1095,7 @@ document.querySelectorAll('.filter-btn[data-stage]').forEach(btn => {
     document.querySelectorAll('.filter-btn[data-stage]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentStageFilter = btn.dataset.stage;
+    customerGridExpanded = false;
     renderCustomerGrid();
   });
 });
@@ -1079,6 +1106,7 @@ document.querySelectorAll('.filter-btn[data-cost]').forEach(btn => {
     document.querySelectorAll('.filter-btn[data-cost]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentCostFilter = btn.dataset.cost;
+    customerGridExpanded = false;
     renderCustomerGrid();
   });
 });
@@ -1092,6 +1120,7 @@ if (salesSelectEl) {
   else { currentSalesFilter = 'all'; salesSelectEl.value = 'all'; }
   salesSelectEl.addEventListener('change', (e) => {
     currentSalesFilter = e.target.value;
+    customerGridExpanded = false;
     renderFunnel();
     renderServiceCards();
     renderCustomerGrid();
