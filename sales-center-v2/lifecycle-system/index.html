@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js"></script>
+<script src="data/mock_data.js?v=20260612m1"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -465,6 +465,7 @@
   }
   .service-team-bar .stb-card.provider .stb-icon { background: #fef3c7; color: #b45309; }
   .service-team-bar .stb-card.operator .stb-icon { background: var(--primary-bg); color: var(--primary); }
+  .service-team-bar .stb-card.sales .stb-icon { background: #fef3c7; color: #d97706; }
   .service-team-bar .stb-meta { flex: 1; min-width: 0; }
   .service-team-bar .stb-label {
     font-size: 11px; color: var(--text-3); font-weight: 500;
@@ -997,23 +998,22 @@ function openDetail(id) {
     </div>
     <div class="m-meta">
       生命周期：<span class="stage-pill ${sCls}">${stageNameMap[c.stage]}（第${c.stage_days}天）</span><br>
-      赛道/类目：${c.track} / ${c.category}　|　客单价：¥${c.avg_price}<br>
+      类目：${c.category}　|　客单价：¥${c.avg_price}<br>
       主投链路：${c.main_link}<br>
       日耗 ${c.daily_cost===0?'未起量':'¥'+fmt.cost(c.daily_cost)}　|　
       周耗 ${c.week_cost===0?'—':'¥'+fmt.cost(c.week_cost)}　|　
       ROI ${c.roi===0?'—':c.roi.toFixed(1)}
     </div>
 
-    <!-- 服务团队信息条 -->
-    <div class="service-team-bar ${c.stage === 'mature' ? 'three' : ''}">
-      ${c.stage === 'mature' ? `
-      <div class="stb-card operator">
+    <!-- 服务团队信息条（KA销售 / 行业运营 / 服务商 三栏，所有生命周期统一展示） -->
+    <div class="service-team-bar three">
+      <div class="stb-card sales">
         <div class="stb-icon">🤝</div>
         <div class="stb-meta">
           <div class="stb-label">KA直客销售</div>
           <div class="stb-name">${c.ka_direct_sales || '-'}</div>
         </div>
-      </div>` : ''}
+      </div>
       <div class="stb-card operator">
         <div class="stb-icon">👤</div>
         <div class="stb-meta">
