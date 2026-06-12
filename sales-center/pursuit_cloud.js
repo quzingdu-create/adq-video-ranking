@@ -25,39 +25,28 @@
   var COLL_META = 'pursuit_meta';
   var PAGE = 100;
 
-  var _app = null, _db = null, _ready = null, _ok = false;
+  var _db = null, _ready = null, _ok = false;
 
-  function getSDK() {
-    return (typeof cloudbase !== 'undefined') ? cloudbase
-         : (typeof tcb !== 'undefined') ? tcb
-         : null;
-  }
-
-  // 确保 CloudBase 就绪：优先复用 cloud_sync.js 已登录态；未登录则触发其登录弹窗
+  // 确保 CloudBase 就绪：完全复用 cloud_sync.js 的同一登录态 + 同一数据库句柄
+  // 关键修复(2026-06-13)：不再自己 SDK.init（那会创建第二个 app 实例、登录态为空→连不上云）
+  //   改为 cloud.requireLogin 触发/复用登录，再 cloud.getDb() 拿作战中心同一个 _db。
   function ready() {
     if (_ready) return _ready;
     _ready = new Promise(function (resolve, reject) {
-      var SDK = getSDK();
-      if (!SDK) { reject(new Error('CloudBase SDK 未加载')); return; }
-
-      function initDb() {
-        try {
-          _app = SDK.init({ env: ENV_ID });
-          var authProp = _app.auth;
-          var isV2 = (typeof authProp === 'object' && authProp && typeof authProp.signInWithPassword === 'function');
-          if (!isV2 && typeof authProp === 'function') { _app.auth({ persistence: 'local' }); }
-          _db = _app.database ? _app.database() : null;
-          if (!_db) { reject(new Error('数据库句柄获取失败')); return; }
-          _ok = true;
-          resolve();
-        } catch (e) { reject(e); }
+      if (!global.cloud || typeof global.cloud.getDb !== 'function') {
+        reject(new Error('cloud_sync.js 未就绪或版本过旧（缺 getDb）'));
+        return;
       }
-
-      // 借助 cloud_sync 的 requireLogin 保证身份 + token 写入 localStorage
-      if (global.cloud && typeof global.cloud.requireLogin === 'function') {
-        global.cloud.requireLogin(function () { initDb(); });
+      function grab() {
+        global.cloud.getDb().then(function (db) {
+          _db = db; _ok = true; resolve();
+        }).catch(reject);
+      }
+      // requireLogin：已登录直接回调；未登录弹作战中心选人/密码框
+      if (typeof global.cloud.requireLogin === 'function') {
+        global.cloud.requireLogin(function () { grab(); });
       } else {
-        initDb();
+        grab();
       }
     });
     return _ready;

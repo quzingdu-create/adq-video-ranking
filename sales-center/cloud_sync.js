@@ -744,6 +744,16 @@
     save: function (rec) { return upsertOne(rec); },
     deleteOne: deleteById,
 
+    // 复用同一登录态的数据库句柄（供 pursuit.html 等附属页共享同一 CloudBase 实例，避免各自 init 导致登录态丢失）
+    // 用法：cloud.getDb().then(db => db.collection('pursuit_customers').get())
+    getDb: function () {
+      return ensureReady().then(function () {
+        if (!_db) return Promise.reject(new Error('数据库句柄未就绪'));
+        return _db;
+      });
+    },
+    getApp: function () { return ensureReady().then(function () { return _app; }); },
+
     // 调用云函数（用于 exportAll 等管理员接口，绕开行级安全规则）
     // 用法：cloud.callFunction('exportAll', {}).then(res => res.records)
     callFunction: function (name, data) {
