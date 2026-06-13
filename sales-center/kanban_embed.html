@@ -47,17 +47,17 @@
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260613f"></script>
-<script src="data/center_sales_summary.js?v=20260613f"></script>
-<script src="data/center_quarter_summary.js?v=20260613f"></script>
-<script src="data/center_daily_kpi.js?v=20260613f"></script>
-<script src="data/top80_effective_metrics.js?v=20260613f"></script>
-<script src="data/top_status_data.js?v=20260613f"></script>
-<script src="data/enough_candidates.js?v=20260613f"></script>
-<script src="data/handover_customers_519.js?v=20260613f"></script>
+<script src="data/bulk_import_rows.js?v=20260613g"></script>
+<script src="data/center_sales_summary.js?v=20260613g"></script>
+<script src="data/center_quarter_summary.js?v=20260613g"></script>
+<script src="data/center_daily_kpi.js?v=20260613g"></script>
+<script src="data/top80_effective_metrics.js?v=20260613g"></script>
+<script src="data/top_status_data.js?v=20260613g"></script>
+<script src="data/enough_candidates.js?v=20260613g"></script>
+<script src="data/handover_customers_519.js?v=20260613g"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613f"></script>
+<script src="cloud_sync.js?v=20260613g"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -605,6 +605,20 @@
   .placeholder-card { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; min-height:112px; }
   .placeholder-card h3 { margin:0 0 8px; font-size:15px; color:#0f172a; }
   .placeholder-card p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
+  /* 靶向名单可点击入口卡 */
+  .entry-card { display:block; text-decoration:none; background:linear-gradient(135deg,#5b3ff0 0%,#7657f6 55%,#8a6bf8 100%); border:none; border-radius:12px; padding:18px 20px; min-height:112px; color:#fff; position:relative; overflow:hidden; box-shadow:0 8px 22px rgba(91,63,240,.22); transition:.18s; }
+  .entry-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(91,63,240,.32); }
+  .entry-card h3 { margin:0 0 8px; font-size:15px; color:#fff; display:flex; align-items:center; gap:7px; }
+  .entry-card p { margin:0; color:rgba(255,255,255,.85); font-size:13px; line-height:1.6; }
+  .entry-card .go { position:absolute; right:16px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.32); border-radius:20px; padding:6px 14px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px; }
+  .entry-card .badge2 { display:inline-block; margin-top:9px; font-size:11px; background:rgba(255,255,255,.18); border-radius:14px; padding:3px 10px; }
+  /* 产业带进展入口卡：青蓝渐变区分靶向卡的紫，底部 KPI 概览 */
+  .entry-card.belt-card { background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 55%,#4f46e5 100%); box-shadow:0 8px 22px rgba(37,99,235,.22); }
+  .entry-card.belt-card:hover { box-shadow:0 12px 30px rgba(37,99,235,.32); }
+  .entry-card.belt-card p { padding-right:96px; }
+  .belt-stats { display:flex; flex-wrap:wrap; gap:7px; margin-top:11px; }
+  .belt-stats .bs { font-size:11px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.22); border-radius:14px; padding:3px 11px; color:rgba(255,255,255,.92); }
+  .belt-stats .bs b { font-size:13px; font-weight:800; color:#fff; margin-right:2px; }
   .register-entry-card { background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 12px 32px rgba(15,23,42,.08); }
   .register-entry-head { padding:18px 22px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#ffffff 0%,#f8fbff 52%,#eef6ff 100%); }
   .register-entry-head b { font-size:18px; color:#0f172a; letter-spacing:.2px; }
@@ -768,7 +782,7 @@
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260613f`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260613g`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612n')) frame.setAttribute('src', target);
   }
@@ -882,17 +896,25 @@
   <!-- ========== 专项进展（预留，等子青补设计） ========== -->
   <div class="section ops-section" id="specialProgressSection">
     <div class="section-title">
-      <div class="left"><span>🧭 专项进展</span><span class="badge">先预留，晚点接入真实数据</span></div>
+      <div class="left"><span>🧭 专项进展</span><span class="badge">点击卡片进入专项作战页</span></div>
     </div>
     <div class="placeholder-grid">
-      <div class="placeholder-card">
+      <a class="entry-card" href="pursuit.html?v=20260613g" target="_blank" rel="noopener">
         <h3>🎯 靶向拓客名单</h3>
-        <p>预留模块。后续接入名单分层、认领进度、触达状态和销售跟进结果。</p>
-      </div>
-      <div class="placeholder-card">
+        <p>渗透漏斗 + By 销售跟踪 + 名单分类明细，全组实时共享。</p>
+        <span class="badge2">竞媒P序列 / 竞媒千万+ / 行业补充 / 销售补充</span>
+        <span class="go">进入看板 ›</span>
+      </a>
+      <a class="entry-card belt-card" href="industry-belt.html?v=20260613g" target="_blank" rel="noopener">
         <h3>🧵 产业带进展</h3>
-        <p>预留模块。后续接入产业带覆盖、客户新增、消耗起量和重点城市进度。</p>
-      </div>
+        <p>核心城市×类目产业带覆盖、客户新增、消耗起量与重点城市进度，含中国地图聚集度。</p>
+        <span class="belt-stats">
+          <span class="bs"><b>2,173</b> 目标客户</span>
+          <span class="bs"><b>63</b> 核心产业带</span>
+          <span class="bs"><b>头部</b> 广州·泉州·桐乡</span>
+        </span>
+        <span class="go">进入看板 ›</span>
+      </a>
     </div>
   </div>
 
@@ -969,7 +991,7 @@
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260613f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260613g" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
