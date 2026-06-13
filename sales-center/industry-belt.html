@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>产业带进展看板 · 服饰拓新</title>
 <script>try{if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode');}catch(e){}</script>
-<script src="auth-guard.js?v=20260613t"></script>
+<script src="auth-guard.js?v=20260613u"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="data/customer_main_product.js?v=20260613u"></script>
 <style>
 :root{
   --bg:#F7F9FD;--panel:#fff;--panel-2:#F7F9FD;--border:#e5e9f0;--border-2:#eef1f6;
@@ -103,6 +104,7 @@ tbody td{padding:9px 12px;border-bottom:1px solid var(--border-2);vertical-align
 tbody tr:hover{background:#f8fafc}tbody tr:last-child td{border-bottom:none}
 .idx{color:var(--text-3);font-variant-numeric:tabular-nums}
 .short{font-weight:600;max-width:300px}
+.main-prod-inline{display:inline-flex;align-items:center;white-space:nowrap;margin-left:6px;padding:1px 7px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;vertical-align:middle}
 .loc{color:var(--text-2);white-space:nowrap}
 .cl{display:inline-block;background:var(--primary-bg);color:var(--primary-2);font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap}
 .cl.other{background:var(--border-2);color:var(--text-2)}
@@ -141,7 +143,7 @@ html.embed-mode .wrap{padding-top:14px;}
     <span class="logo">🧵</span>
     <span class="bt"><span>产业带进展看板</span><small>服饰拓新 · 26年4月后产业带拓客</small></span>
   </div>
-  <a class="ib-back" href="javascript:void(0)" onclick="(function(){try{if(window.parent&&window.parent!==window){window.parent.location.href='index.html?v=20260613t'}else{location.href='index.html?v=20260613t'}}catch(e){location.href='index.html?v=20260613t'}})()">‹ 返回作战中心</a>
+  <a class="ib-back" href="javascript:void(0)" onclick="(function(){try{if(window.parent&&window.parent!==window){window.parent.location.href='index.html?v=20260613u'}else{location.href='index.html?v=20260613u'}}catch(e){location.href='index.html?v=20260613u'}})()">‹ 返回作战中心</a>
 </div>
 
 <div class="wrap">
@@ -290,6 +292,13 @@ function flagOf(d){
  if(d.new)return '<span class="flag new">新</span>';
  return '';
 }
+function mainProdInline(name){
+ const mp=window.__CUSTOMER_MAIN_PRODUCT__||{};
+ const m=mp[String(name||'').trim()];
+ if(!m||!m.main)return '';
+ const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ return `<span class="main-prod-inline" title="最高消耗商品：${esc(m.product||'')}">主营：${esc(m.main)}</span>`;
+}
 function render(){
  const q=document.getElementById('q').value.trim().toLowerCase();
  const vc=fcl.value,vcat=fcat.value;
@@ -303,7 +312,7 @@ function render(){
  const vis=rows.slice(0,shown);
  document.getElementById('tb').innerHTML=vis.map(d=>`
   <tr><td class="idx">${d.idx}</td>
-  <td class="short">${d.short}${flagOf(d)}</td>
+  <td class="short">${d.short}${mainProdInline(d.short)}${flagOf(d)}</td>
   <td class="loc">${d.loc}</td>
   <td><span class="${clCls(d.cluster)}">${d.cluster}</span></td>
   <td><span class="cat-tag" style="background:${catColor(d.cat)}1a;color:${catColor(d.cat)}">${d.cat}</span></td>

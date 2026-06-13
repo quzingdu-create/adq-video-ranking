@@ -15,8 +15,9 @@
 -->
 <!-- CloudBase SDK + 作战中心共享登录层 + 本看板云数据层 -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613t"></script>
-<script src="pursuit_cloud.js?v=20260613t"></script>
+<script src="cloud_sync.js?v=20260613u"></script>
+<script src="pursuit_cloud.js?v=20260613u"></script>
+<script src="data/customer_main_product.js?v=20260613u"></script>
 <style>
   :root{
     --bg:#f5f7fb; --panel:#fff; --ink:#222b38; --ink2:#5c6878; --muted:#9aa6b8; --faint:#c2cbd9;
@@ -143,6 +144,7 @@
   .dtable tbody tr:last-child td{border-bottom:none;}
   .nm{font-weight:600;}
   .nm .ent{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:1px;}
+  .main-prod-inline{display:inline-flex;align-items:center;white-space:nowrap;margin-left:6px;padding:1px 7px;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:800;vertical-align:middle;}
   .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.12s;white-space:nowrap;}
   .pill:hover{filter:brightness(.97);box-shadow:0 0 0 3px rgba(0,0,0,.04);}
   .pill .d{width:7px;height:7px;border-radius:50%;}
@@ -623,10 +625,16 @@ function renderTables(){
   bindTableEvents();
 }
 function arr(k){return '<span class="arr">'+(ui.sortKey===k?(ui.sortDir==='asc'?'▲':'▼'):'')+'</span>';}
+function mainProdInline(name){
+  const mp = window.__CUSTOMER_MAIN_PRODUCT__ || {};
+  const m = mp[String(name||'').trim()];
+  if (!m || !m.main) return '';
+  return '<span class="main-prod-inline" title="最高消耗商品：'+esc(m.product||'')+'">主营：'+esc(m.main)+'</span>';
+}
 function rowHtml(r){
   const col=stageColor(r.stage);
   return '<tr data-id="'+r.id+'">'+
-    '<td><div class="nm">'+(esc(r.name)||'—')+(r.contact?'<span class="ent">联系人：'+esc(r.contact)+'</span>':'')+'</div></td>'+
+    '<td><div class="nm">'+(esc(r.name)||'—')+mainProdInline(r.name)+(r.contact?'<span class="ent">联系人：'+esc(r.contact)+'</span>':'')+'</div></td>'+
     '<td>'+(esc(r.industry)||'<span style="color:var(--muted)">—</span>')+'</td>'+
     '<td>'+(esc(r.sales)||'<span style="color:var(--muted)">未认领</span>')+'</td>'+
     '<td>'+(esc(r.entity)?'<span title="'+esc(r.entity)+'" style="display:inline-block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom">'+esc(r.entity)+'</span>':'<span style="color:var(--muted)">—</span>')+'</td>'+
