@@ -365,18 +365,9 @@
   .ts-deploy b{color:var(--blue-d);}
   .ts-deploy .dchip{background:#fff;border:1px solid #cfe0fb;color:var(--blue-d);font-weight:700;
     font-size:12px;padding:4px 10px;border-radius:7px;}
-  #__vedit_entry{position:fixed;right:22px;bottom:22px;z-index:9999;display:inline-flex;align-items:center;gap:8px;
-    padding:12px 18px;border-radius:999px;background:linear-gradient(135deg,#1B4FC4,#296BEF);color:#fff;
-    font-size:14px;font-weight:850;text-decoration:none;box-shadow:0 10px 26px rgba(27,79,196,.35),0 2px 8px rgba(15,23,42,.18);
-    border:1px solid rgba(255,255,255,.28);transition:transform .2s ease,box-shadow .2s ease;}
-  #__vedit_entry:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(27,79,196,.42),0 3px 10px rgba(15,23,42,.2);}
-  #__vedit_entry .pen{font-size:16px;line-height:1;}
   </style>
 </head>
 <body>
-<a id="__vedit_entry" href="index_editable.html?v=20260613-edit" target="_blank" rel="noopener" title="打开可视化编辑版，点文字改字、点图片换图">
-  <span class="pen">✏️</span><span>编辑页面</span>
-</a>
 <div class="wrap">
 
   <!-- HERO -->
@@ -1053,5 +1044,177 @@
   </div>
 
 </div>
+
+<!-- __VEDIT_START__  (html-visual-editor 注入，导出时会被自动剥离) -->
+<style id="__vedit_style">
+  #__vedit_bar{position:fixed;top:0;left:0;right:0;height:48px;z-index:2147483600;
+    background:#1e293b;color:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;
+    font:13px/1.4 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    box-shadow:0 2px 12px rgba(0,0,0,.25);}
+  #__vedit_bar b{font-size:14px;margin-right:10px;letter-spacing:.5px;}
+  #__vedit_bar .vbtn{background:#334155;border:1px solid #475569;color:#fff;border-radius:8px;
+    padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;}
+  #__vedit_bar .vbtn:hover{background:#475569;}
+  #__vedit_bar .vbtn.on{background:#2563eb;border-color:#2563eb;}
+  #__vedit_bar .vbtn.save{background:#16a34a;border-color:#16a34a;margin-left:auto;}
+  #__vedit_bar .vbtn.save:hover{background:#15803d;}
+  #__vedit_bar .vhint{font-size:11px;color:#94a3b8;}
+  body{padding-top:48px !important;}
+  .__vedit_hl{outline:2px dashed #2563eb !important;outline-offset:2px;cursor:text;}
+  .__vedit_img_hl{outline:2px dashed #f59e0b !important;outline-offset:2px;cursor:pointer;}
+  #__vedit_panel{position:fixed;top:60px;right:14px;z-index:2147483600;width:230px;
+    background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 28px rgba(15,23,42,.18);
+    padding:12px;display:none;
+    font:12px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
+  #__vedit_panel h4{font-size:12px;color:#334155;margin:0 0 8px;font-weight:800;}
+  #__vedit_panel .row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  #__vedit_panel .row label{flex:0 0 46px;color:#64748b;}
+  #__vedit_panel input[type=number]{width:56px;padding:3px 5px;border:1px solid #cbd5e1;border-radius:6px;}
+  #__vedit_panel input[type=color]{width:34px;height:24px;padding:0;border:1px solid #cbd5e1;border-radius:6px;background:#fff;}
+  #__vedit_panel .seg{display:flex;gap:4px;}
+  #__vedit_panel .seg button{flex:1;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;
+    padding:4px 0;cursor:pointer;font-weight:700;color:#334155;}
+  #__vedit_panel .seg button:hover{background:#eef2f7;}
+</style>
+<div id="__vedit_bar">
+  <b>🎨 可视化编辑</b>
+  <button class="vbtn on" id="__vedit_toggle">编辑模式：开</button>
+  <span class="vhint">点文字改字 · 点图片换图 · 选中后右侧调样式</span>
+  <button class="vbtn save" id="__vedit_save">💾 导出 HTML</button>
+</div>
+<div id="__vedit_panel">
+  <h4>样式调整</h4>
+  <div class="row"><label>字号</label><input type="number" id="__vedit_fs" min="8" max="120" step="1"><span>px</span></div>
+  <div class="row"><label>文字色</label><input type="color" id="__vedit_color"></div>
+  <div class="row"><label>背景色</label><input type="color" id="__vedit_bg"></div>
+  <div class="row"><label>粗细</label>
+    <div class="seg" style="flex:1">
+      <button data-w="400">常规</button><button data-w="700">加粗</button><button data-w="850">特粗</button>
+    </div>
+  </div>
+  <div class="row"><label>对齐</label>
+    <div class="seg" style="flex:1">
+      <button data-a="left">左</button><button data-a="center">中</button><button data-a="right">右</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="__vedit_file" accept="image/*" style="display:none">
+<script id="__vedit_script">
+(function(){
+  var EDIT = true;
+  var cur = null;       // 当前选中的文字/块元素
+  var curImg = null;    // 当前待替换的图片
+  var bar = document.getElementById('__vedit_bar');
+  var panel = document.getElementById('__vedit_panel');
+  var fileInput = document.getElementById('__vedit_file');
+
+  function isEditorNode(n){
+    while(n){ if(n.id && /^__vedit_/.test(n.id)) return true; n = n.parentElement; }
+    return false;
+  }
+
+  // 给正文里的图片绑定「点击换图」
+  function bindImages(){
+    document.querySelectorAll('img').forEach(function(img){
+      if(isEditorNode(img) || img.__vbound) return;
+      img.__vbound = true;
+      img.addEventListener('mouseenter', function(){ if(EDIT) img.classList.add('__vedit_img_hl'); });
+      img.addEventListener('mouseleave', function(){ img.classList.remove('__vedit_img_hl'); });
+      img.addEventListener('click', function(e){
+        if(!EDIT) return;
+        e.preventDefault(); e.stopPropagation();
+        curImg = img; fileInput.click();
+      });
+    });
+  }
+
+  fileInput.addEventListener('change', function(){
+    var f = fileInput.files && fileInput.files[0];
+    if(!f || !curImg) return;
+    var r = new FileReader();
+    r.onload = function(){ curImg.src = r.result; curImg.removeAttribute('srcset'); };
+    r.readAsDataURL(f);
+    fileInput.value = '';
+  });
+
+  // 文字元素：hover 高亮 + 点击进入编辑 + 选中调样式
+  document.body.addEventListener('mouseover', function(e){
+    if(!EDIT) return;
+    var t = e.target;
+    if(isEditorNode(t) || t.tagName === 'IMG') return;
+    t.classList.add('__vedit_hl');
+  });
+  document.body.addEventListener('mouseout', function(e){
+    var t = e.target;
+    if(t.classList) t.classList.remove('__vedit_hl');
+  });
+  document.body.addEventListener('click', function(e){
+    if(!EDIT) return;
+    var t = e.target;
+    if(isEditorNode(t) || t.tagName === 'IMG') return;
+    cur = t;
+    t.setAttribute('contenteditable','true');
+    t.focus();
+    openPanel(t);
+  });
+
+  function openPanel(el){
+    var cs = getComputedStyle(el);
+    document.getElementById('__vedit_fs').value = Math.round(parseFloat(cs.fontSize)) || 14;
+    document.getElementById('__vedit_color').value = rgb2hex(cs.color);
+    document.getElementById('__vedit_bg').value = rgb2hex(cs.backgroundColor) || '#ffffff';
+    panel.style.display = 'block';
+  }
+  function rgb2hex(s){
+    var m = (s||'').match(/\d+/g); if(!m) return '#000000';
+    if(m.length>=4 && m[3]==='0') return '#ffffff';
+    function h(x){x=parseInt(x,10).toString(16);return x.length<2?'0'+x:x;}
+    return '#'+h(m[0])+h(m[1])+h(m[2]);
+  }
+
+  document.getElementById('__vedit_fs').addEventListener('input', function(){ if(cur) cur.style.fontSize = this.value+'px'; });
+  document.getElementById('__vedit_color').addEventListener('input', function(){ if(cur) cur.style.color = this.value; });
+  document.getElementById('__vedit_bg').addEventListener('input', function(){ if(cur) cur.style.backgroundColor = this.value; });
+  panel.querySelectorAll('.seg button[data-w]').forEach(function(b){
+    b.addEventListener('click', function(){ if(cur) cur.style.fontWeight = b.dataset.w; });
+  });
+  panel.querySelectorAll('.seg button[data-a]').forEach(function(b){
+    b.addEventListener('click', function(){ if(cur) cur.style.textAlign = b.dataset.a; });
+  });
+
+  // 切换编辑模式
+  document.getElementById('__vedit_toggle').addEventListener('click', function(){
+    EDIT = !EDIT;
+    this.textContent = '编辑模式：' + (EDIT?'开':'关');
+    this.classList.toggle('on', EDIT);
+    if(!EDIT){ panel.style.display='none';
+      document.querySelectorAll('[contenteditable=true]').forEach(function(n){ n.removeAttribute('contenteditable'); });
+    }
+  });
+
+  // 导出干净 HTML：克隆 document，剥离编辑器自身节点和编辑态属性
+  document.getElementById('__vedit_save').addEventListener('click', function(){
+    var clone = document.documentElement.cloneNode(true);
+    clone.querySelectorAll('[id^="__vedit_"]').forEach(function(n){ n.remove(); });
+    clone.querySelectorAll('[contenteditable]').forEach(function(n){ n.removeAttribute('contenteditable'); });
+    clone.querySelectorAll('.__vedit_hl,.__vedit_img_hl').forEach(function(n){ n.classList.remove('__vedit_hl'); n.classList.remove('__vedit_img_hl'); });
+    // 还原 body 顶部留白
+    clone.querySelectorAll('body').forEach(function(b){ b.style.paddingTop=''; });
+    var html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    var blob = new Blob([html], {type:'text/html'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (document.title||'page').replace(/[\\/:*?"<>|]/g,'_') + '_edited.html';
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1500);
+  });
+
+  bindImages();
+  // 动态新增图片也兜底绑定
+  new MutationObserver(bindImages).observe(document.body, {childList:true, subtree:true});
+})();
+</script>
+<!-- __VEDIT_END__ -->
+
 </body>
 </html>
