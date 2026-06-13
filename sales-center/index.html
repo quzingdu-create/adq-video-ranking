@@ -7,24 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260613q"></script>
+<script src="auth-guard.js?v=20260613r"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260613q"></script>
-<script src="data/current_rising_data.js?v=20260613q"></script>
+<script src="lib_loader.js?v=20260613r"></script>
+<script src="data/current_rising_data.js?v=20260613r"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260613q"></script>
-<script src="data/center_quarter_summary.js?v=20260613q"></script>
-<script src="data/center_daily_kpi.js?v=20260613q"></script>
-<script src="data/top80_effective_metrics.js?v=20260613q"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260613r"></script>
+<script src="data/center_quarter_summary.js?v=20260613r"></script>
+<script src="data/center_daily_kpi.js?v=20260613r"></script>
+<script src="data/top80_effective_metrics.js?v=20260613r"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260613q"></script>
-<script src="data/redblack_data.js?v=20260613q"></script>
+<script src="data/top_rising_data.js?v=20260613r"></script>
+<script src="data/redblack_data.js?v=20260613r"></script>
+<script src="data/customer_main_product.js?v=20260613r"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613q"></script>
-<script src="login_guard_banner.js?v=20260613q"></script>
+<script src="cloud_sync.js?v=20260613r"></script>
+<script src="login_guard_banner.js?v=20260613r"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260613q"></script>
+<script src="export_tuoke.js?v=20260613r"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -677,7 +678,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260613q"
+      src="mobile.html?embed=1&v=20260613r"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1219,7 +1220,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260613q" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260613r" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1228,7 +1229,7 @@ window.__CASE_DATA__ = [
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260613q" style="width:100%;height:calc(100vh - 220px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260613r" style="width:100%;height:calc(100vh - 220px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -1902,7 +1903,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const frame = document.getElementById(frameId);
   if (!frame) return;
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260613q`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260613r`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -1964,12 +1965,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260613q`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260613r`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260613q`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260613r`);
   }
 }
 function updateViewToggle() {
@@ -2969,7 +2970,9 @@ function renderSummaryBoard(){
     const {ups,downs} = _sbRB(saleKey);
     const wan = v => (Number(v||0)/1e4).toFixed(2);
     const pct = v => (v==null?'—':(v>=0?'+':'')+Number(v).toFixed(0)+'%');
-    const item = (r,sign) => `<div class="rb-item"><div class="rb-n">${r.short||'—'}</div><div class="rb-m"><span>${r.cat||'—'} · ${r.deliverySide||'—'}${r.linkStr?('+'+r.linkStr):''}</span><span class="rb-chg">${pct(r.costChgPct)}（${sign}${wan(r.costChgAbs)}万）</span><span>昨耗 ${wan(r.yestCost)}万</span></div></div>`;
+    const mp = (window.__CUSTOMER_MAIN_PRODUCT__ || {});
+    const prod = n => (mp[n] && mp[n].main) ? ` <span title="最高消耗商品：${mp[n].product||''}">【${mp[n].main}】</span>` : '';
+    const item = (r,sign) => `<div class="rb-item"><div class="rb-n">${r.short||'—'}${prod(r.short)}</div><div class="rb-m"><span>${r.cat||'—'} · ${r.deliverySide||'—'}${r.linkStr?('+'+r.linkStr):''}</span><span class="rb-chg">${pct(r.costChgPct)}（${sign}${wan(r.costChgAbs)}万）</span><span>昨耗 ${wan(r.yestCost)}万</span></div></div>`;
     rbBox.innerHTML = `<div class="sb-rb-col up"><div class="rb-h">📈 涨幅 Top${ups.length}</div>${ups.length?ups.map(r=>item(r,'+')).join(''):'<div class="rb-empty">暂无上涨客户</div>'}</div><div class="sb-rb-col down"><div class="rb-h">📉 跌幅 Top${downs.length}</div>${downs.length?downs.map(r=>item(r,'-')).join(''):'<div class="rb-empty">暂无下跌客户</div>'}</div>`;
   }
 
