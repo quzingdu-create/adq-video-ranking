@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>靶向名单跟进看板 · 服饰增长组</title>
+<script>try{if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode');}catch(e){}</script>
 <!--
   靶向名单跟进看板 · 共享协作版（CloudBase）
   上部：渗透漏斗（待引入→已认领→已开户→已投放）+ 名单类型小漏斗 + By销售跟踪卡片
@@ -14,8 +15,8 @@
 -->
 <!-- CloudBase SDK + 作战中心共享登录层 + 本看板云数据层 -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613o"></script>
-<script src="pursuit_cloud.js?v=20260613o"></script>
+<script src="cloud_sync.js?v=20260613p"></script>
+<script src="pursuit_cloud.js?v=20260613p"></script>
 <style>
   :root{
     --bg:#f5f7fb; --panel:#fff; --ink:#222b38; --ink2:#5c6878; --muted:#9aa6b8; --faint:#c2cbd9;
@@ -30,6 +31,8 @@
   }
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;}
+  /* 2026-06-13 内嵌到作战中心时隐藏独立页顶栏 */
+  html.embed-mode .topbar{display:none!important;}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
     background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;display:flex;flex-direction:column;height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;}
   /* 紫色渐变品牌顶栏 */
