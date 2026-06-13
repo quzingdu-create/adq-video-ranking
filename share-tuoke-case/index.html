@@ -2,17 +2,42 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>服饰拓新销售作战中心 · 实践案例分享 — 从"数据洞察"到"业务动作"</title>
+<meta name="viewport" content="width=992, user-scalable=yes">
+<title>小红点任务系统为例，探索AI对销售开拓的助力</title>
+<meta name="description" content="小红点任务系统为例，探索AI对销售开拓的助力">
+<meta property="og:title" content="小红点任务系统为例，探索AI对销售开拓的助力">
+<meta property="og:description" content="小红点任务系统为例，探索AI对销售开拓的助力">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="小红点任务系统为例，探索AI对销售开拓的助力">
+<meta name="twitter:description" content="小红点任务系统为例，探索AI对销售开拓的助力">
 <style>
+  /* 腾讯体字体嵌入（全站统一使用 W7 粗体，公网部署，仅内部汇报使用） */
+  @font-face{
+    font-family:"TencentSans";
+    src:url("assets/fonts/TencentSans-W7.ttf") format("truetype");
+    font-weight:100 900;
+    font-style:normal;
+    font-display:swap;
+  }
   :root{
     --blue:#296BEF; --blue-d:#1B4FC4; --blue-l:#E8EEFA;
     --red:#dc2626; --red-l:#fef3f3; --green:#059669; --green-l:#eefbf4;
     --gold:#d97706; --gold-l:#fffaef; --gray:#64748b; --gray-l:#f8fafc;
     --text:#1e293b; --text-2:#64748b; --line:#e2e8f0; --bg:#f1f5f9;
   }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{font-family:"Tencent Sans W7","TencentSans W7","TencentSans-W7","Tencent Sans","腾讯体","TencentSans",
+  *{margin:0;padding:0;box-sizing:border-box;font-family:inherit;}
+  /* 字体方案B：默认W7,但正文段落降低字重保持层次 */
+  body p, body li, body td, body .pd, body .opdef, body .opcap, body .impact-cap,
+  body .biz3-col ul, body .impact-box ul, body .legacy-d, body .ops-cap{
+    font-weight:500 !important;
+  }
+  body h1, body h2, body h3, body .ph, body .ib-h, body .col-q,
+  body .biz3-h, body .impact-h, body .biz3-step .bs-name, body .ops-step,
+  body .part-tag, body .legacy-h, body .ls-h, body .ls-step .ls-name{
+    font-weight:850 !important;
+  }
+  body{font-family:"TencentSans","Tencent Sans","腾讯体",
     -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     background:
       radial-gradient(1100px 460px at 12% -4%,rgba(41,107,239,.10),transparent 60%),
@@ -20,7 +45,9 @@
       linear-gradient(180deg,#eef2f8 0%,#f1f5f9 100%);
     background-attachment:fixed;
     color:var(--text);line-height:1.75;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:960px;margin:0 auto;padding:0 16px 90px;}
+  /* 全端固定桌面端宽度，小屏自动横向滚动以保持视觉一致 */
+  html,body{min-width:992px;overflow-x:auto;}
+  .wrap{width:960px;max-width:960px;margin:0 auto;padding:0 16px 90px;}
   .slide{position:relative;background:#fff;border-radius:18px;margin:22px 0;padding:38px 40px 40px;
     box-shadow:0 1px 2px rgba(15,23,42,.04),0 8px 28px -12px rgba(15,23,42,.14);
     border:1px solid #eef1f6;overflow:hidden;
@@ -110,20 +137,19 @@
   .takeaway .tl::before{content:"◆";font-size:9px;}
   .takeaway .tt{font-size:18px;font-weight:800;line-height:1.55;}
   /* 被动→主动 / 不漏球 转变横幅 */
-  .shift{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0;}
+  .shift{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:18px 0;}
   .shiftbox{border-radius:14px;padding:16px 20px;position:relative;overflow:hidden;
     background:linear-gradient(135deg,#fff,#f6f9ff);border:1px solid #d6e0f5;
     box-shadow:0 8px 22px -14px rgba(27,79,196,.3);}
   .shiftbox .sk{font-size:12px;font-weight:800;letter-spacing:1px;color:#94a3b8;margin-bottom:8px;}
-  .shiftbox .sline{display:flex;align-items:center;gap:12px;font-weight:850;font-size:16px;}
-  .shiftbox .from{color:#b91c1c;text-decoration:line-through;text-decoration-color:#fca5a5;opacity:.78;}
-  .shiftbox .arrow{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
-    justify-content:center;background:linear-gradient(135deg,#2f74f5,#1B4FC4);color:#fff;font-size:15px;
+  .shiftbox .sline{display:flex;align-items:center;gap:10px;font-weight:850;font-size:15px;flex-wrap:nowrap;white-space:nowrap;}
+  .shiftbox .from{color:#b91c1c;text-decoration:line-through;text-decoration-color:#fca5a5;opacity:.78;flex:0 0 auto;}
+  .shiftbox .arrow{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:linear-gradient(135deg,#2f74f5,#1B4FC4);color:#fff;font-size:13px;
     box-shadow:0 4px 10px -3px rgba(27,79,196,.5);}
-  .shiftbox .to{color:#15803d;font-size:17px;}
+  .shiftbox .to{color:#15803d;font-size:15px;flex:1 1 auto;min-width:0;}
   .shiftbox .sdesc{font-size:12.5px;color:var(--text-2);margin-top:9px;line-height:1.6;}
-  @media(max-width:720px){.shift{grid-template-columns:1fr;}}
-  ul.clean{list-style:none;margin:10px 0;}
+    ul.clean{list-style:none;margin:10px 0;}
   ul.clean li{padding:9px 0 9px 26px;position:relative;font-size:14.5px;border-bottom:1px solid #f1f5f9;}
   ul.clean li:before{content:"";position:absolute;left:7px;top:16px;width:7px;height:7px;border-radius:2px;
     background:linear-gradient(135deg,var(--blue),#6f9bf2);transform:rotate(45deg);}
@@ -138,7 +164,14 @@
   .shot{border:2px dashed #c7d2e8;background:repeating-linear-gradient(45deg,#f8fafc,#f8fafc 12px,#eef2fb 12px,#eef2fb 24px);
     border-radius:14px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;font-size:13px;text-align:center;margin:16px 0;padding:24px;}
   .shot .si{font-size:30px;margin-bottom:8px;opacity:.7;} .shot .sl{font-weight:800;color:#7c8aa5;font-size:14px;} .shot .sd{font-size:12px;margin-top:5px;}
-  .win{background:var(--green-l);border:1px solid #6ee7b7;border-radius:12px;padding:18px 20px;margin:16px 0;}
+  /* 场景下双截图占位（横向并排，比例≈2:1） */
+  .shotpair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;align-items:start;}
+  .shotpair .shot{margin:0;aspect-ratio: 2 / 1;min-height:0;}
+  /* 真实截图卡片 */
+  .shotpair .shot-img{margin:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px;box-shadow:0 2px 10px rgba(15,23,42,.04);}
+  .shotpair .shot-img img{width:100%;display:block;border-radius:8px;background:#f8fafc;}
+  .shotpair .shot-img figcaption{font-size:12px;color:#64748b;margin-top:8px;text-align:center;font-weight:700;line-height:1.5;}
+    .win{background:var(--green-l);border:1px solid #6ee7b7;border-radius:12px;padding:18px 20px;margin:16px 0;}
   .win .wh{font-size:13px;font-weight:850;color:var(--green);letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:7px;}
   .win .wb{font-size:14.5px;color:var(--text);} .win .wb b{color:#047857;}
   .meaning{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0;}
@@ -160,7 +193,7 @@
   .arch{border:1px solid #e4e9f1;border-radius:16px;padding:22px;
     background:linear-gradient(160deg,#fbfcfe,#f4f7fc);margin:18px 0;}
   .arch .lvl{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text-2);margin:6px 0 10px;}
-  .tabrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .tabrow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
   .tabbox{border-radius:14px;padding:16px;color:#fff;box-shadow:0 10px 26px -14px rgba(15,23,42,.4);
     transition:.3s ease;}
   .tabbox:hover{transform:translateY(-3px);}
@@ -168,6 +201,7 @@
   .tabbox.t1{background:linear-gradient(135deg,#f05252,#dc2626);}
   .tabbox.t2{background:linear-gradient(135deg,#3b82f6,#1B4FC4);}
   .tabbox.t3{background:linear-gradient(135deg,#10b981,#047857);}
+  .tabbox.t4{background:linear-gradient(135deg,#f59e0b,#b45309);}
   .tabbox .sub2{font-size:12px;opacity:.95;background:rgba(255,255,255,.18);padding:7px 10px;
     border-radius:8px;margin:6px 0;backdrop-filter:blur(2px);}
   .qmap{border:1px solid #f3c4c4;border-radius:16px;padding:20px;margin:18px 0;
@@ -331,156 +365,148 @@
   .ts-deploy b{color:var(--blue-d);}
   .ts-deploy .dchip{background:#fff;border:1px solid #cfe0fb;color:var(--blue-d);font-weight:700;
     font-size:12px;padding:4px 10px;border-radius:7px;}
-  @media(max-width:720px){
-    .grid2,.grid3,.kpi-row,.compare,.meaning,.tabrow,.qgrid,.pain,.role,.support{grid-template-columns:1fr;}
-    .slide{padding:28px 22px;} h1{font-size:24px;} .hero h1{font-size:25px;}
-    .evo{font-size:11.5px;} .btnitem{flex-direction:column;gap:6px;}
-  }
-</style>
+  </style>
 </head>
 <body>
 <div class="wrap">
 
   <!-- HERO -->
   <div class="slide hero">
-    <div class="part-tag" style="background:rgba(255,255,255,.18);color:#fff;">服饰拓新赛道 · ADQ 实践案例分享</div>
-    <h1>从"数据洞察"到"业务动作"</h1>
+    <div style="font-size:18px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:2px;margin-bottom:14px;">AI 对于客户开拓及服务提升的实践</div>
+    <h1>服饰增长组小红点系统应用</h1>
   </div>
 
-  <!-- PART 01 · 为什么 -->
+  <!-- PART 01 · 两类痛点（业务思考） -->
   <div class="slide">
-    <div class="part-tag">PART 01 · 为什么</div>
-    <h2>为什么服饰拓新特别需要从"数据洞察"走向"业务动作"</h2>
-    <div class="grid2" style="grid-template-columns:repeat(3,1fr);">
-      <div class="card ctr">
-        <div class="ico">🏁</div><div class="t big">行业特点</div><div class="csub">季度制 · 海量客户</div>
-        <ul class="dot">
-          <li>季度 KPI 指标：<b>新锐新客数</b>、<b>季度新客消耗</b></li>
-          <li>91 天倒计时滚动推进，时间压力大</li>
-          <li>服饰中心 <b>3.4 万+ 客户</b>，7 个销售各管一摊，人脑兜不住</li>
-          <li>新客养成链路：<b>新客引入 ➡️ 消耗起量 ➡️ 新锐打标</b>，每层都要盯</li>
-        </ul>
-      </div>
-      <div class="card ctr">
-        <div class="ico">📉</div><div class="t big">消耗特点</div><div class="csub">按天波动 · 窗口短</div>
-        <ul class="dot">
-          <li>客户消耗每天起伏，<b>起量窗口往往只有几天</b></li>
-          <li>信号闪一下就过去，靠人盯很容易错过</li>
-          <li>大客户突然掉量，错过预警就是<b>真金白银的流失</b></li>
-        </ul>
-      </div>
-      <div class="card ctr">
-        <div class="ico">🏃</div><div class="t big">销售特点</div><div class="csub">精力有限 · 能力参差</div>
-        <ul class="dot">
-          <li>精力分散、<b>时间碎片化</b>，常在路上 / 频繁出差，难集中复盘</li>
-          <li>客户数量多，<b>无法全部兼顾</b>，重点之外容易漏球</li>
-          <li>服务多依靠<b>个人经验</b>，缺标准打法，质量随人波动</li>
-        </ul>
-      </div>
-    </div>
-
-    <h3>新客养成链路 · 每层都要盯</h3>
-    <div class="dgm">
-      <svg viewBox="0 0 680 116" role="img" aria-label="新客养成链路">
-        <defs>
-          <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#296BEF"/></linearGradient>
-          <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#d97706"/></linearGradient>
-          <linearGradient id="g3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient>
-          <marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#94a3b8"/></marker>
-        </defs>
-        <!-- node1 -->
-        <rect x="14" y="20" width="180" height="74" rx="14" fill="url(#g1)"/>
-        <text x="104" y="48" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">① 新客引入</text>
-        <text x="104" y="70" text-anchor="middle" fill="#dbe7ff" font-size="11">首次产生消耗</text>
-        <text x="104" y="87" text-anchor="middle" fill="#dbe7ff" font-size="11">进入 2026Q2 新客池</text>
-        <!-- arrow -->
-        <line x1="200" y1="57" x2="244" y2="57" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
-        <!-- node2 -->
-        <rect x="250" y="20" width="180" height="74" rx="14" fill="url(#g2)"/>
-        <text x="340" y="48" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">② 消耗起量</text>
-        <text x="340" y="70" text-anchor="middle" fill="#fff3df" font-size="11">季度累计破千</text>
-        <text x="340" y="87" text-anchor="middle" fill="#fff3df" font-size="11">养成「有效新客」</text>
-        <!-- arrow -->
-        <line x1="436" y1="57" x2="480" y2="57" stroke="#94a3b8" stroke-width="2" marker-end="url(#ah)"/>
-        <!-- node3 -->
-        <rect x="486" y="20" width="180" height="74" rx="14" fill="url(#g3)"/>
-        <text x="576" y="48" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">③ 新锐打标</text>
-        <text x="576" y="70" text-anchor="middle" fill="#dcfce7" font-size="11">有效新客 ∩ 新锐名单</text>
-        <text x="576" y="87" text-anchor="middle" fill="#dcfce7" font-size="11">计入核心 KPI</text>
-      </svg>
-    </div>
-
-    <div class="takeaway">
-      <div class="tl">所以 · 销售每天真正要解决的</div>
-      <div class="tt"><span style="color:#7dd3fc;">① 关注 KPI 进度如何</span>——追赶目标和动作是什么<br><span style="color:#7dd3fc;">② 在本季度新客和历史累计新客中</span>，尽早识别出"今天该催 / 该盯 / 该抓"的那一小撮，并及时转成动作</div>
-    </div>
-  </div>
-
-  <!-- PART 02 · 两类卡点（业务思考） -->
-  <div class="slide">
-    <div class="part-tag">PART 02 · 卡点</div>
-    <h2>站在销售视角：三道瓶颈，让人被动、还漏球</h2>
-    <p class="lead">销售真正卡住的，是"<b>从数据到动作</b>"这一段。它卡在三个地方，共同的后果就是——<b style="color:#b91c1c;">总是被动响应、还容易漏球</b>：</p>
+    <div class="part-tag">PART 01 · 痛点</div>
+    <div style="display:inline-block;font-size:13px;font-weight:850;color:#fff;background:#dc2626;padding:5px 14px;border-radius:20px;letter-spacing:1.5px;margin-bottom:10px;">业务困局</div>
+    <h2 style="margin-top:0;">大量增长的中长尾商家 vs 销售碎片化的时间，整体服务以被动为主，容易漏球，错失增长机会</h2>
     <div class="pain" style="grid-template-columns:repeat(3,1fr);">
       <div class="painbox eff">
-        <div class="ph">⏱️ 效率瓶颈 <span style="font-size:12px;color:#dc2626;">→ 容易漏球</span></div>
+        <div class="ph">⏱️ 容易漏球 <span style="font-size:12px;color:#dc2626;">→ 中间客户没人接</span></div>
         <div class="pd">
-          • <b>量太大</b>：3.4 万客户远超个人精力上限，重点之外只能放弃<br>
-          • <b>精力被稀释</b>：碎片时间多，难集中复盘，容易顾此失彼<br>
-          • <b>靠人记</b>：该催谁、该盯谁全凭脑子记，<b>一忙就漏</b>
+          • <b>精力有限</b>：销售只能盯<b>重大问题</b>或被动响应客户咨询<br>
+          • <b>中间客户被忽略</b>：处于成长阶段的客户没人主动介入<br>
+          • <b>结果</b>：消耗殆尽或<b>悄悄流失</b>，等发现已经晚了
         </div>
       </div>
       <div class="painbox inf">
-        <div class="ph">🛡️ 监控瓶颈 <span style="font-size:12px;color:#1B4FC4;">→ 总是被动</span></div>
+        <div class="ph">📋 任务零散 <span style="font-size:12px;color:#1B4FC4;">→ 移动场景下没抓手</span></div>
         <div class="pd">
-          • <b>缺预警</b>：客户掉量没人提醒，等客户主动求助，<b>损失早已造成</b><br>
-          • <b>要翻译</b>：从"消耗多少"到"该不该催"，隔着一层口径<br>
-          • <b>慢半拍</b>：业务按天变，靠人盯总是后知后觉
+          • <b>外勤场景多</b>：销售常在路上，<b>碎片时间多</b>、整块时间少<br>
+          • <b>任务零散</b>：每天该催谁、该盯谁，全凭脑子记<br>
+          • <b>缺系统驱动</b>：没工具把零散任务<b>具象化为每日必做动作</b>
         </div>
       </div>
       <div class="painbox tool">
-        <div class="ph">📱 工具瓶颈 <span style="font-size:12px;color:#a16207;">→ 想做做不了</span></div>
+        <div class="ph">📚 信息过载 <span style="font-size:12px;color:#a16207;">→ 信息散、追不上</span></div>
         <div class="pd">
-          • <b>依赖电脑</b>：以往看数要回到电脑前才能查<br>
-          • <b>人在路上</b>：销售频繁出差、常在外面跑<br>
-          • <b>缺移动入口</b>：碎片时间想处理客户，却没有便捷的手机端
+          • <b>信息过载</b>：行业动态、政策活动<b>更新很快</b>，难全面跟进<br>
+          • <b>专业度不够</b>：客户问到行业问题、新品玩法常常答不上<br>
+          • <b>缺随身字典</b>：客户<b>不同阶段</b>需要不同服务，没工具支持
         </div>
       </div>
     </div>
+
+    <!-- 痛点 → 核心转变 过渡箭头条 -->
+    <div style="display:flex;flex-direction:column;align-items:center;margin:18px 0 14px;">
+      <div style="font-size:32px;color:#1B4FC4;line-height:1;animation:pulse-arrow 1.6s ease-in-out infinite;">⬇</div>
+      <div style="margin-top:6px;font-size:14px;font-weight:850;color:#fff;background:linear-gradient(135deg,#1B4FC4,#2f74f5);padding:10px 26px;border-radius:24px;letter-spacing:1.5px;box-shadow:0 6px 20px rgba(27,79,196,.28);">
+        因此 · 需要小红点任务系统
+      </div>
+    </div>
+    <style>
+      @keyframes pulse-arrow{
+        0%,100%{transform:translateY(0);opacity:.6;}
+        50%{transform:translateY(4px);opacity:1;}
+      }
+    </style>
+
     <div class="shift">
       <div class="shiftbox">
-        <div class="sk">核心转变 ①</div>
-        <div class="sline"><span class="from">被动</span><span class="arrow">➜</span><span class="to">主动</span></div>
-        <div class="sdesc">不再等客户掉量后主动求助，而是<b>系统提前预警、第一时间顶出该处理的客户</b>。</div>
+        <div class="sk">核心转变 ① · 服务模式</div>
+        <div class="sline"><span class="from">被动服务</span><span class="arrow">➜</span><span class="to">主动服务</span></div>
       </div>
       <div class="shiftbox">
-        <div class="sk">核心转变 ②</div>
-        <div class="sline"><span class="from">漏球</span><span class="arrow">➜</span><span class="to">不漏球</span></div>
-        <div class="sdesc">3.4 万客户不靠人脑记，<b>每天该催/该盯/该抓的一个不落，碎片时间手机随时处理</b>。</div>
+        <div class="sk">核心转变 ② · 销售工作方式</div>
+        <div class="sline"><span class="from">低效伏案</span><span class="arrow">➜</span><span class="to">工具化，随手处理</span></div>
+      </div>
+      <div class="shiftbox">
+        <div class="sk">核心转变 ③ · 资源应用</div>
+        <div class="sline"><span class="from">资源分散</span><span class="arrow">➜</span><span class="to">资源集中，服务高效</span></div>
+      </div>
+    </div>
+
+    <!-- 过去手搓 → 现在AI产品化 -->
+    <style>
+      .legacy{margin-top:28px;background:linear-gradient(135deg,#f8fafc 0%,#eef4ff 100%);border:1px solid #dbe7ff;border-radius:14px;padding:22px 24px;}
+      .legacy-h{font-size:15px;font-weight:850;color:#1B4FC4;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+      .legacy-h::before{content:"💡";font-size:18px;}
+      .legacy-d{font-size:14px;color:#334155;line-height:1.85;margin-bottom:16px;}
+      .legacy-d b{color:#1B4FC4;}
+      .legacy-d .red{color:#dc2626;font-weight:850;}
+      .legacy-d .green{color:#15803d;font-weight:850;}
+      .legacy-imgs{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+      .legacy-imgs figure{margin:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center;}
+      .legacy-imgs img{width:100%;max-height:200px;object-fit:contain;border-radius:6px;display:block;margin:0 auto;}
+      .legacy-imgs figcaption{font-size:11.5px;color:#64748b;margin-top:8px;font-weight:700;}
+          </style>
+    <div class="legacy">
+      <div class="legacy-h">从"手搓 Excel + 微信群推送" 走到 "用 AI 做产品"</div>
+      <div class="legacy-d">
+        <b>没有 AI 之前</b>，我们也试过自己想办法——手搓 Excel 弹药库、往群里发"<span class="red">涨跌红黑榜</span>"，但都停在<span class="red">静态文档 + 一次性推送</span>，看到了不一定动。<b>有了 AI 之后</b>，业务同事可以<b>直接当产品经理</b>——把业务规则翻译成<span class="green">能触发、能闭环、能沉淀</span>的产品工具，这就是小红点系统。
+      </div>
+      <div class="legacy-imgs">
+        <figure>
+          <img src="assets/legacy_excel.png" alt="销售拓客弹药库 Excel 手搓总表">
+          <figcaption>📋 阶段 1·A · 销售拓客弹药库（手搓 Excel）</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/legacy_redblack.png" alt="客户涨跌红黑榜 微信群推送">
+          <figcaption>📨 阶段 1·B · 客户涨跌红黑榜（微信群推送）</figcaption>
+        </figure>
       </div>
     </div>
   </div>
 
-  <!-- PART 03 · 能力地图 + 能力蓝图（合并） -->
+  <!-- PART 02 · 能力地图 + 能力蓝图（合并） -->
   <div class="slide">
-    <div class="part-tag">PART 03 · 能力总览</div>
-    <h2>小红点系统长什么样子</h2>
-    <p class="lead">三个一级 Tab，覆盖"看进度 / 做动作 / 给弹药"三件事：</p>
+    <div class="part-tag">PART 02 · 能力总览</div>
+    <h2 style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <span>小红点系统长什么样子</span>
+      <a href="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260610k" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:850;color:#fff;background:linear-gradient(135deg,#ef4444,#dc2626);padding:7px 14px;border-radius:20px;text-decoration:none;box-shadow:0 4px 14px rgba(220,38,38,.28);letter-spacing:.5px;animation:pulse-red 2.2s infinite;">
+        🚀 打开小红点系统
+      </a>
+    </h2>
+    <style>
+      @keyframes pulse-red{
+        0%,100%{box-shadow:0 4px 14px rgba(220,38,38,.28);}
+        50%{box-shadow:0 4px 22px rgba(220,38,38,.55);}
+      }
+    </style>
+    <p class="lead">四个一级 Tab，覆盖"看进度 / 做动作 / 管生命周期 / 给弹药"四件事：</p>
     <div class="arch">
       <div class="tabrow">
         <div class="tabbox t1">
           <div class="th">📌 今日待办小红点</div>
+          <div class="sub2">今日概况预览</div>
           <div class="sub2">待办清单 → 消红点</div>
-          <div class="sub2">作战台 · 两套视角</div>
           <div class="sub2">客户明细 + 涨跌诊断</div>
         </div>
         <div class="tabbox t2">
           <div class="th">🚀 销售拓客作战中心</div>
-          <div class="sub2">KPI 追进 · 算缺口</div>
-          <div class="sub2">销售明细 / 拓客画像</div>
-          <div class="sub2">登记报备 + 归属留痕</div>
+          <div class="sub2">KPI 进度 / 销售明细</div>
+          <div class="sub2">销售拓客模型画像</div>
+          <div class="sub2">专项进展：靶向拓客 / 产业带</div>
         </div>
         <div class="tabbox t3">
+          <div class="th">🔄 客户生命周期管理</div>
+          <div class="sub2">拓客登记入口</div>
+          <div class="sub2">生命周期系统</div>
+          <div class="sub2">全量登记明细 + 阶段跟进</div>
+        </div>
+        <div class="tabbox t4">
           <div class="th">📚 销售弹药库</div>
           <div class="sub2">行业概况</div>
           <div class="sub2">活动政策</div>
@@ -489,11 +515,24 @@
       </div>
     </div>
 
-    <h2 style="margin-top:30px;">三大业务场景，对应看板三个模块</h2>
-    <p class="lead">每个 Tab 对应一个业务场景。下面是完整能力清单——
-      <span style="font-size:12px;font-weight:800;padding:1px 7px;border-radius:6px;background:#dcfce7;color:#15803d;">✅ 已上线</span>
-      <span style="font-size:12px;font-weight:800;padding:1px 7px;border-radius:6px;background:#fef9c3;color:#a16207;">🆕 本期新增</span>
-      <span style="font-size:12px;font-weight:800;padding:1px 7px;border-radius:6px;background:#e2e8f0;color:#475569;">⏳ 待建设</span></p>
+    <!-- PC端展示（移动端图已删除） -->
+    <style>
+      .dual-screen{margin:22px 0 8px;}
+      .dual-screen figure{margin:0;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;box-shadow:0 2px 12px rgba(15,23,42,.05);display:flex;flex-direction:column;}
+      .dual-screen{max-width:540px;margin:22px auto 8px;}
+      .dual-screen .img-wrap{flex:1;height:300px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f8fafc,#eef2fb);border-radius:10px;overflow:hidden;}
+      .dual-screen .img-wrap img{max-height:100%;max-width:100%;object-fit:contain;display:block;}
+      .dual-screen figcaption{font-size:13px;color:#64748b;margin-top:10px;text-align:center;font-weight:800;line-height:1.5;}
+    </style>
+    <div class="dual-screen">
+      <figure>
+        <div class="img-wrap"><img src="assets/scene1_1.png" alt="PC 端 · 今日概况 + 待办小红点 + 作战中心 + 生命周期 + 弹药库"></div>
+        <figcaption>📌 PC 端：今日概况 + 待办小红点 + 作战中心 + 生命周期 + 弹药库</figcaption>
+      </figure>
+    </div>
+
+    <h2 style="margin-top:30px;">四大业务场景，对应看板四个模块</h2>
+    <p class="lead">每个模块对应具体业务场景，以及销售实操路径。</p>
 
     <details class="fold">
       <summary><span class="fold-ico">+</span>场景一 · 销售任务系统，处理每日任务 → 📌 小红点·今日待办<span class="fold-hint">点击展开</span></summary>
@@ -501,33 +540,265 @@
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
       <tbody>
-        <tr><td class="sc">今日待办清理进度</td><td class="now">头部掉量客户拢成一条可清零待办，已处理/总数，云端实时</td><td class="fut" style="background:#fef9c3;color:#a16207;">🆕 本期新增</td></tr>
-        <tr><td class="sc">关键客户作战台</td><td class="now">生命周期视角（新手/培育/成熟期）+ 考核追赶视角（潜在新锐/重点客户监控）</td><td class="fut" style="background:#fef9c3;color:#a16207;">🆕 本期新增</td></tr>
-        <tr><td class="sc">客户明细清单</td><td class="now">多维筛选（分组/类目/战役）+ 一键诊断 + 标记已处理闭环留痕</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
-        <tr><td class="sc">团队季度 KPI 进度</td><td class="now">季度新锐数 / 新客季度日耗，91 天倒计时算缺口</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">今日概况预览</td><td class="now">在今日待办上方先给整体概况：任务总量、已处理进度、重点预警和今日需要优先看的客户</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">今日待办清理进度</td><td class="now">头部掉量客户拢成一条可清零待办，已处理/总数，云端实时</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc">关键客户作战台</td><td class="now">生命周期视角（新手/培育/成熟期）+ 考核追赶视角（潜在新锐/重点客户监控）</td><td class="fut" style="background:#dbeafe;color:#1B4FC4;">🚧 上线中</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">待办小红点任务明细</td><td class="now">多维筛选（分组/类目/战役）+ 一键诊断 + 标记已处理闭环留痕</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
       </tbody>
     </table>
+
+    <!-- 🔁 小红点的运行逻辑（方案A：3步徽章+3列转置表格） -->
+    <style>
+      .biz3{margin-top:22px;background:#f8fafc;border-radius:14px;padding:18px;border:1px solid #e2e8f0;}
+      .biz3-h{font-size:14px;font-weight:850;color:#1B4FC4;letter-spacing:.5px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+      .biz3-h::before{content:"🔁";font-size:18px;}
+      /* 3步流程徽章（顶部） */
+      .biz3-steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:center;margin-bottom:14px;}
+      .biz3-step{background:#fff;border-radius:10px;padding:10px 12px;text-align:center;display:flex;flex-direction:column;gap:3px;border:2px solid #cbd5e1;}
+      .biz3-step .bs-num{font-size:10.5px;font-weight:850;letter-spacing:1.3px;opacity:.65;}
+      .biz3-step .bs-name{font-size:15px;font-weight:850;letter-spacing:.5px;}
+      .biz3-step.s1{border-color:#fca5a5;}
+      .biz3-step.s1 .bs-num,.biz3-step.s1 .bs-name{color:#dc2626;}
+      .biz3-step.s2{border-color:#fcd34d;}
+      .biz3-step.s2 .bs-num,.biz3-step.s2 .bs-name{color:#a16207;}
+      .biz3-step.s3{border-color:#93c5fd;}
+      .biz3-step.s3 .bs-num,.biz3-step.s3 .bs-name{color:#1B4FC4;}
+      .biz3-arr{color:#94a3b8;font-size:18px;font-weight:300;}
+      /* 3列转置表格 */
+      .biz3-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+      .biz3-col{background:#fff;border-radius:10px;border:1px solid #e2e8f0;padding:14px 14px 12px;}
+      .biz3-col .col-q{font-size:13px;font-weight:850;margin-bottom:4px;}
+      .biz3-col .col-tag{font-size:11px;color:#64748b;font-weight:700;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed #e2e8f0;}
+      .biz3-col ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.65;color:#334155;}
+      .biz3-col li{margin-bottom:6px;}
+      .biz3-col li b{color:#0f172a;}
+      .biz3-col.c1 .col-q{color:#dc2626;}
+      .biz3-col.c2 .col-q{color:#a16207;}
+      .biz3-col.c3 .col-q{color:#1B4FC4;}
+      .biz3-col .lk{color:#dc2626;font-weight:850;}
+      .biz3-col .ll{color:#15803d;font-weight:850;}
+      .biz3-col .hl{background:#fef9c3;padding:0 4px;border-radius:3px;font-weight:850;color:#a16207;}
+          </style>
+    <div class="biz3">
+      <div class="biz3-h">小红点的运行逻辑 · 一图看懂</div>
+      <div class="biz3-steps">
+        <div class="biz3-step s1">
+          <div class="bs-num">STEP 01</div>
+          <div class="bs-name">精准识别</div>
+        </div>
+        <div class="biz3-arr">➜</div>
+        <div class="biz3-step s2">
+          <div class="bs-num">STEP 02</div>
+          <div class="bs-name">及时介入</div>
+        </div>
+        <div class="biz3-arr">➜</div>
+        <div class="biz3-step s3">
+          <div class="bs-num">STEP 03</div>
+          <div class="bs-name">监控回收</div>
+        </div>
+      </div>
+      <div class="biz3-cols">
+        <div class="biz3-col c1">
+          <div class="col-q">如何识别客户？</div>
+          <div class="col-tag">客户分档 · 触发任务</div>
+          <ul>
+            <li>按投放表现分<b>四档</b>：头部稳定 / 头部掉量 / 潜力起量 / 海量长尾</li>
+            <li><b>掉量预警</b>：消耗或 ROI 较前日下降<span class="lk">超过 20%</span>，系统即时标红</li>
+            <li><b>起量抢窗口</b>：消耗突然放大即提醒，<span class="lk">机会窗就两三天</span></li>
+          </ul>
+        </div>
+        <div class="biz3-col c2">
+          <div class="col-q">销售怎么处理？</div>
+          <div class="col-tag">看板定位 · AI 诊断 · 资源匹配</div>
+          <ul>
+            <li><b>看板一键定位</b>：异动客户气泡标红，待办清单自动生成</li>
+            <li><b>联动小 A 出诊断</b>：3-5 分钟出报告，<span class="hl">不用销售自己看报表猜</span></li>
+          </ul>
+        </div>
+        <div class="biz3-col c3">
+          <div class="col-q">如何监控？</div>
+          <div class="col-tag">数据留痕 · 模型沉淀</div>
+          <ul>
+            <li><b>清除即留痕</b>：处理完打状态标签（已处理 / 无效 / 需升级），实时回传云端</li>
+            <li><b>权限隔离合规</b>：销售看自己、Leader 看组员、管理层看团队</li>
+            <li><b>反馈存档</b>：每次反馈<span class="ll">实时回写拓客模型</span>，精准度持续提升</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🎬 销售视角的实操之变（从原Tab① 挪过来 + 简化） -->
+    <style>
+      .impact{margin-top:22px;background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 100%);border-radius:14px;padding:18px;border:1px solid #fcd34d;}
+      .impact-h{font-size:14px;font-weight:850;color:#a16207;letter-spacing:.5px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+      .impact-h::before{content:"🎬";font-size:18px;}
+      .impact-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;}
+      .impact-box{background:#fff;border-radius:10px;padding:14px 16px;}
+      .impact-box.before{border:2px solid #fca5a5;}
+      .impact-box.after{border:2px solid #6ee7b7;background:linear-gradient(135deg,#f0fdf4,#fff);}
+      .impact-box .ib-tag{font-size:11px;font-weight:850;letter-spacing:1.5px;margin-bottom:6px;}
+      .impact-box.before .ib-tag{color:#dc2626;}
+      .impact-box.after .ib-tag{color:#15803d;}
+      .impact-box .ib-h{font-size:14.5px;font-weight:850;margin-bottom:8px;line-height:1.4;}
+      .impact-box.before .ib-h{color:#7f1d1d;}
+      .impact-box.after .ib-h{color:#065f46;}
+      .impact-box ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.7;color:#334155;}
+      .impact-box li{margin-bottom:4px;}
+      .impact-arr{color:#a16207;font-size:24px;font-weight:300;display:flex;align-items:center;justify-content:center;}
+      .impact-cap{margin-top:14px;font-size:12.5px;color:#92400e;line-height:1.6;padding:10px 14px;background:rgba(255,255,255,.6);border-radius:8px;border-left:3px solid #f59e0b;}
+      .impact-cap b{color:#a16207;}
+          </style>
+    <div class="impact">
+      <div class="impact-h">销售实操 · 之前 vs 现在</div>
+      <div class="impact-grid">
+        <div class="impact-box before">
+          <div class="ib-tag">之前 · 被动</div>
+          <div class="ib-h">每天翻 7 份报表自己找</div>
+          <ul>
+            <li>没有今日概况，先翻明细才知道今天哪里异常</li>
+            <li>掉量靠脑子记，重点之外照顾不到</li>
+            <li>等客户主动找，掉量已经几天</li>
+          </ul>
+        </div>
+        <div class="impact-arr">➜</div>
+        <div class="impact-box after">
+          <div class="ib-tag">现在 · 主动 + 不漏球</div>
+          <div class="ib-h">先看今日概况，再处理待办清单</div>
+          <ul>
+            <li>上方今日概况预览先判断今日压力</li>
+            <li>系统自动顶出掉量客户，红点提醒</li>
+            <li>点 🩺 一键诊断查因，处理一个消一个红点</li>
+          </ul>
+        </div>
+      </div>
+      <div class="impact-cap">实操之变：从"<b>每天翻报表自己找、靠脑子记</b>" → "<b>先看今日概况、再清待办红点</b>"，掉量在客户开口前就被拦回。</div>
+    </div>
+
+    <!-- 场景一 销售实操（上下两张超横向长图，等高等宽） -->
+    <style>
+      .ops-stack{display:grid;grid-template-columns:1fr;gap:14px;margin:16px 0 0 0;}
+      .ops-stack figure{margin:0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;box-shadow:0 2px 10px rgba(15,23,42,.04);display:flex;flex-direction:column;}
+      .ops-stack .ops-img{flex:1;width:100%;background:linear-gradient(135deg,#f8fafc,#eef4ff);border-radius:8px;overflow:hidden;}
+      .ops-stack .ops-img img{display:block;width:100%;height:auto;}
+      .ops-stack .ops-meta{display:flex;align-items:center;gap:12px;margin-top:10px;}
+      .ops-stack .ops-step{font-size:12px;font-weight:850;color:#fff;background:linear-gradient(135deg,#1B4FC4,#2f74f5);padding:4px 12px;border-radius:14px;letter-spacing:1.2px;flex-shrink:0;}
+      .ops-stack .ops-cap{font-size:13.5px;color:#334155;font-weight:700;line-height:1.45;}
+    </style>
+    <div class="ops-stack">
+      <figure>
+        <div class="ops-img"><img src="assets/scene1_op_top.jpg?v=20260611c" alt="销售实操 · 上：看板定位 → 联动小A诊断 → 闭环留痕"></div>
+        <div class="ops-meta">
+          <span class="ops-step">STEP 01-03</span>
+          <span class="ops-cap">看板一键定位 → 联动小 A 出诊断（3-5 分钟出报告）→ 处理完打状态标签闭环留痕</span>
+        </div>
+      </figure>
+      <figure>
+        <div class="ops-img"><img src="assets/scene1_op_bottom.jpg?v=20260611c" alt="销售实操 · 下：诊断报告分享 → 全员清零 100%"></div>
+        <div class="ops-meta">
+          <span class="ops-step">STEP 04-05</span>
+          <span class="ops-cap">把诊断结果同步给客户 → 全员当日清零、监控回收 100%</span>
+        </div>
+      </figure>
+    </div>
+
       </div>
     </details>
 
     <details class="fold">
-      <summary><span class="fold-ico">+</span>场景二 · 客户生命周期管理 → 🚀 销售拓客作战中心<span class="fold-hint">点击展开</span></summary>
+      <summary><span class="fold-ico">+</span>场景二 · 新客引入及客户管理 → 🚀 销售拓客作战中心<span class="fold-hint">点击展开</span></summary>
       <div class="fold-body">
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
       <tbody>
-        <tr><td class="sc">新客录入</td><td class="now">统一登记入口 + 系统自动识别简称/打标 + 归属变更留痕</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
-        <tr><td class="sc">拓客来源分布</td><td class="now">类目 / 客户来源 / 投放端 / 链路画像（按数量或消耗占比）</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
-        <tr><td class="sc">客户消耗分布</td><td class="now">KPI 进度盘 + 7 销售明细横向对比</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
-        <tr><td class="sc">客户明细 · 投放走势</td><td class="now">单客户消耗趋势曲线、逐日走势</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
-        <tr><td class="sc">客户生命周期全视</td><td class="now">客户流失 / 跃迁 / 掉量的全周期状态流转</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">KPI 进度情况</td><td class="now">KPI 进度盘 + 7 销售明细横向对比，按季度目标看缺口和追赶节奏</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">销售拓客模型</td><td class="now">类目 / 客户来源 / 投放端 / 链路画像（按数量或消耗占比），用于复盘销售拓客结构</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">专项进展</td><td class="now">新增专项入口：靶向拓客名单（渗透漏斗 + By 销售跟踪 + 名单分类明细）/ 产业带进展（核心城市×类目产业带覆盖、客户新增、消耗起量）</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc">客户标签管理</td><td class="now">客户消耗波动 / 投放效果 / ADQ / 全域通 / 引入资源来源等</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
       </tbody>
     </table>
+    <div class="shotpair">
+      <figure class="shot-img"><img src="assets/scene2_2.png" alt="场景二 · 销售拓客模型画像"><figcaption>📊 销售拓客模型画像：类目 / 来源 / 投放端 / 链路四维分布</figcaption></figure>
+      <figure class="shot-img"><img src="special_progress.png" alt="场景二 · 专项进展：靶向拓客名单与产业带进展"><figcaption>🎯 专项进展：靶向拓客名单 + 产业带进展，点击卡片进入专项作战页</figcaption></figure>
+    </div>
+
+    <!-- 🎬 销售视角的实操之变（场景二 · 拓客作战中心 · 蓝色） -->
+    <div class="impact" style="background:linear-gradient(135deg,#eef4ff 0%,#dbe7ff 100%);border-color:#93c5fd;">
+      <div class="impact-h" style="color:#1B4FC4;">销售实操 · 之前 vs 现在</div>
+      <div class="impact-grid">
+        <div class="impact-box before">
+          <div class="ib-tag">之前 · 各算各的</div>
+          <div class="ib-h">进度、画像、专项分散看</div>
+          <ul>
+            <li>KPI 进度靠人工汇总，<b>隔天才知道</b></li>
+            <li>拓客画像、专项名单、产业带进度散在不同材料</li>
+            <li>销售之间数据不透明，<b>对数据先吵半天</b></li>
+          </ul>
+        </div>
+        <div class="impact-arr" style="color:#1B4FC4;">➜</div>
+        <div class="impact-box after" style="border-color:#93c5fd;background:linear-gradient(135deg,#eff6ff,#fff);">
+          <div class="ib-tag" style="color:#1B4FC4;">现在 · 经营进度一屏看</div>
+          <div class="ib-h" style="color:#1e3a8a;">KPI + 画像 + 专项进展并在作战中心</div>
+          <ul>
+            <li>KPI 进度按 91 天倒计时实时算缺口</li>
+            <li>销售拓客模型直接看结构，知道新客从哪里来</li>
+            <li>专项进展卡片直达靶向拓客名单和产业带看板</li>
+          </ul>
+        </div>
+      </div>
+      <div class="impact-cap" style="color:#1e3a8a;border-left-color:#1B4FC4;">实操之变：从"<b>隔天汇总、专项散落</b>" → "<b>KPI、拓客模型、专项进展集中在作战中心</b>"，管理层和销售都能一眼看到进度、结构和专项突破口。</div>
+    </div>
+
       </div>
     </details>
 
     <details class="fold">
-      <summary><span class="fold-ico">+</span>场景三 · 补充行业知识，建立专业度 → 📚 销售弹药库<span class="fold-hint">点击展开</span></summary>
+      <summary><span class="fold-ico">+</span>场景三 · 管好客户生命周期 → 🔄 客户生命周期管理<span class="fold-hint">点击展开</span></summary>
+      <div class="fold-body">
+    <table class="evo">
+      <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">拓客登记入口</td><td class="now">登记入口已搬到生命周期模块内，支持单客登记、批量粘贴、简称识别、归属留痕</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">客户阶段识别</td><td class="now">按投放天数、消耗表现、起量稳定性识别新手期 / 生长期 / 成熟期</td><td class="fut" style="background:#dbeafe;color:#1B4FC4;">🚧 上线中</td></tr>
+        <tr><td class="sc" style="color:#dc2626;font-weight:850;">分层服务策略</td><td class="now">不同阶段匹配不同服务动作：新手建基建、生长期促起量、成熟期防掉量</td><td class="fut" style="background:#dbeafe;color:#1B4FC4;">🚧 上线中</td></tr>
+        <tr><td class="sc">拓客全量登记明细</td><td class="now">登记数据和生命周期客户运营放在同一动线，避免“登记在一处、跟进在另一处”</td><td class="fut" style="background:#dcfce7;color:#15803d;">✅ 已上线</td></tr>
+      </tbody>
+    </table>
+    <div class="shotpair">
+      <figure class="shot-img"><img src="assets/scene2_1.png" alt="场景三 · 客户生命周期视角"><figcaption>🔄 客户生命周期：新手期 / 生长期 / 成熟期分阶段服务</figcaption></figure>
+      <figure class="shot-img"><img src="assets/scene1_1.png" alt="场景三 · 客户阶段与作战视角"><figcaption>🎯 客户阶段管理：把客户从“只看当日表现”推进到“按阶段持续运营”</figcaption></figure>
+    </div>
+
+    <div class="impact" style="background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border-color:#86efac;">
+      <div class="impact-h" style="color:#047857;">销售实操 · 之前 vs 现在</div>
+      <div class="impact-grid">
+        <div class="impact-box before">
+          <div class="ib-tag">之前 · 只看单日异动</div>
+          <div class="ib-h">客户服务靠经验判断阶段</div>
+          <ul>
+            <li>登记入口和后续客户运营分开，录入完不等于管起来</li>
+            <li>新手客户不知道先补哪块基建</li>
+            <li>成长客户起量窗口容易错过</li>
+          </ul>
+        </div>
+        <div class="impact-arr" style="color:#047857;">➜</div>
+        <div class="impact-box after" style="border-color:#86efac;background:linear-gradient(135deg,#f0fdf4,#fff);">
+          <div class="ib-tag" style="color:#047857;">现在 · 按阶段运营</div>
+          <div class="ib-h" style="color:#065f46;">登记入口 + 生命周期运营放在一起</div>
+          <ul>
+            <li>新增客户先在生命周期模块内完成登记和归属留痕</li>
+            <li>新手期：看建站、素材、链路是否完整</li>
+            <li>生长期/成熟期：看加预算、扩计划、稳定性和掉量风险</li>
+          </ul>
+        </div>
+      </div>
+      <div class="impact-cap" style="color:#065f46;border-left-color:#10b981;">实操之变：从"<b>登记和运营分散</b>" → "<b>登记入口、客户阶段、后续跟进都放进生命周期</b>"，让新增客户从录入开始就进入持续运营。</div>
+    </div>
+
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary><span class="fold-ico">+</span>场景四 · 补充行业知识，建立专业度 → 📚 销售弹药库<span class="fold-hint">点击展开</span></summary>
       <div class="fold-body">
     <table class="evo">
       <thead><tr><th>子模块</th><th>能力 / 内容</th><th>状态</th></tr></thead>
@@ -538,144 +809,46 @@
         <tr><td class="sc">产品能力</td><td class="now">ADQ 服饰投放产品矩阵介绍 & 对外文档</td><td class="fut" style="background:#e2e8f0;color:#475569;">⏳ 待建设</td></tr>
       </tbody>
     </table>
+    <div class="shotpair">
+      <figure class="shot-img"><img src="assets/scene3_1.png" alt="场景四 · 信息同步库"><figcaption>📚 信息同步库：政策活动 + 行业大盘指标实时同步</figcaption></figure>
+      <figure class="shot-img"><img src="assets/scene3_2.png" alt="场景四 · 标杆案例库"><figcaption>🏆 标杆案例库：优秀新客起量打法、按类目检索</figcaption></figure>
+    </div>
+
+    <!-- 🎬 销售视角的实操之变（场景四 · 销售弹药库 · 橙色） -->
+    <div class="impact" style="background:linear-gradient(135deg,#fff7ed 0%,#fed7aa 100%);border-color:#fdba74;">
+      <div class="impact-h" style="color:#c2410c;">销售实操 · 之前 vs 现在</div>
+      <div class="impact-grid">
+        <div class="impact-box before">
+          <div class="ib-tag">之前 · 现查现猜</div>
+          <div class="ib-h">客户问行情/政策答不上</div>
+          <ul>
+            <li>大盘、竞品要临时到处找数</li>
+            <li>政策一变，<b>传达滞后、说不准</b></li>
+            <li>新销售没积累，开口没底气</li>
+          </ul>
+        </div>
+        <div class="impact-arr" style="color:#c2410c;">➜</div>
+        <div class="impact-box after" style="border-color:#fdba74;background:linear-gradient(135deg,#fff7ed,#fff);">
+          <div class="ib-tag" style="color:#c2410c;">现在 · 随手有弹药</div>
+          <div class="ib-h" style="color:#7c2d12;">脱敏重组好的统一弹药库</div>
+          <ul>
+            <li>行业概况：大盘 + 二级行业 + Top3 参考</li>
+            <li>政策海报实时同步，<b>当天就能讲</b></li>
+            <li>标杆案例点开带「适用客户名单」</li>
+          </ul>
+        </div>
+      </div>
+      <div class="impact-cap" style="color:#7c2d12;border-left-color:#f59e0b;">实操之变：从"<b>客户一问就现查现猜</b>" → "<b>随手调出权威数据/政策/案例截图给客户</b>"，专业度不再靠个人经验。</div>
+    </div>
+
       </div>
     </details>
-    <div class="note">三个场景从"<b>每天处理任务</b>"（今日待办小红点）到"<b>管好客户生命周期</b>"（销售拓客作战中心）再到"<b>建立专业度对外赋能</b>"（销售弹药库），覆盖销售一天的完整动线。</div>
+    <div class="note">四个场景从"<b>先看今日概况、再处理任务</b>"（今日待办小红点）到"<b>KPI、拓客模型、专项进展集中管理</b>"（销售拓客作战中心），再到"<b>登记入口 + 客户生命周期运营</b>"（客户生命周期管理），最后到"<b>建立专业度对外赋能</b>"（销售弹药库），覆盖销售一天的完整动线。</div>
   </div>
 
-  <!-- PART 04 · 三个 Tab 详解（销售实操之变 · 图例） -->
+  <!-- PART 03 · 真实成效闭环 -->
   <div class="slide">
-    <div class="part-tag">PART 04 · 三个 Tab 详解</div>
-    <h2>销售用了看板之后，实操到底变了什么</h2>
-    <p class="lead">三个 Tab 对应销售一天的完整动线。下面每个 Tab 用一张「<b style="color:#b91c1c;">之前</b> → <b style="color:#047857;">现在</b>」图例，讲清销售的<b>实际操作</b>怎么变——核心就两件事：<b>从被动到主动、从漏球到不漏球</b>。</p>
-
-    <!-- Tab① 今日待办 -->
-    <div class="optab c1">
-      <div class="optab-h"><span class="oico">📌</span>Tab① 今日待办小红点<span class="orole">· 今天处理谁</span></div>
-      <div class="oppath">📋 待办清单<span class="pa">➜</span>🔴 消除红点<span class="pa">➜</span>💰 挽回损失</div>
-      <div class="opdef">根据消耗情况，帮助销售<b>快速定位掉量 / 起量客户</b>，锁定少量目标、及时给出业务判断和执行动作，形成<b>待办清单</b>，及时<b>挽回损失、抓住起量机会</b>。</div>
-      <div class="opchips">
-        <span class="opchip"><b>清理进度条</b> 已处理/总数</span>
-        <span class="opchip"><b>作战台·生命周期</b> 新手/培育/成熟期</span>
-        <span class="opchip"><b>作战台·考核追赶</b> 潜在新锐/重点监控</span>
-        <span class="opchip"><b>战役</b> 产业带/腾飞/珠宝/T2T</span>
-        <span class="opchip"><b>客户明细</b> 涨跌诊断·已通知标记</span>
-      </div>
-      <div class="dgm">
-        <svg viewBox="0 0 680 196" role="img" aria-label="今日待办：销售实操之前到现在">
-          <defs>
-            <linearGradient id="og1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1B4FC4"/></linearGradient>
-            <marker id="oa1" markerWidth="11" markerHeight="11" refX="6" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#94a3b8"/></marker>
-          </defs>
-          <text x="150" y="18" text-anchor="middle" fill="#b91c1c" font-size="12.5" font-weight="850">之前 · 被动</text>
-          <text x="530" y="18" text-anchor="middle" fill="#047857" font-size="12.5" font-weight="850">现在 · 主动 + 不漏球</text>
-          <!-- before box -->
-          <rect x="14" y="30" width="272" height="150" rx="13" fill="#fff6f6" stroke="#f6c2c2"/>
-          <text x="34" y="58" fill="#b91c1c" font-size="12.5" font-weight="800">每天翻 7 份报表自己找</text>
-          <text x="34" y="84" fill="#7f1d1d" font-size="11.5">· 哪个客户掉量了，全靠脑子记</text>
-          <text x="34" y="106" fill="#7f1d1d" font-size="11.5">· 重点之外的客户照顾不到 → 漏球</text>
-          <text x="34" y="128" fill="#7f1d1d" font-size="11.5">· 等客户主动找来，掉量已经几天了</text>
-          <text x="34" y="150" fill="#7f1d1d" font-size="11.5">· 催没催过没记录，换人就断</text>
-          <text x="34" y="170" fill="#b91c1c" font-size="11.5" font-weight="800">→ 凭感觉、慢半拍</text>
-          <line x1="290" y1="105" x2="338" y2="105" stroke="#94a3b8" stroke-width="2.4" marker-end="url(#oa1)"/>
-          <!-- after box -->
-          <rect x="344" y="30" width="322" height="150" rx="13" fill="url(#og1)"/>
-          <text x="366" y="58" fill="#fff" font-size="12.5" font-weight="850">打开就是一条今日待办清单</text>
-          <text x="366" y="84" fill="#e3edff" font-size="11.5">· 系统把掉量客户自动顶出，红点提醒</text>
-          <text x="366" y="106" fill="#e3edff" font-size="11.5">· 按生命周期/考核视角，知道先催谁</text>
-          <text x="366" y="128" fill="#e3edff" font-size="11.5">· 点🩺一键诊断查因，当天就跟进</text>
-          <text x="366" y="150" fill="#e3edff" font-size="11.5">· 处理一个消一个红点，闭环留痕</text>
-          <text x="366" y="170" fill="#fff" font-size="11.5" font-weight="800">→ 清零=今天该催的都催了</text>
-        </svg>
-      </div>
-      <div class="opcap">实操之变：从"<b style="color:#b91c1c;">每天翻报表自己找、靠脑子记</b>"→"<b>打开就有待办清单、处理一个消一个红点</b>"，<b>掉量在客户开口前就被拦回</b>。</div>
-    </div>
-
-    <!-- Tab② 销售拓客作战中心 -->
-    <div class="optab c2">
-      <div class="optab-h"><span class="oico">🚀</span>Tab② 销售拓客作战中心<span class="orole">· 进度与底表</span></div>
-      <div class="oppath">🎯 KPI 追进<span class="pa">➕</span>📊 拓客画像<span class="pa">➕</span>📝 登记报备</div>
-      <div class="opdef">侧重<b>团队 KPI 考核进度的监控</b>和<b>销售拓客模型刻画</b>，帮助销售<b>实时计算目标缺口</b>，形成团队良性竞争。</div>
-      <div class="opchips">
-        <span class="opchip"><b>KPI 进度</b> 新客/新锐/有效/消耗</span>
-        <span class="opchip"><b>销售明细</b> 7 销售横向对比</span>
-        <span class="opchip"><b>拓客画像</b> 类目/来源/投放端/链路</span>
-        <span class="opchip"><b>报备登记</b> 粘贴→校验→入库</span>
-        <span class="opchip"><b>归属变更</b> 留痕·自动归位</span>
-      </div>
-      <div class="dgm">
-        <svg viewBox="0 0 680 196" role="img" aria-label="拓客看板：销售实操之前到现在">
-          <defs>
-            <linearGradient id="og2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#047857"/></linearGradient>
-            <marker id="oa2" markerWidth="11" markerHeight="11" refX="6" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#94a3b8"/></marker>
-          </defs>
-          <text x="150" y="18" text-anchor="middle" fill="#b91c1c" font-size="12.5" font-weight="850">之前 · 各算各的</text>
-          <text x="530" y="18" text-anchor="middle" fill="#047857" font-size="12.5" font-weight="850">现在 · 一张真源底表</text>
-          <rect x="14" y="30" width="272" height="150" rx="13" fill="#fff6f6" stroke="#f6c2c2"/>
-          <text x="34" y="58" fill="#b91c1c" font-size="12.5" font-weight="800">底表散在 Excel / 文档</text>
-          <text x="34" y="84" fill="#7f1d1d" font-size="11.5">· KPI 进度靠人工汇总，隔天才知道</text>
-          <text x="34" y="106" fill="#7f1d1d" font-size="11.5">· 登记口径不一，简称对不上</text>
-          <text x="34" y="128" fill="#7f1d1d" font-size="11.5">· 客户归属谁全凭记忆，改派就乱</text>
-          <text x="34" y="150" fill="#7f1d1d" font-size="11.5">· 销售之间数据不透明，比拼凭感觉</text>
-          <text x="34" y="170" fill="#b91c1c" font-size="11.5" font-weight="800">→ 对数据先吵半天</text>
-          <line x1="290" y1="105" x2="338" y2="105" stroke="#94a3b8" stroke-width="2.4" marker-end="url(#oa2)"/>
-          <rect x="344" y="30" width="322" height="150" rx="13" fill="url(#og2)"/>
-          <text x="366" y="58" fill="#fff" font-size="12.5" font-weight="850">统一入口 + 自动打标的真源底表</text>
-          <text x="366" y="84" fill="#e8fbf1" font-size="11.5">· KPI 进度盘按 91 天倒计时实时算缺口</text>
-          <text x="366" y="106" fill="#e8fbf1" font-size="11.5">· 粘贴→解析校验→一键入库，省去手填</text>
-          <text x="366" y="128" fill="#e8fbf1" font-size="11.5">· 归属变更即时留痕、次日自动归位</text>
-          <text x="366" y="150" fill="#e8fbf1" font-size="11.5">· 7 销售统一口径横向比，差距看得见</text>
-          <text x="366" y="170" fill="#fff" font-size="11.5" font-weight="800">→ "今天还差多少"一眼看清</text>
-        </svg>
-      </div>
-      <div class="opcap">实操之变：从"<b style="color:#b91c1c;">隔天汇总、归属靠记忆</b>"→"<b>实时算缺口、归属留痕、统一口径比拼</b>"，进度心里有底、不再为数据扯皮。</div>
-    </div>
-
-    <!-- Tab③ 销售弹药库 -->
-    <div class="optab c3">
-      <div class="optab-h"><span class="oico">📚</span>Tab③ 销售弹药库<span class="orole">· 对客户讲什么</span></div>
-      <div class="oppath">📊 行业概况<span class="pa">➕</span>📢 活动政策<span class="pa">➕</span>🏆 案例标杆</div>
-      <div class="opdef">帮助销售<b>消除信息不对称</b>，同时<b>缩短政策传导链路</b>，及时<b>把握政策红利</b>。</div>
-      <div class="opchips">
-        <span class="opchip"><b>产品能力</b> 投放产品矩阵</span>
-        <span class="opchip"><b>行业概况</b> 大盘+二级行业+Top3</span>
-        <span class="opchip"><b>政策活动</b> 腾飞/珠宝/小店红包</span>
-        <span class="opchip"><b>标杆案例</b> 起量打法+适用名单</span>
-      </div>
-      <div class="dgm">
-        <svg viewBox="0 0 680 196" role="img" aria-label="信息同步库：销售实操之前到现在">
-          <defs>
-            <linearGradient id="og3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#b45309"/></linearGradient>
-            <marker id="oa3" markerWidth="11" markerHeight="11" refX="6" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#94a3b8"/></marker>
-          </defs>
-          <text x="150" y="18" text-anchor="middle" fill="#b91c1c" font-size="12.5" font-weight="850">之前 · 现查现猜</text>
-          <text x="530" y="18" text-anchor="middle" fill="#b45309" font-size="12.5" font-weight="850">现在 · 随手有弹药</text>
-          <rect x="14" y="30" width="272" height="150" rx="13" fill="#fff6f6" stroke="#f6c2c2"/>
-          <text x="34" y="58" fill="#b91c1c" font-size="12.5" font-weight="800">客户问行情/政策答不上</text>
-          <text x="34" y="84" fill="#7f1d1d" font-size="11.5">· 大盘、竞品要临时到处找数</text>
-          <text x="34" y="106" fill="#7f1d1d" font-size="11.5">· 政策一变，传达滞后、说不准</text>
-          <text x="34" y="128" fill="#7f1d1d" font-size="11.5">· "别人怎么投的"全靠个人经验</text>
-          <text x="34" y="150" fill="#7f1d1d" font-size="11.5">· 新销售没积累，开口没底气</text>
-          <text x="34" y="170" fill="#b91c1c" font-size="11.5" font-weight="800">→ 专业度靠人，参差不齐</text>
-          <line x1="290" y1="105" x2="338" y2="105" stroke="#94a3b8" stroke-width="2.4" marker-end="url(#oa3)"/>
-          <rect x="344" y="30" width="322" height="150" rx="13" fill="url(#og3)"/>
-          <text x="366" y="58" fill="#fff" font-size="12.5" font-weight="850">脱敏重组好的统一弹药库</text>
-          <text x="366" y="84" fill="#fff3e0" font-size="11.5">· 行业概况：大盘+二级行业+Top3 参考</text>
-          <text x="366" y="106" fill="#fff3e0" font-size="11.5">· 政策海报库实时同步，当天就能讲</text>
-          <text x="366" y="128" fill="#fff3e0" font-size="11.5">· 标杆案例点开带「适用客户名单」</text>
-          <text x="366" y="150" fill="#fff3e0" font-size="11.5">· 新销售也能即拿即用，开口有据</text>
-          <text x="366" y="170" fill="#fff" font-size="11.5" font-weight="800">→ 统一权威话术，截图就发</text>
-        </svg>
-      </div>
-      <div class="opcap">实操之变：从"<b style="color:#b91c1c;">客户一问就现查现猜</b>"→"<b>随手调出权威数据/政策/案例截图给客户</b>"，专业度不再靠个人经验。</div>
-    </div>
-
-    <div class="note">💡 三个 Tab 串起销售一天：<b>今日待办小红点</b>定位掉量/起量、消红点挽回损失（被动→主动、不漏球）→ <b>销售拓客作战中心</b>追 KPI 进度、对底表 → <b>销售弹药库</b>消除信息不对称、抓政策红利。<b>整套看板默认就是移动端</b>，销售在路上随手就能完成上面每一步。</div>
-  </div>
-
-  <!-- PART 05 · 真实成效闭环 -->
-  <div class="slide">
-    <div class="part-tag">PART 05 · 真实成效</div>
+    <div class="part-tag">PART 03 · 真实成效</div>
     <h2>一个"预警 → 诊断 → 加投"的完整闭环案例</h2>
     <p class="lead">这个案例最能说明看板的价值：它不只是发现问题，还顺手把"找原因"这一步接到了 AI 上。</p>
     <div class="dgm">
@@ -697,14 +870,14 @@
         <line x1="342" y1="66" x2="368" y2="66" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#ea)"/>
         <!-- step3 -->
         <rect x="372" y="34" width="148" height="64" rx="13" fill="#fff" stroke="#9ec0f6" stroke-width="1.8"/>
-        <circle cx="398" cy="58" r="11" fill="#296BEF"/><text x="398" y="62" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">3</text>
-        <text x="414" y="58" fill="#1B4FC4" font-size="12.5" font-weight="850">销售加投</text>
-        <text x="386" y="82" fill="#64748b" font-size="11">据归因重新补量</text>
+        <circle cx="390" cy="58" r="11" fill="#296BEF"/><text x="390" y="62" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">3</text>
+        <text x="406" y="62" fill="#1B4FC4" font-size="11.5" font-weight="850">销售卷客户优化</text>
+        <text x="386" y="82" fill="#64748b" font-size="11">客户优化投放动作</text>
         <line x1="524" y1="66" x2="550" y2="66" stroke="#94a3b8" stroke-width="2.2" marker-end="url(#ea)"/>
         <!-- step4 -->
-        <rect x="554" y="34" width="118" height="64" rx="13" fill="url(#g3)"/>
+        <rect x="554" y="34" width="118" height="64" rx="13" fill="#296BEF" stroke="#1B4FC4" stroke-width="1.8"/>
         <text x="613" y="60" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">✓ 消耗回正</text>
-        <text x="613" y="82" text-anchor="middle" fill="#dcfce7" font-size="11">流失被拦回</text>
+        <text x="613" y="82" text-anchor="middle" fill="#dbeafe" font-size="11">流失被拦回</text>
         <!-- top role labels -->
         <text x="82" y="22" text-anchor="middle" fill="#94a3b8" font-size="10.5">看板</text>
         <text x="264" y="22" text-anchor="middle" fill="#94a3b8" font-size="10.5">AI · 小A</text>
@@ -737,7 +910,7 @@
         <span class="ct-tag drop">⚠ 5.28-6.2 掉量</span>
         <span class="ct-tag rise">✓ 加投后回升</span>
       </div>
-      <div class="dgm-cap">5.28-6.2 明显掉量 → 经小 A 诊断、销售加投后，6.3-6.4 快速回升到正常水位。</div>
+      <div class="dgm-cap">5.28-6.2 明显掉量 → 经小 A 诊断、销售卷客户优化后，6.3-6.4 快速回升到正常水位。</div>
     </div>
 
     <h3>小 A 给出的诊断结论（节选）</h3>
@@ -771,232 +944,94 @@
     </div>
   </div>
 
-  <!-- PART 06 · 共性方法 -->
+  <!-- PART 04 · 当前的问题和下一步优化的方向（合并PART 04 当前卡点 + PART 10 下一步） -->
   <div class="slide">
-    <div class="part-tag">PART 06 · 共性方法</div>
-    <h2>所有功能背后的同一套方法：业务规则翻译器</h2>
-    <p class="lead">无论是对内防漏、抓机会，还是对外赋能，背后都是同一个四步闭环——把"业务规则"翻译成"动作机制"。</p>
-    <div class="dgm">
-      <svg viewBox="0 0 680 360" role="img" aria-label="业务规则翻译器四步闭环">
-        <defs>
-          <linearGradient id="ccore" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74f5"/><stop offset="1" stop-color="#1B4FC4"/></linearGradient>
-          <marker id="ca" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#6f9bf2"/></marker>
-        </defs>
-        <!-- center circle -->
-        <circle cx="340" cy="180" r="78" fill="url(#ccore)"/>
-        <circle cx="340" cy="180" r="86" fill="none" stroke="#bcd3f9" stroke-width="1.5" stroke-dasharray="3 5"/>
-        <text x="340" y="162" text-anchor="middle" fill="#bcd9ff" font-size="11" font-weight="800" letter-spacing="1">METHODOLOGY</text>
-        <text x="340" y="186" text-anchor="middle" fill="#fff" font-size="17" font-weight="850">业务规则翻译器</text>
-        <text x="340" y="208" text-anchor="middle" fill="#cfe0fb" font-size="12">数据 → 动作机制</text>
-        <!-- curved arrows (clockwise: 01→02→03→04→01) -->
-        <!-- 04→01 顶部弧 左→右 -->
-        <path d="M275,115 A92,92 0 0 1 405,115" fill="none" stroke="#6f9bf2" stroke-width="2.6" marker-end="url(#ca)"/>
-        <!-- 01→02 右侧弧 上→下 -->
-        <path d="M405,115 A92,92 0 0 1 405,245" fill="none" stroke="#6f9bf2" stroke-width="2.6" marker-end="url(#ca)"/>
-        <!-- 02→03 底部弧 右→左 -->
-        <path d="M405,245 A92,92 0 0 1 275,245" fill="none" stroke="#6f9bf2" stroke-width="2.6" marker-end="url(#ca)"/>
-        <!-- 03→04 左侧弧 下→上 -->
-        <path d="M275,245 A92,92 0 0 1 275,115" fill="none" stroke="#6f9bf2" stroke-width="2.6" marker-end="url(#ca)"/>
-        <!-- node 01 top-right -->
-        <g>
-          <rect x="430" y="36" width="236" height="64" rx="13" fill="#fff" stroke="#f0b96b" stroke-width="1.6"/>
-          <circle cx="456" cy="68" r="13" fill="#d97706"/><text x="456" y="72" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">01</text>
-          <text x="478" y="64" fill="#1e293b" font-size="14" font-weight="850">先定义对象</text>
-          <text x="478" y="84" fill="#64748b" font-size="11.5">什么值得被处理（新客/有效/新锐分层）</text>
-        </g>
-        <!-- node 02 bottom-right -->
-        <g>
-          <rect x="430" y="260" width="236" height="64" rx="13" fill="#fff" stroke="#f0b96b" stroke-width="1.6"/>
-          <circle cx="456" cy="292" r="13" fill="#d97706"/><text x="456" y="296" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">02</text>
-          <text x="478" y="288" fill="#1e293b" font-size="14" font-weight="850">再定义触发</text>
-          <text x="478" y="308" fill="#64748b" font-size="11.5">什么变化要提醒（掉量预警/起量觉醒）</text>
-        </g>
-        <!-- node 03 bottom-left -->
-        <g>
-          <rect x="14" y="260" width="236" height="64" rx="13" fill="#fff" stroke="#9ec0f6" stroke-width="1.6"/>
-          <circle cx="40" cy="292" r="13" fill="#296BEF"/><text x="40" y="296" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">03</text>
-          <text x="62" y="288" fill="#1e293b" font-size="14" font-weight="850">再定义输出</text>
-          <text x="62" y="308" fill="#64748b" font-size="11.5">用什么形式给谁（清单/象限/榜单）</text>
-        </g>
-        <!-- node 04 top-left -->
-        <g>
-          <rect x="14" y="36" width="236" height="64" rx="13" fill="#fff" stroke="#9ec0f6" stroke-width="1.6"/>
-          <circle cx="40" cy="68" r="13" fill="#296BEF"/><text x="40" y="72" text-anchor="middle" fill="#fff" font-size="11" font-weight="800">04</text>
-          <text x="62" y="64" fill="#1e293b" font-size="14" font-weight="850">最后定义边界</text>
-          <text x="62" y="84" fill="#64748b" font-size="11.5">哪些自动 · 哪些人兜底（次日结算/人工复核）</text>
-        </g>
-      </svg>
-      <div class="dgm-cap">4 步顺时针闭环：对象 → 触发 → 输出 → 边界 → 回到对象。</div>
-    </div>
-    <div class="note">⚠️ 顺序不能反——必须<b>先决定"该处理什么"，再决定"用什么形式给出去"</b>，否则做出来就只是个 BI 看板。AData 提供原始数据，作战中心把"目标 / 3 千门槛 / 首投季度"这些业务规则翻译成动作。这套方法，对内是"防漏+抓机会"，对外是"信息产品化"。</div>
-  </div>
+    <div class="part-tag">PART 04 · 当前的问题和下一步优化的方向</div>
+    <h2>当前的问题和下一步优化的方向</h2>
 
-  <!-- PART 07 · 技术框架 -->
-  <div class="slide">
-    <div class="part-tag">PART 07 · 技术框架</div>
-    <h2>技术实现：一条"CSV 进 → Python 算 → JS 文件出 → 静态页渲染"的轻管线</h2>
-    <p class="lead">没有数据库、没有后端服务、不依赖 BI 平台。整套是 <b>Python 脚本 + 静态前端</b>，每天一条命令跑完重建，产物直接推 GitHub Pages。下面是端到端的真实链路：</p>
-
-    <div class="dgm">
-      <svg viewBox="0 0 680 250" role="img" aria-label="端到端数据管线">
-        <defs>
-          <marker id="pa" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/></marker>
-          <linearGradient id="pp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0ea5a5"/><stop offset="1" stop-color="#0f766e"/></linearGradient>
-        </defs>
-        <!-- 输入 -->
-        <text x="92" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">① 输入</text>
-        <rect x="14" y="30" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
-        <text x="92" y="48" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">AData 7 份 CSV</text>
-        <text x="92" y="63" text-anchor="middle" fill="#94a3b8" font-size="10">季度消耗/昨耗/链路…</text>
-        <rect x="14" y="78" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
-        <text x="92" y="96" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">CloudBase 登记导出</text>
-        <text x="92" y="111" text-anchor="middle" fill="#94a3b8" font-size="10">tuoke_records.json</text>
-        <rect x="14" y="126" width="156" height="40" rx="9" fill="#f1f5f9" stroke="#cbd5e1"/>
-        <text x="92" y="144" text-anchor="middle" fill="#475569" font-size="11.5" font-weight="700">新锐名单 / 14天日耗</text>
-        <text x="92" y="159" text-anchor="middle" fill="#94a3b8" font-size="10">txt / csv</text>
-        <line x1="172" y1="98" x2="200" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
-        <!-- 处理 -->
-        <text x="340" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">② Python 处理（标准库，无 pandas）</text>
-        <rect x="204" y="30" width="272" height="136" rx="12" fill="url(#pp)"/>
-        <text x="340" y="54" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">rebuild_kpi_csv.py（约1400行）</text>
-        <text x="222" y="76" fill="#d1fae5" font-size="11">· 解析 CSV，按首投季度 / 破千 / 名单打标</text>
-        <text x="222" y="95" fill="#d1fae5" font-size="11">· 算新客 / 有效 / 新锐 / 消耗 + 日Δ</text>
-        <text x="222" y="114" fill="#d1fae5" font-size="11">· 归属覆盖层 override + 生效时间戳</text>
-        <text x="340" y="138" text-anchor="middle" fill="#fff" font-size="11.5" font-weight="700">reconcile 回扫 · sync_mobile 同步</text>
-        <text x="340" y="156" text-anchor="middle" fill="#a7f3d0" font-size="10.5">每天一条命令跑完全流程</text>
-        <line x1="478" y1="98" x2="506" y2="98" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
-        <!-- 输出 -->
-        <text x="592" y="20" text-anchor="middle" fill="#64748b" font-size="11" font-weight="800">③ 产物</text>
-        <rect x="510" y="40" width="156" height="116" rx="11" fill="#eef3fe" stroke="#bcd3f9"/>
-        <text x="588" y="62" text-anchor="middle" fill="#1B4FC4" font-size="12" font-weight="850">9 个 .js 数据文件</text>
-        <text x="588" y="82" text-anchor="middle" fill="#475569" font-size="10">window.__XXX__ =</text>
-        <text x="588" y="98" text-anchor="middle" fill="#475569" font-size="10">{聚合好的JSON}</text>
-        <text x="588" y="120" text-anchor="middle" fill="#64748b" font-size="9.5">center_quarter_summary</text>
-        <text x="588" y="134" text-anchor="middle" fill="#64748b" font-size="9.5">top80_effective_metrics…</text>
-        <!-- 底部到前端 -->
-        <line x1="588" y1="160" x2="588" y2="186" stroke="#94a3b8" stroke-width="2" marker-end="url(#pa)"/>
-        <rect x="14" y="184" width="652" height="50" rx="12" fill="#1B4FC4"/>
-        <text x="340" y="206" text-anchor="middle" fill="#fff" font-size="12.5" font-weight="850">④ 静态前端：原生 HTML/JS 直接读 window 全局变量渲染</text>
-        <text x="340" y="224" text-anchor="middle" fill="#cfe0fb" font-size="11">无需接口请求 · 打开页面即拿到当天数据</text>
-      </svg>
-    </div>
-
-    <h3>四个关键技术点</h3>
-    <div class="techstack">
-      <div class="ts-layer ts-proc">
-        <div class="ts-name">数据处理<small>Python 标准库</small></div>
-        <div class="ts-chips">
-          <span>csv / json / re / glob</span><span>无 pandas，零三方依赖</span><span>口径全写进脚本（首投季度/3千门槛/新锐名单）</span><span>override 人工兜底层</span>
-        </div>
-      </div>
-      <div class="ts-layer ts-app">
-        <div class="ts-name">数据传递<small>不用接口</small></div>
-        <div class="ts-chips">
-          <span>Python 把结果写成 <code>window.__XXX__=JSON</code> 的 .js</span><span>前端 &lt;script&gt; 直接引</span><span>静态托管也能"动态"展示</span>
-        </div>
-      </div>
-      <div class="ts-layer ts-app">
-        <div class="ts-name">前端渲染<small>原生 + 轻库</small></div>
-        <div class="ts-chips">
-          <span>原生 HTML/CSS/JS（无 Vue/React）</span><span>ECharts 5.5 画图</span><span>iframe 嵌子页 + postMessage 传红点数</span><span>cache-buster ?v= 控版本</span>
-        </div>
-      </div>
-      <div class="ts-layer ts-ai">
-        <div class="ts-name">实时 & AI<small>云 + 协同</small></div>
-        <div class="ts-chips">
-          <span>CloudBase JS SDK（账号登录）</span><span>redspot_progress 集合：小红点全员跨端实时同步</span><span>🩺 一键跳 adataclaw 归因</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="ts-deploy">
-      <b>🚀 部署：</b>
-      <span class="dchip">GitHub Pages 静态托管</span>
-      <span class="dchip">单一真源仓库</span>
-      <span class="dchip">改完 git push 即上线</span>
-      <span class="dchip">固定链接不过期</span>
-      <span style="flex-basis:100%;color:#64748b;font-size:12.5px;margin-top:4px;">零服务器、零数据库、零运维成本——这也是它能由一个人独立维护的根本原因。</span>
-    </div>
-
-    <div class="note">💡 一句话概括技术选型：<b>把"重"放在 Python 脚本里（口径计算一次算准），把"前端"做到最轻（静态文件人人能开、随时能改）</b>。复杂度集中在数据处理，展示层保持简单，所以迭代快、好维护、可独立交付。</div>
-  </div>
-
-  <!-- PART 08 · 当前卡点全景 -->
-  <div class="slide">
-    <div class="part-tag">PART 08 · 当前卡点</div>
-    <h2>把话说透：现在我们仍卡在哪里</h2>
+    <h3>一、当前的问题</h3>
     <div class="role" style="grid-template-columns:repeat(3,1fr);">
       <div class="rolebox ai">
         <div class="rh">⚙️ 运行性能</div>
         <div class="rb"><ul>
-          <li><b>历史消耗每天回填</b>，数据量过大，运行速度慢</li>
+          <li><b>数据一次性全量加载</b>：KPI、大盘、历史消耗、客户明细都堆到页面上，首屏加载重，数据越多越慢</li>
+          <li><b>接口体量偏大</b>：例如季度数据接口承载过多字段，影响日常打开和移动端使用体验</li>
         </ul></div>
       </div>
       <div class="rolebox sale">
         <div class="rh">🤖 模型能力</div>
         <div class="rb"><ul>
-          <li><b>模型自身存在的不足</b>，长对话之后容易产生幻觉、忘记前文口径</li>
+          <li><b>长对话容易漂移</b>：模型在多轮追问后可能忘记前文口径，产生幻觉或重复计算</li>
+          <li><b>工程问题需转译</b>：业务能用自然语言把问题问清楚，但仍需要把诊断转成可执行的技术优化项</li>
         </ul></div>
       </div>
       <div class="rolebox me">
         <div class="rh">💲 成本消耗</div>
         <div class="rb"><ul>
           <li><b>token 消耗大</b>，以五月为例，小红点系统已经使用接近 <b>2000＄</b></li>
+          <li><b>重复问答成本高</b>：同类口径、同类诊断如果不沉淀，会持续消耗人力和模型成本</li>
         </ul></div>
       </div>
     </div>
-  </div>
 
-  <!-- PART 09 · 希望的资源与支持 -->
-  <div class="slide">
-    <div class="part-tag">PART 09 · 资源与支持</div>
-    <h2>基于卡点，我们希望给予的支持</h2>
-    <p class="lead">不是要更多人手堆活，而是把几个"卡住规模化"的关键点打通——让这套已经验证有效的机制，能稳定服务整个团队。</p>
-    <div class="support">
-      <div class="supbox">
-        <div class="sh">① 开发部门技术支持，系统敏捷轻量化</div>
-        <div class="ssd">目前代码冗杂、历史消耗每天全量回填导致运行偏慢。希望开发部门同事提供技术支持，把系统从"个人脚本拼装"升级为<b>敏捷、轻量、可增量更新</b>的正式产品，提升运行与加载性能。</div>
-        <div class="who">解决：代码冗杂、数据量大、运行慢</div>
+    <h3 style="margin-top:28px;">二、工程问题已经基本定位</h3>
+    <style>
+      .debug-proof{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin:16px 0 22px;align-items:stretch;}
+      .debug-card{border-radius:15px;padding:18px 20px;background:linear-gradient(160deg,#f8fafc,#eef4ff);border:1px solid #cbdaf5;box-shadow:0 6px 20px -14px rgba(27,79,196,.28);}
+      .debug-card .dh{font-size:15px;font-weight:850;color:#1B4FC4;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+      .debug-card .db{font-size:13.5px;color:#334155;line-height:1.85;}
+      .debug-card .db b{color:#0f172a;}
+      .debug-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:center;margin-top:14px;}
+      .debug-step{background:#fff;border:1px solid #d7e3fb;border-radius:11px;padding:10px 8px;text-align:center;font-size:12px;font-weight:850;color:#1B4FC4;line-height:1.45;}
+      .debug-arrow{color:#94a3b8;font-weight:850;}
+      .chat-shot{margin:0;background:#fff;border:1px solid #e2e8f0;border-radius:15px;padding:12px;box-shadow:0 4px 16px -12px rgba(15,23,42,.24);}
+      .chat-shot img{width:100%;max-height:360px;object-fit:contain;display:block;border-radius:10px;background:#f8fafc;}
+      .chat-shot figcaption{font-size:12px;color:#64748b;line-height:1.6;text-align:center;font-weight:700;margin-top:9px;}
+      .next-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+      .next-card{border-radius:14px;padding:18px 20px;border:1px solid;}
+      .next-card .nh{font-size:15px;font-weight:850;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+      .next-card .nb{font-size:13.5px;line-height:1.85;color:var(--text);}
+      .next-card .nb b{color:#0f172a;}
+      .next-card.c1{background:linear-gradient(160deg,#eff6ff,#dbeafe);border-color:#93c5fd;}
+      .next-card.c1 .nh{color:#1B4FC4;}
+      .next-card.c2{background:linear-gradient(160deg,#fffbf2,#fdf3df);border-color:#f3d79a;}
+      .next-card.c2 .nh{color:#a16207;}
+      .next-card.c3{background:linear-gradient(160deg,#f0fdf4,#dcfce7);border-color:#86efac;}
+      .next-card.c3 .nh{color:#047857;}
+    </style>
+    <div class="debug-proof">
+      <div class="debug-card">
+        <div class="dh">🔍 这次不是泛泛地说“系统慢”，而是已经定位到根因</div>
+        <div class="db">
+          通过把 KPI、大盘、接口地址和卡顿表现直接丢给 AI/工程同学分析，问题已经从“感觉慢”收敛成明确判断：<b>页面把大量历史数据一次性加载到前端，几乎全量数据都压在首屏，数据越积越多，页面自然越来越慢。</b>
+        </div>
+        <div class="debug-flow">
+          <div class="debug-step">业务描述<br>卡顿现象</div>
+          <div class="debug-arrow">➜</div>
+          <div class="debug-step">AI/工程<br>定位根因</div>
+          <div class="debug-arrow">➜</div>
+          <div class="debug-step">拆成可执行<br>优化清单</div>
+        </div>
       </div>
-      <div class="supbox">
-        <div class="sh">② 企业级模型额度与更强模型支持</div>
-        <div class="ssd">五月小红点系统 token 消耗已接近 <b>2000＄</b>，且长对话后模型易产生幻觉、忘记前文口径。希望申请<b>团队级大模型额度 / 企业账号</b>，并用<b>更强的长上下文模型</b>覆盖 token 成本、减少口径漂移。</div>
-        <div class="who">解决：token 消耗大、模型幻觉/忘口径</div>
-      </div>
+      <figure class="chat-shot">
+        <img src="45db4a4e55512a502417e97aae31abda.jpg" alt="工程诊断对话截图：数据一次性全量加载导致页面变慢">
+        <figcaption>工程诊断对话：问题从“页面卡”被定位为“全量数据一次性加载，且数据越来越多”。</figcaption>
+      </figure>
     </div>
-  </div>
 
-  <!-- PART 10 · 下一步 -->
-  <div class="slide">
-    <div class="part-tag">PART 10 · 下一步</div>
-    <h2>看板的下一步：把"发现"和"归因"做得更自动、更闭环</h2>
-    <p class="lead">沿着现有的三个 Tab，往"少一步人工、多一步自动"的方向迭代——</p>
-    <div class="grid2">
-      <div class="card" style="border-color:#fca5a5;">
-        <div class="t" style="color:var(--red);">📌 今日待办 · 把归因和动作再缩短</div>
-        <div class="d">
-          · 🩺诊断从"人工点击"升级为<b>掉量客户自动触发小 A 归因</b>，预警卡直接带原因<br>
-          · 三态(告警/关注/稳定)升级成可量化的<b>红黄绿客户健康度评分</b><br>
-          · 归因后策略(稳定出价/优化基建/上新广告)可<b>一键同步运营或商家后台</b></div>
+    <h3 style="margin-top:28px;">三、下一步优化的方向</h3>
+    <div class="next-grid">
+      <div class="next-card c1">
+        <div class="nh">🔄 ① 数据加载治理</div>
+        <div class="nb">把首屏改成<b>只加载今日待办、KPI 汇总和必要概览</b>；历史走势、客户明细、大盘数据改为<b>按 Tab / 按销售 / 按日期懒加载</b>，减少一次性压力。</div>
       </div>
-      <div class="card" style="border-color:#93c5fd;">
-        <div class="t" style="color:var(--blue-d);">🚀 销售拓客作战中心 · 进度盘更主动</div>
-        <div class="d">
-          · 销售明细补<b>与第一名/同组均值的差距 + 追赶时间预测</b><br>
-          · 考核进度滞后<b>自动提醒</b>，不用自己盯<br>
-          · by周自动产出下跌客户<b>深层账户诊断复盘报告</b></div>
+      <div class="next-card c2">
+        <div class="nh">🧱 ② 接口拆分与缓存</div>
+        <div class="nb">将大文件拆成<b>汇总层、明细层、历史层</b>，常用数据预聚合，历史数据按日期增量读取；配合缓存和版本号，提升稳定性。</div>
       </div>
-      <div class="card" style="border-color:#6ee7b7;">
-        <div class="t" style="color:var(--green);">📚 销售弹药库 · 从"查得到"到"推得准"</div>
-        <div class="d">
-          · AI 拆解爆款素材/直播间打法，自动生成<b>可复刻 SOP 与可编辑 onepage</b><br>
-          · 大盘趋势<b>30 天预测</b> + 按销售类目/客户画像<b>个性化推送</b>适配案例</div>
-      </div>
-      <div class="card" style="border-color:#fcd34d;">
-        <div class="t" style="color:var(--gold);">🎯 共同方向 · 从复盘走向预判</div>
-        <div class="d">
-          · 归纳"客户特征 ↔ 消耗表现"的关系<br>
-          · 让看板不只告诉你"昨天谁掉了"，而是提前提示<b>"谁明天可能掉、谁值得重点培育"</b></div>
+      <div class="next-card c3">
+        <div class="nh">🤖 ③ AI 口径沉淀</div>
+        <div class="nb">把高频诊断、客户分层、处理建议沉淀成<b>固定提示词和标准口径卡</b>，减少长对话漂移，也降低 token 成本和重复沟通成本。</div>
       </div>
     </div>
   </div>
@@ -1004,8 +1039,8 @@
   <!-- CLOSING -->
   <div class="slide closing">
     <div class="part-tag" style="background:rgba(255,255,255,.18);color:#fff;">CLOSING</div>
-    <div class="big">在服饰拓新赛道里，<br>AI 的价值不只是提效——<br>更重要的是帮我们<span class="em">更早理解客户、信号和动作之间的关系</span>。</div>
-    <div class="big" style="font-size:18px;opacity:.9;">真正有价值的，是把<span class="em">业务规则翻译成动作提示</span>，<br>把人的注意力，留给最关键的判断。</div>
+    <div class="big">在客户开拓和海量的客户服务过程中，<span class="em">AI 的作用</span>：</div>
+    <div class="big" style="font-size:18px;opacity:.92;line-height:1.9;">1、处理海量信息，化被动为主动，规范化销售动作，<br>把时间留给客户开拓和业务判断<br>2、不依赖技术，业务可以根据实际情况快速灵活指定统一作战地图<br>3、把业务问题、数据问题和工程问题转译成可执行动作，<br>让系统在真实使用中持续迭代</div>
   </div>
 
 </div>
