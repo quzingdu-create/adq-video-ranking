@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614o"></script>
-<script src="data/center_sales_summary.js?v=20260614o"></script>
-<script src="data/center_quarter_summary.js?v=20260614o"></script>
-<script src="data/center_daily_kpi.js?v=20260614o"></script>
-<script src="data/top80_effective_metrics.js?v=20260614o"></script>
-<script src="data/top_status_data.js?v=20260614o"></script>
-<script src="data/enough_candidates.js?v=20260614o"></script>
-<script src="data/handover_customers_519.js?v=20260614o"></script>
-<script src="data/customer_main_product.js?v=20260614o"></script>
+<script src="data/bulk_import_rows.js?v=20260614p"></script>
+<script src="data/center_sales_summary.js?v=20260614p"></script>
+<script src="data/center_quarter_summary.js?v=20260614p"></script>
+<script src="data/center_daily_kpi.js?v=20260614p"></script>
+<script src="data/top80_effective_metrics.js?v=20260614p"></script>
+<script src="data/top_status_data.js?v=20260614p"></script>
+<script src="data/enough_candidates.js?v=20260614p"></script>
+<script src="data/handover_customers_519.js?v=20260614p"></script>
+<script src="data/customer_main_product.js?v=20260614p"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614o"></script>
+<script src="cloud_sync.js?v=20260614p"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -569,6 +569,8 @@ window.__BIG_DATA_READY__ = false;
   .sales-detail-tbl .main-num.rising { color:#dc2626; }
   .sales-detail-tbl .main-num.cost { color:#7c3aed; }
   .sales-detail-tbl .sub-meta { font-size:10.5px; color:#9ca3af; margin-top:2px; line-height:1.2; }
+  .sales-detail-tbl .chase-cell { text-align:left; padding-left:14px; min-width:118px; }
+  .sales-detail-tbl .chase-cell .sub-meta { font-size:12px; color:#64748b; line-height:1.35; }
   .sales-detail-tbl .sub-meta .delta-up { color:#dc2626; }
   .sales-detail-tbl .sub-meta .delta-down { color:#16a34a; }
   .sales-detail-tbl .sub-meta .delta-flat { color:#9ca3af; }
@@ -812,9 +814,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614o`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614p`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614o')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614p')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -966,7 +968,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614o" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614p" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -982,7 +984,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614o" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614p" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1066,7 +1068,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614o" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614p" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1754,17 +1756,16 @@ function renderSalesProgress() {
         ${fmtMeta(r.risingDelta, r.risingDayDelta, 'count')}
       </td>
       <td>
-        ${fmtMain(fmtWan(r.yestCost))}
-        ${fmtMeta(null, r.dayCostRate, 'pct')}
-      </td>
-      <td>
         <div class="main-num cost">${dayAvgWan.toFixed(1)}万</div>
         <div class="sub-meta">季耗÷${days}天</div>
       </td>
-      <td>
-        <div class="main-num">${remainDays}天</div>
+      <td class="chase-cell">
         <div class="sub-meta">新锐还需${Math.max(0, Math.ceil(targetForRow(rowKind,'rising') - Number(r.risingCount||0)))}个</div>
         <div class="sub-meta">日耗需到${Math.max(0, targetForRow(rowKind,'cost')).toFixed(1)}万</div>
+      </td>
+      <td>
+        ${fmtMain(fmtWan(r.yestCost))}
+        ${fmtMeta(null, r.dayCostRate, 'pct')}
       </td>
       <td>
         ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
@@ -1806,9 +1807,9 @@ function renderSalesProgress() {
     <thead><tr>
       <th style="text-align:left;">销售</th>
       <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
-      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
-      <th>剩余追赶量<div style="font-size:10px;font-weight:400;color:#6b7280;">剩余天数/目标</div></th>
+      <th>剩余追赶量<div style="font-size:10px;font-weight:400;color:#6b7280;">剩余${remainDays}天 / 目标</div></th>
+      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>详细</th>
       <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
       <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
