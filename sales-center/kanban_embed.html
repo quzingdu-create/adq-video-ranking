@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614h"></script>
-<script src="data/center_sales_summary.js?v=20260614h"></script>
-<script src="data/center_quarter_summary.js?v=20260614h"></script>
-<script src="data/center_daily_kpi.js?v=20260614h"></script>
-<script src="data/top80_effective_metrics.js?v=20260614h"></script>
-<script src="data/top_status_data.js?v=20260614h"></script>
-<script src="data/enough_candidates.js?v=20260614h"></script>
-<script src="data/handover_customers_519.js?v=20260614h"></script>
-<script src="data/customer_main_product.js?v=20260614h"></script>
+<script src="data/bulk_import_rows.js?v=20260614i"></script>
+<script src="data/center_sales_summary.js?v=20260614i"></script>
+<script src="data/center_quarter_summary.js?v=20260614i"></script>
+<script src="data/center_daily_kpi.js?v=20260614i"></script>
+<script src="data/top80_effective_metrics.js?v=20260614i"></script>
+<script src="data/top_status_data.js?v=20260614i"></script>
+<script src="data/enough_candidates.js?v=20260614i"></script>
+<script src="data/handover_customers_519.js?v=20260614i"></script>
+<script src="data/customer_main_product.js?v=20260614i"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614h"></script>
+<script src="cloud_sync.js?v=20260614i"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -636,7 +636,7 @@ window.__BIG_DATA_READY__ = false;
   .special-inline-wrap { margin-top:14px; background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 28px rgba(15,23,42,.08); }
   .special-inline-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; background:linear-gradient(135deg,#f8fbff 0%,#eef6ff 100%); border-bottom:1px solid #e2e8f0; }
   .special-inline-title { font-size:14px; font-weight:800; color:#0f172a; }
-  .special-inline-block + .special-inline-block { border-top: 14px solid #f5f7fb; }
+  .special-inline-wrap + .placeholder-grid { margin-top: 18px; }
   .special-inline-frame { width:100%; height:760px; border:0; display:block; background:#f4f7fb; }
   .special-inline-tip { padding:10px 16px; font-size:12px; color:#64748b; background:#fff; border-top:1px solid #eef2f7; }
   .main-prod-inline { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; padding:1px 7px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:800; vertical-align:middle; }
@@ -808,9 +808,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614h`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614i`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614h')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614i')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -953,7 +953,7 @@ window.__BIG_DATA_READY__ = false;
     <div class="section-title">
       <div class="left"><span>🧭 专项进展</span><span class="badge">点击卡片进入专项作战页</span></div>
     </div>
-    <div class="placeholder-grid">
+    <div class="placeholder-grid" id="specialBeltEntry">
       <button class="entry-card belt-card" type="button" data-special-tab="belt">
         <h3>🧵 产业带进展</h3>
         <p>核心城市×类目产业带覆盖、客户新增、消耗起量与重点城市进度，含中国地图聚集度。</p>
@@ -964,6 +964,16 @@ window.__BIG_DATA_READY__ = false;
         </span>
         <span class="go">下方查看 ›</span>
       </button>
+    </div>
+    <div class="special-inline-wrap" id="specialBeltWrap">
+      <div class="special-inline-block" id="specialBeltBlock">
+        <div class="special-inline-head">
+          <div class="special-inline-title">🧵 产业带进展</div>
+        </div>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614i" title="产业带进展内嵌看板"></iframe>
+      </div>
+    </div>
+    <div class="placeholder-grid" id="specialPursuitEntry">
       <button class="entry-card" type="button" data-special-tab="pursuit">
         <h3>🎯 靶向拓客名单</h3>
         <p>渗透漏斗 + By 销售跟踪 + 名单分类明细，全组实时共享。</p>
@@ -971,20 +981,14 @@ window.__BIG_DATA_READY__ = false;
         <span class="go">下方查看 ›</span>
       </button>
     </div>
-    <div class="special-inline-wrap" id="specialInlineWrap">
-      <div class="special-inline-block" id="specialBeltBlock">
-        <div class="special-inline-head">
-          <div class="special-inline-title">🧵 产业带进展</div>
-        </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614h" title="产业带进展内嵌看板"></iframe>
-      </div>
+    <div class="special-inline-wrap" id="specialPursuitWrap">
       <div class="special-inline-block" id="specialPursuitBlock">
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614h" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614i" title="靶向拓客名单内嵌看板"></iframe>
       </div>
-      <div class="special-inline-tip">两个专项按上下顺序直接展开，不再使用左右切换 Tab。</div>
+      <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
   </div>
 
@@ -1066,7 +1070,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614h" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614i" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -4464,7 +4468,7 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
 (function(){
   function scrollSpecial(key){
     var target = document.getElementById(key === 'pursuit' ? 'specialPursuitBlock' : 'specialBeltBlock');
-    try { (target || document.getElementById('specialInlineWrap')).scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
+    try { (target || document.getElementById('specialProgressSection')).scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
   }
   document.querySelectorAll('[data-special-tab]').forEach(function(btn){
     btn.addEventListener('click', function(){ scrollSpecial(btn.dataset.specialTab); });
