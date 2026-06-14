@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控后台 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260612c"></script>
+<script src="data/monitor_session_data.js?v=20260614a"></script>
 <style>
   :root {
     --bg: #f3f6fb;
@@ -131,12 +131,8 @@
   tbody tr:hover { background: #f8fbff; }
   .rtx { font-weight: 850; color: var(--blue); }
   .muted { color: var(--muted); }
-  .insights { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-  .insight { border-radius: 14px; padding: 13px; background: var(--panel-2); border: 1px solid var(--line); }
-  .insight strong { display: block; margin-bottom: 4px; font-size: 13px; }
-  .insight span { font-size: 12px; color: var(--muted); line-height: 1.55; }
   .empty { color: var(--muted); text-align: center; padding: 40px; }
-  @media (max-width: 1100px) { .hero, .layout { grid-template-columns: 1fr; } .hero-meta { justify-content: flex-start; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } .insights { grid-template-columns: 1fr; } }
+  @media (max-width: 1100px) { .hero, .layout { grid-template-columns: 1fr; } .hero-meta { justify-content: flex-start; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 680px) { body { padding: 14px; } .kpi-grid { grid-template-columns: 1fr; } .rank-row { grid-template-columns: 96px 1fr 58px; } .rank-row .badge { display: none; } }
 </style>
 </head>
@@ -145,12 +141,12 @@
   <section class="hero">
     <div>
       <h1>访问监控后台 · 销售作战中心</h1>
-      <p>按“访问后台”方式重排：先看总体访问质量，再看销售排行、日期趋势、热力矩阵和明细。真实有效时长只认 activeDurationSec，不封顶；旧数据只标记为历史估算。</p>
+      <p>主数字按<strong>日均</strong>口径展示（窗口内总时长 ÷ 该销售有登录的天数）。为避免挂机拉爆：单次访问封顶 30 分钟、每人每天封顶 60 分钟，正常人均一天落在 45 分~1 小时。</p>
     </div>
     <div class="hero-meta">
       <span class="meta-pill" id="rangePill">时间窗口：-</span>
       <span class="meta-pill" id="dataPill">数据：-</span>
-      <span class="meta-pill">真实口径：2分钟活跃窗口 + 30秒心跳</span>
+      <span class="meta-pill">口径：单次封顶30分 + 每人每天封顶60分</span>
     </div>
   </section>
 
@@ -173,24 +169,22 @@
   <section class="kpi-grid">
     <div class="kpi-card"><div class="kpi-label">访问销售数</div><div class="kpi-value" id="kpiUsers">-</div><div class="kpi-sub" id="kpiUsersSub">窗口内有记录的销售</div></div>
     <div class="kpi-card green"><div class="kpi-label">访问次数</div><div class="kpi-value" id="kpiSessions">-</div><div class="kpi-sub">session 记录数</div></div>
-    <div class="kpi-card amber"><div class="kpi-label">真实有效时长</div><div class="kpi-value" id="kpiReal">-</div><div class="kpi-sub">只统计 activeDurationSec，不封顶</div></div>
-    <div class="kpi-card red"><div class="kpi-label">历史估算时长</div><div class="kpi-value" id="kpiEst">-</div><div class="kpi-sub">旧数据首尾跨度估算，需谨慎解读</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">人均日时长</div><div class="kpi-value" id="kpiReal">-</div><div class="kpi-sub">窗口总时长 ÷ 人·天，单次封顶30分</div></div>
+    <div class="kpi-card red"><div class="kpi-label">窗口累计时长</div><div class="kpi-value" id="kpiEst">-</div><div class="kpi-sub">全员·每人每天封顶60分后累计</div></div>
   </section>
-
-  <section class="insights" id="insights"></section>
 
   <main class="layout">
     <div>
       <section class="panel">
         <div class="panel-head">
-          <div><div class="panel-title">趋势总览</div><div class="panel-desc">常见后台看访问趋势：柱形=时长，折线=session 次数。</div></div>
+          <div><div class="panel-title">趋势总览</div><div class="panel-desc">柱形=当日总时长（分钟，封顶后），折线=session 访问次数。</div></div>
         </div>
         <div id="trendChart" class="chart"></div>
       </section>
 
       <section class="panel">
         <div class="panel-head">
-          <div><div class="panel-title">销售 × 日期热力矩阵</div><div class="panel-desc">一眼看出哪天谁访问多，30-60 分钟为合理区间；估算偏高会用深色提醒。</div></div>
+          <div><div class="panel-title">销售 × 日期热力矩阵</div><div class="panel-desc">每格=该销售当天时长（封顶60分），30-60 分钟为合理区间，颜色越深越活跃。</div></div>
         </div>
         <div class="heatmap" id="heatmap"></div>
       </section>
@@ -199,7 +193,7 @@
     <aside>
       <section class="panel">
         <div class="panel-head">
-          <div><div class="panel-title">销售活跃榜</div><div class="panel-desc">横条越长，窗口内使用越多；绿色区间代表 30-60 分钟。</div></div>
+          <div><div class="panel-title">销售活跃榜</div><div class="panel-desc">主数字为日均时长，横条越长越活跃；绿色区间代表 30-60 分钟（合理）。</div></div>
         </div>
         <div class="ranking-list" id="rankingList"></div>
       </section>
@@ -208,7 +202,7 @@
 
   <section class="panel">
     <div class="panel-head">
-      <div><div class="panel-title">访问明细</div><div class="panel-desc">保留 session 粒度，便于追查异常：真实累计/历史估算会分开标识。</div></div>
+      <div><div class="panel-title">访问明细</div><div class="panel-desc">保留 session 粒度，便于追查异常；时长为单次封顶30分后的值，口径列标识来源。</div></div>
     </div>
     <div class="table-wrap" id="detailTable"></div>
   </section>
@@ -276,15 +270,20 @@ function toNum(v) {
 function hasReal(s) {
   return s.activeDurationSec !== undefined && s.activeDurationSec !== null && s.activeDurationSec !== "";
 }
+// ====== 时长口径常量（2026-06-14 子青拍板：把人均一天压到 45分~1h，不要离谱）======
+var SESSION_CAP_SEC = 1800;  // 单次 session 封顶 30 分钟
+var DAILY_CAP_SEC = 3600;    // 每人每天封顶 60 分钟（先按天聚合再封顶）
 function sessionSec(s) {
-  if (hasReal(s)) return Math.max(0, toNum(s.activeDurationSec));
-  if (s.estimatedDurationSec !== undefined && s.estimatedDurationSec !== null && s.estimatedDurationSec !== "") return Math.max(0, toNum(s.estimatedDurationSec));
-  if (toNum(s.duration) > 0) return toNum(s.duration);
-  if (s.lastActivityTime && s.loginTime) return Math.max(0, Math.round((toNum(s.lastActivityTime) - toNum(s.loginTime)) / 1000));
-  return 0;
+  var v;
+  if (hasReal(s)) v = Math.max(0, toNum(s.activeDurationSec));
+  else if (s.estimatedDurationSec !== undefined && s.estimatedDurationSec !== null && s.estimatedDurationSec !== "") v = Math.max(0, toNum(s.estimatedDurationSec));
+  else if (toNum(s.duration) > 0) v = toNum(s.duration);
+  else if (s.lastActivityTime && s.loginTime) v = Math.max(0, Math.round((toNum(s.lastActivityTime) - toNum(s.loginTime)) / 1000));
+  else v = 0;
+  return Math.min(v, SESSION_CAP_SEC); // 单次封顶 30 分
 }
 function sourceLabel(s) {
-  return hasReal(s) ? "真实累计" : "历史估算";
+  return hasReal(s) ? "真实采集" : "估算回算";
 }
 function formatDuration(sec) {
   sec = Math.round(toNum(sec));
@@ -304,7 +303,7 @@ function bucketStatus(min, real) {
   if (min <= 0) return { text: "无记录", cls: "low" };
   if (min < 30) return { text: "未达30分", cls: "low" };
   if (min <= 60) return { text: "合理", cls: "real" };
-  return { text: real ? "高强度" : "估算偏高", cls: real ? "high" : "high" };
+  return { text: "偏高", cls: "high" };
 }
 function filterRows() {
   const dates = new Set(getDateRange());
@@ -312,75 +311,75 @@ function filterRows() {
 }
 function aggregate(rows) {
   const byRtx = {};
-  const byDate = {};
-  let realSec = 0, estSec = 0;
   rows.forEach(s => {
     const rtx = s.rtx || "unknown";
     const sec = sessionSec(s);
-    const real = hasReal(s);
-    if (!byRtx[rtx]) byRtx[rtx] = { rtx, sessions: 0, realSec: 0, estSec: 0, totalSec: 0, firstLogin: Infinity, lastActive: 0, realRows: 0, estRows: 0 };
-    if (!byDate[s.date]) byDate[s.date] = { date: s.date, sessions: 0, realSec: 0, estSec: 0, totalSec: 0 };
+    if (!byRtx[rtx]) byRtx[rtx] = { rtx, sessions: 0, rawTotalSec: 0, perDay: {}, firstLogin: Infinity, lastActive: 0 };
     byRtx[rtx].sessions += 1;
-    byRtx[rtx].totalSec += sec;
+    byRtx[rtx].rawTotalSec += sec; // 仅单次封顶后的原始累计（明细用）
+    byRtx[rtx].perDay[s.date] = (byRtx[rtx].perDay[s.date] || 0) + sec;
     byRtx[rtx].firstLogin = Math.min(byRtx[rtx].firstLogin, toNum(s.loginTime) || Infinity);
     byRtx[rtx].lastActive = Math.max(byRtx[rtx].lastActive, toNum(s.lastActiveTime) || toNum(s.loginTime) || 0);
-    byDate[s.date].sessions += 1;
-    byDate[s.date].totalSec += sec;
-    if (real) { byRtx[rtx].realSec += sec; byDate[s.date].realSec += sec; realSec += sec; byRtx[rtx].realRows += 1; }
-    else { byRtx[rtx].estSec += sec; byDate[s.date].estSec += sec; estSec += sec; byRtx[rtx].estRows += 1; }
   });
-  return { byRtx, byDate, realSec, estSec };
+  // 每人：每天封顶 60 分后求累计 / 登录天数 / 日均
+  const byDate = {};
+  let cappedTotalSec = 0, loginDaySum = 0;
+  Object.values(byRtx).forEach(g => {
+    let capped = 0, loginDays = 0;
+    Object.keys(g.perDay).forEach(d => {
+      const daySec = Math.min(g.perDay[d], DAILY_CAP_SEC); // 每人每天封顶 60 分
+      if (daySec > 0) loginDays += 1;
+      capped += daySec;
+      if (!byDate[d]) byDate[d] = { date: d, sessions: 0, totalSec: 0 };
+      byDate[d].totalSec += daySec; // 趋势/热力也用封顶后口径
+    });
+    g.cappedTotalSec = capped;
+    g.loginDays = loginDays;
+    g.avgSec = loginDays > 0 ? Math.round(capped / loginDays) : 0; // 日均（核心指标）
+    g.totalSec = capped; // 兼容旧引用：totalSec 现指封顶后累计
+    cappedTotalSec += capped;
+    loginDaySum += loginDays;
+  });
+  rows.forEach(s => { if (byDate[s.date]) byDate[s.date].sessions += 1; });
+  const avgPerPerson = loginDaySum > 0 ? Math.round(cappedTotalSec / loginDaySum) : 0; // 全员人均日时长
+  return { byRtx, byDate, cappedTotalSec, avgPerPerson };
 }
 function renderKpis(rows, agg) {
   const users = new Set(rows.map(s => s.rtx).filter(Boolean));
   const dates = getDateRange();
   document.getElementById("kpiUsers").textContent = users.size;
   document.getElementById("kpiSessions").textContent = rows.length;
-  document.getElementById("kpiReal").textContent = formatDuration(agg.realSec);
-  document.getElementById("kpiEst").textContent = formatDuration(agg.estSec);
+  document.getElementById("kpiReal").textContent = formatDuration(agg.avgPerPerson);
+  document.getElementById("kpiEst").textContent = formatDuration(agg.cappedTotalSec);
   document.getElementById("kpiUsersSub").textContent = dates[0] + (dates.length > 1 ? " ~ " + dates[dates.length - 1] : "");
   document.getElementById("rangePill").textContent = "时间窗口：" + dates[0] + (dates.length > 1 ? " ~ " + dates[dates.length - 1] : "");
 }
-function renderInsights(rows, agg) {
-  const sales = Object.values(agg.byRtx).sort((a, b) => b.totalSec - a.totalSec);
-  const top = sales[0];
-  const high = sales.filter(x => Math.round(x.totalSec / 60) > 60).map(x => x.rtx);
-  const realRows = rows.filter(hasReal).length;
-  const html = [
-    `<div class="insight"><strong>当前数据口径</strong><span>${realRows ? "已有真实累计数据" : "本批历史数据暂无 activeDurationSec，以下时长全部为历史估算。"}</span></div>`,
-    `<div class="insight"><strong>访问最活跃</strong><span>${top ? top.rtx + " · " + formatDuration(top.totalSec) : "暂无数据"}</span></div>`,
-    `<div class="insight"><strong>需要复核</strong><span>${high.length ? high.join("、") + " 超过1小时，历史估算可能偏高" : "暂无超过1小时的销售日"}</span></div>`
-  ].join("");
-  document.getElementById("insights").innerHTML = html;
-}
 function renderRanking(agg) {
-  const sales = SALES_NAMES.map(name => agg.byRtx[name] || { rtx: name, sessions: 0, realSec: 0, estSec: 0, totalSec: 0, realRows: 0, estRows: 0 }).sort((a, b) => b.totalSec - a.totalSec);
-  const maxMin = Math.max(120, ...sales.map(s => Math.round(s.totalSec / 60)));
+  const sales = SALES_NAMES.map(name => agg.byRtx[name] || { rtx: name, sessions: 0, cappedTotalSec: 0, loginDays: 0, avgSec: 0 }).sort((a, b) => b.avgSec - a.avgSec);
+  const maxMin = Math.max(60, ...sales.map(s => Math.round(s.avgSec / 60)));
   document.getElementById("rankingList").innerHTML = sales.map(s => {
-    const min = Math.round(s.totalSec / 60);
-    const real = s.realSec > 0;
-    const status = bucketStatus(min, real);
+    const min = Math.round(s.avgSec / 60);
+    const status = bucketStatus(min, true);
     const cls = status.cls === "real" ? "good" : status.cls === "high" ? "danger" : "warn";
     const pct = Math.min(100, Math.round(min / maxMin * 100));
-    return `<div class="rank-row"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar-target"></span><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${min}分</div><span class="badge ${hasRealGroup(s) ? "real" : "est"}">${hasRealGroup(s) ? "真实" : "估算"}</span></div>`;
+    const totMin = Math.round((s.cappedTotalSec || 0) / 60);
+    return `<div class="rank-row"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar-target"></span><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${min}分<small style="display:block;color:#94a3b8;font-weight:400;font-size:11px;">累计${totMin}分/${s.loginDays || 0}天</small></div><span class="badge ${status.cls}">${status.text}</span></div>`;
   }).join("");
 }
-function hasRealGroup(group) { return group.realRows > 0; }
+function hasRealGroup(group) { return (group.loginDays || 0) > 0; }
 function renderTrend(agg) {
   const dates = getDateRange();
-  const real = dates.map(d => Math.round(((agg.byDate[d] && agg.byDate[d].realSec) || 0) / 60));
-  const est = dates.map(d => Math.round(((agg.byDate[d] && agg.byDate[d].estSec) || 0) / 60));
+  const total = dates.map(d => Math.round(((agg.byDate[d] && agg.byDate[d].totalSec) || 0) / 60));
   const sessions = dates.map(d => (agg.byDate[d] && agg.byDate[d].sessions) || 0);
   if (!trendChart) trendChart = echarts.init(document.getElementById("trendChart"));
   trendChart.setOption({
     tooltip: { trigger: "axis" },
-    legend: { data: ["真实有效", "历史估算", "访问次数"], top: 0 },
+    legend: { data: ["当日总时长", "访问次数"], top: 0 },
     grid: { top: 42, left: 46, right: 48, bottom: 28 },
     xAxis: { type: "category", data: dates.map(d => d.slice(5)), axisTick: { alignWithLabel: true } },
     yAxis: [{ type: "value", name: "分钟" }, { type: "value", name: "次数" }],
     series: [
-      { name: "真实有效", type: "bar", stack: "time", data: real, itemStyle: { color: "#10b981" } },
-      { name: "历史估算", type: "bar", stack: "time", data: est, itemStyle: { color: "#f59e0b" } },
+      { name: "当日总时长", type: "bar", data: total, itemStyle: { color: "#10b981" }, barMaxWidth: 36 },
       { name: "访问次数", type: "line", yAxisIndex: 1, smooth: true, data: sessions, symbolSize: 7, itemStyle: { color: "#2563eb" } }
     ]
   });
@@ -399,7 +398,8 @@ function renderHeatmap(agg) {
     return `rgba(239,68,68,${opacity})`;
   }
   function getCellSec(date, rtx) {
-    return filterRows().filter(s => s.date === date && s.rtx === rtx).reduce((sum, s) => sum + sessionSec(s), 0);
+    const raw = filterRows().filter(s => s.date === date && s.rtx === rtx).reduce((sum, s) => sum + sessionSec(s), 0);
+    return Math.min(raw, DAILY_CAP_SEC); // 单格=该人当天，封顶 60 分，与榜单口径一致
   }
   let html = `<div class="heat-grid" style="grid-template-columns:120px repeat(${SALES_NAMES.length}, minmax(92px, 1fr));">`;
   cols.forEach(c => html += `<div class="heat-head">${c}</div>`);
@@ -438,7 +438,6 @@ function loadAll() {
   document.getElementById("dataPill").textContent = `数据：${all.length}条 / ${allDates[0] || "-"} ~ ${allDates[allDates.length - 1] || "-"}`;
   const agg = aggregate(rows);
   renderKpis(rows, agg);
-  renderInsights(rows, agg);
   renderRanking(agg);
   renderTrend(agg);
   renderHeatmap(agg);
