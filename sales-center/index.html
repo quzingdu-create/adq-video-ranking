@@ -7,25 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260614n"></script>
+<script src="auth-guard.js?v=20260614o"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260614n"></script>
-<script src="data/current_rising_data.js?v=20260614n"></script>
+<script src="lib_loader.js?v=20260614o"></script>
+<script src="data/current_rising_data.js?v=20260614o"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260614n"></script>
-<script src="data/center_quarter_summary.js?v=20260614n"></script>
-<script src="data/center_daily_kpi.js?v=20260614n"></script>
-<script src="data/top80_effective_metrics.js?v=20260614n"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260614o"></script>
+<script src="data/center_quarter_summary.js?v=20260614o"></script>
+<script src="data/center_daily_kpi.js?v=20260614o"></script>
+<script src="data/top80_effective_metrics.js?v=20260614o"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260614n"></script>
-<script src="data/redblack_data.js?v=20260614n"></script>
-<script src="data/customer_main_product.js?v=20260614n"></script>
+<script src="data/top_rising_data.js?v=20260614o"></script>
+<script src="data/redblack_data.js?v=20260614o"></script>
+<script src="data/customer_main_product.js?v=20260614o"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614n"></script>
-<script src="login_guard_banner.js?v=20260614n"></script>
+<script src="cloud_sync.js?v=20260614o"></script>
+<script src="login_guard_banner.js?v=20260614o"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260614n"></script>
+<script src="export_tuoke.js?v=20260614o"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -86,6 +86,18 @@
     text-decoration: none; display: inline-block;
   }
   .topbar a.btn-link:hover, .topbar button:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* 2026-06-14 子青：iframe 点击即反馈加载态，内容完整优先 */
+  .frame-shell{position:relative;background:#f5f7fb;border-radius:12px;overflow:hidden;min-height:760px;}
+  .frame-shell iframe{position:relative;z-index:1;}
+  .frame-loader{position:absolute;inset:0;z-index:2;display:none;align-items:flex-start;justify-content:center;padding-top:72px;background:linear-gradient(180deg,rgba(245,247,251,.96),rgba(245,247,251,.82));backdrop-filter:blur(4px);}
+  .frame-shell.loading .frame-loader,.frame-shell.error .frame-loader{display:flex;}
+  .frame-loader-card{width:min(520px,calc(100% - 48px));background:#fff;border:1px solid #dbeafe;border-radius:18px;padding:18px 20px;box-shadow:0 18px 44px rgba(37,99,235,.14);color:#0f172a;}
+  .frame-loader-title{font-size:15px;font-weight:950;display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+  .frame-spinner{width:18px;height:18px;border-radius:50%;border:2px solid #bfdbfe;border-top-color:#2563eb;animation:spin .75s linear infinite;display:inline-block;}
+  .frame-loader-text{font-size:12px;color:#64748b;line-height:1.65;}
+  .frame-retry{display:none;margin-top:12px;border:0;background:#2563eb;color:#fff;border-radius:999px;padding:7px 14px;font-size:12px;font-weight:900;cursor:pointer;}
+  .frame-shell.error .frame-spinner{display:none}.frame-shell.error .frame-retry{display:inline-flex}.frame-shell.error .frame-loader-title{color:#dc2626;}
 
   /* 2026-06-14 子青：大 Tab 侧边导航 */
   .side-tab-nav{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:120;display:flex;flex-direction:column;gap:7px;padding:8px;border:1px solid rgba(191,219,254,.9);background:rgba(255,255,255,.82);border-radius:18px;box-shadow:0 18px 48px rgba(37,99,235,.18);backdrop-filter:blur(12px);pointer-events:none;}
@@ -739,7 +751,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&v=20260614n"
+      src="mobile.html?embed=1&v=20260614o"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1315,8 +1327,15 @@ window.__CASE_DATA__ = [
 
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
-    <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614n" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+    <div class="section frame-shell" id="battleFrameShell" style="padding:0;margin-top:14px;">
+      <div class="frame-loader" id="battleFrameLoader">
+        <div class="frame-loader-card">
+          <div class="frame-loader-title"><span class="frame-spinner"></span><span id="battleFrameLoaderTitle">作战中心加载中</span></div>
+          <div class="frame-loader-text" id="battleFrameLoaderText">正在加载 KPI、销售明细、产业带和靶向进展；内容会完整展示，请稍等。</div>
+          <button class="frame-retry" type="button" data-retry-frame="battleFrame">重新加载</button>
+        </div>
+      </div>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614o" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1324,8 +1343,15 @@ window.__CASE_DATA__ = [
 <!-- ========== 客户生命周期管理 Tab（登记入口 + 模型 + 生命周期 + 登记明细）========== -->
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
-    <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614n" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
+    <div class="section frame-shell" id="lifeFrameShell" style="padding:0;margin-top:14px;">
+      <div class="frame-loader" id="lifeFrameLoader">
+        <div class="frame-loader-card">
+          <div class="frame-loader-title"><span class="frame-spinner"></span><span id="lifeFrameLoaderTitle">客户查询加载中</span></div>
+          <div class="frame-loader-text" id="lifeFrameLoaderText">正在加载客户生命周期、拓客模型和登记明细；首次进入会拉取完整客户数据。</div>
+          <button class="frame-retry" type="button" data-retry-frame="lifeFrame">重新加载</button>
+        </div>
+      </div>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614o" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -2010,6 +2036,35 @@ const TUOKE_TASKS = [
    二、Tab 切换
    =========================================================== */
 
+
+function setFrameLoadingState(frameId, state, text) {
+  const shell = document.getElementById(frameId + 'Shell');
+  if (!shell) return;
+  shell.classList.toggle('loading', state === 'loading');
+  shell.classList.toggle('error', state === 'error');
+  const textEl = document.getElementById(frameId + 'LoaderText');
+  if (textEl && text) textEl.textContent = text;
+  const titleEl = document.getElementById(frameId + 'LoaderTitle');
+  if (titleEl) titleEl.textContent = state === 'error' ? '加载失败，请重试' : (frameId === 'lifeFrame' ? '客户查询加载中' : '作战中心加载中');
+}
+function bindFrameRetryButtons(){
+  document.querySelectorAll('[data-retry-frame]').forEach(btn => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.onclick = () => {
+      const id = btn.dataset.retryFrame;
+      const frame = document.getElementById(id);
+      if (!frame) return;
+      const src = frame.getAttribute('src');
+      frame.setAttribute('src', 'about:blank');
+      setTimeout(() => {
+        frame.setAttribute('src', src && src !== 'about:blank' ? src : frame.getAttribute('data-src'));
+        setFrameLoadingState(id, 'loading', '正在重新加载完整内容，请稍等…');
+      }, 60);
+    };
+  });
+}
+
 function resizeKanbanFrameToContent(frameId, minHeight) {
   const frame = document.getElementById(frameId);
   if (!frame) return;
@@ -2025,6 +2080,8 @@ function bindKanbanFrameResize(frameId, minHeight) {
   if (!frame || frame.dataset.resizeBound) return;
   frame.dataset.resizeBound = '1';
   frame.addEventListener('load', () => {
+    clearTimeout(frame.__loadTimer);
+    if ((frame.getAttribute('src') || '') !== 'about:blank') setFrameLoadingState(frameId, 'ready');
     resizeKanbanFrameToContent(frameId, minHeight);
     setTimeout(() => resizeKanbanFrameToContent(frameId, minHeight), 600);
     setTimeout(() => resizeKanbanFrameToContent(frameId, minHeight), 1600);
@@ -2043,11 +2100,16 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   if (!frame) return;
   bindKanbanFrameResize(frameId, 760);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614n`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614o`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
+    setFrameLoadingState(frameId, 'loading', mode === 'life' ? '正在加载客户查询完整内容，首次进入会拉取客户数据…' : '正在加载作战中心完整内容…');
     frame.setAttribute('src', target);
+    clearTimeout(frame.__loadTimer);
+    frame.__loadTimer = setTimeout(() => {
+      if ((frame.getAttribute('src') || '') !== 'about:blank') setFrameLoadingState(frameId, 'error', '加载时间较长，可能是网络或数据文件较大；点击重试不会丢失内容。');
+    }, mode === 'life' ? 18000 : 12000);
   }
 }
 function ensureBattleFrameLoaded(forceUser) { ensureKanbanFrameLoaded('battleFrame', 'ops', forceUser); }
@@ -2060,7 +2122,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614n`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614o`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2109,6 +2171,7 @@ function switchTab(tab) {
 document.querySelectorAll('.tab-btn').forEach(b => {
   b.onclick = () => switchTab(b.dataset.tab);
 });
+bindFrameRetryButtons();
 
 // 2026-06-12 首屏瘦身：默认先打开今日待办，小而快；拓客作战看板 iframe 按需/空闲预加载
 switchTab('home');
@@ -2139,12 +2202,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614n`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614o`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614n`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614o`);
   }
 }
 function updateViewToggle() {
