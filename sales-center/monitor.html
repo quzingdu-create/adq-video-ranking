@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614f"></script>
+<script src="data/monitor_session_data.js?v=20260614g"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -13,8 +13,8 @@
     --amber: #f59e0b; --red: #ef4444; --shadow: 0 1px 3px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.05);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--ink); padding: 22px; -webkit-font-smoothing: antialiased; }
-  .page { max-width: 1240px; margin: 0 auto; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--ink); padding: 22px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  .page { max-width: 1240px; margin: 0 auto; width: 100%; }
 
   /* ===== 顶栏 ===== */
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
@@ -54,12 +54,12 @@
 
   /* ===== 面板 ===== */
   .layout { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; align-items: start; }
-  .layout .col { display: flex; flex-direction: column; gap: 16px; }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .layout .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); min-width: 0; overflow: hidden; }
   .panel-head { margin-bottom: 14px; }
   .panel-title { font-size: 15px; font-weight: 800; }
   .panel-desc { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 3px; }
-  .chart { height: 300px; width: 100%; }
+  .chart { height: 300px; width: 100%; min-width: 0; }
   .chart.sm { height: 250px; }
 
   /* 时段 chip */
@@ -80,9 +80,9 @@
   .min-text { text-align: right; font-weight: 850; font-size: 13px; white-space: nowrap; padding-right: 4px; }
 
   /* 热力 */
-  .heatmap { overflow-x: auto; }
-  .heat-grid { display: grid; gap: 4px; min-width: 560px; }
-  .heat-head, .heat-date { font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+  .heatmap { overflow-x: auto; max-width: 100%; }
+  .heat-grid { display: grid; gap: 4px; }
+  .heat-head, .heat-date { font-size: 12px; font-weight: 700; display: flex; align-items: center; white-space: nowrap; }
   .heat-head { color: var(--muted); justify-content: center; padding-bottom: 2px; }
   .heat-date { padding-right: 6px; }
   .heat-cell { height: 38px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #1f2937; }
@@ -377,7 +377,11 @@ function renderTeamHeatmap(dates) {
     if (min <= 60) return "#bbf7d0";
     return `rgba(239,68,68,${Math.min(1, 0.4 + min / Math.max(120, matrixMax) * 0.6)})`;
   }
-  let html = `<div class="heat-grid" style="grid-template-columns:96px repeat(${dates.length}, minmax(56px,1fr));">`;
+  // 列少(≤10)时撑满容器，列多时固定 56px 触发横向滚动，避免溢出/塌缩
+  const many = dates.length > 10;
+  const colDef = many ? "56px" : "minmax(46px,1fr)";
+  const gridW = many ? "width:max-content;" : "width:100%;";
+  let html = `<div class="heat-grid" style="${gridW}grid-template-columns:96px repeat(${dates.length}, ${colDef});">`;
   html += `<div class="heat-head">销售</div>` + dates.map(d => `<div class="heat-head">${d.slice(5)}</div>`).join("");
   SALES_NAMES.forEach(s => {
     html += `<div class="heat-date" style="color:${COLORS[s] || "#1f2937"}">${s}</div>`;
