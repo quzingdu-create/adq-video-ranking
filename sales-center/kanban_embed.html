@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614j"></script>
-<script src="data/center_sales_summary.js?v=20260614j"></script>
-<script src="data/center_quarter_summary.js?v=20260614j"></script>
-<script src="data/center_daily_kpi.js?v=20260614j"></script>
-<script src="data/top80_effective_metrics.js?v=20260614j"></script>
-<script src="data/top_status_data.js?v=20260614j"></script>
-<script src="data/enough_candidates.js?v=20260614j"></script>
-<script src="data/handover_customers_519.js?v=20260614j"></script>
-<script src="data/customer_main_product.js?v=20260614j"></script>
+<script src="data/bulk_import_rows.js?v=20260614k"></script>
+<script src="data/center_sales_summary.js?v=20260614k"></script>
+<script src="data/center_quarter_summary.js?v=20260614k"></script>
+<script src="data/center_daily_kpi.js?v=20260614k"></script>
+<script src="data/top80_effective_metrics.js?v=20260614k"></script>
+<script src="data/top_status_data.js?v=20260614k"></script>
+<script src="data/enough_candidates.js?v=20260614k"></script>
+<script src="data/handover_customers_519.js?v=20260614k"></script>
+<script src="data/customer_main_product.js?v=20260614k"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614j"></script>
+<script src="cloud_sync.js?v=20260614k"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -812,9 +812,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614j`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614k`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614j')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614k')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -974,7 +974,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614j" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614k" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -990,7 +990,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614j" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614k" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1074,7 +1074,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614j" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614k" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -2227,8 +2227,36 @@ function dedupeRecordsByEarliest(records) {
   return Array.from(map.values());
 }
 
+function recordMetricKey(r) {
+  return String((r && (r.shortName || r.name || r.brand)) || '').trim();
+}
+function buildRecordMetricMap() {
+  const rows = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  const map = new Map();
+  rows.forEach(r => {
+    const keys = [recordMetricKey(r), String(r && r.name || '').trim(), String(r && r.shortName || '').trim()].filter(Boolean);
+    const hasMetric = Number(r.quarterCost || 0) > 0 || Number(r.yestCost || 0) > 0 || r.costChg || r.deliverySide || r.firstQuarter || r.isNew === true;
+    if (!hasMetric) return;
+    keys.forEach(k => {
+      const prev = map.get(k);
+      if (!prev || Number(r.quarterCost || 0) > Number(prev.quarterCost || 0) || Number(r.yestCost || 0) > Number(prev.yestCost || 0)) map.set(k, r);
+    });
+  });
+  return map;
+}
+function enrichRecordMetrics(r, metricMap) {
+  if (!r || !metricMap) return r;
+  const src = metricMap.get(recordMetricKey(r)) || metricMap.get(String(r.name || '').trim()) || metricMap.get(String(r.shortName || '').trim());
+  if (!src || src === r) return r;
+  const out = Object.assign({}, r);
+  ['shortName','firstQuarter','isNew','isRising','quarterCost','yestCost','costChg','deliverySide','link','links','status','customerType'].forEach(k => {
+    if ((out[k] === undefined || out[k] === null || out[k] === '' || (['quarterCost','yestCost'].includes(k) && Number(out[k] || 0) === 0)) && src[k] !== undefined && src[k] !== null && src[k] !== '') out[k] = src[k];
+  });
+  return out;
+}
 function currentRecordList() {
-  let list = dedupeRecordsByEarliest(RECORDS);
+  const metricMap = buildRecordMetricMap();
+  let list = dedupeRecordsByEarliest(RECORDS).map(r => enrichRecordMetrics(r, metricMap));
   if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
   const todayStr = latestRecordDate(list);
   if (state.recordRange === 'today') {
