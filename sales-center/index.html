@@ -7,25 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260614m"></script>
+<script src="auth-guard.js?v=20260614n"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260614m"></script>
-<script src="data/current_rising_data.js?v=20260614m"></script>
+<script src="lib_loader.js?v=20260614n"></script>
+<script src="data/current_rising_data.js?v=20260614n"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260614m"></script>
-<script src="data/center_quarter_summary.js?v=20260614m"></script>
-<script src="data/center_daily_kpi.js?v=20260614m"></script>
-<script src="data/top80_effective_metrics.js?v=20260614m"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260614n"></script>
+<script src="data/center_quarter_summary.js?v=20260614n"></script>
+<script src="data/center_daily_kpi.js?v=20260614n"></script>
+<script src="data/top80_effective_metrics.js?v=20260614n"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260614m"></script>
-<script src="data/redblack_data.js?v=20260614m"></script>
-<script src="data/customer_main_product.js?v=20260614m"></script>
+<script src="data/top_rising_data.js?v=20260614n"></script>
+<script src="data/redblack_data.js?v=20260614n"></script>
+<script src="data/customer_main_product.js?v=20260614n"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614m"></script>
-<script src="login_guard_banner.js?v=20260614m"></script>
+<script src="cloud_sync.js?v=20260614n"></script>
+<script src="login_guard_banner.js?v=20260614n"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260614m"></script>
+<script src="export_tuoke.js?v=20260614n"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -739,7 +739,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&v=20260614m"
+      src="mobile.html?embed=1&v=20260614n"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1316,7 +1316,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614m" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614n" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1325,7 +1325,7 @@ window.__CASE_DATA__ = [
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614m" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614n" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -2043,7 +2043,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   if (!frame) return;
   bindKanbanFrameResize(frameId, 760);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614m`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614n`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2060,7 +2060,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614m`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614n`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2079,16 +2079,9 @@ function closeHomeLifecycleModal() {
   if (frame) frame.onload = null;
 }
 function scheduleBattlePreload() {
-  if (window.__battlePreloadScheduled) return;
-  window.__battlePreloadScheduled = true;
-  const run = () => {
-    const battleActive = document.getElementById('page-battle')?.classList.contains('active');
-    const lifeActive = document.getElementById('page-life')?.classList.contains('active');
-    if (!battleActive) ensureBattleFrameLoaded();
-    if (!lifeActive) ensureLifeFrameLoaded();
-  };
-  if ('requestIdleCallback' in window) requestIdleCallback(run, {timeout: 5000});
-  else setTimeout(run, 4500);
+  // 2026-06-14 子青反馈首屏仍慢：禁止首页后台预加载 battle/life iframe。
+  // 尤其 life iframe 会触发 tuoke_real_records.js 按需加载，抵消首屏减负。
+  return;
 }
 
 const SIDE_NAV_CONF = {
@@ -2146,12 +2139,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614m`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614n`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614m`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614n`);
   }
 }
 function updateViewToggle() {
@@ -2876,47 +2869,13 @@ function renderCleanupCard() {
   const card = document.getElementById('cleanupCard');
   if (!card) return;
 
-  // 2026-05-26 22:11 修复 0→真值跳变：MobileDoneCloudState 拉云端要 1.5s+，
-  // 在 _ready=false 期间 _doneSet 是空集，会导致销售卡先渲染「全员 0/X」红色卡，
-  // 1.5s 后才跳到真实数字（2/8、1/8、9/9）。
-  // 修复：未 ready 直接显示骨架，不渲染任何数字，杜绝跳变。
+  // 2026-06-14 子青反馈换浏览器仍慢：不再用「同步中」骨架阻塞首屏。
+  // 登录态云端未 ready 时，先用本地态/0 缓存渲染真实结构；云端回来后自动刷新为云端实时。
   const cloudReady = window.MobileDoneCloudState && window.MobileDoneCloudState._ready;
   const isLoggedIn = window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn();
-  // 2026-06-02 超时降级死规矩：登录后若云端 8s 还没拉到（token失效/网络/SDK异常），
-  // 绝不永久卡"同步中"骗人——强制降级用本地态渲染真实数字，徽章诚实标"云端未响应"。
   const _mdc = window.MobileDoneCloudState;
   const _firstTs = (_mdc && _mdc._firstPullTs) || 0;
   const _timedOut = _firstTs > 0 && (Date.now() - _firstTs > 3500);
-  if (isLoggedIn && !cloudReady && !_timedOut) {
-    const $$skeleton = id => document.getElementById(id);
-    if ($$skeleton('cleanupDone')) $$skeleton('cleanupDone').textContent = '—';
-    if ($$skeleton('cleanupTotal')) $$skeleton('cleanupTotal').textContent = '—';
-    if ($$skeleton('cleanupMiss')) $$skeleton('cleanupMiss').textContent = '· 同步中…';
-    const rateEl0 = $$skeleton('cleanupRate');
-    if (rateEl0) { rateEl0.textContent = '…'; rateEl0.className = 'cleanup-rate'; }
-    const badge0 = $$skeleton('cleanupBadge');
-    if (badge0) {
-      badge0.textContent = '☁️ 同步中…';
-      badge0.style.color = '#9a6b00';
-      badge0.style.background = '#fffbeb';
-      badge0.style.borderColor = '#fde68a';
-    }
-    const teamFill0 = $$skeleton('cleanupTeamFill');
-    if (teamFill0) teamFill0.style.width = '0%';
-    const list0 = $$skeleton('cleanupSalesList');
-    if (list0) {
-      list0.style.gridTemplateColumns = '';
-      list0.innerHTML = (typeof SALES !== 'undefined' ? SALES : []).map(s => `
-        <div class="cleanup-sales-item" title="${s}：同步中…">
-          <div class="cleanup-sales-name">${s}</div>
-          <div class="cleanup-sales-rate" style="color:#9ca3af;">…</div>
-          <div class="cleanup-sales-cnt" style="color:#9ca3af;">同步中</div>
-          <div class="cleanup-sales-bar"><div class="cleanup-sales-bar-fill" style="width:0%;background:#e5e7eb;"></div></div>
-        </div>
-      `).join('');
-    }
-    return;
-  }
 
   // 2026-05-26 21:08 「纯 parent 单一真源」死规矩：
   // 删掉 MobileChipMirror 镜像分支（之前 mobile postMessage 覆盖 parent 数字，因 iframe 缓存反复出错）
@@ -2998,7 +2957,7 @@ function renderCleanupCard() {
       badge.style.background = '#ffe9e9';
       badge.style.borderColor = '#ffd0d0';
     } else {
-      badge.textContent = '☁️ 同步中…';
+      badge.textContent = '☁️ 同步中（先显示本地）';
       badge.style.color = '#9a6b00';
       badge.style.background = '#fffbeb';
       badge.style.borderColor = '#fde68a';
