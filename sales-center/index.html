@@ -7,25 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260614c"></script>
+<script src="auth-guard.js?v=20260614d"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260614c"></script>
-<script src="data/current_rising_data.js?v=20260614c"></script>
+<script src="lib_loader.js?v=20260614d"></script>
+<script src="data/current_rising_data.js?v=20260614d"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260614c"></script>
-<script src="data/center_quarter_summary.js?v=20260614c"></script>
-<script src="data/center_daily_kpi.js?v=20260614c"></script>
-<script src="data/top80_effective_metrics.js?v=20260614c"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260614d"></script>
+<script src="data/center_quarter_summary.js?v=20260614d"></script>
+<script src="data/center_daily_kpi.js?v=20260614d"></script>
+<script src="data/top80_effective_metrics.js?v=20260614d"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260614c"></script>
-<script src="data/redblack_data.js?v=20260614c"></script>
-<script src="data/customer_main_product.js?v=20260614c"></script>
+<script src="data/top_rising_data.js?v=20260614d"></script>
+<script src="data/redblack_data.js?v=20260614d"></script>
+<script src="data/customer_main_product.js?v=20260614d"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614c"></script>
-<script src="login_guard_banner.js?v=20260614c"></script>
+<script src="cloud_sync.js?v=20260614d"></script>
+<script src="login_guard_banner.js?v=20260614d"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260614c"></script>
+<script src="export_tuoke.js?v=20260614d"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -86,6 +86,12 @@
     text-decoration: none; display: inline-block;
   }
   .topbar a.btn-link:hover, .topbar button:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* 2026-06-14 子青：大 Tab 侧边导航 */
+  .side-tab-nav{position:fixed;right:14px;top:132px;z-index:120;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+  .side-tab-nav button{pointer-events:auto;border:1px solid #dbeafe;background:rgba(255,255,255,.94);color:#2563eb;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:850;box-shadow:0 8px 22px rgba(37,99,235,.12);cursor:pointer;white-space:nowrap;backdrop-filter:blur(8px);}
+  .side-tab-nav button:hover{background:#2563eb;color:#fff;border-color:#2563eb;transform:translateX(-2px);}
+  @media(max-width:1120px){.side-tab-nav{display:none;}}
 
   /* 顶部 Tab 大切换 */
   .tabbar {
@@ -647,6 +653,7 @@
     <button id="btnExportTuokeNew">⬇️ 25Q3-26Q2新客明细</button>
   </div>
 </div>
+<div class="side-tab-nav" id="sideTabNav"></div>
 <!-- 内联 bindBtn IIFE 已抽到 export_tuoke.js -->
 <!-- 🦞 右上角云端同步下拉菜单（合并双导出按钮 / 方案 B） -->
 <script>
@@ -730,7 +737,8 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260614c"
+      id="homeMobileFrame"
+      src="mobile.html?embed=1&v=20260614d"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -776,7 +784,7 @@
           <div id="caseTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
           <div id="caseList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:10px;max-height:430px;overflow-y:auto;padding:2px;"></div>
         </div>
-        <div class="info-card">
+        <div class="info-card" id="productInfoCard">
           <div class="ic-head"><div class="ic-title">🏗️ 产品能力</div><div class="ic-count">产品简介 & 对外文档（待更新）</div></div>
           <div class="info-item">
             <div class="ii-title">ADQ 服饰投放产品矩阵</div>
@@ -1307,7 +1315,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614c" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614d" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1316,7 +1324,7 @@ window.__CASE_DATA__ = [
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614c" style="width:100%;height:calc(100vh - 220px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614d" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -2000,11 +2008,41 @@ const TUOKE_TASKS = [
 /* ===========================================================
    二、Tab 切换
    =========================================================== */
+
+function resizeKanbanFrameToContent(frameId, minHeight) {
+  const frame = document.getElementById(frameId);
+  if (!frame) return;
+  try {
+    const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+    if (!doc) return;
+    const h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, minHeight || 760);
+    frame.style.height = (h + 24) + 'px';
+  } catch(e) {}
+}
+function bindKanbanFrameResize(frameId, minHeight) {
+  const frame = document.getElementById(frameId);
+  if (!frame || frame.dataset.resizeBound) return;
+  frame.dataset.resizeBound = '1';
+  frame.addEventListener('load', () => {
+    resizeKanbanFrameToContent(frameId, minHeight);
+    setTimeout(() => resizeKanbanFrameToContent(frameId, minHeight), 600);
+    setTimeout(() => resizeKanbanFrameToContent(frameId, minHeight), 1600);
+  });
+}
+window.addEventListener('message', function(e){
+  const d = e.data || {};
+  if (d.type === 'kanban-height' || d.type === 'kanban-resize') {
+    resizeKanbanFrameToContent('battleFrame', 760);
+    resizeKanbanFrameToContent('lifeFrame', 760);
+  }
+});
+
 function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const frame = document.getElementById(frameId);
   if (!frame) return;
+  bindKanbanFrameResize(frameId, 760);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614c`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614d`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2021,7 +2059,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614c`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614d`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2051,12 +2089,27 @@ function scheduleBattlePreload() {
   if ('requestIdleCallback' in window) requestIdleCallback(run, {timeout: 5000});
   else setTimeout(run, 4500);
 }
+
+const SIDE_NAV_CONF = {
+  home:[['今日概览','summaryBoard'],['清理进度','cleanupCard'],['客户列表','homeMobileFrame']],
+  battle:[['KPI','battlePortal'],['参考指标','kpiGrid','battleFrame'],['销售明细','salesProgressSection','battleFrame'],['专项进展','specialProgressSection','battleFrame']],
+  life:[['生命周期','lifecycleSystemSection','lifeFrame'],['拓客模型','portraitSection','lifeFrame'],['登记明细','recordDetailSection','lifeFrame']],
+  info:[['核心专项','coreProjectCard'],['政策','policyInlineTabs'],['行业','indTabs'],['案例','caseTabs'],['产品','productInfoCard']]
+};
+function renderSideNav(tab){
+  const box=document.getElementById('sideTabNav'); if(!box) return;
+  const rows=SIDE_NAV_CONF[tab]||[];
+  box.innerHTML=rows.map((r,i)=>`<button type="button" data-side-idx="${i}">${r[0]}</button>`).join('');
+  box.querySelectorAll('button').forEach(btn=>{btn.onclick=()=>{const r=rows[+btn.dataset.sideIdx]; if(!r)return; if(r[2]){const f=document.getElementById(r[2]); try{f&&f.contentWindow&&f.contentWindow.postMessage({type:'scroll-to-anchor', target:r[1]}, '*');}catch(e){} } else { const el=document.getElementById(r[1]); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); } };});
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-page').forEach(p => p.classList.toggle('active', p.id === `page-${tab}`));
   if (tab === 'battle') ensureBattleFrameLoaded();
   else if (tab === 'life') ensureLifeFrameLoaded();
   else scheduleBattlePreload();
+  renderSideNav(tab);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 document.querySelectorAll('.tab-btn').forEach(b => {
@@ -2092,12 +2145,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614c`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614d`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614c`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614d`);
   }
 }
 function updateViewToggle() {
