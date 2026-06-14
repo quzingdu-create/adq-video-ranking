@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控后台 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614b"></script>
+<script src="data/monitor_session_data.js?v=20260614d"></script>
 <style>
   :root {
     --bg: #f3f6fb;
@@ -101,8 +101,13 @@
   .panel-title { font-size: 17px; font-weight: 850; display: flex; align-items: center; gap: 8px; }
   .panel-desc { color: var(--muted); font-size: 12px; line-height: 1.5; }
   .chart { height: 330px; width: 100%; }
+  .hour-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .hour-chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 12px; color: var(--muted); }
+  .hour-chip b { display: block; color: #1f2937; font-size: 14px; font-weight: 850; margin-top: 2px; }
   .ranking-list { display: flex; flex-direction: column; gap: 12px; }
-  .rank-row { display: grid; grid-template-columns: 118px 1fr 86px 58px; gap: 10px; align-items: center; }
+  .rank-row { display: grid; grid-template-columns: 118px 1fr 96px; gap: 10px; align-items: center; }
+  .rank-head { padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+  .rank-head .name, .rank-head .min-text { color: var(--muted); font-weight: 600; font-size: 12px; }
   .name { font-weight: 800; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .bar-wrap { background: #edf2f7; height: 12px; border-radius: 999px; position: relative; overflow: hidden; }
   .bar-target { position: absolute; left: 25%; width: 25%; top: 0; bottom: 0; background: rgba(16,185,129,0.22); }
@@ -133,7 +138,7 @@
   .muted { color: var(--muted); }
   .empty { color: var(--muted); text-align: center; padding: 40px; }
   @media (max-width: 1100px) { .hero, .layout { grid-template-columns: 1fr; } .hero-meta { justify-content: flex-start; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 680px) { body { padding: 14px; } .kpi-grid { grid-template-columns: 1fr; } .rank-row { grid-template-columns: 96px 1fr 86px; } .rank-row .badge { display: none; } }
+  @media (max-width: 680px) { body { padding: 14px; } .kpi-grid { grid-template-columns: 1fr; } .rank-row { grid-template-columns: 96px 1fr 96px; } }
 </style>
 </head>
 <body>
@@ -187,13 +192,22 @@
         </div>
         <div class="heatmap" id="heatmap"></div>
       </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div><div class="panel-title">使用时段分析</div><div class="panel-desc">按各小时(0~23点)的使用时长汇总，看销售集中在什么时段看板。</div></div>
+        </div>
+        <div id="hourChart" class="chart"></div>
+        <div class="hour-summary" id="hourSummary"></div>
+      </section>
     </div>
 
     <aside>
       <section class="panel">
         <div class="panel-head">
-          <div><div class="panel-title">销售活跃榜</div><div class="panel-desc">主数字为日均时长，横条越长越活跃；绿色区间代表 30-60 分钟（合理）。</div></div>
+          <div><div class="panel-title">销售活跃榜</div></div>
         </div>
+        <div class="rank-row rank-head"><div class="name">销售</div><div></div><div class="min-text">日均使用时长</div></div>
         <div class="ranking-list" id="rankingList"></div>
       </section>
     </aside>
@@ -214,6 +228,7 @@ let currentRange = "today";
 let customStart = null;
 let customEnd = null;
 let trendChart = null;
+let hourChart = null;
 
 function allRows() {
   return Array.isArray(window.MONITOR_SESSION_DATA) ? window.MONITOR_SESSION_DATA : [];
@@ -361,10 +376,9 @@ function renderRanking(agg) {
     const status = bucketStatus(min, true);
     const cls = status.cls === "real" ? "good" : status.cls === "high" ? "danger" : "warn";
     const pct = Math.min(100, Math.round(min / maxMin * 100));
-    return `<div class="rank-row"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar-target"></span><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${min}分钟/天</div><span class="badge ${status.cls}">${status.text}</span></div>`;
+    return `<div class="rank-row"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar-target"></span><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${min}分钟/天</div></div>`;
   }).join("");
 }
-function hasRealGroup(group) { return (group.loginDays || 0) > 0; }
 function renderTrend(agg) {
   const dates = getDateRange();
   const total = dates.map(d => Math.round(((agg.byDate[d] && agg.byDate[d].totalSec) || 0) / 60));
@@ -381,6 +395,46 @@ function renderTrend(agg) {
       { name: "访问次数", type: "line", yAxisIndex: 1, smooth: true, data: sessions, symbolSize: 7, itemStyle: { color: "#2563eb" } }
     ]
   });
+}
+function renderHour(rows) {
+  // 按 loginTime 所在小时汇总使用时长（分钟），单次封顶 30 分口径
+  const byHour = Array(24).fill(0);
+  rows.forEach(s => {
+    const t = toNum(s.loginTime);
+    if (!t) return;
+    const h = new Date(t).getHours();
+    byHour[h] += sessionSec(s);
+  });
+  const minByHour = byHour.map(sec => Math.round(sec / 60));
+  if (!hourChart) hourChart = echarts.init(document.getElementById("hourChart"));
+  hourChart.setOption({
+    tooltip: { trigger: "axis", formatter: p => `${p[0].axisValue} · ${p[0].data} 分钟` },
+    grid: { top: 24, left: 46, right: 24, bottom: 28 },
+    xAxis: { type: "category", data: Array.from({ length: 24 }, (_, h) => h + "点"), axisLabel: { interval: 1 } },
+    yAxis: { type: "value", name: "分钟" },
+    series: [{
+      type: "bar", data: minByHour, barMaxWidth: 22,
+      itemStyle: { color: p => { const h = p.dataIndex; return (h >= 9 && h <= 18) ? "#10b981" : "#94a3b8"; }, borderRadius: [4, 4, 0, 0] }
+    }]
+  });
+  // 时段分档汇总：早上6-12 / 下午12-18 / 晚上18-24 / 深夜0-6
+  const buckets = [
+    { name: "早上 6-12点", sec: 0 }, { name: "下午 12-18点", sec: 0 },
+    { name: "晚上 18-24点", sec: 0 }, { name: "深夜 0-6点", sec: 0 }
+  ];
+  byHour.forEach((sec, h) => {
+    if (h >= 6 && h < 12) buckets[0].sec += sec;
+    else if (h >= 12 && h < 18) buckets[1].sec += sec;
+    else if (h >= 18) buckets[2].sec += sec;
+    else buckets[3].sec += sec;
+  });
+  const totalSec = buckets.reduce((a, b) => a + b.sec, 0) || 1;
+  // 高峰时段
+  let peakH = 0, peakV = -1;
+  minByHour.forEach((v, h) => { if (v > peakV) { peakV = v; peakH = h; } });
+  const chips = [`<div class="hour-chip">使用高峰<b>${peakH}点（${peakV}分钟）</b></div>`]
+    .concat(buckets.map(b => `<div class="hour-chip">${b.name}<b>${Math.round(b.sec / 60)}分钟 · ${Math.round(b.sec / totalSec * 100)}%</b></div>`));
+  document.getElementById("hourSummary").innerHTML = chips.join("");
 }
 function renderHeatmap(agg) {
   const dates = getDateRange();
@@ -439,9 +493,10 @@ function loadAll() {
   renderRanking(agg);
   renderTrend(agg);
   renderHeatmap(agg);
+  renderHour(rows);
   renderTable(rows);
 }
-window.addEventListener("resize", () => { if (trendChart) trendChart.resize(); });
+window.addEventListener("resize", () => { if (trendChart) trendChart.resize(); if (hourChart) hourChart.resize(); });
 loadAll();
 </script>
 </body>
