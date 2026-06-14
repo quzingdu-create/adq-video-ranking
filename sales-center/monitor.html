@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614g"></script>
+<script src="data/monitor_session_data.js?v=20260614j"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -57,15 +57,26 @@
   .layout .col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); min-width: 0; overflow: hidden; }
   .panel-head { margin-bottom: 14px; }
+  .mini-tabs { display: inline-flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 3px; flex-shrink: 0; }
+  .mini-tab { border: none; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all .15s; }
+  .mini-tab.active { background: var(--blue); color: #fff; }
+  .fold-btn { border: 1px solid var(--line); background: var(--panel-2); color: #475569; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer; flex-shrink: 0; }
   .panel-title { font-size: 15px; font-weight: 800; }
   .panel-desc { color: var(--muted); font-size: 12px; line-height: 1.5; margin-top: 3px; }
   .chart { height: 300px; width: 100%; min-width: 0; }
   .chart.sm { height: 250px; }
 
-  /* 时段 chip */
-  .hour-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-  .hour-chip { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 13px; font-size: 12px; color: var(--muted); }
-  .hour-chip b { display: block; color: var(--ink); font-size: 14px; font-weight: 850; margin-top: 3px; }
+  /* 时段：高峰条 + 四宫格 */
+  .peak-bar { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 16px; background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border: 1px solid #bbf7d0; border-radius: 12px; }
+  .peak-bar .lbl { font-size: 12px; color: #15803d; font-weight: 700; }
+  .peak-bar .val { font-size: 18px; font-weight: 850; color: #166534; margin-left: auto; }
+  .hour-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
+  .hour-cell { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; text-align: center; }
+  .hour-cell .lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .hour-cell .val { font-size: 16px; color: var(--ink); font-weight: 850; margin-top: 5px; }
+  .hour-cell .pct { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  @media (max-width: 520px) { .hour-grid { grid-template-columns: repeat(2, 1fr); } }
+  #pHourSummary .hour-grid { grid-template-columns: repeat(2, 1fr); } /* 个人视角在窄右栏，2列防挤 */
 
   /* 活跃榜 */
   .rank-head { display: grid; grid-template-columns: 110px 1fr 86px; gap: 10px; padding-bottom: 10px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
@@ -119,7 +130,7 @@
       <div class="logo">📊</div>
       <div>
         <h1>访问监控 · 销售作战中心</h1>
-        <div class="sub">日均使用时长口径 · 60 分钟/天封顶</div>
+        <div class="sub">有效使用时长口径 · 单次访问封顶30分（防挂机）</div>
       </div>
     </div>
     <span class="data-pill" id="dataPill">数据：-</span>
@@ -153,29 +164,28 @@
       <div class="kpi-card violet"><div class="kpi-label">窗口累计时长</div><div class="kpi-value" id="tTotal">-</div><div class="kpi-sub">全员合计</div></div>
     </section>
 
-    <div class="layout">
-      <div class="col">
-        <section class="panel">
-          <div class="panel-head"><div class="panel-title">每日时长趋势</div><div class="panel-desc">柱形=当日总时长（分钟），折线=访问次数。</div></div>
-          <div id="tTrend" class="chart"></div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><div class="panel-title">销售 × 日期热力矩阵</div><div class="panel-desc">每行一个销售、每列一天，30-60 分钟为合理区间，颜色越深越活跃。</div></div>
-          <div class="heatmap" id="tHeatmap"></div>
-        </section>
-        <section class="panel">
-          <div class="panel-head"><div class="panel-title">团队使用时段分析</div><div class="panel-desc">按各小时(0~23点)的使用时长汇总，看团队集中在什么时段看板。</div></div>
-          <div id="tHour" class="chart sm"></div>
-          <div class="hour-summary" id="tHourSummary"></div>
-        </section>
-      </div>
-      <div class="col">
-        <section class="panel">
-          <div class="panel-head"><div class="panel-title">销售活跃榜</div><div class="panel-desc">日均使用时长降序，点名字查看个人明细。</div></div>
-          <div class="rank-head"><span>销售</span><span></span><span>日均时长</span></div>
-          <div id="tRanking"></div>
-        </section>
-      </div>
+    <div class="quad-grid">
+      <section class="panel quad-cell">
+        <div class="panel-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div><div class="panel-title">每日趋势</div><div class="panel-desc">按日聚合，Tab 切换查看使用时长或访问次数。</div></div>
+          <div class="mini-tabs"><button class="mini-tab active" data-mt="dur" onclick="switchTrendTab('dur')">使用时长</button><button class="mini-tab" data-mt="cnt" onclick="switchTrendTab('cnt')">使用次数</button></div>
+        </div>
+        <div id="tTrend" class="chart quad-chart"></div>
+      </section>
+      <section class="panel quad-cell">
+        <div class="panel-head"><div class="panel-title">销售活跃榜</div><div class="panel-desc">日均使用时长降序，点名字查看个人明细。</div></div>
+        <div class="rank-head"><span>销售</span><span></span><span>日均时长</span></div>
+        <div class="quad-scroll" id="tRanking"></div>
+      </section>
+      <section class="panel quad-cell">
+        <div class="panel-head"><div class="panel-title">销售 × 日期热力矩阵</div><div class="panel-desc">每行一个销售、每列一天，单元格为当天使用时长（分钟），颜色越深时长越高。</div></div>
+        <div class="heatmap quad-scroll" id="tHeatmap"></div>
+      </section>
+      <section class="panel quad-cell">
+        <div class="panel-head"><div class="panel-title">团队使用时段分析</div><div class="panel-desc">按各小时(0~23点)的使用时长汇总，看团队集中在什么时段看板。</div></div>
+        <div id="tHour" class="chart quad-chart"></div>
+        <div class="hour-summary" id="tHourSummary"></div>
+      </section>
     </div>
   </div>
 
@@ -198,12 +208,18 @@
     <div class="layout">
       <div class="col">
         <section class="panel">
-          <div class="panel-head"><div class="panel-title">每日时长趋势</div><div class="panel-desc">该销售逐日使用时长（分钟）。</div></div>
+          <div class="panel-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+            <div><div class="panel-title">每日趋势</div><div class="panel-desc">该销售按日聚合，Tab 切换时长/次数。</div></div>
+            <div class="mini-tabs"><button class="mini-tab active" data-pmt="dur" onclick="switchPTrendTab('dur')">使用时长</button><button class="mini-tab" data-pmt="cnt" onclick="switchPTrendTab('cnt')">使用次数</button></div>
+          </div>
           <div id="pTrend" class="chart"></div>
         </section>
         <section class="panel">
-          <div class="panel-head"><div class="panel-title">访问明细</div><div class="panel-desc">该销售的 session 粒度记录。</div></div>
-          <div class="table-wrap" id="pTable"></div>
+          <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;" onclick="togglePTable()">
+            <div><div class="panel-title">访问明细</div><div class="panel-desc">该销售的 session 粒度记录。</div></div>
+            <button class="fold-btn" id="pTableFoldBtn">展开 ▾</button>
+          </div>
+          <div class="table-wrap hidden" id="pTable"></div>
         </section>
       </div>
       <div class="col">
@@ -221,12 +237,13 @@
 <script>
 const SALES_NAMES = ["brownfan", "lijunwu", "jonzhu", "kaikaigenli", "kinsleyjin", "ruilingzhan", "yvaineechen", "edcchen"];
 const COLORS = { brownfan: "#2563eb", lijunwu: "#10b981", jonzhu: "#f59e0b", kaikaigenli: "#ef4444", kinsleyjin: "#8b5cf6", ruilingzhan: "#06b6d4", yvaineechen: "#ec4899", edcchen: "#64748b" };
-const SESSION_CAP_SEC = 1800; // 单次 session 封顶 30 分钟
-const DAILY_CAP_SEC = 3600;   // 每人每天封顶 60 分钟
 let currentRange = "7d";
 let customStart = null, customEnd = null;
 let currentView = "team";
 let currentSale = null;
+let teamTrendMode = "dur";   // 团队趋势 Tab: dur/cnt
+let personTrendMode = "dur"; // 个人趋势 Tab: dur/cnt
+let pTableOpen = false;      // 个人明细折叠状态
 const charts = {}; // id -> echarts instance
 
 /* ---------- 数据基础 ---------- */
@@ -246,7 +263,10 @@ function getDateRange() {
 }
 function toNum(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 function hasReal(s) { return s.activeDurationSec !== undefined && s.activeDurationSec !== null && s.activeDurationSec !== ""; }
+const SESSION_CAP_SEC = 1800; // 单次 session 封顶 30 分钟（防单次挂机爆表；每天不再封顶）
 function sessionSec(s) {
+  // 口径(2026-06-14 子青拍板)：优先 activeDurationSec(写入端心跳累加, 已扣>~2分无操作)，
+  // 旧数据回退 estimatedDurationSec / duration / (lastActivityTime-loginTime)。保留单次30分封顶，每天不封顶。
   let v;
   if (hasReal(s)) v = Math.max(0, toNum(s.activeDurationSec));
   else if (s.estimatedDurationSec !== undefined && s.estimatedDurationSec !== null && s.estimatedDurationSec !== "") v = Math.max(0, toNum(s.estimatedDurationSec));
@@ -255,11 +275,13 @@ function sessionSec(s) {
   else v = 0;
   return Math.min(v, SESSION_CAP_SEC);
 }
-function formatDuration(sec) {
-  sec = Math.round(toNum(sec)); if (sec <= 0) return "0分";
-  const min = Math.round(sec / 60); if (min < 60) return min + "分";
-  return Math.floor(min / 60) + "小时" + (min % 60 ? (min % 60) + "分" : "");
+// 时长统一用「分钟」为单位：≥60分保留1位小数，<60分取整（2026-06-14 子青拍板）
+function formatMin(sec) {
+  sec = toNum(sec); if (sec <= 0) return "0分钟";
+  const min = sec / 60;
+  return (min >= 60 ? min.toFixed(1) : Math.round(min)) + "分钟";
 }
+function formatDuration(sec) { return formatMin(sec); }
 function formatTime(ts) { if (!ts) return "-"; const d = new Date(toNum(ts)); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
 function bucketStatus(min) {
   if (min <= 0) return { text: "无记录", cls: "low" };
@@ -285,7 +307,7 @@ function aggregate(rows) {
   Object.values(byRtx).forEach(g => {
     let capped = 0, loginDays = 0;
     Object.keys(g.perDay).forEach(d => {
-      const daySec = Math.min(g.perDay[d], DAILY_CAP_SEC);
+      const daySec = g.perDay[d]; // 本次不封顶，按实际值
       if (daySec > 0) loginDays += 1;
       capped += daySec;
       if (!byDate[d]) byDate[d] = { date: d, sessions: 0, totalSec: 0 };
@@ -300,20 +322,19 @@ function aggregate(rows) {
   return { byRtx, byDate, cappedTotalSec, avgPerPerson };
 }
 
-/* ---------- 通用：每日趋势 / 时段 ---------- */
-function renderTrend(id, dates, byDate, withSession) {
-  const total = dates.map(d => Math.round(((byDate[d] && byDate[d].totalSec) || 0) / 60));
-  const sessions = dates.map(d => (byDate[d] && byDate[d].sessions) || 0);
-  const series = [{ name: "时长", type: "bar", data: total, itemStyle: { color: "#10b981", borderRadius: [4, 4, 0, 0] }, barMaxWidth: 34 }];
-  if (withSession) series.push({ name: "访问次数", type: "line", yAxisIndex: 1, smooth: true, data: sessions, symbolSize: 7, itemStyle: { color: "#2563eb" } });
+/* ---------- 通用：每日趋势(Tab:时长/次数) / 时段 ---------- */
+function renderTrend(id, dates, byDate, mode) {
+  // mode: "dur"=使用时长(分钟柱) | "cnt"=使用次数(柱)
+  const dur = dates.map(d => Math.round(((byDate[d] && byDate[d].totalSec) || 0) / 60));
+  const cnt = dates.map(d => (byDate[d] && byDate[d].sessions) || 0);
+  const isDur = mode !== "cnt";
   getChart(id).setOption({
-    tooltip: { trigger: "axis" },
-    legend: { data: withSession ? ["时长", "访问次数"] : ["时长"], top: 0, right: 0 },
-    grid: { top: 38, left: 44, right: withSession ? 46 : 18, bottom: 26 },
+    tooltip: { trigger: "axis", formatter: p => `${p[0].axisValue} · ${p[0].data}${isDur ? " 分钟" : " 次"}` },
+    grid: { top: 28, left: 46, right: 18, bottom: 26 },
     xAxis: { type: "category", data: dates.map(d => d.slice(5)), axisTick: { alignWithLabel: true }, axisLine: { lineStyle: { color: "#cbd5e1" } } },
-    yAxis: withSession ? [{ type: "value", name: "分钟", splitLine: { lineStyle: { color: "#eef2f8" } } }, { type: "value", name: "次数", splitLine: { show: false } }] : [{ type: "value", name: "分钟", splitLine: { lineStyle: { color: "#eef2f8" } } }],
-    series
-  });
+    yAxis: { type: "value", name: isDur ? "分钟" : "次数", splitLine: { lineStyle: { color: "#eef2f8" } } },
+    series: [{ type: "bar", data: isDur ? dur : cnt, barMaxWidth: 34, itemStyle: { color: isDur ? "#10b981" : "#2563eb", borderRadius: [4, 4, 0, 0] } }]
+  }, true);
 }
 function hourStats(rows) {
   const byHour = Array(24).fill(0);
@@ -334,9 +355,11 @@ function renderHour(chartId, summaryId, rows) {
   byHour.forEach((sec, h) => { if (h >= 6 && h < 12) buckets[0].sec += sec; else if (h >= 12 && h < 18) buckets[1].sec += sec; else if (h >= 18) buckets[2].sec += sec; else buckets[3].sec += sec; });
   const tot = buckets.reduce((a, b) => a + b.sec, 0) || 1;
   let peakH = 0, peakV = -1; minByHour.forEach((v, h) => { if (v > peakV) { peakV = v; peakH = h; } });
-  const chips = [`<div class="hour-chip">使用高峰<b>${peakV > 0 ? peakH + "点 · " + peakV + "分钟" : "暂无"}</b></div>`]
-    .concat(buckets.map(b => `<div class="hour-chip">${b.name}<b>${Math.round(b.sec / 60)}分 · ${Math.round(b.sec / tot * 100)}%</b></div>`));
-  document.getElementById(summaryId).innerHTML = chips.join("");
+  const peakHtml = `<div class="peak-bar"><span class="lbl">⏰ 使用高峰</span><span class="val">${peakV > 0 ? peakH + "点 · " + peakV + "分钟" : "暂无数据"}</span></div>`;
+  const gridHtml = `<div class="hour-grid">` + buckets.map(b =>
+    `<div class="hour-cell"><div class="lbl">${b.name}</div><div class="val">${Math.round(b.sec / 60)}分</div><div class="pct">${Math.round(b.sec / tot * 100)}%</div></div>`
+  ).join("") + `</div>`;
+  document.getElementById(summaryId).innerHTML = peakHtml + gridHtml;
 }
 
 /* ---------- 团队视角 ---------- */
@@ -349,34 +372,38 @@ function renderTeam() {
   document.getElementById("tAvg").textContent = formatDuration(agg.avgPerPerson);
   document.getElementById("tTotal").textContent = formatDuration(agg.cappedTotalSec);
   document.getElementById("tRange").textContent = rangeLabel();
-  renderTrend("tTrend", dates, agg.byDate, true);
+  renderTrend("tTrend", dates, agg.byDate, teamTrendMode);
   renderTeamRanking(agg);
   renderTeamHeatmap(dates);
   renderHour("tHour", "tHourSummary", rows);
 }
 function renderTeamRanking(agg) {
   const sales = SALES_NAMES.map(n => agg.byRtx[n] || { rtx: n, avgSec: 0, loginDays: 0 }).sort((a, b) => b.avgSec - a.avgSec);
-  const maxMin = Math.max(60, ...sales.map(s => Math.round(s.avgSec / 60)));
+  const maxMin = Math.max(60, ...sales.map(s => s.avgSec / 60));
   document.getElementById("tRanking").innerHTML = sales.map(s => {
-    const min = Math.round(s.avgSec / 60);
+    const min = s.avgSec / 60;
     const cls = min <= 0 ? "warn" : min < 30 ? "warn" : min <= 60 ? "good" : "danger";
     const pct = Math.min(100, Math.round(min / maxMin * 100));
-    return `<div class="rank-row" onclick="gotoPerson('${s.rtx}')"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${min}分钟/天</div></div>`;
+    return `<div class="rank-row" onclick="gotoPerson('${s.rtx}')"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${s.rtx}</div><div class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${formatMin(s.avgSec)}/天</div></div>`;
   }).join("");
 }
 function cellSec(date, rtx) {
-  const raw = allRows().filter(s => s.date === date && s.rtx === rtx).reduce((a, s) => a + sessionSec(s), 0);
-  return Math.min(raw, DAILY_CAP_SEC);
+  return allRows().filter(s => s.date === date && s.rtx === rtx).reduce((a, s) => a + sessionSec(s), 0); // 不封顶
 }
 function renderTeamHeatmap(dates) {
-  let matrixMax = 1;
-  dates.forEach(d => SALES_NAMES.forEach(s => { matrixMax = Math.max(matrixMax, Math.round(cellSec(d, s) / 60)); }));
+  // 细化分档(2026-06-14)：不封顶，按 0/<10/<20/<30/<45/<60/<90/≥90 多档着色，30 与 60 明显不同
   function color(min) {
     if (min <= 0) return "#f8fafc";
-    if (min < 30) return "#dbeafe";
-    if (min <= 60) return "#bbf7d0";
-    return `rgba(239,68,68,${Math.min(1, 0.4 + min / Math.max(120, matrixMax) * 0.6)})`;
+    if (min < 10) return "#e0f2fe";
+    if (min < 20) return "#bae6fd";
+    if (min < 30) return "#bbf7d0";
+    if (min < 45) return "#86efac";
+    if (min < 60) return "#4ade80";
+    if (min < 90) return "#22c55e";
+    if (min < 120) return "#16a34a";
+    return "#15803d";
   }
+  function textColor(min) { return min >= 45 ? "#ffffff" : "#1f2937"; }
   // 列少(≤10)时撑满容器，列多时固定 56px 触发横向滚动，避免溢出/塌缩
   const many = dates.length > 10;
   const colDef = many ? "56px" : "minmax(46px,1fr)";
@@ -385,7 +412,7 @@ function renderTeamHeatmap(dates) {
   html += `<div class="heat-head">销售</div>` + dates.map(d => `<div class="heat-head">${d.slice(5)}</div>`).join("");
   SALES_NAMES.forEach(s => {
     html += `<div class="heat-date" style="color:${COLORS[s] || "#1f2937"}">${s}</div>`;
-    html += dates.map(d => { const m = Math.round(cellSec(d, s) / 60); return `<div class="heat-cell" style="background:${color(m)}">${m || "-"}</div>`; }).join("");
+    html += dates.map(d => { const m = Math.round(cellSec(d, s) / 60); return `<div class="heat-cell" style="background:${color(m)};color:${textColor(m)}">${m || "-"}</div>`; }).join("");
   });
   html += "</div>";
   document.getElementById("tHeatmap").innerHTML = html;
@@ -409,12 +436,11 @@ function renderPerson() {
   const byHour = hourStats(rows); let peakH = 0, peakV = -1;
   byHour.forEach((sec, h) => { if (sec > peakV) { peakV = sec; peakH = h; } });
   document.getElementById("pPeak").textContent = peakV > 0 ? peakH + "点" : "-";
-  renderTrend("pTrend", dates, agg.byDate, false);
+  renderTrend("pTrend", dates, agg.byDate, personTrendMode);
   renderHour("pHour", "pHourSummary", rows);
   renderPersonTable(rows);
 }
-function renderPersonTable(rows) {
-  if (!rows.length) { document.getElementById("pTable").innerHTML = `<div class="empty">该销售在当前窗口暂无访问记录</div>`; return; }
+function renderPersonTable(rows) {  if (!rows.length) { document.getElementById("pTable").innerHTML = `<div class="empty">该销售在当前窗口暂无访问记录</div>`; return; }
   const sorted = rows.slice().sort((a, b) => (b.loginTime || 0) - (a.loginTime || 0));
   const now = Date.now();
   let html = `<table><thead><tr><th>日期</th><th>登录</th><th>最近心跳</th><th>时长</th><th>状态</th><th>设备</th></tr></thead><tbody>`;
@@ -439,6 +465,25 @@ function switchView(v) {
 }
 function gotoPerson(rtx) { currentSale = rtx; document.getElementById("saleSelect").value = rtx; switchView("person"); }
 function onSaleChange() { currentSale = document.getElementById("saleSelect").value; loadAll(); }
+function switchTrendTab(mode) {
+  teamTrendMode = mode;
+  document.querySelectorAll(".mini-tab[data-mt]").forEach(b => b.classList.toggle("active", b.dataset.mt === mode));
+  const dates = getDateRange();
+  renderTrend("tTrend", dates, aggregate(rowsInWindow()).byDate, mode);
+  setTimeout(() => charts.tTrend && charts.tTrend.resize(), 20);
+}
+function switchPTrendTab(mode) {
+  personTrendMode = mode;
+  document.querySelectorAll(".mini-tab[data-pmt]").forEach(b => b.classList.toggle("active", b.dataset.pmt === mode));
+  const dates = getDateRange();
+  renderTrend("pTrend", dates, aggregate(rowsInWindow().filter(s => s.rtx === currentSale)).byDate, mode);
+  setTimeout(() => charts.pTrend && charts.pTrend.resize(), 20);
+}
+function togglePTable() {
+  pTableOpen = !pTableOpen;
+  document.getElementById("pTable").classList.toggle("hidden", !pTableOpen);
+  document.getElementById("pTableFoldBtn").textContent = pTableOpen ? "收起 ▴" : "展开 ▾";
+}
 function selectRange(range) {
   currentRange = range;
   document.querySelectorAll(".tw-btn").forEach(b => b.classList.toggle("active", b.dataset.range === range));
