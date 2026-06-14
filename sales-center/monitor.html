@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614o"></script>
+<script src="data/monitor_session_data.js?v=20260614p"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -367,12 +367,23 @@ function hourStats(rows) {
 }
 function renderHour(chartId, summaryId, rows) {
   const byHour = hourStats(rows); // 各小时登录次数
+  const maxN = Math.max(1, ...byHour);
+  // 按次数高低着色：越多越绿(深绿)，越少越浅灰绿
+  function barColor(n) {
+    if (n <= 0) return "#eef2f8";
+    const r = n / maxN; // 0~1
+    if (r >= 0.75) return "#10b981";
+    if (r >= 0.5) return "#34d399";
+    if (r >= 0.3) return "#6ee7b7";
+    if (r >= 0.15) return "#a7f3d0";
+    return "#cbd5e1";
+  }
   getChart(chartId).setOption({
     tooltip: { trigger: "axis", formatter: p => `${p[0].axisValue} · ${p[0].data}次登录` },
     grid: { top: 20, left: 44, right: 18, bottom: 26 },
     xAxis: { type: "category", data: Array.from({ length: 24 }, (_, h) => h), axisLabel: { interval: 2, formatter: v => v + "点" }, axisLine: { lineStyle: { color: "#cbd5e1" } } },
     yAxis: { type: "value", name: "次数", minInterval: 1, splitLine: { lineStyle: { color: "#eef2f8" } } },
-    series: [{ type: "bar", data: byHour, barMaxWidth: 20, itemStyle: { color: p => (p.dataIndex >= 9 && p.dataIndex <= 18) ? "#10b981" : "#cbd5e1", borderRadius: [3, 3, 0, 0] } }]
+    series: [{ type: "bar", data: byHour, barMaxWidth: 20, itemStyle: { color: p => barColor(p.data), borderRadius: [3, 3, 0, 0] } }]
   }, true);
   const buckets = [{ name: "早上 6-12点", n: 0 }, { name: "下午 12-18点", n: 0 }, { name: "晚上 18-24点", n: 0 }, { name: "深夜 0-6点", n: 0 }];
   byHour.forEach((n, h) => { if (h >= 6 && h < 12) buckets[0].n += n; else if (h >= 12 && h < 18) buckets[1].n += n; else if (h >= 18) buckets[2].n += n; else buckets[3].n += n; });
