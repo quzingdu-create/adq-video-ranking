@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614f"></script>
-<script src="data/center_sales_summary.js?v=20260614f"></script>
-<script src="data/center_quarter_summary.js?v=20260614f"></script>
-<script src="data/center_daily_kpi.js?v=20260614f"></script>
-<script src="data/top80_effective_metrics.js?v=20260614f"></script>
-<script src="data/top_status_data.js?v=20260614f"></script>
-<script src="data/enough_candidates.js?v=20260614f"></script>
-<script src="data/handover_customers_519.js?v=20260614f"></script>
-<script src="data/customer_main_product.js?v=20260614f"></script>
+<script src="data/bulk_import_rows.js?v=20260614g"></script>
+<script src="data/center_sales_summary.js?v=20260614g"></script>
+<script src="data/center_quarter_summary.js?v=20260614g"></script>
+<script src="data/center_daily_kpi.js?v=20260614g"></script>
+<script src="data/top80_effective_metrics.js?v=20260614g"></script>
+<script src="data/top_status_data.js?v=20260614g"></script>
+<script src="data/enough_candidates.js?v=20260614g"></script>
+<script src="data/handover_customers_519.js?v=20260614g"></script>
+<script src="data/customer_main_product.js?v=20260614g"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614f"></script>
+<script src="cloud_sync.js?v=20260614g"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -635,9 +635,7 @@ window.__BIG_DATA_READY__ = false;
   .special-inline-wrap { margin-top:14px; background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 28px rgba(15,23,42,.08); }
   .special-inline-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; background:linear-gradient(135deg,#f8fbff 0%,#eef6ff 100%); border-bottom:1px solid #e2e8f0; }
   .special-inline-title { font-size:14px; font-weight:800; color:#0f172a; }
-  .special-inline-actions { display:flex; gap:8px; align-items:center; }
-  .special-inline-actions button { border:1px solid #dbeafe; background:#fff; color:#2563eb; border-radius:999px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer; }
-  .special-inline-actions button.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+  .special-inline-block + .special-inline-block { border-top: 14px solid #f5f7fb; }
   .special-inline-frame { width:100%; height:760px; border:0; display:block; background:#f4f7fb; }
   .special-inline-tip { padding:10px 16px; font-size:12px; color:#64748b; background:#fff; border-top:1px solid #eef2f7; }
   .main-prod-inline { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; padding:1px 7px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:800; vertical-align:middle; }
@@ -809,9 +807,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614f`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614g`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614f')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614g')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -827,7 +825,7 @@ window.__BIG_DATA_READY__ = false;
   }
   window.addEventListener('message', function(e){
     const data = e.data || {};
-    if (data.type === 'pageHeight') { const sf=document.getElementById('specialInlineFrame'); if (sf && data.height) { sf.style.height=Math.max(520, Number(data.height)+24)+'px'; notifyParentKanbanHeight(); } }
+    if (data.type === 'pageHeight') { document.querySelectorAll('[data-special-frame]').forEach(function(sf){ if (sf.contentWindow === e.source && data.height) sf.style.height=Math.max(520, Number(data.height)+24)+'px'; }); notifyParentKanbanHeight(); }
     if (data.type === 'scroll-to-anchor' && data.target) { const el=document.getElementById(data.target); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
     if (data.type === 'lifecycle-resize') resizeLifecycleFrame();
     if (data.type === 'lifecycle-modal-open') resizeLifecycleFrame(260);
@@ -973,15 +971,19 @@ window.__BIG_DATA_READY__ = false;
       </button>
     </div>
     <div class="special-inline-wrap" id="specialInlineWrap">
-      <div class="special-inline-head">
-        <div class="special-inline-title" id="specialInlineTitle">🧵 产业带进展</div>
-        <div class="special-inline-actions">
-          <button type="button" class="active" data-special-switch="belt">产业带</button>
-          <button type="button" data-special-switch="pursuit">靶向名单</button>
+      <div class="special-inline-block" id="specialBeltBlock">
+        <div class="special-inline-head">
+          <div class="special-inline-title">🧵 产业带进展</div>
         </div>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614g" title="产业带进展内嵌看板"></iframe>
       </div>
-      <iframe class="special-inline-frame" id="specialInlineFrame" src="industry-belt.html?embed=1&v=20260614f" title="专项进展内嵌看板"></iframe>
-      <div class="special-inline-tip">在原页面内直接查看专项看板，保留完整筛选、导出、表格与地图能力。</div>
+      <div class="special-inline-block" id="specialPursuitBlock">
+        <div class="special-inline-head">
+          <div class="special-inline-title">🎯 靶向拓客名单</div>
+        </div>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614g" title="靶向拓客名单内嵌看板"></iframe>
+      </div>
+      <div class="special-inline-tip">两个专项按上下顺序直接展开，不再使用左右切换 Tab。</div>
     </div>
   </div>
 
@@ -1063,7 +1065,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614g" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -4457,23 +4459,14 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   sync();
 })();
 
-// 2026-06-13 子青：专项看板原页面内嵌，不再新开外置页
+// 2026-06-14 子青：专项看板上下直排，入口卡只负责滚动到对应块，不再左右切换 Tab
 (function(){
-  var MAP = {
-    belt: { title:'🧵 产业带进展', url:'industry-belt.html?embed=1&v=20260614f' },
-    pursuit: { title:'🎯 靶向拓客名单', url:'pursuit.html?embed=1&v=20260614f' }
-  };
-  function openSpecial(key){
-    var cfg = MAP[key] || MAP.belt;
-    var frame = document.getElementById('specialInlineFrame');
-    var title = document.getElementById('specialInlineTitle');
-    if (title) title.textContent = cfg.title;
-    if (frame && frame.getAttribute('src') !== cfg.url) frame.setAttribute('src', cfg.url);
-    document.querySelectorAll('[data-special-switch]').forEach(function(b){ b.classList.toggle('active', b.dataset.specialSwitch === key); });
-    try { document.getElementById('specialInlineWrap').scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
+  function scrollSpecial(key){
+    var target = document.getElementById(key === 'pursuit' ? 'specialPursuitBlock' : 'specialBeltBlock');
+    try { (target || document.getElementById('specialInlineWrap')).scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
   }
-  document.querySelectorAll('[data-special-tab],[data-special-switch]').forEach(function(btn){
-    btn.addEventListener('click', function(){ openSpecial(btn.dataset.specialTab || btn.dataset.specialSwitch); });
+  document.querySelectorAll('[data-special-tab]').forEach(function(btn){
+    btn.addEventListener('click', function(){ scrollSpecial(btn.dataset.specialTab); });
   });
 })();
 </script>
