@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614n"></script>
+<script src="data/monitor_session_data.js?v=20260614o"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -191,7 +191,7 @@
         <div class="heatmap quad-scroll" id="tHeatmap"></div>
       </section>
       <section class="panel quad-cell">
-        <div class="panel-head"><div class="panel-title">团队使用时段分析</div><div class="panel-desc">按各小时(0~23点)的使用时长汇总，看团队集中在什么时段看板。</div></div>
+        <div class="panel-head"><div class="panel-title">团队登录时段分析</div><div class="panel-desc">按各小时(0~23点)的登录次数汇总，看团队集中在什么时段打开看板。</div></div>
         <div id="tHour" class="chart quad-chart"></div>
         <div class="hour-summary" id="tHourSummary"></div>
       </section>
@@ -211,7 +211,7 @@
       <div class="kpi-card amber"><div class="kpi-label">日均使用时长</div><div class="kpi-value" id="pAvg">-</div><div class="kpi-sub">日均</div></div>
       <div class="kpi-card green"><div class="kpi-label">登录天数</div><div class="kpi-value" id="pDays">-</div><div class="kpi-sub">窗口内有访问的天数</div></div>
       <div class="kpi-card"><div class="kpi-label">访问次数</div><div class="kpi-value" id="pSessions">-</div><div class="kpi-sub">session 记录数</div></div>
-      <div class="kpi-card violet"><div class="kpi-label">最活跃时段</div><div class="kpi-value" id="pPeak">-</div><div class="kpi-sub">使用时长最高的小时</div></div>
+      <div class="kpi-card violet"><div class="kpi-label">最活跃时段</div><div class="kpi-value" id="pPeak">-</div><div class="kpi-sub">登录次数最高的小时</div></div>
     </section>
 
     <div class="layout">
@@ -230,7 +230,7 @@
       </div>
       <div class="col">
         <section class="panel">
-          <div class="panel-head"><div class="panel-title">个人使用时段</div><div class="panel-desc">该销售各小时使用时长分布。</div></div>
+          <div class="panel-head"><div class="panel-title">个人登录时段</div><div class="panel-desc">该销售各小时登录次数分布。</div></div>
           <div id="pHour" class="chart sm"></div>
           <div class="hour-summary" id="pHourSummary"></div>
         </section>
@@ -360,27 +360,27 @@ function renderTrend(id, dates, byDate) {
   }, true);
 }
 function hourStats(rows) {
+  // 按 loginTime 所在小时统计登录次数（一次登录=一个精确时间点，无跨小时分摊问题）
   const byHour = Array(24).fill(0);
-  rows.forEach(s => { const t = toNum(s.loginTime); if (!t) return; byHour[new Date(t).getHours()] += sessionSec(s); });
+  rows.forEach(s => { const t = toNum(s.loginTime); if (!t) return; byHour[new Date(t).getHours()] += 1; });
   return byHour;
 }
 function renderHour(chartId, summaryId, rows) {
-  const byHour = hourStats(rows);
-  const u = unitOfSecArray(byHour);
+  const byHour = hourStats(rows); // 各小时登录次数
   getChart(chartId).setOption({
-    tooltip: { trigger: "axis", formatter: p => `${p[0].axisValue} · ${p[0].data}${u.unit}` },
+    tooltip: { trigger: "axis", formatter: p => `${p[0].axisValue} · ${p[0].data}次登录` },
     grid: { top: 20, left: 44, right: 18, bottom: 26 },
     xAxis: { type: "category", data: Array.from({ length: 24 }, (_, h) => h), axisLabel: { interval: 2, formatter: v => v + "点" }, axisLine: { lineStyle: { color: "#cbd5e1" } } },
-    yAxis: { type: "value", name: u.axisName, splitLine: { lineStyle: { color: "#eef2f8" } } },
-    series: [{ type: "bar", data: u.vals, barMaxWidth: 20, itemStyle: { color: p => (p.dataIndex >= 9 && p.dataIndex <= 18) ? "#10b981" : "#cbd5e1", borderRadius: [3, 3, 0, 0] } }]
+    yAxis: { type: "value", name: "次数", minInterval: 1, splitLine: { lineStyle: { color: "#eef2f8" } } },
+    series: [{ type: "bar", data: byHour, barMaxWidth: 20, itemStyle: { color: p => (p.dataIndex >= 9 && p.dataIndex <= 18) ? "#10b981" : "#cbd5e1", borderRadius: [3, 3, 0, 0] } }]
   }, true);
-  const buckets = [{ name: "早上 6-12点", sec: 0 }, { name: "下午 12-18点", sec: 0 }, { name: "晚上 18-24点", sec: 0 }, { name: "深夜 0-6点", sec: 0 }];
-  byHour.forEach((sec, h) => { if (h >= 6 && h < 12) buckets[0].sec += sec; else if (h >= 12 && h < 18) buckets[1].sec += sec; else if (h >= 18) buckets[2].sec += sec; else buckets[3].sec += sec; });
-  const tot = buckets.reduce((a, b) => a + b.sec, 0) || 1;
-  let peakH = 0, peakSec = -1; byHour.forEach((sec, h) => { if (sec > peakSec) { peakSec = sec; peakH = h; } });
-  const peakHtml = `<div class="peak-bar"><span class="lbl">⏰ 使用高峰</span><span class="val">${peakSec > 0 ? peakH + "点 · " + formatMin(peakSec) : "暂无数据"}</span></div>`;
+  const buckets = [{ name: "早上 6-12点", n: 0 }, { name: "下午 12-18点", n: 0 }, { name: "晚上 18-24点", n: 0 }, { name: "深夜 0-6点", n: 0 }];
+  byHour.forEach((n, h) => { if (h >= 6 && h < 12) buckets[0].n += n; else if (h >= 12 && h < 18) buckets[1].n += n; else if (h >= 18) buckets[2].n += n; else buckets[3].n += n; });
+  const tot = buckets.reduce((a, b) => a + b.n, 0) || 1;
+  let peakH = 0, peakN = -1; byHour.forEach((n, h) => { if (n > peakN) { peakN = n; peakH = h; } });
+  const peakHtml = `<div class="peak-bar"><span class="lbl">⏰ 登录高峰</span><span class="val">${peakN > 0 ? peakH + "点 · " + peakN + "次" : "暂无数据"}</span></div>`;
   const gridHtml = `<div class="hour-grid">` + buckets.map(b =>
-    `<div class="hour-cell"><div class="lbl">${b.name}</div><div class="val">${formatMin(b.sec)}</div><div class="pct">${Math.round(b.sec / tot * 100)}%</div></div>`
+    `<div class="hour-cell"><div class="lbl">${b.name}</div><div class="val">${b.n}次</div><div class="pct">${Math.round(b.n / tot * 100)}%</div></div>`
   ).join("") + `</div>`;
   document.getElementById(summaryId).innerHTML = peakHtml + gridHtml;
 }
