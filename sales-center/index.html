@@ -7,25 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260613v"></script>
+<script src="auth-guard.js?v=20260614a"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260613v"></script>
-<script src="data/current_rising_data.js?v=20260613v"></script>
+<script src="lib_loader.js?v=20260614a"></script>
+<script src="data/current_rising_data.js?v=20260614a"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260613v"></script>
-<script src="data/center_quarter_summary.js?v=20260613v"></script>
-<script src="data/center_daily_kpi.js?v=20260613v"></script>
-<script src="data/top80_effective_metrics.js?v=20260613v"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260614a"></script>
+<script src="data/center_quarter_summary.js?v=20260614a"></script>
+<script src="data/center_daily_kpi.js?v=20260614a"></script>
+<script src="data/top80_effective_metrics.js?v=20260614a"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260613v"></script>
-<script src="data/redblack_data.js?v=20260613v"></script>
-<script src="data/customer_main_product.js?v=20260613v"></script>
+<script src="data/top_rising_data.js?v=20260614a"></script>
+<script src="data/redblack_data.js?v=20260614a"></script>
+<script src="data/customer_main_product.js?v=20260614a"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613v"></script>
-<script src="login_guard_banner.js?v=20260613v"></script>
+<script src="cloud_sync.js?v=20260614a"></script>
+<script src="login_guard_banner.js?v=20260614a"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260613v"></script>
+<script src="export_tuoke.js?v=20260614a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -455,6 +455,38 @@
   .modal h2 { margin-bottom: 8px; font-size: 16px; }
   .modal .modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 18px; }
   .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  /* 小红点页内生命周期弹窗：不跳 Tab，直接在当前待办页一对一打开客户生命周期卡片 */
+  .lifecycle-popup-mask {
+    position: fixed; inset: 0; z-index: 260;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(15,23,42,.48); backdrop-filter: blur(3px);
+  }
+  .lifecycle-popup-mask.show { display: flex; }
+  .lifecycle-popup-card {
+    width: min(920px, calc(100vw - 48px)); max-height: calc(100vh - 48px);
+    background: #fff; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 26px 80px rgba(15,23,42,.32); border: 1px solid rgba(148,163,184,.35);
+    display: flex; flex-direction: column;
+  }
+  .lifecycle-popup-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 18px; border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg,#eff6ff 0%,#fff 62%,#f5f3ff 100%);
+  }
+  .lifecycle-popup-title { font-size: 15px; font-weight: 900; color: #0f172a; }
+  .lifecycle-popup-title span { color: #2563eb; }
+  .lifecycle-popup-sub { margin-top: 3px; font-size: 12px; color: #64748b; }
+  .lifecycle-popup-close {
+    width: 32px; height: 32px; border-radius: 10px; border: 1px solid #dbeafe;
+    background: #fff; color: #2563eb; font-size: 20px; line-height: 1; cursor: pointer;
+  }
+  .lifecycle-popup-close:hover { background: #eff6ff; }
+  .lifecycle-popup-frame { width: 100%; height: min(720px, calc(100vh - 150px)); border: 0; background: #fff; display: block; }
+  @media (max-width: 720px) {
+    .lifecycle-popup-mask { padding: 0; align-items: stretch; }
+    .lifecycle-popup-card { width: 100vw; max-height: 100vh; border-radius: 0; }
+    .lifecycle-popup-frame { height: calc(100vh - 70px); }
+  }
   .btn-sm {
     background: var(--primary); color: #fff; border: none; padding: 6px 14px; border-radius: 6px;
     font-size: 13px; cursor: pointer;
@@ -679,7 +711,7 @@
       </div>
     </div>
     <iframe
-      src="mobile.html?embed=1&v=20260613v"
+      src="mobile.html?embed=1&v=20260614a"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1221,7 +1253,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260613v" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614a" style="width:100%;height:calc(100vh - 240px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1230,7 +1262,7 @@ window.__CASE_DATA__ = [
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260613v" style="width:100%;height:calc(100vh - 220px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614a" style="width:100%;height:calc(100vh - 220px);border:0;display:block;background:#f5f7fb;border-radius:12px;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -1564,6 +1596,20 @@ window.__CASE_DATA__ = [
       <button class="btn-sm" onclick="alert('🦞 演示版：正式版会触发企微提醒到对应销售/运营')">📨 通知负责人</button>
       <button class="btn-sm" id="mcMarkDone" style="background:var(--success);">✅ 已通知客户</button>
     </div>
+  </div>
+</div>
+
+<!-- ========== 小红点页内生命周期弹窗（一对一客户卡片） ========== -->
+<div class="lifecycle-popup-mask" id="homeLifecycleModal">
+  <div class="lifecycle-popup-card">
+    <div class="lifecycle-popup-head">
+      <div>
+        <div class="lifecycle-popup-title">客户生命周期卡片 · <span id="homeLifecycleName">—</span></div>
+        <div class="lifecycle-popup-sub">从小红点客户卡片直接打开，不离开当前待办页面</div>
+      </div>
+      <button class="lifecycle-popup-close" type="button" id="homeLifecycleClose" aria-label="关闭">×</button>
+    </div>
+    <iframe class="lifecycle-popup-frame" id="homeLifecycleFrame" src="about:blank" title="客户生命周期卡片"></iframe>
   </div>
 </div>
 
@@ -1904,7 +1950,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const frame = document.getElementById(frameId);
   if (!frame) return;
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260613v`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614a`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -1916,13 +1962,28 @@ function ensureLifeFrameLoaded(forceUser) { ensureKanbanFrameLoaded('lifeFrame',
 function openLifecycleCustomer(name) {
   const customer = String(name || '').trim();
   if (!customer) return;
-  switchTab('life');
-  const frame = document.getElementById('lifeFrame');
+  const mask = document.getElementById('homeLifecycleModal');
+  const frame = document.getElementById('homeLifecycleFrame');
+  const title = document.getElementById('homeLifecycleName');
+  if (!mask || !frame) return;
+  if (title) title.textContent = customer;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614a`;
   const send = () => {
-    try { frame && frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer}, '*'); } catch(e) {}
+    try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
-  setTimeout(send, 500);
-  setTimeout(send, 1500);
+  mask.classList.add('show');
+  if (frame.getAttribute('src') !== target) {
+    frame.setAttribute('src', target);
+    frame.onload = () => { setTimeout(send, 80); setTimeout(send, 450); };
+  } else {
+    send();
+  }
+}
+function closeHomeLifecycleModal() {
+  const mask = document.getElementById('homeLifecycleModal');
+  const frame = document.getElementById('homeLifecycleFrame');
+  if (mask) mask.classList.remove('show');
+  if (frame) frame.onload = null;
 }
 function scheduleBattlePreload() {
   if (window.__battlePreloadScheduled) return;
@@ -1977,12 +2038,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260613v`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614a`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260613v`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614a`);
   }
 }
 function updateViewToggle() {
@@ -3329,6 +3390,13 @@ window.openModal = id => document.getElementById(id).classList.add('show');
 window.closeModal = id => document.getElementById(id).classList.remove('show');
 document.querySelectorAll('.modal-mask').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+const homeLifecycleModal = document.getElementById('homeLifecycleModal');
+const homeLifecycleClose = document.getElementById('homeLifecycleClose');
+if (homeLifecycleClose) homeLifecycleClose.onclick = closeHomeLifecycleModal;
+if (homeLifecycleModal) homeLifecycleModal.addEventListener('click', e => { if (e.target === homeLifecycleModal) closeHomeLifecycleModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && homeLifecycleModal && homeLifecycleModal.classList.contains('show')) closeHomeLifecycleModal();
 });
 
 if (document.getElementById('clientSearch')) document.getElementById('clientSearch').oninput = e => { state.clientSearch = e.target.value; renderClientTable(); };

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260612n"></script>
+<script src="data/mock_data.js?v=20260614a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -566,12 +566,42 @@
   body.embed-mode .page-section-header {
     margin-bottom:12px;
   }
+  /* 小红点页内一对一弹窗模式：只展示客户生命周期卡片本体，避免跳转和二次查找 */
+  body.single-mode {
+    background: transparent;
+    padding: 0;
+  }
+  body.single-mode .topbar,
+  body.single-mode .container {
+    display: none !important;
+  }
+  body.single-mode .modal-mask.show {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  body.single-mode .modal {
+    width: 100%; max-width: none; max-height: none;
+    border-radius: 0; border: 0; box-shadow: none;
+    padding: 22px 24px 24px;
+  }
+  body.single-mode .modal .m-close { display: none; }
+  .single-not-found {
+    background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
+    border-radius: 12px; padding: 18px 20px; line-height: 1.7; font-size: 13px;
+  }
 </style>
 </head>
 <body>
 <script>
-  if (new URLSearchParams(location.search).get('embed') === '1') {
+  const __lifeBootParams = new URLSearchParams(location.search);
+  if (__lifeBootParams.get('embed') === '1') {
     document.body.classList.add('embed-mode');
+  }
+  if (__lifeBootParams.get('single') === '1') {
+    document.body.classList.add('single-mode');
   }
 </script>
 
@@ -908,11 +938,29 @@ function renderMicroSalesTabs() {
   });
 }
 
+function normalizeCustomerNameForMatch(s){
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[\s　（）()【】\[\]·•,，.。\-—_/\\]/g, '')
+    .replace(/(有限责任公司|股份有限公司|有限公司|公司|旗舰店|专卖店|专营店|官方店|服饰|服装|商贸|贸易|电子商务)$/g, '');
+}
+function findLifecycleCustomerByName(name){
+  const q = String(name || '').trim();
+  if (!q) return null;
+  const nq = normalizeCustomerNameForMatch(q);
+  const rows = window.MY_CUSTOMERS || [];
+  return rows.find(c => String(c.name || '').trim() === q)
+    || rows.find(c => normalizeCustomerNameForMatch(c.name) === nq)
+    || rows.find(c => {
+      const nc = normalizeCustomerNameForMatch(c.name);
+      return nq && nc && (nc.includes(nq) || nq.includes(nc));
+    })
+    || null;
+}
 function openLifecycleCustomerByName(name){
   const q = String(name || '').trim();
   if (!q) return false;
-  const low = q.toLowerCase();
-  const found = (window.MY_CUSTOMERS || []).find(c => String(c.name || '').toLowerCase().includes(low));
+  const found = findLifecycleCustomerByName(q);
   if (!found) return false;
   currentSearchQuery = '';
   currentSalesFilter = found.sales_owner || 'all';
@@ -1016,6 +1064,12 @@ function positionModalForEmbed() {
   const mask = document.getElementById('modal-mask');
   const modal = mask ? mask.querySelector('.modal') : null;
   if (!mask) return;
+  if (document.body.classList.contains('single-mode')) {
+    mask.removeAttribute('style');
+    mask.classList.add('show');
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+    return;
+  }
   const card = window.__lastClickCardEl__;
 
   if (card) {
@@ -1151,6 +1205,14 @@ function closeDetail() {
   mask.classList.remove('show');
   mask.removeAttribute('style');
 }
+function renderSingleNotFound(name){
+  const mask = document.getElementById('modal-mask');
+  const box = document.getElementById('modal-content');
+  if (!mask || !box) return;
+  box.innerHTML = `<div class="single-not-found"><b>未找到一对一生命周期卡片</b><br>当前小红点客户：${String(name || '—')}<br>请检查客户简称是否已进入生命周期数据源。</div>`;
+  mask.classList.add('show');
+  try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+}
 
 /* =============== 事件绑定 =============== */
 // 生命周期筛选（带禁用拦截）
@@ -1193,7 +1255,10 @@ window.addEventListener('message', e => {
   const d = e.data || {};
   if (d.type === 'open-lifecycle-customer') {
     const ok = openLifecycleCustomerByName(d.name || '');
-    if (!ok) { currentSearchQuery = String(d.name||'').trim().toLowerCase(); if(lifeSearchInput) lifeSearchInput.value = d.name || ''; customerGridExpanded = true; renderCustomerGrid(); }
+    if (!ok) {
+      if (document.body.classList.contains('single-mode') || d.single) renderSingleNotFound(d.name || '');
+      else { currentSearchQuery = String(d.name||'').trim().toLowerCase(); if(lifeSearchInput) lifeSearchInput.value = d.name || ''; customerGridExpanded = true; renderCustomerGrid(); }
+    }
   }
 });
 
@@ -1227,6 +1292,15 @@ renderFunnel();
 renderServiceCards();
 renderMicroSalesTabs();
 renderCustomerGrid();
+(function bootSingleLifecycleCard(){
+  const targetName = __lifeParams.get('customer') || '';
+  if (!targetName) return;
+  const run = () => {
+    const ok = openLifecycleCustomerByName(targetName);
+    if (!ok && document.body.classList.contains('single-mode')) renderSingleNotFound(targetName);
+  };
+  setTimeout(run, 60);
+})();
 </script>
 
 </body>
