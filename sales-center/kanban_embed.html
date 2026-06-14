@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614k"></script>
-<script src="data/center_sales_summary.js?v=20260614k"></script>
-<script src="data/center_quarter_summary.js?v=20260614k"></script>
-<script src="data/center_daily_kpi.js?v=20260614k"></script>
-<script src="data/top80_effective_metrics.js?v=20260614k"></script>
-<script src="data/top_status_data.js?v=20260614k"></script>
-<script src="data/enough_candidates.js?v=20260614k"></script>
-<script src="data/handover_customers_519.js?v=20260614k"></script>
-<script src="data/customer_main_product.js?v=20260614k"></script>
+<script src="data/bulk_import_rows.js?v=20260614l"></script>
+<script src="data/center_sales_summary.js?v=20260614l"></script>
+<script src="data/center_quarter_summary.js?v=20260614l"></script>
+<script src="data/center_daily_kpi.js?v=20260614l"></script>
+<script src="data/top80_effective_metrics.js?v=20260614l"></script>
+<script src="data/top_status_data.js?v=20260614l"></script>
+<script src="data/enough_candidates.js?v=20260614l"></script>
+<script src="data/handover_customers_519.js?v=20260614l"></script>
+<script src="data/customer_main_product.js?v=20260614l"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614k"></script>
+<script src="cloud_sync.js?v=20260614l"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -812,9 +812,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614k`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614l`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614k')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614l')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -900,15 +900,7 @@ window.__BIG_DATA_READY__ = false;
   <h1>拓客作战看板 <span class="ver" id="kanbanVer">v3.2</span></h1>
   <div class="topbar-right">
     <span id="todayInfo" style="font-size:12px;color:#6b7280;margin-right:8px;"></span>
-    <select id="snapshotSel" title="切换历史快照（用户 2026-05-19 拍板）" style="background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-weight:600;">
-      <option value="" selected>📅 当前数据</option>
-      <option value="2026-05-21">2026-05-21 快照</option>
-      <option value="2026-05-20">2026-05-20 快照</option>
-      <option value="2026-05-19">2026-05-19 快照</option>
-      <option value="2026-05-18">2026-05-18 快照</option>
-      <option value="2026-05-17">2026-05-17 快照</option>
-      <option value="2026-05-15">2026-05-15 快照</option>
-    </select>
+    <select id="snapshotSel" title="历史快照已移出 Pages，仅脚本侧保留" style="display:none;"><option value="" selected>📅 当前数据</option></select>
     <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
     <select id="quarterSel">
       <option value="2026Q2">2026 Q2（当前）</option>
@@ -974,7 +966,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614k" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614l" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -990,7 +982,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614k" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614l" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1074,7 +1066,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614k" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614l" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3481,7 +3473,7 @@ renderAll();
 applyEmbedMode();
 
 /* 历史快照切换（用户 2026-05-19 拍板）：
-   切换会从 data/snapshots/<date>/ 动态加载并覆盖 window.__CENTER_*__，
+   历史快照文件已移出 Pages；前端不再从 data/snapshots/ 动态加载，
    并保留当前 window 全局以便切回当前日期。 */
 (function(){
   const sel = document.getElementById('snapshotSel');
@@ -3519,9 +3511,8 @@ applyEmbedMode();
       const files = ['center_daily_kpi.js','center_quarter_summary.js','center_sales_summary.js',
                      'top80_effective_metrics.js','current_rising_data.js','delivery_side_summary.js',
                      'top_status_data.js','enough_candidates.js','bulk_import_rows.js'];
-      for (const f of files) {
-        await loadScript(`data/snapshots/${date}/${f}`).catch(err => console.warn(err.message));
-      }
+      console.warn('[snapshot] 历史快照文件已移出 Pages，仅脚本侧保留');
+      return;
       if (banner) {
         banner.textContent = `📅 历史快照 · ${date}`;
         banner.style.color = '#9a3412';
@@ -4324,7 +4315,6 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
     { file:'data/customer_link_data.js',     vars:['__CUSTOMER_LINK_DATA__'],                                                  label:'客户链路数据' },
     { file:'data/delivery_side_summary.js',  vars:['__DELIVERY_SIDE_MAP__','__DELIVERY_COUNTS__'],                             label:'交付侧汇总' },
     { file:'data/first_quarter.js',          vars:['__FIRST_QUARTER__'],                                                       label:'首投季度映射' },
-    { file:'data/tuoke_real_records.js',     vars:['__TUOKE_REAL_RECORDS__'],   isRecords:true,                               label:'拓客登记明细' },
     { file:'data/customer_lifecycle.js',     vars:['__CUSTOMER_LIFECYCLE__'],   isRaw:true,                                   label:'客户生命周期' }
   ];
 
@@ -4446,6 +4436,40 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
     console.info('[bigdata] all ready · 首屏后异步加载完成');
   }
 
+
+  function rebuildRecordsAfterTuoke(){
+    try {
+      if (Array.isArray(window.RECORDS) && window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) {
+        var userRecs = [];
+        try { userRecs = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]') || []; } catch(_){ userRecs = []; }
+        window.RECORDS.length = 0;
+        window.RECORDS.push.apply(window.RECORDS, userRecs.concat(window.__TUOKE_REAL_RECORDS__));
+        if (typeof window.applyFixRegYear === 'function') window.applyFixRegYear(window.RECORDS);
+      }
+      try { if (typeof renderAll === 'function') renderAll(); } catch(e){ console.warn('[bigdata] render after tuoke fail', e); }
+      try { if (typeof window.__bootLifecycle === 'function') window.__bootLifecycle(); } catch(e){ console.warn('[bigdata] boot after tuoke fail', e); }
+      notifyParentKanbanHeight && notifyParentKanbanHeight();
+    } catch(e){ console.warn('[bigdata] rebuild records after tuoke fail', e); }
+  }
+  function ensureTuokeRecordsLoaded(reason){
+    var item = { file:'data/tuoke_real_records.js', vars:['__TUOKE_REAL_RECORDS__'], isRecords:true, label:'拓客登记明细' };
+    if (_loaded[item.file]) { rebuildRecordsAfterTuoke(); return Promise.resolve(item); }
+    if (_inflight[item.file]) return _inflight[item.file];
+    _inflight[item.file] = fetch(item.file + '?v=' + V, { cache:'force-cache' })
+      .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+      .then(function(code){
+        (0, eval)(code);
+        _loaded[item.file] = true;
+        rebuildRecordsAfterTuoke();
+        console.info('[bigdata] tuoke records fetched by ' + (reason || 'manual'));
+        return item;
+      })
+      .catch(function(e){ console.warn('[bigdata] tuoke fetch FAIL', e); markError(item); _loaded[item.file] = true; return item; });
+    return _inflight[item.file];
+  }
+  window.__ensureTuokeRecordsLoaded = ensureTuokeRecordsLoaded;
+  function isLifeMode(){ try { return new URLSearchParams(location.search).get('mode') === 'life'; } catch(e){ return false; } }
+
   // 启动：首屏渲染让位后，异步并行加载全部大文件
   function start(){
     var tasks = BIG_FILES.map(loadOne);
@@ -4463,9 +4487,9 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   // 用 requestIdleCallback / 双 rAF 确保首屏 UI 先绘制完成，再启动大文件加载
   function kick(){
     if ('requestIdleCallback' in window){
-      requestIdleCallback(start, { timeout: 800 });
+      requestIdleCallback(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }, { timeout: 800 });
     } else {
-      requestAnimationFrame(function(){ requestAnimationFrame(start); });
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }); });
     }
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive'){
