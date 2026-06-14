@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260614i"></script>
-<script src="data/center_sales_summary.js?v=20260614i"></script>
-<script src="data/center_quarter_summary.js?v=20260614i"></script>
-<script src="data/center_daily_kpi.js?v=20260614i"></script>
-<script src="data/top80_effective_metrics.js?v=20260614i"></script>
-<script src="data/top_status_data.js?v=20260614i"></script>
-<script src="data/enough_candidates.js?v=20260614i"></script>
-<script src="data/handover_customers_519.js?v=20260614i"></script>
-<script src="data/customer_main_product.js?v=20260614i"></script>
+<script src="data/bulk_import_rows.js?v=20260614j"></script>
+<script src="data/center_sales_summary.js?v=20260614j"></script>
+<script src="data/center_quarter_summary.js?v=20260614j"></script>
+<script src="data/center_daily_kpi.js?v=20260614j"></script>
+<script src="data/top80_effective_metrics.js?v=20260614j"></script>
+<script src="data/top_status_data.js?v=20260614j"></script>
+<script src="data/enough_candidates.js?v=20260614j"></script>
+<script src="data/handover_customers_519.js?v=20260614j"></script>
+<script src="data/customer_main_product.js?v=20260614j"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614i"></script>
+<script src="cloud_sync.js?v=20260614j"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -249,6 +249,10 @@ window.__BIG_DATA_READY__ = false;
   }
   table.tbl th { color: var(--text-2); font-weight: 500; background: var(--panel-2); }
   table.tbl tr:hover td { background: var(--primary-bg); }
+  #recordTable { min-width: 1420px; }
+  #recordTable th { white-space: nowrap; }
+  #recordTable td { vertical-align: middle; }
+  #recordDetailSection .panel { overflow-x: auto; }
   .tag {
     display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
   }
@@ -808,9 +812,9 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614i`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260614j`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614i')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260614j')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
@@ -970,7 +974,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614i" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260614j" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -986,7 +990,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614i" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260614j" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1070,7 +1074,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614i" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260614j" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1095,7 +1099,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
       <table class="tbl" id="recordTable">
         <thead><tr>
-          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>季度累计</th><th>昨日消耗</th><th>日环比</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
         </tr></thead>
       </table>
       <div id="recordMoreWrap" style="display:none;align-items:center;justify-content:center;gap:10px;padding:12px 0 4px;color:#6b7280;font-size:12px;"></div>
