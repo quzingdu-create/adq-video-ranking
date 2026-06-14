@@ -310,6 +310,11 @@
   }
   .filter-bar .stat { margin-left: auto; font-size: 13px; color: var(--text-2); }
   .filter-bar .stat strong { color: var(--text); font-size: 15px; }
+  .life-search { display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .life-search input { min-width:220px; height:32px; border:1px solid var(--border); border-radius:8px; padding:0 10px; font-size:12.5px; outline:none; }
+  .life-search input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+  .life-search button { height:32px; border:1px solid var(--primary); background:var(--primary); color:#fff; border-radius:8px; padding:0 12px; font-size:12px; font-weight:700; cursor:pointer; }
+  .life-search button.ghost { background:#fff; color:var(--text-2); border-color:var(--border); }
   /* 两组筛选之间的竖线分隔符 */
   .filter-bar .filter-divider {
     display: inline-block;
@@ -637,6 +642,11 @@
       <button class="filter-btn cost-btn" data-cost="low">日耗 &lt; 0.1万</button>
       <button class="filter-btn cost-btn" data-cost="mid">日耗 0.1万 - 1万</button>
       <button class="filter-btn cost-btn" data-cost="high">日耗 &gt; 1万</button>
+      <div class="life-search">
+        <input id="lifeSearchInput" type="search" placeholder="输入客户简称查询" />
+        <button id="lifeSearchBtn" type="button">查询</button>
+        <button id="lifeSearchClear" class="ghost" type="button">清空</button>
+      </div>
       <span class="stat"><span id="stat-label">名下客户：</span><strong id="stat-count">0</strong> 个</span>
     </div>
 
@@ -852,6 +862,7 @@ function renderServiceCards() {
 /* =============== 渲染：微观客户卡片 =============== */
 let currentStageFilter = 'all';
 let currentCostFilter = 'all';
+let currentSearchQuery = '';
 let customerGridExpanded = false;
 const __lifeParams = new URLSearchParams(location.search);
 let currentSalesFilter = __lifeParams.get('sales') || 'all'; // 嵌入时由父看板传入云端登录销售；无参数则展示团队视图
@@ -897,11 +908,33 @@ function renderMicroSalesTabs() {
   });
 }
 
+function openLifecycleCustomerByName(name){
+  const q = String(name || '').trim();
+  if (!q) return false;
+  const low = q.toLowerCase();
+  const found = (window.MY_CUSTOMERS || []).find(c => String(c.name || '').toLowerCase().includes(low));
+  if (!found) return false;
+  currentSearchQuery = '';
+  currentSalesFilter = found.sales_owner || 'all';
+  currentStageFilter = 'all';
+  currentCostFilter = 'all';
+  customerGridExpanded = true;
+  const sel = document.getElementById('sales-select'); if (sel) sel.value = currentSalesFilter;
+  document.querySelectorAll('.filter-btn[data-stage]').forEach(b=>b.classList.toggle('active', b.dataset.stage==='all'));
+  document.querySelectorAll('.filter-btn[data-cost]').forEach(b=>b.classList.toggle('active', b.dataset.cost==='all'));
+  const inp = document.getElementById('lifeSearchInput'); if (inp) inp.value = '';
+  renderFunnel(); renderServiceCards(); renderMicroSalesTabs(); renderCustomerGrid();
+  setTimeout(()=>openDetail(found.id), 80);
+  try { document.querySelector('.page-section-header.micro').scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
+  return true;
+}
+
 function renderCustomerGrid() {
   const list = window.MY_CUSTOMERS.filter(c => 
     matchSalesFilter(c) &&
     (currentStageFilter === 'all' || c.stage === currentStageFilter) &&
-    matchCostFilter(c)
+    matchCostFilter(c) &&
+    (!currentSearchQuery || String(c.name || '').toLowerCase().includes(currentSearchQuery))
   );
   document.getElementById('stat-count').textContent = list.length;
   // 联动文案：全量销售时显示"团队客户"，具体销售时显示"名下客户"
@@ -1141,6 +1174,27 @@ document.querySelectorAll('.filter-btn[data-cost]').forEach(btn => {
     customerGridExpanded = false;
     renderCustomerGrid();
   });
+});
+
+// 客户检索：查询后只过滤客户列表；若精确/模糊命中可从父页面一键打开详情
+function doLifeSearch(){
+  const inp = document.getElementById('lifeSearchInput');
+  currentSearchQuery = String(inp && inp.value || '').trim().toLowerCase();
+  customerGridExpanded = !!currentSearchQuery;
+  renderCustomerGrid();
+}
+const lifeSearchBtn = document.getElementById('lifeSearchBtn');
+if (lifeSearchBtn) lifeSearchBtn.addEventListener('click', doLifeSearch);
+const lifeSearchInput = document.getElementById('lifeSearchInput');
+if (lifeSearchInput) lifeSearchInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLifeSearch(); });
+const lifeSearchClear = document.getElementById('lifeSearchClear');
+if (lifeSearchClear) lifeSearchClear.addEventListener('click', () => { currentSearchQuery=''; if(lifeSearchInput) lifeSearchInput.value=''; customerGridExpanded=false; renderCustomerGrid(); });
+window.addEventListener('message', e => {
+  const d = e.data || {};
+  if (d.type === 'open-lifecycle-customer') {
+    const ok = openLifecycleCustomerByName(d.name || '');
+    if (!ok) { currentSearchQuery = String(d.name||'').trim().toLowerCase(); if(lifeSearchInput) lifeSearchInput.value = d.name || ''; customerGridExpanded = true; renderCustomerGrid(); }
+  }
 });
 
 // 销售归属切换（右上角下拉）：真实数据接入后按 MY_CUSTOMERS 动态生成销售列表
