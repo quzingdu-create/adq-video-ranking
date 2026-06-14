@@ -7,25 +7,25 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260614d"></script>
+<script src="auth-guard.js?v=20260614e"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script src="lib_loader.js?v=20260614d"></script>
-<script src="data/current_rising_data.js?v=20260614d"></script>
+<script src="lib_loader.js?v=20260614e"></script>
+<script src="data/current_rising_data.js?v=20260614e"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260614d"></script>
-<script src="data/center_quarter_summary.js?v=20260614d"></script>
-<script src="data/center_daily_kpi.js?v=20260614d"></script>
-<script src="data/top80_effective_metrics.js?v=20260614d"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260614e"></script>
+<script src="data/center_quarter_summary.js?v=20260614e"></script>
+<script src="data/center_daily_kpi.js?v=20260614e"></script>
+<script src="data/top80_effective_metrics.js?v=20260614e"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260614d"></script>
-<script src="data/redblack_data.js?v=20260614d"></script>
-<script src="data/customer_main_product.js?v=20260614d"></script>
+<script src="data/top_rising_data.js?v=20260614e"></script>
+<script src="data/redblack_data.js?v=20260614e"></script>
+<script src="data/customer_main_product.js?v=20260614e"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260614d"></script>
-<script src="login_guard_banner.js?v=20260614d"></script>
+<script src="cloud_sync.js?v=20260614e"></script>
+<script src="login_guard_banner.js?v=20260614e"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script src="export_tuoke.js?v=20260614d"></script>
+<script src="export_tuoke.js?v=20260614e"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -88,9 +88,10 @@
   .topbar a.btn-link:hover, .topbar button:hover { border-color: var(--primary); color: var(--primary); }
 
   /* 2026-06-14 子青：大 Tab 侧边导航 */
-  .side-tab-nav{position:fixed;right:14px;top:132px;z-index:120;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
-  .side-tab-nav button{pointer-events:auto;border:1px solid #dbeafe;background:rgba(255,255,255,.94);color:#2563eb;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:850;box-shadow:0 8px 22px rgba(37,99,235,.12);cursor:pointer;white-space:nowrap;backdrop-filter:blur(8px);}
-  .side-tab-nav button:hover{background:#2563eb;color:#fff;border-color:#2563eb;transform:translateX(-2px);}
+  .side-tab-nav{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:120;display:flex;flex-direction:column;gap:7px;padding:8px;border:1px solid rgba(191,219,254,.9);background:rgba(255,255,255,.82);border-radius:18px;box-shadow:0 18px 48px rgba(37,99,235,.18);backdrop-filter:blur(12px);pointer-events:none;}
+  .side-tab-nav:before{content:"导航";font-size:10px;font-weight:900;color:#93c5fd;text-align:center;letter-spacing:.12em;margin:0 0 2px;}
+  .side-tab-nav button{pointer-events:auto;border:1px solid transparent;background:linear-gradient(180deg,#fff,#f8fbff);color:#1d4ed8;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:900;box-shadow:0 5px 14px rgba(37,99,235,.10);cursor:pointer;white-space:nowrap;transition:all .16s;}
+  .side-tab-nav button:hover{background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;border-color:#2563eb;transform:translateX(-4px);box-shadow:0 8px 18px rgba(37,99,235,.24);}
   @media(max-width:1120px){.side-tab-nav{display:none;}}
 
   /* 顶部 Tab 大切换 */
@@ -720,7 +721,7 @@
       <div class="cleanup-head">
         <div class="cleanup-title">
           <span class="cleanup-icon">🎯</span>
-          <span class="cleanup-text">今日待办清理进度（头部掉量客户）</span>
+          <span class="cleanup-text">今日待办清理进度（头客掉量客户）</span>
           <span class="cleanup-badge" id="cleanupBadge">云端实时</span>
         </div>
         <div class="cleanup-summary">
@@ -738,7 +739,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&v=20260614d"
+      src="mobile.html?embed=1&v=20260614e"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1315,7 +1316,7 @@ window.__CASE_DATA__ = [
       <!-- 2026-05-26：cleanup-card 已迁移至「今日待办小红点」tab 首位，此处保留容器占位以保证渲染兼容 -->
     </div>
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614d" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260614e" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1324,7 +1325,7 @@ window.__CASE_DATA__ = [
 <div class="tab-page" id="page-life">
   <div class="container" style="max-width:1400px;padding:14px 28px 0;">
     <div class="section" style="padding:0;overflow:hidden;margin-top:14px;">
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614d" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260614e" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -2042,7 +2043,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   if (!frame) return;
   bindKanbanFrameResize(frameId, 760);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614d`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260614e`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2059,7 +2060,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614d`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260614e`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2100,7 +2101,7 @@ function renderSideNav(tab){
   const box=document.getElementById('sideTabNav'); if(!box) return;
   const rows=SIDE_NAV_CONF[tab]||[];
   box.innerHTML=rows.map((r,i)=>`<button type="button" data-side-idx="${i}">${r[0]}</button>`).join('');
-  box.querySelectorAll('button').forEach(btn=>{btn.onclick=()=>{const r=rows[+btn.dataset.sideIdx]; if(!r)return; if(r[2]){const f=document.getElementById(r[2]); try{f&&f.contentWindow&&f.contentWindow.postMessage({type:'scroll-to-anchor', target:r[1]}, '*');}catch(e){} } else { const el=document.getElementById(r[1]); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); } };});
+  box.querySelectorAll('button').forEach(btn=>{btn.onclick=()=>{const r=rows[+btn.dataset.sideIdx]; if(!r)return; if(r[2]){const f=document.getElementById(r[2]); try{const doc=f&&f.contentDocument; const el=doc&&doc.getElementById(r[1]); if(el){const top=f.getBoundingClientRect().top+window.scrollY+el.getBoundingClientRect().top-92; window.scrollTo({top:Math.max(0,top),behavior:'smooth'});} else {f&&f.contentWindow&&f.contentWindow.postMessage({type:'scroll-to-anchor', target:r[1]}, '*');}}catch(e){try{f&&f.contentWindow&&f.contentWindow.postMessage({type:'scroll-to-anchor', target:r[1]}, '*');}catch(_){}} } else { const el=document.getElementById(r[1]); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); } };});
 }
 
 function switchTab(tab) {
@@ -2145,12 +2146,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614d`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260614e`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614d`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260614e`);
   }
 }
 function updateViewToggle() {
@@ -3013,7 +3014,7 @@ function renderCleanupCard() {
   const list = $$('cleanupSalesList');
   if (!list) return;
   if (teamTotal === 0) {
-    list.innerHTML = '<div class="cleanup-empty">今日无头部掉量客户 🎉</div>';
+    list.innerHTML = '<div class="cleanup-empty">今日无头客掉量客户 🎉</div>';
     list.style.gridTemplateColumns = '1fr';
     return;
   }
@@ -3036,7 +3037,7 @@ function renderCleanupCard() {
     }
     const displayPct = x.total === 0 ? '—' : pct + '%';
     return `
-      <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}（头部掉量）">
+      <div class="cleanup-sales-item${isMe}" title="${x.sales}：已处理 ${x.done} / 共 ${x.total}（头客掉量）">
         <div class="cleanup-sales-name">${x.sales}</div>
         <div class="cleanup-sales-rate${rateCls}">${displayPct}</div>
         <div class="cleanup-sales-cnt">${x.done}/${x.total} 个</div>
@@ -3135,15 +3136,15 @@ function renderSummaryBoard(){
     { lab:'本季度新客', val:Number(kpiRow.newCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.newDayDelta) },
     { lab:'有效新客', val:Number(kpiRow.validCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.validDayDelta) },
     { lab:'新锐客户', val:Number(kpiRow.risingCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.risingDayDelta) },
-    { lab:'头部掉量', val:counts.dropN, u:'个', sub:`<div class="c-sub"><span class="${counts.dropN>0?'up':'flat'}">今日需处理</span></div>` },
-    { lab:'头部稳定', val:counts.stableN, u:'个', sub:`<div class="c-sub"><span class="flat">持续观察</span></div>` },
+    { lab:'头客掉量', val:counts.dropN, u:'个', sub:`<div class="c-sub"><span class="${counts.dropN>0?'up':'flat'}">今日需处理</span></div>` },
+    { lab:'头客稳定', val:counts.stableN, u:'个', sub:`<div class="c-sub"><span class="flat">持续观察</span></div>` },
     { lab:'潜力起量', val:counts.risingN, u:'个', sub:`<div class="c-sub"><span class="${counts.risingN>0?'up':'flat'}">重点跟进</span></div>` },
     { lab:'昨日Top', val:counts.yestTopN, u:'个', sub:`<div class="c-sub"><span class="flat">维护好</span></div>` },
   ];
   $('sbGrid').innerHTML = cells.map(c=>`<div class="sb-cell"><div class="c-lab">${c.lab}</div><div class="c-val">${c.val}<span class="u">${c.u}</span></div>${c.sub}</div>`).join('');
 
   const todo=[];
-  if (counts.dropN>0) todo.push(`处理 <b>${counts.dropN}</b> 个头部掉量客户`);
+  if (counts.dropN>0) todo.push(`处理 <b>${counts.dropN}</b> 个头客掉量客户`);
   if (counts.risingN>0) todo.push(`跟进 <b>${counts.risingN}</b> 个潜力起量客户`);
   if (Number(kpiRow.newDayDelta)>0) todo.push(`昨日新增 <b>${Number(kpiRow.newDayDelta)}</b> 个新客待承接`);
   $('sbTodo').innerHTML = `<div class="sb-todo-head">📌 ${scopeLabel} · 今日重点</div>${todo.length?todo.join('　·　'):'暂无紧急待办，保持节奏 🎉'}`;
