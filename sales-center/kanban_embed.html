@@ -918,6 +918,21 @@ window.__BIG_DATA_READY__ = false;
     });
   });
 </script>
+
+<script>
+/* 2026-06-15 子青指定：客户归属人工覆盖层，优先级高于云端旧记录 */
+window.__MANUAL_SALE_OVERRIDE__ = {"泉州丰泽区航先贸易有限公司":"lijunwu","泉州丰泽区驰宇商贸有限公司":"lijunwu","泉州兰迪商贸有限公司":"lijunwu","东阳市蒂之妍电子商务商行(个体工商户)":"lijunwu","淮安华顶鞋业有限公司":"lijunwu","泉州市公牛引力贸易有限公司":"lijunwu","上海锦云宏坊服饰有限公司":"lijunwu","杭州荧柏网络科技有限公司":"lijunwu","徐州福采卓网络科技有限公司":"lijunwu","杭州盟芽品牌管理有限公司":"lijunwu","杭州纪芝贸易有限公司":"lijunwu","东阳市仟屹商贸有限公司":"lijunwu","泉州梵御贸易有限公司":"lijunwu","石狮市金瑞科技有限公司":"lijunwu","泉州市鲤城区诺悦百货商行(个体工商户)":"lijunwu","杭州露桉贸易有限公司":"lijunwu","泉州洛森妮雅贸易有限公司":"lijunwu","广州市圣蓝皮具有限公司":"lijunwu","泉州金履盛业贸易有限公司":"lijunwu","洛阳市偃师区东狮鞋业商行":"lijunwu","上海班格商贸有限公司":"lijunwu","杭州宝聪文化传媒有限责任公司":"lijunwu","共青城市青晨电子商务经营部(个体工商户)":"lijunwu","苍南县慕欣鞋业商行(个体工商户)":"lijunwu","互动映画(厦门)文化传媒有限公司":"lijunwu","广州星之奇网络科技有限公司":"lijunwu","广州杭启科技有限公司":"Jonzhu","义乌市熵果网络科技有限责任公司":"yvaineechen"};
+window.applyManualSaleOverride = function(r) {
+  try {
+    if (!r) return r;
+    var map = window.__MANUAL_SALE_OVERRIDE__ || {};
+    var norm = function(x) { return String(x || '').trim().replace(/\s+/g, ''); };
+    var sale = map[norm(r.name)] || map[norm(r.shortName)] || map[norm(r.brand)];
+    if (sale) { r.sale = sale; r._rtx = sale; r._recorded_by = sale; r._updatedAt = Date.now(); }
+  } catch(e) {}
+  return r;
+};
+</script>
 </head>
 <body>
 
@@ -3708,7 +3723,8 @@ document.addEventListener('click', e => {
       catch(e){ return []; }
     },
     applyRemoteRecords: function(list){
-      // 把云端记录覆盖到本地 + 立即重渲染
+      // 把云端记录覆盖到本地 + 立即重渲染；先套人工归属覆盖层，避免云端旧 sale 反盖
+      try { if (window.applyManualSaleOverride) list = (list || []).map(function(r){ return window.applyManualSaleOverride(r); }); } catch(_){ }
       try {
         localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
       } catch(e){
@@ -3748,8 +3764,8 @@ document.addEventListener('click', e => {
       var cloudList = (res && res.list) || [];
       if (!cloudList.length) return;
       // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
-      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); });
-      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出）
+      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); if (window.applyManualSaleOverride) window.applyManualSaleOverride(r); });
+      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出，但已先套人工归属覆盖层）
       if (!window.__REGISTERED_SUBJECTS__) window.__REGISTERED_SUBJECTS__ = {};
       cloudList.forEach(function(r){
         var n = (r.name || '').toString().trim().replace(/\s+/g, '');
