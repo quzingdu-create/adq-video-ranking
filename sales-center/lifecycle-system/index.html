@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260615h"></script>
+<script src="data/mock_data.js?v=20260615i"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -977,9 +977,24 @@ function openLifecycleCustomerByName(name){
   return true;
 }
 
+function measureLifecycleContentHeight(){
+  let h = 0;
+  const root = document.querySelector('.container') || document.body;
+  if (root) {
+    const rect = root.getBoundingClientRect();
+    h = Math.max(h, Math.ceil(rect.bottom + (window.scrollY || 0)));
+  }
+  Array.from(document.body.children || []).forEach(el => {
+    const cs = getComputedStyle(el);
+    if (cs.position === 'fixed' || cs.display === 'none') return;
+    const rect = el.getBoundingClientRect();
+    h = Math.max(h, Math.ceil(rect.bottom + (window.scrollY || 0)));
+  });
+  return Math.max(h, 260);
+}
 function notifyLifecycleParentHeight(){
   try {
-    if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize', height: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)}, '*');
+    if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize', height: measureLifecycleContentHeight()}, '*');
   } catch(e) {}
 }
 function renderCustomerGrid() {
