@@ -1,4 +1,4 @@
-/* 拓新组双导出按钮 — 公共逻辑 v1.1（2026-06-15）
+/* 拓新组双导出按钮 — 公共逻辑 v1.2（2026-06-15）
  * 用法：每个页面 (index.html / kanban_embed.html / register_v3.2.html / mobile.html) 都需要：
  *   1. 加载 lib_loader.js（导出前按需加载 xlsx）
  *   2. 引入本文件 export_tuoke.js
@@ -9,15 +9,16 @@
  *   - 全量：window.__TUOKE_REAL_RECORDS__ 全部
  *   - 新客：firstQuarter 命中 2025Q3/2025Q4/2026Q1/2026Q2
  *
- * 2026-06-15 修复：PC / mobile 首屏提速后不再同步加载 tuoke_real_records.js，
+ * 2026-06-15 修复1：PC / mobile 首屏提速后不再同步加载 tuoke_real_records.js，
  * 点击右上角下载时必须先按需加载 data/tuoke_real_records.js，再生成 xlsx。
+ * 2026-06-15 修复2：登记日期按业务口径修正，月份 7-12 一律归 2025 年，月份 1-6 一律归 2026 年。
  */
 (function () {
   if (window.__EXPORT_TUOKE_BOUND__) return;
   window.__EXPORT_TUOKE_BOUND__ = true;
 
   var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路','投放端','类目','拓客途径','拓客来源'];
-  var EXPORT_FALLBACK_VERSION = '20260615e';
+  var EXPORT_FALLBACK_VERSION = '20260615f';
   var _tuokePromise = null;
   var _scriptState = window.__EXPORT_TUOKE_SCRIPT_STATE__ = window.__EXPORT_TUOKE_SCRIPT_STATE__ || {};
 
@@ -92,11 +93,21 @@
   var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1 };
   function normalizeQuarter(v) { return String(v || '').replace('/', ''); }
   function isNewByFq(r) { return !!NEW_QSET[normalizeQuarter(r.firstQuarter)]; }
+  function fixRegYear(d) {
+    var s = String(d || '').slice(0, 10);
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return d || '';
+    var mon = Number(m[2]);
+    if (mon >= 7 && mon <= 12) return '2025-' + m[2] + '-' + m[3];
+    if (mon >= 1 && mon <= 6) return '2026-' + m[2] + '-' + m[3];
+    return d || '';
+  }
+  window.__fixRegYearForExport = fixRegYear;
 
   function rowOf(r) {
     var isNewFlag = (r.isNew === true || r.isNewCustomer === true) ? true : isNewByFq(r);
     return [
-      r.date || '',
+      fixRegYear(r.date),
       r.sale || '',
       r.name || '',
       r.shortName || '',
@@ -124,7 +135,7 @@
       return Promise.reject(new Error('xlsx 库未加载，请刷新页面'));
     }
     var sorted = records.slice().sort(function (a, b) {
-      return ((a.date || '') + '').localeCompare((b.date || '') + '')
+      return (fixRegYear(a.date) + '').localeCompare(fixRegYear(b.date) + '')
           || ((a.sale || '') + '').localeCompare((b.sale || '') + '');
     });
     var aoa = [HEADERS];

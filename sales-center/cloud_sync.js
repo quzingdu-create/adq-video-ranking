@@ -946,6 +946,16 @@
       showToast('export_tuoke.js 未加载，请刷新页面', true);
     };
 
+    function fixRegYearForExport(d) {
+      var s = String(d || '').slice(0, 10);
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+      if (!m) return d || '';
+      var mon = Number(m[2]);
+      if (mon >= 7 && mon <= 12) return '2025-' + m[2] + '-' + m[3];
+      if (mon >= 1 && mon <= 6) return '2026-' + m[2] + '-' + m[3];
+      return d || '';
+    }
+
     function exportRecordsToXlsx(list) {
       // 2026-06-13 性能优化：xlsx 改按需加载，导出前确保库已就绪
       if (typeof XLSX === 'undefined') {
@@ -966,7 +976,7 @@
         '授权书(张)','建联截图(张)','备注','记录ID'
       ];
       var sorted = list.slice().sort(function (a, b) {
-        return ((a.date || '') + '').localeCompare((b.date || '') + '')
+        return (fixRegYearForExport(a.date) + '').localeCompare(fixRegYearForExport(b.date) + '')
             || ((a.sales || '') + '').localeCompare((b.sales || '') + '');
       });
       var aoa = [headers];
@@ -981,7 +991,7 @@
         var src    = r._preloaded ? '历史登记(种子)' : (r._bulkImport ? '批量导入' : (r._cloud ? '云端' : '页面新增'));
         aoa.push([
           idx + 1,
-          r.date || '',
+          fixRegYearForExport(r.date),
           r.sales || '',
           r.name || '',
           r.shortName || '',
@@ -1046,7 +1056,7 @@
         var isLaoke = !!(r.isLaoke || r.old24);
         var rising = (r.rising === '是' || r.status === '新锐') ? '是' : '否';
         return [
-          idx + 1, r.date || '', r.sales || '', r.name || '', r.shortName || '',
+          idx + 1, fixRegYearForExport(r.date), r.sales || '', r.name || '', r.shortName || '',
           isLaoke ? '非本季度新客' : '新客', r.category || '', r.channel || '',
           r.resource || '', r.source || '', rising, r.remark || ''
         ];
