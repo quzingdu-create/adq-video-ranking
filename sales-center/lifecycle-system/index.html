@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260615b"></script>
+<script src="data/mock_data.js?v=20260615c"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -538,7 +538,7 @@
   ::-webkit-scrollbar-track { background: transparent; }
   body.embed-mode {
     background:#fff;
-    padding-bottom:18px;
+    padding-bottom:0;
   }
   /* 2026-06-11 子青：嵌入模式下，topbar / filter-bar 全部禁用 sticky，
      避免父页面滚动时被一路拖到 iframe 底部、挡住客户生命周期分布等下方内容 */
@@ -561,7 +561,7 @@
     flex-wrap:wrap;
   }
   body.embed-mode .container {
-    padding:14px 20px 22px;
+    padding:10px 20px 4px;
   }
   body.embed-mode .page-section-header {
     margin-bottom:12px;
@@ -977,6 +977,11 @@ function openLifecycleCustomerByName(name){
   return true;
 }
 
+function notifyLifecycleParentHeight(){
+  try {
+    if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize', height: Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)}, '*');
+  } catch(e) {}
+}
 function renderCustomerGrid() {
   const list = window.MY_CUSTOMERS.filter(c => 
     matchSalesFilter(c) &&
@@ -997,7 +1002,7 @@ function renderCustomerGrid() {
   if (list.length === 0) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-2);">该阶段暂无客户</div>';
     if (moreWrap) { moreWrap.style.display = 'none'; moreWrap.innerHTML = ''; }
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+    notifyLifecycleParentHeight()
     return;
   }
   const visibleList = customerGridExpanded ? list : list.slice(0, 10);
@@ -1049,7 +1054,7 @@ function renderCustomerGrid() {
       moreWrap.innerHTML = '';
     }
   }
-  try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+  notifyLifecycleParentHeight()
 }
 
 /* =============== 弹窗：客户详情 ===============
@@ -1067,7 +1072,7 @@ function positionModalForEmbed() {
   if (document.body.classList.contains('single-mode')) {
     mask.removeAttribute('style');
     mask.classList.add('show');
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+    notifyLifecycleParentHeight()
     return;
   }
   const card = window.__lastClickCardEl__;
@@ -1097,7 +1102,7 @@ function positionModalForEmbed() {
         const targetTop = Math.max(0, cardCenterY - modalH / 2);
         mask.style.top = targetTop + 'px';
         // 通知上层 iframe 重新算高度，避免弹窗底部被裁切
-        try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+        notifyLifecycleParentHeight()
       });
     } catch (e) {}
   }
@@ -1211,7 +1216,7 @@ function renderSingleNotFound(name){
   if (!mask || !box) return;
   box.innerHTML = `<div class="single-not-found"><b>未找到一对一生命周期卡片</b><br>当前小红点客户：${String(name || '—')}<br>请检查客户简称是否已进入生命周期数据源。</div>`;
   mask.classList.add('show');
-  try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'lifecycle-resize'}, '*'); } catch(e) {}
+  notifyLifecycleParentHeight()
 }
 
 /* =============== 事件绑定 =============== */
@@ -1292,6 +1297,8 @@ renderFunnel();
 renderServiceCards();
 renderMicroSalesTabs();
 renderCustomerGrid();
+setTimeout(notifyLifecycleParentHeight, 120);
+setTimeout(notifyLifecycleParentHeight, 800);
 (function bootSingleLifecycleCard(){
   const targetName = __lifeParams.get('customer') || '';
   if (!targetName) return;

@@ -41,18 +41,18 @@ window.__BIG_DATA_READY__ = false;
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260615b"></script>
-<script src="data/center_sales_summary.js?v=20260615b"></script>
-<script src="data/center_quarter_summary.js?v=20260615b"></script>
-<script src="data/center_daily_kpi.js?v=20260615b"></script>
-<script src="data/top80_effective_metrics.js?v=20260615b"></script>
-<script src="data/top_status_data.js?v=20260615b"></script>
-<script src="data/enough_candidates.js?v=20260615b"></script>
-<script src="data/handover_customers_519.js?v=20260615b"></script>
-<script src="data/customer_main_product.js?v=20260615b"></script>
+<script src="data/bulk_import_rows.js?v=20260615c"></script>
+<script src="data/center_sales_summary.js?v=20260615c"></script>
+<script src="data/center_quarter_summary.js?v=20260615c"></script>
+<script src="data/center_daily_kpi.js?v=20260615c"></script>
+<script src="data/top80_effective_metrics.js?v=20260615c"></script>
+<script src="data/top_status_data.js?v=20260615c"></script>
+<script src="data/enough_candidates.js?v=20260615c"></script>
+<script src="data/handover_customers_519.js?v=20260615c"></script>
+<script src="data/customer_main_product.js?v=20260615c"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260615b"></script>
+<script src="cloud_sync.js?v=20260615c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -298,6 +298,10 @@ window.__BIG_DATA_READY__ = false;
     padding: 8px 10px; border-radius: 6px; font-size: 13px;
   }
   .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  /* 2026-06-15 子青：新增拓客登记弹窗太靠下，固定上移 */
+  #modalRecord.modal-mask.show{align-items:flex-start;padding-top:14px;box-sizing:border-box;}
+  #modalRecord .modal{max-height:calc(100vh - 28px);overflow-y:auto;}
 
   .hint {
     font-size: 12px; color: var(--text-2); padding: 10px 14px;
@@ -814,19 +818,19 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260615b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260615c`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260615b')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260615c')) frame.setAttribute('src', target);
   }
   function resizeLifecycleFrame(extraHeight) {
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     try {
       const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-      const h = doc ? Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 760) : 760;
+      const h = doc ? Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 320) : 320;
       frame.style.height = (h + (extraHeight || 24)) + 'px';
     } catch(e) {
-      frame.style.height = '920px';
+      frame.style.height = '520px';
     }
     try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'kanban-resize'}, '*'); } catch(e) {}
   }
@@ -968,7 +972,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260615b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260615c" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -984,7 +988,7 @@ window.__BIG_DATA_READY__ = false;
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260615b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260615c" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1068,7 +1072,7 @@ window.__BIG_DATA_READY__ = false;
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260615b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260615c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
