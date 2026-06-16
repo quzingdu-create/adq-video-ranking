@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260614p"></script>
+<script src="data/monitor_session_data.js?v=20260616a"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -172,7 +172,7 @@
     <section class="kpi-grid">
       <div class="kpi-card"><div class="kpi-label">访问销售数</div><div class="kpi-value" id="tUsers">-</div><div class="kpi-sub" id="tRange">窗口内有记录的销售</div></div>
       <div class="kpi-card green"><div class="kpi-label">访问次数</div><div class="kpi-value" id="tSessions">-</div><div class="kpi-sub">session 记录数</div></div>
-      <div class="kpi-card amber"><div class="kpi-label">人均日时长</div><div class="kpi-value" id="tAvg">-</div><div class="kpi-sub">日均</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="tAvg">-</div><div class="kpi-sub">按有登录天数折算</div></div>
       <div class="kpi-card violet"><div class="kpi-label">窗口累计时长</div><div class="kpi-value" id="tTotal">-</div><div class="kpi-sub">全员合计</div></div>
     </section>
 
@@ -208,7 +208,7 @@
     </section>
 
     <section class="kpi-grid">
-      <div class="kpi-card amber"><div class="kpi-label">日均使用时长</div><div class="kpi-value" id="pAvg">-</div><div class="kpi-sub">日均</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="pAvg">-</div><div class="kpi-sub">按有登录天数折算</div></div>
       <div class="kpi-card green"><div class="kpi-label">登录天数</div><div class="kpi-value" id="pDays">-</div><div class="kpi-sub">窗口内有访问的天数</div></div>
       <div class="kpi-card"><div class="kpi-label">访问次数</div><div class="kpi-value" id="pSessions">-</div><div class="kpi-sub">session 记录数</div></div>
       <div class="kpi-card violet"><div class="kpi-label">最活跃时段</div><div class="kpi-value" id="pPeak">-</div><div class="kpi-sub">登录次数最高的小时</div></div>
@@ -290,6 +290,7 @@ function formatMin(sec) {
   return min >= 60 ? (min / 60).toFixed(1) + "小时" : Math.round(min) + "分钟";
 }
 function formatDuration(sec) { return formatMin(sec); }
+function formatHourPerDay(sec) { sec = Math.max(0, toNum(sec)); return (sec / 3600).toFixed(1) + "小时/天"; }
 // 一组秒值统一选单位：任一 >=60分 用小时(轴值1位小数)，否则用分钟(整数)。返回 {unit, vals, axisName}
 function unitOfSecArray(secArr) {
   const useHour = secArr.some(s => toNum(s) >= 3600);
@@ -405,7 +406,7 @@ function renderTeam() {
   const agg = aggregate(rows);
   document.getElementById("tUsers").textContent = new Set(rows.map(s => s.rtx).filter(Boolean)).size;
   document.getElementById("tSessions").textContent = rows.length;
-  document.getElementById("tAvg").textContent = formatDuration(agg.avgPerPerson);
+  document.getElementById("tAvg").textContent = formatHourPerDay(agg.avgPerPerson);
   document.getElementById("tTotal").textContent = formatDuration(agg.cappedTotalSec);
   document.getElementById("tRange").textContent = rangeLabel();
   renderTrend("tTrend", dates, agg.byDate);
@@ -467,7 +468,7 @@ function renderPerson() {
   document.getElementById("pAvatar").textContent = currentSale.slice(0, 1).toUpperCase();
   document.getElementById("pName").textContent = nameLabel(currentSale);
   document.getElementById("pRangeText").textContent = "时间窗口：" + rangeLabel();
-  document.getElementById("pAvg").textContent = formatDuration(g.avgSec);
+  document.getElementById("pAvg").textContent = formatHourPerDay(g.avgSec);
   document.getElementById("pDays").textContent = g.loginDays || 0;
   document.getElementById("pSessions").textContent = rows.length;
   const byHour = hourStats(rows); let peakH = 0, peakV = -1;
