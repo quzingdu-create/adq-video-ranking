@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260616a"></script>
+<script src="data/monitor_session_data.js?v=20260616b"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -87,10 +87,10 @@
   #pHourSummary .hour-grid { grid-template-columns: repeat(2, 1fr); } /* 个人视角在窄右栏，2列防挤 */
 
   /* 活跃榜 */
-  .rank-head { display: grid; grid-template-columns: 110px 1fr 86px; gap: 10px; padding-bottom: 10px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .rank-head { display: grid; grid-template-columns: 110px 1fr 126px; gap: 10px; padding-bottom: 10px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
   .rank-head span { font-size: 12px; color: var(--muted); font-weight: 700; }
   .rank-head span:last-child { text-align: right; }
-  .rank-row { display: grid; grid-template-columns: 110px 1fr 86px; gap: 10px; align-items: center; padding: 7px 0; cursor: pointer; border-radius: 8px; transition: background .15s; }
+  .rank-row { display: grid; grid-template-columns: 110px 1fr 126px; gap: 10px; align-items: center; padding: 7px 0; cursor: pointer; border-radius: 8px; transition: background .15s; }
   .rank-row:hover { background: var(--panel-2); }
   .rank-row .name { font-weight: 800; font-size: 14px; padding-left: 4px; }
   .bar-wrap { position: relative; height: 9px; background: #eef2f8; border-radius: 999px; overflow: hidden; }
@@ -172,8 +172,8 @@
     <section class="kpi-grid">
       <div class="kpi-card"><div class="kpi-label">访问销售数</div><div class="kpi-value" id="tUsers">-</div><div class="kpi-sub" id="tRange">窗口内有记录的销售</div></div>
       <div class="kpi-card green"><div class="kpi-label">访问次数</div><div class="kpi-value" id="tSessions">-</div><div class="kpi-sub">session 记录数</div></div>
-      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="tAvg">-</div><div class="kpi-sub">按有登录天数折算</div></div>
-      <div class="kpi-card violet"><div class="kpi-label">窗口累计时长</div><div class="kpi-value" id="tTotal">-</div><div class="kpi-sub">全员合计</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="tAvg">-</div><div class="kpi-sub">按登录天数折算</div></div>
+      <div class="kpi-card violet"><div class="kpi-label">窗口人均时长</div><div class="kpi-value" id="tTotal">-</div><div class="kpi-sub">按窗口自然日折算</div></div>
     </section>
 
     <div class="quad-grid">
@@ -182,8 +182,8 @@
         <div id="tTrend" class="chart quad-chart"></div>
       </section>
       <section class="panel quad-cell">
-        <div class="panel-head"><div class="panel-title">销售活跃榜</div><div class="panel-desc">日均使用时长降序，点名字查看个人明细。</div></div>
-        <div class="rank-head"><span>销售</span><span></span><span>日均时长</span></div>
+        <div class="panel-head"><div class="panel-title">销售活跃榜</div><div class="panel-desc">按“人均xxx/天”降序，点名字查看个人明细。</div></div>
+        <div class="rank-head"><span>销售</span><span></span><span>人均/天</span></div>
         <div class="quad-scroll" id="tRanking"></div>
       </section>
       <section class="panel quad-cell">
@@ -208,7 +208,7 @@
     </section>
 
     <section class="kpi-grid">
-      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="pAvg">-</div><div class="kpi-sub">按有登录天数折算</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">人均使用时长</div><div class="kpi-value" id="pAvg">-</div><div class="kpi-sub">按登录天数折算</div></div>
       <div class="kpi-card green"><div class="kpi-label">登录天数</div><div class="kpi-value" id="pDays">-</div><div class="kpi-sub">窗口内有访问的天数</div></div>
       <div class="kpi-card"><div class="kpi-label">访问次数</div><div class="kpi-value" id="pSessions">-</div><div class="kpi-sub">session 记录数</div></div>
       <div class="kpi-card violet"><div class="kpi-label">最活跃时段</div><div class="kpi-value" id="pPeak">-</div><div class="kpi-sub">登录次数最高的小时</div></div>
@@ -290,7 +290,7 @@ function formatMin(sec) {
   return min >= 60 ? (min / 60).toFixed(1) + "小时" : Math.round(min) + "分钟";
 }
 function formatDuration(sec) { return formatMin(sec); }
-function formatHourPerDay(sec) { sec = Math.max(0, toNum(sec)); return (sec / 3600).toFixed(1) + "小时/天"; }
+function formatHourPerDay(sec) { sec = Math.max(0, toNum(sec)); return "人均" + (sec / 3600).toFixed(1) + "小时/天"; }
 // 一组秒值统一选单位：任一 >=60分 用小时(轴值1位小数)，否则用分钟(整数)。返回 {unit, vals, axisName}
 function unitOfSecArray(secArr) {
   const useHour = secArr.some(s => toNum(s) >= 3600);
@@ -404,10 +404,12 @@ function renderTeam() {
   const dates = getDateRange();
   const rows = teamRows(rowsInWindow());
   const agg = aggregate(rows);
-  document.getElementById("tUsers").textContent = new Set(rows.map(s => s.rtx).filter(Boolean)).size;
+  const activeUsers = new Set(rows.map(s => s.rtx).filter(Boolean)).size;
+  document.getElementById("tUsers").textContent = activeUsers;
   document.getElementById("tSessions").textContent = rows.length;
   document.getElementById("tAvg").textContent = formatHourPerDay(agg.avgPerPerson);
-  document.getElementById("tTotal").textContent = formatDuration(agg.cappedTotalSec);
+  const calendarAvgSec = activeUsers && dates.length ? agg.cappedTotalSec / (activeUsers * dates.length) : 0;
+  document.getElementById("tTotal").textContent = formatHourPerDay(calendarAvgSec);
   document.getElementById("tRange").textContent = rangeLabel();
   renderTrend("tTrend", dates, agg.byDate);
   renderTeamRanking(agg);
@@ -421,7 +423,7 @@ function renderTeamRanking(agg) {
     const min = s.avgSec / 60;
     const cls = min <= 0 ? "warn" : min < 30 ? "warn" : min <= 60 ? "good" : "danger";
     const pct = Math.min(100, Math.round(min / maxMin * 100));
-    return `<div class="rank-row" onclick="gotoPerson('${s.rtx}')"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${nameLabel(s.rtx)}</div><div class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${formatMin(s.avgSec)}/天</div></div>`;
+    return `<div class="rank-row" onclick="gotoPerson('${s.rtx}')"><div class="name" style="color:${COLORS[s.rtx] || "#2563eb"}">${nameLabel(s.rtx)}</div><div class="bar-wrap"><span class="bar ${cls}" style="width:${pct}%"></span></div><div class="min-text">${formatHourPerDay(s.avgSec)}</div></div>`;
   }).join("");
 }
 function cellSec(date, rtx) {
