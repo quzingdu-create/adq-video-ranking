@@ -18,7 +18,7 @@
   window.__EXPORT_TUOKE_BOUND__ = true;
 
   var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路','投放端','类目','拓客途径','拓客来源'];
-  var EXPORT_FALLBACK_VERSION = '20260617a';
+  var EXPORT_FALLBACK_VERSION = '20260617b';
   var _tuokePromise = null;
   var _scriptState = window.__EXPORT_TUOKE_SCRIPT_STATE__ = window.__EXPORT_TUOKE_SCRIPT_STATE__ || {};
 
