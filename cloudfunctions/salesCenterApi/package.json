@@ -1,0 +1,13 @@
+{
+  "name": "sales-center-api",
+  "version": "2.0.0",
+  "description": "CloudBase BFF for sales-center V2 light data migration.",
+  "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "@cloudbase/node-sdk": "latest"
+  }
+}

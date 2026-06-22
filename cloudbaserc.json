@@ -1,0 +1,15 @@
+{
+  "$schema": "https://static.cloudbase.net/cli/cloudbaserc.schema.json",
+  "envId": "adq-tuoke-2-d9gktr9mn2e462acd",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "salesCenterApi",
+      "runtime": "Nodejs20.19",
+      "handler": "index.main",
+      "timeout": 15,
+      "memorySize": 256,
+      "description": "sales-center CloudBase BFF for V2 light data migration"
+    }
+  ]
+}
