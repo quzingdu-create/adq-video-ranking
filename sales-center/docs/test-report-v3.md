@@ -21,7 +21,8 @@
 |---|---|---:|
 | `sc_customer_records` | 客户明细分片 | 48 chunks / 23,652 rows |
 | `sc_customer_lookup` | 字典和客户链路分片 | 77 chunks / 76,000 rows |
-| `sc_import_jobs` | 导入任务记录 | 1 条 V3 job |
+| `sc_customer_index` | 客户名到明细 chunk/row 索引 | 24 chunks / 23,129 keys |
+| `sc_import_jobs` | 导入任务记录 | V3 + V3.1 jobs |
 
 - snapshotVersion：`20260622_v3_big`
 - dataDate：`2026-06-22`
@@ -32,6 +33,8 @@
 |---|---|
 | `scripts/cloudbase_migration/prepare_v3_big_seed.py` | 把大 JS 文件转成 chunk seed |
 | `scripts/cloudbase_migration/upload_v3_big_seed_cli.js` | 用 tcb CLI 登录态上传 chunk seed |
+| `scripts/cloudbase_migration/prepare_v31_customer_index.py` | 从客户明细 chunks 生成客户名索引 seed |
+| `scripts/cloudbase_migration/upload_v31_customer_index_cli.js` | 上传 `sc_customer_index` 并对账 |
 
 ## 云函数 API
 
@@ -41,12 +44,13 @@
 |---|---|---|
 | `queryRecords` | 通过 | `page=1&pageSize=3` 返回 3 条，总数 23,652 |
 | `queryLookup` | 通过 | 查询 `customer_link_data/阿迪达斯`，`foundCount=1`，耗时约 319ms |
-| `getCustomerDetail` | 通过 | 查询 `阿迪达斯`，返回链路和主营商品，耗时约 303ms |
-| `listVersions` | 通过 | `latestV3=20260622_v3_big` |
+| `getCustomerDetail` | 通过 | 查询 `阿迪达斯`，返回 lookup + record，`foundRecord=true`，耗时约 1.4s |
+| `getCustomerDetail` | 通过 | 查询 `杭州不姜就科技有限公司`，`foundRecord=true`，耗时约 1.3s |
+| `listVersions` | 通过 | `latestV3=20260622_v3_big`，`latestV31=20260622_v3_big` |
 
 ## 性能修复
 
-初版 `getCustomerDetail` 扫描全部 48 个客户明细 chunk，导致 15 秒超时。已修复为默认只读 lookup 分片，客户明细精确索引留到后续 V3.1。
+初版 `getCustomerDetail` 扫描全部 48 个客户明细 chunk，导致 15 秒超时。V3.1 已新增 `sc_customer_index`：按客户名定位 `chunkIndex/rowIndex`，再读取目标 chunk 的单行明细，避免全量扫描。
 
 ## 当前未做
 
@@ -57,7 +61,7 @@
 
 ## 下一步
 
-1. V3.1 建客户名索引集合，支持 `getCustomerDetail` 精确定位客户明细。
-2. 前端先接 `queryRecords` 分页，用于替换移动端/iframe 的大明细加载。
-3. 再接 `queryLookup`，替换判重和链路字典整包加载。
+1. 前端先接 `queryRecords` 分页，用于替换移动端/iframe 的大明细加载。
+2. 再接 `queryLookup`，替换判重和链路字典整包加载。
+3. 客户弹窗可接 `getCustomerDetail` 读取 lookup + record。
 4. 每一步继续保留 `static/dual/cloud` 回退。

@@ -9,7 +9,8 @@ const COLLECTIONS = {
   top: 'sc_top_metrics',
   records: 'sc_customer_records',
   lookup: 'sc_customer_lookup',
-  jobs: 'sc_import_jobs'
+  jobs: 'sc_import_jobs',
+  index: 'sc_customer_index'
 };
 
 let cloudbase = null;
@@ -166,6 +167,30 @@ async function queryLookup(params) {
   return ok('queryLookup', { mode: 'cloud', snapshotVersion, type, requested: keys.length, foundCount: Object.keys(found).length, payload: found }, { collection: COLLECTIONS.lookup });
 }
 
+async function getCustomerIndex(name, snapshotVersion) {
+  const database = getDb();
+  const res = await database.collection(COLLECTIONS.index).where({ snapshotVersion, type: 'customer_name_index', keys: name }).limit(5).get();
+  const chunks = res && res.data ? res.data : [];
+  for (const chunk of chunks) {
+    const payload = chunk && chunk.payload ? chunk.payload : {};
+    if (Object.prototype.hasOwnProperty.call(payload, name)) return { refs: payload[name], chunk: cleanChunk(chunk) };
+  }
+  return { refs: [], chunk: null };
+}
+
+async function getRecordByRef(ref, snapshotVersion) {
+  if (!ref || typeof ref.chunkIndex === 'undefined') return null;
+  const database = getDb();
+  const res = await database.collection(COLLECTIONS.records).where({ snapshotVersion, type: 'tuoke_real_records', chunkIndex: ref.chunkIndex }).limit(1).get();
+  const chunk = res && res.data && res.data[0] ? res.data[0] : null;
+  const payload = chunk && Array.isArray(chunk.payload) ? chunk.payload : [];
+  let row = payload[ref.rowIndex];
+  if (!row || (ref._id && row._id !== ref._id)) {
+    row = payload.find((r) => (ref._id && r._id === ref._id) || (ref.id && r.id === ref.id)) || null;
+  }
+  return row ? { row, chunk: cleanChunk(chunk) } : null;
+}
+
 async function getCustomerDetail(params) {
   params = params || {};
   const name = params.name || params.shortName || params.customerName;
@@ -177,20 +202,35 @@ async function getCustomerDetail(params) {
     const res = await queryLookup({ snapshotVersion, type, keys: [name] });
     detail.lookup[type] = res.data && res.data.payload ? res.data.payload[name] : undefined;
   }
-  // Avoid scanning all 23k records by default; record-level search will be indexed in a later V3 step.
-  detail.recordSearch = { skipped: true, reason: 'chunk_scan_disabled_by_default', use: 'queryRecords(page,pageSize) or future indexed search' };
-  return ok('getCustomerDetail', { mode: 'cloud', snapshotVersion, detail, foundLookup: Object.values(detail.lookup).some((v) => typeof v !== 'undefined') }, { collection: COLLECTIONS.lookup });
+  const indexResult = await getCustomerIndex(name, snapshotVersion);
+  detail.indexRefs = indexResult.refs || [];
+  detail.indexChunk = indexResult.chunk;
+  if (detail.indexRefs.length) {
+    const recordResult = await getRecordByRef(detail.indexRefs[0], snapshotVersion);
+    detail.record = recordResult ? recordResult.row : null;
+    detail.recordChunk = recordResult ? recordResult.chunk : null;
+  }
+  return ok('getCustomerDetail', {
+    mode: 'cloud',
+    snapshotVersion,
+    detail,
+    foundLookup: Object.values(detail.lookup).some((v) => typeof v !== 'undefined'),
+    foundRecord: !!detail.record,
+    indexRefCount: detail.indexRefs.length
+  }, { collection: COLLECTIONS.index });
 }
 
 async function listVersions() {
   const latest = await getLatestVersion();
   const latestV2 = await getLatestVersion('v2_light');
   const latestV3 = await getLatestVersion('v3_big');
+  const latestV31 = await getLatestVersion('v3_1_customer_index');
   return ok('listVersions', {
     latest: latest ? latest.snapshotVersion : null,
     latestV2: latestV2 ? latestV2.snapshotVersion : DEFAULT_V2_VERSION,
     latestV3: latestV3 ? latestV3.snapshotVersion : DEFAULT_V3_VERSION,
-    versions: [latest, latestV2, latestV3].filter(Boolean),
+    latestV31: latestV31 ? latestV31.snapshotVersion : DEFAULT_V3_VERSION,
+    versions: [latest, latestV2, latestV3, latestV31].filter(Boolean),
     collection: COLLECTIONS.jobs
   });
 }
