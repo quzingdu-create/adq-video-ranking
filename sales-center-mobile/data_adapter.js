@@ -1,7 +1,7 @@
 (function (window) {
   'use strict';
 
-  var VERSION = 'v4-cloud-ready-adapter-20260623';
+  var VERSION = 'v4-freshness-guard-adapter-20260623f';
   var DEFAULT_V3_VERSION = '20260622_v3_big';
   var STATIC_KEYS = [
     '__CENTER_DAILY_KPI__',
@@ -59,10 +59,40 @@
   function cloudCallable() { return window.SalesCenterApi && typeof window.SalesCenterApi.callCloud === 'function'; }
   function unwrapCloud(res) { return res && res.mode === 'dual' ? res.cloud : res; }
 
+  function getStaticDataDate() {
+    return window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate ? String(window.__CENTER_DAILY_KPI__.dataDate).slice(0, 10) : '';
+  }
+
+  function snapshotDate(snapshotVersion) {
+    var m = String(snapshotVersion || DEFAULT_V3_VERSION).match(/^(20\d{2})(\d{2})(\d{2})/);
+    return m ? (m[1] + '-' + m[2] + '-' + m[3]) : '';
+  }
+
+  function cloudFreshness(params) {
+    params = params || {};
+    var snapshotVersion = params.snapshotVersion || DEFAULT_V3_VERSION;
+    var staticDate = getStaticDataDate();
+    var cloudDate = snapshotDate(snapshotVersion);
+    var ok = !staticDate || !cloudDate || staticDate === cloudDate;
+    return { ok: ok, staticDataDate: staticDate, cloudDataDate: cloudDate, snapshotVersion: snapshotVersion };
+  }
+
+  function markFreshnessSkip(res, info) {
+    res = res || { ok: true, data: {} };
+    res.meta = res.meta || {};
+    res.meta.cloudSkipped = 'snapshot_date_mismatch';
+    res.meta.staticDataDate = info.staticDataDate;
+    res.meta.cloudDataDate = info.cloudDataDate;
+    res.meta.snapshotVersion = info.snapshotVersion;
+    return res;
+  }
+
   function callBigAction(action, params, staticBuilder, options) {
     params = params || {}; options = options || {};
     var mode = getMode();
     if (mode === 'static' || !cloudCallable()) return Promise.resolve(staticBuilder(params));
+    var fresh = cloudFreshness(params);
+    if (!fresh.ok) return Promise.resolve(markFreshnessSkip(staticBuilder(params), fresh));
     var cloudParams = Object.assign({ snapshotVersion: DEFAULT_V3_VERSION }, params);
     return window.SalesCenterApi.callCloud(action, cloudParams, { functionName: 'salesCenterApi' }).then(function (cloudRes) {
       if (mode === 'dual') return { ok: true, mode: 'dual', action: action, static: staticBuilder(params), cloud: cloudRes };
@@ -95,9 +125,11 @@
   function queryAllRecords(params, options) {
     params = Object.assign({ snapshotVersion: DEFAULT_V3_VERSION, pageSize: 500 }, params || {});
     var mode = getMode();
-    if (mode === 'static' || !cloudCallable()) {
+    var fresh = cloudFreshness(params);
+    if (mode === 'static' || !cloudCallable() || !fresh.ok) {
       var list = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
-      return Promise.resolve({ ok: true, action: 'queryAllRecords', data: { mode: 'static', rows: list, count: list.length, totalRecords: list.length } });
+      var res = { ok: true, action: 'queryAllRecords', data: { mode: fresh.ok ? 'static' : 'static-freshness-fallback', rows: list, count: list.length, totalRecords: list.length } };
+      return Promise.resolve(fresh.ok ? res : markFreshnessSkip(res, fresh));
     }
     var rows = [];
     function loadPage(page) {
@@ -121,9 +153,11 @@
     params = Object.assign({ snapshotVersion: DEFAULT_V3_VERSION, includePayload: true }, params || {});
     var type = params.type || 'mapping_data';
     var mode = getMode();
-    if (mode === 'static' || !cloudCallable()) {
+    var fresh = cloudFreshness(params);
+    if (mode === 'static' || !cloudCallable() || !fresh.ok) {
       var dict = type === 'customer_link_data' ? (window.__CUSTOMER_LINK_DATA__ || {}) : type === 'customer_main_product' ? (window.__CUSTOMER_MAIN_PRODUCT__ || {}) : (window.__MAPPING_DATA__ || {});
-      return Promise.resolve({ ok: true, action: 'queryLookupAll', data: { mode: 'static', type: type, payload: dict, count: Object.keys(dict).length } });
+      var res = { ok: true, action: 'queryLookupAll', data: { mode: fresh.ok ? 'static' : 'static-freshness-fallback', type: type, payload: dict, count: Object.keys(dict).length } };
+      return Promise.resolve(fresh.ok ? res : markFreshnessSkip(res, fresh));
     }
     return queryLookup(Object.assign({}, params, { type: type, includePayload: true }), options).then(function (res) {
       var cloud = unwrapCloud(res);
@@ -157,6 +191,9 @@
     defaultV3Version: DEFAULT_V3_VERSION,
     staticKeys: STATIC_KEYS.slice(),
     getMode: getMode,
+    getStaticDataDate: getStaticDataDate,
+    snapshotDate: snapshotDate,
+    cloudFreshness: cloudFreshness,
     readStaticSnapshot: readStaticSnapshot,
     staticRecordsPage: staticRecordsPage,
     staticLookup: staticLookup,
