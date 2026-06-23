@@ -1,7 +1,7 @@
 {
   "name": "sales-center-api",
-  "version": "3.0.0",
-  "description": "CloudBase BFF for sales-center V3 big-data migration.",
+  "version": "4.0.0",
+  "description": "CloudBase BFF for sales-center V4 read-write migration.",
   "main": "index.js",
   "private": true,
   "engines": {
