@@ -55,6 +55,21 @@ def dict_chunks(d: Dict[str, Any], size: int) -> Iterable[Tuple[int, Dict[str, A
         yield i // size, {k: d[k] for k in part_keys}
 
 
+def infer_data_date_from_center_kpi(data_dir: Path) -> str:
+    """Prefer the dashboard dataDate; source comments may contain report date/T-1 noise."""
+    kpi_path = data_dir / "center_daily_kpi.js"
+    if not kpi_path.exists():
+        return ""
+    try:
+        kpi = extract_var(kpi_path, "__CENTER_DAILY_KPI__")
+        data_date = kpi.get("dataDate") if isinstance(kpi, dict) else ""
+        if isinstance(data_date, str) and re.match(r"^20\d{2}-\d{2}-\d{2}$", data_date):
+            return data_date
+    except Exception:
+        return ""
+    return ""
+
+
 def infer_data_date_from_sources(paths: List[Path]) -> str:
     patterns = [
         r"Auto-(?:refreshed|generated)\s+(20\d{2}-\d{2}-\d{2})",
@@ -95,7 +110,7 @@ def main() -> int:
         raise TypeError("tuoke records must be a list")
 
     lookup_paths = [data_dir / filename for _, filename, _ in LOOKUP_SOURCES]
-    data_date = infer_data_date_from_sources([record_path] + lookup_paths)
+    data_date = infer_data_date_from_center_kpi(data_dir) or infer_data_date_from_sources([record_path] + lookup_paths)
     snapshot_version = f"{data_date.replace('-', '')}_v3_big"
 
     record_chunks = []
