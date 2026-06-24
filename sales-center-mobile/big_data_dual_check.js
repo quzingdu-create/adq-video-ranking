@@ -2,7 +2,7 @@
   'use strict';
 
   var VERSION = 'v3.2-big-dual-check-20260623';
-  var DEFAULT_V3_VERSION = '20260622_v3_big';
+  var DEFAULT_V3_VERSION = '20260623_v3_big';
 
   function mode() {
     return window.SalesCenterApi && window.SalesCenterApi.getMode ? window.SalesCenterApi.getMode() : (window.__SALES_CENTER_DATA_MODE__ || 'static');

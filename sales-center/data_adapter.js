@@ -2,7 +2,7 @@
   'use strict';
 
   var VERSION = 'v4-freshness-guard-adapter-20260623f';
-  var DEFAULT_V3_VERSION = '20260622_v3_big';
+  var DEFAULT_V3_VERSION = '20260623_v3_big';
   var STATIC_KEYS = [
     '__CENTER_DAILY_KPI__',
     '__CENTER_QUARTER_SUMMARY__',
