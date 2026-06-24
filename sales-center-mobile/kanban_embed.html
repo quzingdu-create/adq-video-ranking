@@ -24,40 +24,41 @@
        top_status_* / enough_candidates / handover_customers_519 / bulk_import_rows
      ========================================================================= -->
 <script>
-/* 大文件全局变量空占位：业务代码里的 const 字典在首屏会引用到这些占位对象，
-   异步加载完成后通过 Object.assign 原地填充，const 引用不变即可读到真实数据。 */
-(function(){
-  // 对象型字典：必须是「同一对象引用」被原地填充，故先建空对象占位
-  if (window.__MAPPING_DATA__            === undefined) window.__MAPPING_DATA__            = {};   // register_lookup_data
-  if (window.__REGISTERED_SUBJECTS__     === undefined) window.__REGISTERED_SUBJECTS__     = {};   // register_lookup_data
-  if (window.__SUBJECT_SHORT_MAP__       === undefined) window.__SUBJECT_SHORT_MAP__       = {};   // laoke_lookup_data
-  if (window.__SHORT_FIRST_QUARTER_MAP__ === undefined) window.__SHORT_FIRST_QUARTER_MAP__ = {};   // laoke_lookup_data
-  if (window.__OLD_SUBJECT_QUARTER_MAP__ === undefined) window.__OLD_SUBJECT_QUARTER_MAP__ = {};   // laoke_lookup_data
-  if (window.__CUSTOMER_LINK_DATA__      === undefined) window.__CUSTOMER_LINK_DATA__      = {};   // customer_link_data
-  if (window.__DELIVERY_SIDE_MAP__       === undefined) window.__DELIVERY_SIDE_MAP__       = {};   // delivery_side_summary
-  if (window.__DELIVERY_COUNTS__         === undefined) window.__DELIVERY_COUNTS__         = {};   // delivery_side_summary
-  if (window.__FIRST_QUARTER__           === undefined) window.__FIRST_QUARTER__           = {};   // first_quarter
-  if (window.__CUSTOMER_LIFECYCLE__      === undefined) window.__CUSTOMER_LIFECYCLE__      = null; // customer_lifecycle（生命周期 iframe 自行读，允许 null）
-  // 数组型：tuoke_real_records，先空数组占位，加载后重填并 renderAll
-  if (window.__TUOKE_REAL_RECORDS__      === undefined) window.__TUOKE_REAL_RECORDS__      = [];   // tuoke_real_records
-  // 首屏数据加载状态标记（供骨架屏/loading 判断）
-  window.__BIG_DATA_READY__ = false;
-})();
+/* 2026-06-13 首屏零白屏修复：MB级数据只放轻量占位，真实数据由 BIG_DATA_LOADER 在首屏绘制后异步加载 */
+window.__MAPPING_DATA__ = window.__MAPPING_DATA__ || {};
+window.__REGISTERED_SUBJECTS__ = window.__REGISTERED_SUBJECTS__ || {};
+window.__SUBJECT_SHORT_MAP__ = window.__SUBJECT_SHORT_MAP__ || {};
+window.__SHORT_FIRST_QUARTER_MAP__ = window.__SHORT_FIRST_QUARTER_MAP__ || {};
+window.__OLD_SUBJECT_QUARTER_MAP__ = window.__OLD_SUBJECT_QUARTER_MAP__ || {};
+window.__CUSTOMER_LINK_DATA__ = window.__CUSTOMER_LINK_DATA__ || {};
+window.__DELIVERY_SIDE_MAP__ = window.__DELIVERY_SIDE_MAP__ || {};
+window.__DELIVERY_COUNTS__ = window.__DELIVERY_COUNTS__ || {};
+window.__FIRST_QUARTER__ = window.__FIRST_QUARTER__ || {};
+window.__TUOKE_REAL_RECORDS__ = window.__TUOKE_REAL_RECORDS__ || [];
+window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
+window.__BIG_DATA_READY__ = false;
 </script>
+<!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
+<script defer src="cloud_gray_switch.js?v=20260624d"></script>
+<script defer src="api_client.js?v=20260624d"></script>
+<script defer src="data_adapter.js?v=20260624d"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260613f"></script>
-<script src="data/center_sales_summary.js?v=20260613f"></script>
-<script src="data/center_quarter_summary.js?v=20260613f"></script>
-<script src="data/center_daily_kpi.js?v=20260613f"></script>
-<script src="data/top80_effective_metrics.js?v=20260613f"></script>
-<script src="data/top_status_data.js?v=20260613f"></script>
-<script src="data/enough_candidates.js?v=20260613f"></script>
-<script src="data/handover_customers_519.js?v=20260613f"></script>
+<script src="data/bulk_import_rows.js?v=20260624d"></script>
+<script src="data/center_sales_summary.js?v=20260624d"></script>
+<script src="data/center_quarter_summary.js?v=20260624d"></script>
+<script src="data/center_daily_kpi.js?v=20260624d"></script>
+<script src="data/top80_effective_metrics.js?v=20260624d"></script>
+<script src="data/top_status_data.js?v=20260624d"></script>
+<script src="data/enough_candidates.js?v=20260624d"></script>
+<script src="data/handover_customers_519.js?v=20260624d"></script>
+<script src="data/customer_main_product.js?v=20260624d"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260613f"></script>
+<script src="cloud_sync.js?v=20260624d"></script>
+<script src="dual_check.js?v=20260624d"></script>
+<script src="big_data_dual_check.js?v=20260624d"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -116,6 +117,7 @@
     /* min-width removed for mobile */
     padding-bottom: 60px;
   }
+  body.mode-life { display:flex; flex-direction:column; }
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 28px;
@@ -253,6 +255,10 @@
   }
   table.tbl th { color: var(--text-2); font-weight: 500; background: var(--panel-2); }
   table.tbl tr:hover td { background: var(--primary-bg); }
+  #recordTable { min-width: 1420px; }
+  #recordTable th { white-space: nowrap; }
+  #recordTable td { vertical-align: middle; }
+  #recordDetailSection .panel { overflow-x: auto; }
   .tag {
     display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
   }
@@ -298,6 +304,10 @@
     padding: 8px 10px; border-radius: 6px; font-size: 13px;
   }
   .modal .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  /* 2026-06-15 子青：新增拓客登记弹窗太靠下，固定上移 */
+  #modalRecord.modal-mask.show{align-items:flex-start;padding-top:14px;box-sizing:border-box;}
+  #modalRecord .modal{max-height:calc(100vh - 28px);overflow-y:auto;}
 
   .hint {
     font-size: 12px; color: var(--text-2); padding: 10px 14px;
@@ -569,6 +579,8 @@
   .sales-detail-tbl .main-num.rising { color:#dc2626; }
   .sales-detail-tbl .main-num.cost { color:#7c3aed; }
   .sales-detail-tbl .sub-meta { font-size:10.5px; color:#9ca3af; margin-top:2px; line-height:1.2; }
+  .sales-detail-tbl .chase-cell { text-align:center; min-width:132px; background:#f8fbff; }
+  .sales-detail-tbl .chase-cell .sub-meta { display:block;width:max-content;margin:3px auto 0;padding:2px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;line-height:1.35; }
   .sales-detail-tbl .sub-meta .delta-up { color:#dc2626; }
   .sales-detail-tbl .sub-meta .delta-down { color:#16a34a; }
   .sales-detail-tbl .sub-meta .delta-flat { color:#9ca3af; }
@@ -600,11 +612,50 @@
   body.embed-mode .topbar { display: none !important; }
   body.mode-ops .life-section { display:none !important; }
   body.mode-life .ops-section { display:none !important; }
+  /* 2026-06-14 子青：生命周期管理页顺序固定为 生命周期 → 拓客模型 → 登记明细；登记入口右上角固定 */
+  body.mode-life .container { display:flex; flex-direction:column; padding-top:58px; }
+  body.mode-life #registerEntrySection { display:none !important; }
+  body.mode-life #lifecycleSystemSection { order:1; }
+  body.mode-life #portraitSection { order:20; }
+  body.mode-life #recordDetailSection { order:30; }
   body.mode-ops #btnAddRecord, body.mode-ops #btnBatchPaste, body.mode-ops #btnBulkImport, body.mode-ops #bulkImportFile { display:none !important; }
-  .placeholder-grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:14px; }
+  body.mode-life #btnAddRecord, body.mode-life #btnBatchPaste, body.mode-life #btnBulkImport { display:inline-block !important; }
+  body.mode-life #lifecycleSystemSection .section-title .right { display:none !important; }
+  .life-fixed-register {
+    display:none; position:fixed; top:12px; right:18px; z-index:10020;
+    align-items:center; gap:8px; padding:8px 10px; border:1px solid #bfdbfe; border-radius:999px;
+    background:rgba(255,255,255,.96); box-shadow:0 10px 26px rgba(37,99,235,.18); backdrop-filter: blur(8px);
+  }
+  body.mode-life .life-fixed-register { display:flex; }
+  .life-fixed-register button { border:1px solid #dbeafe; background:#fff; color:#2563eb; border-radius:999px; padding:7px 13px; font-size:12px; font-weight:900; cursor:pointer; }
+  .life-fixed-register button.primary { background:linear-gradient(135deg,#2563eb,#3b82f6); color:#fff; border-color:#2563eb; }
+  .placeholder-grid { display:grid; grid-template-columns: 1fr; gap:14px; }
   .placeholder-card { background:#fff; border:1px dashed #cbd5e1; border-radius:12px; padding:18px; min-height:112px; }
   .placeholder-card h3 { margin:0 0 8px; font-size:15px; color:#0f172a; }
   .placeholder-card p { margin:0; color:#64748b; font-size:13px; line-height:1.6; }
+  /* 靶向名单可点击入口卡 */
+  .entry-card { display:flex; flex-direction:column; align-items:flex-start; text-decoration:none; background:linear-gradient(135deg,#5b3ff0 0%,#7657f6 55%,#8a6bf8 100%); border:none; border-radius:16px; padding:20px 22px; min-height:148px; color:#fff; position:relative; overflow:hidden; box-shadow:0 8px 22px rgba(91,63,240,.22); transition:.18s; gap:10px; }
+  .entry-card:before { content:""; position:absolute; right:-70px; top:-80px; width:190px; height:190px; border-radius:50%; background:rgba(255,255,255,.12); }
+  .entry-card:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(91,63,240,.32); }
+  .entry-card h3 { position:relative; z-index:1; margin:0; font-size:16px; color:#fff; display:flex; align-items:center; gap:7px; }
+  .entry-card p { position:relative; z-index:1; margin:0; color:rgba(255,255,255,.88); font-size:13px; line-height:1.7; max-width:860px; }
+  .entry-card .go { position:relative; z-index:1; margin-top:4px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.32); border-radius:20px; padding:7px 15px; font-size:13px; font-weight:800; display:inline-flex; align-items:center; gap:5px; align-self:flex-start; }
+  .entry-card .badge2 { position:relative; z-index:1; display:inline-block; margin-top:0; font-size:11px; background:rgba(255,255,255,.18); border-radius:14px; padding:4px 10px; }
+  /* 产业带进展入口卡：青蓝渐变区分靶向卡的紫，底部 KPI 概览 */
+  .entry-card.belt-card { background:linear-gradient(135deg,#0ea5e9 0%,#2563eb 55%,#4f46e5 100%); box-shadow:0 8px 22px rgba(37,99,235,.22); }
+  .entry-card.belt-card:hover { box-shadow:0 12px 30px rgba(37,99,235,.32); }
+  .entry-card.belt-card p { padding-right:0; }
+  .belt-stats { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:7px; margin-top:2px; }
+  .belt-stats .bs { font-size:11px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.22); border-radius:14px; padding:3px 11px; color:rgba(255,255,255,.92); }
+  .belt-stats .bs b { font-size:13px; font-weight:800; color:#fff; margin-right:2px; }
+  /* 2026-06-13 子青：专项看板不再外置，新开页入口改为原页面内嵌 iframe */
+  .special-inline-wrap { margin-top:14px; background:#fff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 28px rgba(15,23,42,.08); }
+  .special-inline-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; background:linear-gradient(135deg,#f8fbff 0%,#eef6ff 100%); border-bottom:1px solid #e2e8f0; }
+  .special-inline-title { font-size:14px; font-weight:800; color:#0f172a; }
+  .special-inline-wrap + .placeholder-grid { margin-top: 18px; }
+  .special-inline-frame { width:100%; height:760px; border:0; display:block; background:#f4f7fb; }
+  .special-inline-tip { padding:10px 16px; font-size:12px; color:#64748b; background:#fff; border-top:1px solid #eef2f7; }
+  .main-prod-inline { display:inline-flex; align-items:center; white-space:nowrap; margin-left:6px; padding:1px 7px; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:800; vertical-align:middle; }
   .register-entry-card { background:#fff; border:1px solid #e2e8f0; border-radius:18px; overflow:hidden; box-shadow:0 12px 32px rgba(15,23,42,.08); }
   .register-entry-head { padding:18px 22px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between; gap:12px; background:linear-gradient(135deg,#ffffff 0%,#f8fbff 52%,#eef6ff 100%); }
   .register-entry-head b { font-size:18px; color:#0f172a; letter-spacing:.2px; }
@@ -764,42 +815,129 @@
     } catch(e) {}
     return CURRENT_USER || 'all';
   }
+  function measureOwnContentHeight(){
+    const win = window;
+    let h = 0;
+    const root = document.querySelector('.container') || document.body;
+    if (root) {
+      const rect = root.getBoundingClientRect();
+      h = Math.max(h, Math.ceil(rect.bottom + (win.scrollY || 0)));
+    }
+    Array.from(document.body.children || []).forEach(el => {
+      const cs = getComputedStyle(el);
+      if (cs.position === 'fixed' || cs.display === 'none') return;
+      const rect = el.getBoundingClientRect();
+      h = Math.max(h, Math.ceil(rect.bottom + (win.scrollY || 0)));
+    });
+    return Math.max(h, document.body ? document.body.offsetHeight : 0, 320);
+  }
+  function notifyParentKanbanHeight(){
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'kanban-height', height: measureOwnContentHeight()}, '*'); } catch(e) {}
+  }
+  window.addEventListener('load', function(){ setTimeout(notifyParentKanbanHeight, 80); setTimeout(notifyParentKanbanHeight, 1200); });
+  if (window.ResizeObserver) { try { new ResizeObserver(function(){ notifyParentKanbanHeight(); }).observe(document.body); } catch(e) {} }
   function syncLifecycleFrameSales(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260613f`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260624d`;
     const src = frame.getAttribute('src') || '';
-    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260612n')) frame.setAttribute('src', target);
+    if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
-  function resizeLifecycleFrame(extraHeight) {
+  function measureLifecycleDocHeight(doc){
+    if (!doc) return 320;
+    const win = doc.defaultView || window;
+    let h = 0;
+    const root = doc.querySelector('.container') || doc.body;
+    if (root) {
+      const rect = root.getBoundingClientRect();
+      h = Math.max(h, Math.ceil(rect.bottom + (win.scrollY || 0)));
+    }
+    Array.from(doc.body ? doc.body.children : []).forEach(el => {
+      const cs = win.getComputedStyle ? win.getComputedStyle(el) : null;
+      if (cs && (cs.position === 'fixed' || cs.display === 'none')) return;
+      const rect = el.getBoundingClientRect();
+      h = Math.max(h, Math.ceil(rect.bottom + (win.scrollY || 0)));
+    });
+    return Math.max(h, 320);
+  }
+  function resizeLifecycleFrame(extraHeight, explicitHeight) {
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     try {
-      const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
-      const h = doc ? Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight, 760) : 760;
-      frame.style.height = (h + (extraHeight || 24)) + 'px';
+      let h = explicitHeight ? Number(explicitHeight) : 0;
+      if (!h) {
+        const doc = frame.contentDocument || (frame.contentWindow && frame.contentWindow.document);
+        h = measureLifecycleDocHeight(doc);
+      }
+      const next = Math.ceil(Math.max(h, 320) + (extraHeight || 12));
+      const old = parseInt(frame.style.height || 0, 10) || 0;
+      if (Math.abs(old - next) > 4) frame.style.height = next + 'px';
     } catch(e) {
-      frame.style.height = '920px';
+      frame.style.height = '520px';
     }
-    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'kanban-resize'}, '*'); } catch(e) {}
+    try { if (window.parent && window.parent !== window) window.parent.postMessage({type:'kanban-resize', height: measureOwnContentHeight()}, '*'); } catch(e) {}
   }
   window.addEventListener('message', function(e){
     const data = e.data || {};
-    if (data.type === 'lifecycle-resize') resizeLifecycleFrame();
-    if (data.type === 'lifecycle-modal-open') resizeLifecycleFrame(260);
+    if (data.type === 'pageHeight') {
+      document.querySelectorAll('[data-special-frame]').forEach(function(sf){
+        if (sf.contentWindow !== e.source || !data.height) return;
+        const next = Math.max(520, Math.ceil(Number(data.height) + 12));
+        const old = parseInt(sf.style.height || sf.height || 0, 10) || 0;
+        if (Math.abs(old - next) > 4) sf.style.height = next + 'px';
+      });
+      notifyParentKanbanHeight();
+    }
+    if (data.type === 'scroll-to-anchor' && data.target) { const el=document.getElementById(data.target); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+    if (data.type === 'lifecycle-resize') resizeLifecycleFrame(12, data.height);
+    if (data.type === 'lifecycle-modal-open') resizeLifecycleFrame(260, data.height);
+    if (data.type === 'open-lifecycle-customer' && data.name) {
+      window.__PENDING_LC_CUSTOMER__ = data.name;
+      const frame = document.getElementById('lifecycleFrame');
+      if (frame && frame.contentWindow) {
+        frame.contentWindow.postMessage({type:'open-lifecycle-customer', name:data.name}, '*');
+      }
+      const sec = document.getElementById('lifecycleSystemSection');
+      if (sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+    }
   });
   document.addEventListener('DOMContentLoaded', function(){
     const frame = document.getElementById('lifecycleFrame');
+    const bindAddRecord = (el) => { if (el && !el.dataset.bound) { el.onclick = function(){ initRegisterModal(); openModal('modalRecord'); }; el.dataset.bound='1'; } };
+    const bindBatchPaste = (el) => { if (el && !el.dataset.bound) { el.onclick = function(){ openBatchPasteModal(); }; el.dataset.bound='1'; } };
+    bindAddRecord(document.getElementById('lifeAddRecord'));
+    bindBatchPaste(document.getElementById('lifeBatchPaste'));
+    bindAddRecord(document.getElementById('lifeFixedAddRecord'));
+    bindBatchPaste(document.getElementById('lifeFixedBatchPaste'));
+    const lifeBi = document.getElementById('lifeBulkImport');
+    if (lifeBi && !lifeBi.dataset.bound) { lifeBi.onclick = function(){ document.getElementById('bulkImportFile')?.click(); }; lifeBi.dataset.bound='1'; }
     syncLifecycleFrameSales();
     setTimeout(syncLifecycleFrameSales, 1800);
     if (frame) frame.addEventListener('load', function(){
       resizeLifecycleFrame();
+      if (window.__PENDING_LC_CUSTOMER__ && frame.contentWindow) {
+        try { frame.contentWindow.postMessage({type:'open-lifecycle-customer', name:window.__PENDING_LC_CUSTOMER__}, '*'); } catch(e){}
+      }
       setTimeout(resizeLifecycleFrame, 300);
       setTimeout(resizeLifecycleFrame, 1200);
     });
-    setInterval(resizeLifecycleFrame, 1500);
   });
+</script>
+
+<script>
+/* 2026-06-15 子青指定：客户归属人工覆盖层，优先级高于云端旧记录 */
+window.__MANUAL_SALE_OVERRIDE__ = {"泉州丰泽区航先贸易有限公司":"lijunwu","泉州丰泽区驰宇商贸有限公司":"lijunwu","泉州兰迪商贸有限公司":"lijunwu","东阳市蒂之妍电子商务商行(个体工商户)":"lijunwu","淮安华顶鞋业有限公司":"lijunwu","泉州市公牛引力贸易有限公司":"lijunwu","上海锦云宏坊服饰有限公司":"lijunwu","杭州荧柏网络科技有限公司":"lijunwu","徐州福采卓网络科技有限公司":"lijunwu","杭州盟芽品牌管理有限公司":"lijunwu","杭州纪芝贸易有限公司":"lijunwu","东阳市仟屹商贸有限公司":"lijunwu","泉州梵御贸易有限公司":"lijunwu","石狮市金瑞科技有限公司":"lijunwu","泉州市鲤城区诺悦百货商行(个体工商户)":"lijunwu","杭州露桉贸易有限公司":"lijunwu","泉州洛森妮雅贸易有限公司":"lijunwu","广州市圣蓝皮具有限公司":"lijunwu","泉州金履盛业贸易有限公司":"lijunwu","洛阳市偃师区东狮鞋业商行":"lijunwu","上海班格商贸有限公司":"lijunwu","杭州宝聪文化传媒有限责任公司":"lijunwu","共青城市青晨电子商务经营部(个体工商户)":"lijunwu","苍南县慕欣鞋业商行(个体工商户)":"lijunwu","互动映画(厦门)文化传媒有限公司":"lijunwu","广州星之奇网络科技有限公司":"lijunwu","广州杭启科技有限公司":"Jonzhu","义乌市熵果网络科技有限责任公司":"yvaineechen"};
+window.applyManualSaleOverride = function(r) {
+  try {
+    if (!r) return r;
+    var map = window.__MANUAL_SALE_OVERRIDE__ || {};
+    var norm = function(x) { return String(x || '').trim().replace(/\s+/g, ''); };
+    var sale = map[norm(r.name)] || map[norm(r.shortName)] || map[norm(r.brand)];
+    if (sale) { r.sale = sale; r._rtx = sale; r._recorded_by = sale; r._updatedAt = Date.now(); }
+  } catch(e) {}
+  return r;
+};
 </script>
 </head>
 <body>
@@ -808,6 +946,12 @@
 <div id="bigDataLoadingBar" data-bigdata-loading="1" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#dbeafe,#bfdbfe);border-bottom:1px solid #93c5fd;color:#1e40af;font-size:12px;padding:6px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 1px 4px rgba(0,0,0,.06);">
   <span style="display:inline-block;width:14px;height:14px;border:2px solid #3b82f6;border-top-color:transparent;border-radius:50%;animation:bigDataSpin .7s linear infinite;"></span>
   <span class="bigdata-loading-tip">业务数据加载中，页面已可正常浏览…</span>
+</div>
+
+<!-- 生命周期管理页右上角固定登记入口（沿用原新增登记真实提交逻辑） -->
+<div class="life-fixed-register" id="lifeFixedRegisterBar">
+  <button class="primary" id="lifeFixedAddRecord" type="button">+ 新客登记</button>
+  <button id="lifeFixedBatchPaste" type="button">批量粘贴</button>
 </div>
 
 <!-- 云端同步状态横幅 -->
@@ -828,15 +972,7 @@
   <h1>拓客作战看板 <span class="ver" id="kanbanVer">v3.2</span></h1>
   <div class="topbar-right">
     <span id="todayInfo" style="font-size:12px;color:#6b7280;margin-right:8px;"></span>
-    <select id="snapshotSel" title="切换历史快照（用户 2026-05-19 拍板）" style="background:#fff7ed;border:1px solid #fdba74;color:#9a3412;font-weight:600;">
-      <option value="" selected>📅 当前数据</option>
-      <option value="2026-05-21">2026-05-21 快照</option>
-      <option value="2026-05-20">2026-05-20 快照</option>
-      <option value="2026-05-19">2026-05-19 快照</option>
-      <option value="2026-05-18">2026-05-18 快照</option>
-      <option value="2026-05-17">2026-05-17 快照</option>
-      <option value="2026-05-15">2026-05-15 快照</option>
-    </select>
+    <select id="snapshotSel" title="历史快照已移出 Pages，仅脚本侧保留" style="display:none;"><option value="" selected>📅 当前数据</option></select>
     <a href="index.html" class="btn-link" style="background:linear-gradient(90deg,#5b8def,#a26eff);color:#fff;border:none;">🏠 返回作战中心</a>
     <select id="quarterSel">
       <option value="2026Q2">2026 Q2（当前）</option>
@@ -859,7 +995,7 @@
 <div class="container">
 
   <!-- ========== 第一屏：其他参考指标（固定 2026Q2，不随季度切换） ========== -->
-  <div class="section ops-section">
+  <div class="section ops-section" id="opsKpiSection">
     <div class="section-title">
       <div class="left">
         <span>📊 其他参考指标</span>
@@ -869,12 +1005,13 @@
     <div class="kpi-grid" id="kpiGrid"></div>
   </div>
 
-  <!-- ========== 销售明细行 ========== -->
-  <div class="section ops-section">
+  <!-- ========== 销售明细行（2026-06-14 子青：默认展开，补剩余追赶量） ========== -->
+  <div class="section ops-section" id="salesProgressSection">
     <div class="section-title">
-      <div class="left"><span>👥 销售明细</span><span class="badge">点行末「更多 ›」横向展开参考指标</span></div>
+      <div class="left"><span>👥 销售明细</span><span class="badge">默认展开 · 含剩余追赶量</span></div>
+      <div class="right"><button id="toggleSalesProgress" type="button">收起</button></div>
     </div>
-    <div class="sales-progress-list">
+    <div class="sales-progress-list" id="salesProgressWrap" style="display:block;">
       <div id="salesProgress"></div>
     </div>
   </div>
@@ -882,17 +1019,44 @@
   <!-- ========== 专项进展（预留，等子青补设计） ========== -->
   <div class="section ops-section" id="specialProgressSection">
     <div class="section-title">
-      <div class="left"><span>🧭 专项进展</span><span class="badge">先预留，晚点接入真实数据</span></div>
+      <div class="left"><span>🧭 专项进展</span><span class="badge">点击卡片进入专项作战页</span></div>
     </div>
-    <div class="placeholder-grid">
-      <div class="placeholder-card">
-        <h3>🎯 靶向拓客名单</h3>
-        <p>预留模块。后续接入名单分层、认领进度、触达状态和销售跟进结果。</p>
-      </div>
-      <div class="placeholder-card">
+    <div class="placeholder-grid" id="specialBeltEntry">
+      <button class="entry-card belt-card" type="button" data-special-tab="belt">
         <h3>🧵 产业带进展</h3>
-        <p>预留模块。后续接入产业带覆盖、客户新增、消耗起量和重点城市进度。</p>
+        <p>核心城市×类目产业带覆盖、客户新增、消耗起量与重点城市进度，含中国地图聚集度。</p>
+        <span class="belt-stats">
+          <span class="bs"><b>2,173</b> 目标客户</span>
+          <span class="bs"><b>63</b> 核心产业带</span>
+          <span class="bs"><b>头部</b> 广州·泉州·桐乡</span>
+        </span>
+        <span class="go">下方查看 ›</span>
+      </button>
+    </div>
+    <div class="special-inline-wrap" id="specialBeltWrap">
+      <div class="special-inline-block" id="specialBeltBlock">
+        <div class="special-inline-head">
+          <div class="special-inline-title">🧵 产业带进展</div>
+        </div>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260624d" title="产业带进展内嵌看板"></iframe>
       </div>
+    </div>
+    <div class="placeholder-grid" id="specialPursuitEntry">
+      <button class="entry-card" type="button" data-special-tab="pursuit">
+        <h3>🎯 靶向拓客名单</h3>
+        <p>渗透漏斗 + By 销售跟踪 + 名单分类明细，全组实时共享。</p>
+        <span class="badge2">竞媒P序列 / 竞媒千万+ / 行业补充 / 销售补充</span>
+        <span class="go">下方查看 ›</span>
+      </button>
+    </div>
+    <div class="special-inline-wrap" id="specialPursuitWrap">
+      <div class="special-inline-block" id="specialPursuitBlock">
+        <div class="special-inline-head">
+          <div class="special-inline-title">🎯 靶向拓客名单</div>
+        </div>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260624d" title="靶向拓客名单内嵌看板"></iframe>
+      </div>
+      <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
   </div>
 
@@ -940,7 +1104,7 @@
   </div>
 
   <!-- ========== 第二屏：销售拓客模型画像 ========== -->
-  <div class="section life-section">
+  <div class="section life-section" id="portraitSection">
     <div class="section-title">
       <div class="left"><span>🎯 销售拓客模型画像</span></div>
       <div class="right">
@@ -967,14 +1131,19 @@
   <div class="section life-section" id="lifecycleSystemSection">
     <div class="section-title">
       <div class="left"><span>🌊 客户生命周期系统</span><span class="badge">按客户阶段/状态做运营跟进</span></div>
+      <div class="right">
+        <button id="lifeAddRecord" type="button" style="background:var(--primary);color:#fff;border-color:var(--primary);">+ 新增登记</button>
+        <button id="lifeBatchPaste" type="button">📋 批量粘贴</button>
+        <button id="lifeBulkImport" type="button">📥 上传导入</button>
+      </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260613f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:760px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260624d" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
   <!-- ========== 拓客全量登记明细（2026-06-11 子青恢复，替代「客户生命周期一览」位置） ========== -->
-  <div class="section life-section">
+  <div class="section life-section" id="recordDetailSection">
     <div class="section-title">
       <div class="left"><span>📋 拓客登记明细</span><span class="badge">默认展示当天，点击查看其他周期</span></div>
     </div>
@@ -994,7 +1163,7 @@
       </div>
       <table class="tbl" id="recordTable">
         <thead><tr>
-          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
+          <th>日期</th><th>销售</th><th>客户主体</th><th>系统识别简称</th><th>类目</th><th>链路</th><th>投放端</th><th>季度累计</th><th>昨日消耗</th><th>日环比</th><th>拓客途径</th><th>资源方</th><th>客户来源</th><th>客户投放状态</th>
         </tr></thead>
       </table>
       <div id="recordMoreWrap" style="display:none;align-items:center;justify-content:center;gap:10px;padding:12px 0 4px;color:#6b7280;font-size:12px;"></div>
@@ -1217,12 +1386,16 @@ const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
 
 let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
 const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
-// 2026-06-02 登记日期年份修正死规矩：月份 7-12 应为 2025（拓新组从 25Q3 起），
-// 误录成 2026-07~2026-12 的归一回 2025。1-6 月保持 2026 不动。
+// 2026-06-15 登记日期年份修正死规矩：当前只有 2025Q3~2026Q2，
+// 月份 7-12 一律归 2025 年；月份 1-6 一律归 2026 年。只修正展示/导出，不改底表源文件。
 window.fixRegYear = function(d){
   var s = String(d || '').slice(0, 10);
-  var m = /^2026-(0[7-9]|1[0-2])-(\d{2})$/.exec(s);
-  return m ? ('2025-' + m[1] + '-' + m[2]) : (d || '');
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) return d || '';
+  var mon = Number(m[2]);
+  if (mon >= 7 && mon <= 12) return '2025-' + m[2] + '-' + m[3];
+  if (mon >= 1 && mon <= 6) return '2026-' + m[2] + '-' + m[3];
+  return d || '';
 };
 function applyFixRegYear(list){
   (list || []).forEach(function(r){ if (r && r.date) r.date = window.fixRegYear(r.date); });
@@ -1575,6 +1748,36 @@ function renderSalesProgress() {
   }
   const dataDate = (window.__CENTER_DAILY_KPI__ || {}).dataDate || '';
   const days = quarterDays(state.quarter, dataDate);
+  const qTotalDays = 91;
+  // 剩余天数按“今天到 Q2 结束”含当天算；数据日=截止昨天/当天看板口径时，6/16 到 6/30 = 15 天。
+  const remainDays = Math.max(1, qTotalDays - days + 1);
+  const QTD_TARGETS = {
+    total: { rising: 207, costDaily: 120 },
+    brownfan: { rising: 40, costDaily: 30 },
+    lijunwu: { rising: 40, costDaily: 30 },
+    Jonzhu: { rising: 40, costDaily: 30 },
+    kaikaigenli: { rising: 40, costDaily: 30 },
+    yvaineechen: { rising: 30, costDaily: 20 },
+    ruilingzhan: { rising: 20, costDaily: 10 },
+    kinsleyjin: { rising: 0, costDaily: 0 },
+    other: { rising: 0, costDaily: 0 }
+  };
+  function targetConfigForRow(rowKind, row){
+    if (rowKind === 'total') return QTD_TARGETS.total;
+    if (rowKind === 'other') return QTD_TARGETS.other;
+    return QTD_TARGETS[String(row && row.sale || '')] || { rising: 0, costDaily: 0 };
+  }
+  function targetForRow(rowKind, metric, row){
+    // 2026-06-16 子青拍板：每个销售用单独目标，不能再平均摊。
+    // 日耗需到 = (个人日耗目标 * 91 - 截止到昨天的季度消耗) / 今天到 Q2 结束天数。
+    const cfg = targetConfigForRow(rowKind, row);
+    return metric === 'rising' ? cfg.rising : cfg.costDaily * qTotalDays;
+  }
+  function chaseCostDailyNeed(rowKind, row){
+    const targetWan = targetForRow(rowKind, 'cost', row);
+    const currentWan = Number(row && row.quarterCost || 0) / 10000;
+    return Math.max(0, (targetWan - currentWan) / remainDays);
+  }
 
   // 交接客户名单（217 条 union）— 已加载在 window.__HANDOVER_MAP_217__
   const HANDOVER_MAP = window.__HANDOVER_MAP_217__ || {};
@@ -1650,12 +1853,16 @@ function renderSalesProgress() {
         ${fmtMeta(r.risingDelta, r.risingDayDelta, 'count')}
       </td>
       <td>
-        ${fmtMain(fmtWan(r.yestCost))}
-        ${fmtMeta(null, r.dayCostRate, 'pct')}
-      </td>
-      <td>
         <div class="main-num cost">${dayAvgWan.toFixed(1)}万</div>
         <div class="sub-meta">季耗÷${days}天</div>
+      </td>
+      <td class="chase-cell">
+        <div class="sub-meta">新锐还需${Math.max(0, Math.ceil(targetForRow(rowKind,'rising', r) - Number(r.risingCount||0)))}个</div>
+        <div class="sub-meta">日耗需到${chaseCostDailyNeed(rowKind, r).toFixed(1)}万</div>
+      </td>
+      <td>
+        ${fmtMain(fmtWan(r.yestCost))}
+        ${fmtMeta(null, r.dayCostRate, 'pct')}
       </td>
       <td>
         ${rowKind === 'total' ? '—' : `<span class="more-btn" data-toggle-row="1">更多 ›</span>`}
@@ -1697,8 +1904,9 @@ function renderSalesProgress() {
     <thead><tr>
       <th style="text-align:left;">销售</th>
       <th>季度新锐客户<div style="font-size:10px;font-weight:400;color:#6b7280;">较上季 · 日Δ</div></th>
-      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>季度新客累计日均消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">季耗÷已过天数</div></th>
+      <th>剩余追赶量<div style="font-size:10px;font-weight:400;color:#6b7280;">剩余${remainDays}天 / 目标</div></th>
+      <th>季度新客昨日日耗<div style="font-size:10px;font-weight:400;color:#6b7280;">较前一天</div></th>
       <th>详细</th>
       <th class="ref-cell ref-col-hidden">本季度新客数<div style="font-size:10px;font-weight:400;color:#6b7280;">2026Q2</div></th>
       <th class="ref-cell ref-col-hidden">累计新客昨日消耗<div style="font-size:10px;font-weight:400;color:#6b7280;">25Q3~26Q2</div></th>
@@ -1733,6 +1941,15 @@ function renderSalesProgress() {
 
 let charts = {};
 
+// 2026-06-13 子青：客户名统一补主营品类（按最高消耗商品提炼），用于 Top80/拓客明细/生命周期等深层表格
+function mainProdInline(name) {
+  const mp = window.__CUSTOMER_MAIN_PRODUCT__ || {};
+  const m = mp[String(name||'').trim()];
+  if (!m || !m.main) return '';
+  const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return `<span class="main-prod-inline" title="最高消耗商品：${esc(m.product||'')}">主营：${esc(m.main)}</span>`;
+}
+
 function renderTop80Metrics() {
   const rows = Array.isArray(window.__TOP80_EFFECTIVE_METRICS__) ? window.__TOP80_EFFECTIVE_METRICS__ : [];
   const sel = document.getElementById('topSaleFilter');
@@ -1757,7 +1974,7 @@ function renderTop80Metrics() {
     return n > 0 ? 'delta-up' : 'delta-down';
   };
   const body = list.map(r => `<tr>
-    <td>${r.sale}</td><td>${r.rank}</td><td class="name">${r.name}</td><td>${r.deliverySide || ''}</td>
+    <td>${r.sale}</td><td>${r.rank}</td><td class="name">${r.name}${mainProdInline(r.name)}</td><td>${r.deliverySide || ''}</td>
     <td>${Number(r.yestCostWan || 0).toFixed(2)}万</td>
     <td>${Number(r.bidCost || 0).toFixed(0)}</td><td><span class="${cls(r.costRate)}">${fmtRate(r.costRate)}</span></td>
     <td>${Number(r.roi || 0).toFixed(2)}</td><td><span class="${cls(r.roiRate)}">${fmtRate(r.roiRate)}</span></td>
@@ -2100,8 +2317,36 @@ function dedupeRecordsByEarliest(records) {
   return Array.from(map.values());
 }
 
+function recordMetricKey(r) {
+  return String((r && (r.shortName || r.name || r.brand)) || '').trim();
+}
+function buildRecordMetricMap() {
+  const rows = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
+  const map = new Map();
+  rows.forEach(r => {
+    const keys = [recordMetricKey(r), String(r && r.name || '').trim(), String(r && r.shortName || '').trim()].filter(Boolean);
+    const hasMetric = Number(r.quarterCost || 0) > 0 || Number(r.yestCost || 0) > 0 || r.costChg || r.deliverySide || r.firstQuarter || r.isNew === true;
+    if (!hasMetric) return;
+    keys.forEach(k => {
+      const prev = map.get(k);
+      if (!prev || Number(r.quarterCost || 0) > Number(prev.quarterCost || 0) || Number(r.yestCost || 0) > Number(prev.yestCost || 0)) map.set(k, r);
+    });
+  });
+  return map;
+}
+function enrichRecordMetrics(r, metricMap) {
+  if (!r || !metricMap) return r;
+  const src = metricMap.get(recordMetricKey(r)) || metricMap.get(String(r.name || '').trim()) || metricMap.get(String(r.shortName || '').trim());
+  if (!src || src === r) return r;
+  const out = Object.assign({}, r);
+  ['shortName','firstQuarter','isNew','isRising','quarterCost','yestCost','costChg','deliverySide','link','links','status','customerType'].forEach(k => {
+    if ((out[k] === undefined || out[k] === null || out[k] === '' || (['quarterCost','yestCost'].includes(k) && Number(out[k] || 0) === 0)) && src[k] !== undefined && src[k] !== null && src[k] !== '') out[k] = src[k];
+  });
+  return out;
+}
 function currentRecordList() {
-  let list = dedupeRecordsByEarliest(RECORDS);
+  const metricMap = buildRecordMetricMap();
+  let list = dedupeRecordsByEarliest(RECORDS).map(r => enrichRecordMetrics(r, metricMap));
   if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
   const todayStr = latestRecordDate(list);
   if (state.recordRange === 'today') {
@@ -2239,8 +2484,8 @@ function renderRecords() {
       <tr>
         <td>${display(r.date)}</td>
         <td>${display(r.sale)}${(function(){var h=getSaleHistory(r);return h.length?`<span class="history-badge clickable-status" data-rid="${r.id}" data-act="saleHistory" title="查看归属变更历史" style="margin-left:4px;">↔${h.length}</span>`:'';})()}</td>
-        <td>${display(r.name)}</td>
-        <td>${display(r.shortName)}</td>
+        <td>${display(r.name)}${mainProdInline(r.name)}</td>
+        <td>${display(r.shortName)}${mainProdInline(r.shortName || r.name)}</td>
         <td>${display(r.cat)}</td>
         <td>${linkText}</td>
         <td>${display(r.deliverySide)}</td>
@@ -2722,10 +2967,7 @@ function bindInlineRegisterEntry(){
 }
 document.addEventListener('DOMContentLoaded', bindInlineRegisterEntry);
 document.getElementById('btnAddRecord').onclick = () => {
-  if (document.body.classList.contains('mode-life') && document.getElementById('registerEntrySection')) {
-    bindInlineRegisterEntry();
-    document.getElementById('registerEntrySection').scrollIntoView({behavior:'smooth', block:'start'});
-  } else { initRegisterModal(); openModal('modalRecord'); }
+  initRegisterModal(); openModal('modalRecord');
 };
 
 // 「📋 批量粘贴」打开粘贴 modal
@@ -3329,7 +3571,7 @@ renderAll();
 applyEmbedMode();
 
 /* 历史快照切换（用户 2026-05-19 拍板）：
-   切换会从 data/snapshots/<date>/ 动态加载并覆盖 window.__CENTER_*__，
+   历史快照文件已移出 Pages；前端不再动态加载快照目录，
    并保留当前 window 全局以便切回当前日期。 */
 (function(){
   const sel = document.getElementById('snapshotSel');
@@ -3367,9 +3609,8 @@ applyEmbedMode();
       const files = ['center_daily_kpi.js','center_quarter_summary.js','center_sales_summary.js',
                      'top80_effective_metrics.js','current_rising_data.js','delivery_side_summary.js',
                      'top_status_data.js','enough_candidates.js','bulk_import_rows.js'];
-      for (const f of files) {
-        await loadScript(`data/snapshots/${date}/${f}`).catch(err => console.warn(err.message));
-      }
+      console.warn('[snapshot] 历史快照文件已移出 Pages，仅脚本侧保留');
+      return;
       if (banner) {
         banner.textContent = `📅 历史快照 · ${date}`;
         banner.style.color = '#9a3412';
@@ -3511,7 +3752,8 @@ document.addEventListener('click', e => {
       catch(e){ return []; }
     },
     applyRemoteRecords: function(list){
-      // 把云端记录覆盖到本地 + 立即重渲染
+      // 把云端记录覆盖到本地 + 立即重渲染；先套人工归属覆盖层，避免云端旧 sale 反盖
+      try { if (window.applyManualSaleOverride) list = (list || []).map(function(r){ return window.applyManualSaleOverride(r); }); } catch(_){ }
       try {
         localStorage.setItem(RECORD_LS_KEY, JSON.stringify(list.slice(0, 2000)));
       } catch(e){
@@ -3551,8 +3793,8 @@ document.addEventListener('click', e => {
       var cloudList = (res && res.list) || [];
       if (!cloudList.length) return;
       // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
-      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); });
-      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出）
+      cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); if (window.applyManualSaleOverride) window.applyManualSaleOverride(r); });
+      // 1) 写判重字典 __REGISTERED_SUBJECTS__：云端有的覆盖（最新登记胜出，但已先套人工归属覆盖层）
       if (!window.__REGISTERED_SUBJECTS__) window.__REGISTERED_SUBJECTS__ = {};
       cloudList.forEach(function(r){
         var n = (r.name || '').toString().trim().replace(/\s+/g, '');
@@ -3770,7 +4012,7 @@ window.__bootLifecycle = function(){
           var rateText = (rate===null||rate===undefined) ? '—' : ((rate>=0?'+':'') + (rate*100).toFixed(1)+'%');
           var rateColor = (rate===null||rate===undefined) ? '#6b7280' : (rate>=0?'#16a34a':'#dc2626');
           return '<div style="font-size:13px;line-height:1.7;max-width:280px;">' +
-            '<b>'+escapeHtml(r[COL.short])+'</b><br/>' +
+            '<b>'+escapeHtml(r[COL.short])+'</b>'+mainProdInline(r[COL.short])+'<br/>' +
             '<span style="color:#6b7280">销售：</span>'+escapeHtml(r[COL.sale])+' <span style="margin-left:6px;color:#6b7280">类目：</span>'+escapeHtml(r[COL.cat])+'<br/>' +
             '<span style="color:#6b7280">'+r[COL.daysBucket]+' × '+r[COL.costTier]+' · '+r[COL.invest]+'</span><br/>' +
             '昨日日耗：<b>'+fmtMoney(r[COL.yestCost])+'</b><br/>' +
@@ -3941,7 +4183,7 @@ window.__bootLifecycle = function(){
         var inv = r[COL.invest], invCls = inv==='单ADQ'?'invest-adq':(inv==='单全域通'?'invest-qy':(inv==='双投'?'invest-both':'invest-none'));
         var rowCls = (state.selectedShort && r[COL.short]===state.selectedShort) ? ' style="background:#fef3c7"' : '';
         return '<tr data-short="'+escapeHtml(r[COL.short])+'"'+rowCls+'>'+
-          '<td>'+escapeHtml(r[COL.short])+'</td>'+
+          '<td>'+escapeHtml(r[COL.short])+mainProdInline(r[COL.short])+'</td>'+
           '<td>'+escapeHtml(r[COL.sale])+'</td>'+
           '<td>'+escapeHtml(r[COL.cat])+'</td>'+
           '<td>'+escapeHtml(r[COL.daysBucket])+'</td>'+
@@ -4030,7 +4272,7 @@ window.__bootLifecycle = function(){
       '<div class="lc-modal-head" style="background:linear-gradient(135deg,'+headColor+','+headColor+'cc);">'+
         '<button class="lc-modal-close" onclick="window.__closeLcModal()">×</button>'+
         '<div class="stage-pill">'+stgName+' · '+escapeHtml(r[COL.daysBucket])+'</div>'+
-        '<div class="cust-name">'+escapeHtml(r[COL.short])+'</div>'+
+        '<div class="cust-name">'+escapeHtml(r[COL.short])+mainProdInline(r[COL.short])+'</div>'+
         '<div class="cust-sub">'+escapeHtml(r[COL.sale])+' · '+escapeHtml(r[COL.cat])+' · '+custTypeName+' · '+escapeHtml(r[COL.costTier])+'</div>'+
       '</div>'+
       '<div class="lc-modal-body">'+
@@ -4164,15 +4406,28 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   }
   var V = detectVersion();
   console.info('[bigdata] cache-buster v=' + V);
+  function currentEmbedMode(){ try { return new URLSearchParams(location.search).get('mode') || 'ops'; } catch(e){ return 'ops'; } }
+  function useCloudBigData(){
+    try {
+      if (!window.SalesCenterDataAdapter || !window.SalesCenterDataAdapter.getMode || window.SalesCenterDataAdapter.getMode() === 'static') return false;
+      if (window.SalesCenterDataAdapter.cloudFreshness) {
+        var f = window.SalesCenterDataAdapter.cloudFreshness({});
+        if (f && f.ok === false) {
+          console.warn('[bigdata] cloud snapshot stale, fallback static', f);
+          return false;
+        }
+      }
+      return true;
+    } catch(e){ return false; }
+  }
   // 7 个 MB 级大文件 → 各自暴露的全局变量名（用于原地填充占位对象）
   // type: 'obj' 原地 Object.assign 填充；'records' 重填 window.RECORDS；'raw' 直接覆盖(允许换引用)
   var BIG_FILES = [
     { file:'data/register_lookup_data.js',   vars:['__MAPPING_DATA__','__REGISTERED_SUBJECTS__'],                              label:'登记校验字典' },
     { file:'data/laoke_lookup_data.js',      vars:['__SUBJECT_SHORT_MAP__','__SHORT_FIRST_QUARTER_MAP__','__OLD_SUBJECT_QUARTER_MAP__'], label:'首投季度字典' },
-    { file:'data/customer_link_data.js',     vars:['__CUSTOMER_LINK_DATA__'],                                                  label:'客户链路数据' },
+    { file:'data/customer_link_data.js',     vars:['__CUSTOMER_LINK_DATA__'], cloudLookupType:'customer_link_data',             label:'客户链路数据' },
     { file:'data/delivery_side_summary.js',  vars:['__DELIVERY_SIDE_MAP__','__DELIVERY_COUNTS__'],                             label:'交付侧汇总' },
     { file:'data/first_quarter.js',          vars:['__FIRST_QUARTER__'],                                                       label:'首投季度映射' },
-    { file:'data/tuoke_real_records.js',     vars:['__TUOKE_REAL_RECORDS__'],   isRecords:true,                               label:'拓客登记明细' },
     { file:'data/customer_lifecycle.js',     vars:['__CUSTOMER_LIFECYCLE__'],   isRaw:true,                                   label:'客户生命周期' }
   ];
 
@@ -4193,6 +4448,20 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   function loadOne(item){
     if (_loaded[item.file]) return Promise.resolve(item);
     if (_inflight[item.file]) return _inflight[item.file];
+    if (useCloudBigData() && item.cloudLookupType && window.SalesCenterDataAdapter && typeof window.SalesCenterDataAdapter.queryLookupAll === 'function') {
+      _inflight[item.file] = window.SalesCenterDataAdapter.queryLookupAll({ type:item.cloudLookupType }).then(function(res){
+        var payload = res && res.data && res.data.payload ? res.data.payload : {};
+        item.vars.forEach(function(v){
+          var ph = window[v] || {};
+          fillInPlace(ph, payload);
+          window[v] = ph;
+        });
+        _loaded[item.file] = true;
+        console.info('[bigdata] cloud loaded: ' + item.label + ' (' + item.cloudLookupType + ')');
+        return item;
+      }).catch(function(e){ console.warn('[bigdata] cloud lookup FAIL, fallback script: ' + item.file, e); delete _inflight[item.file]; return loadOne(Object.assign({}, item, { cloudLookupType:null })); });
+      return _inflight[item.file];
+    }
     var p = new Promise(function(resolve){
       // 加载前：记录各全局变量的「占位对象引用」，脚本执行后大文件会用新对象覆盖 window.__X__，
       // 需要把新对象内容回填到占位对象，并把 window 指针恢复指向占位对象。
@@ -4294,10 +4563,71 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
     console.info('[bigdata] all ready · 首屏后异步加载完成');
   }
 
-  // 启动：首屏渲染让位后，异步并行加载全部大文件
+
+  function rebuildRecordsAfterTuoke(){
+    try {
+      if (Array.isArray(window.RECORDS) && window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) {
+        var userRecs = [];
+        try { userRecs = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]') || []; } catch(_){ userRecs = []; }
+        window.RECORDS.length = 0;
+        window.RECORDS.push.apply(window.RECORDS, userRecs.concat(window.__TUOKE_REAL_RECORDS__));
+        if (typeof window.applyFixRegYear === 'function') window.applyFixRegYear(window.RECORDS);
+      }
+      try { if (typeof renderAll === 'function') renderAll(); } catch(e){ console.warn('[bigdata] render after tuoke fail', e); }
+      try { if (typeof window.__bootLifecycle === 'function') window.__bootLifecycle(); } catch(e){ console.warn('[bigdata] boot after tuoke fail', e); }
+      notifyParentKanbanHeight && notifyParentKanbanHeight();
+    } catch(e){ console.warn('[bigdata] rebuild records after tuoke fail', e); }
+  }
+  function ensureTuokeRecordsLoaded(reason){
+    var item = { file:'data/tuoke_real_records.js', vars:['__TUOKE_REAL_RECORDS__'], isRecords:true, label:'拓客登记明细' };
+    if (_loaded[item.file]) { rebuildRecordsAfterTuoke(); return Promise.resolve(item); }
+    if (_inflight[item.file]) return _inflight[item.file];
+    if (useCloudBigData() && window.SalesCenterDataAdapter && typeof window.SalesCenterDataAdapter.queryAllRecords === 'function') {
+      _inflight[item.file] = window.SalesCenterDataAdapter.queryAllRecords({ pageSize:500 }).then(function(res){
+        var rows = res && res.data && Array.isArray(res.data.rows) ? res.data.rows : [];
+        if (!rows.length) throw new Error('empty cloud records');
+        window.__TUOKE_REAL_RECORDS__ = rows;
+        _loaded[item.file] = true;
+        rebuildRecordsAfterTuoke();
+        console.info('[bigdata] tuoke records cloud loaded by ' + (reason || 'manual') + ': ' + rows.length);
+        return item;
+      }).catch(function(e){
+        console.warn('[bigdata] tuoke cloud load FAIL, fallback static js', e);
+        delete _inflight[item.file];
+        return fetch(item.file + '?v=' + V, { cache:'force-cache' })
+          .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+          .then(function(code){ (0, eval)(code); _loaded[item.file] = true; rebuildRecordsAfterTuoke(); return item; })
+          .catch(function(err){ console.warn('[bigdata] tuoke fetch FAIL', err); markError(item); _loaded[item.file] = true; return item; });
+      });
+      return _inflight[item.file];
+    }
+    _inflight[item.file] = fetch(item.file + '?v=' + V, { cache:'force-cache' })
+      .then(function(res){ if (!res.ok) throw new Error('HTTP ' + res.status); return res.text(); })
+      .then(function(code){
+        (0, eval)(code);
+        _loaded[item.file] = true;
+        rebuildRecordsAfterTuoke();
+        console.info('[bigdata] tuoke records fetched by ' + (reason || 'manual'));
+        return item;
+      })
+      .catch(function(e){ console.warn('[bigdata] tuoke fetch FAIL', e); markError(item); _loaded[item.file] = true; return item; });
+    return _inflight[item.file];
+  }
+  window.__ensureTuokeRecordsLoaded = ensureTuokeRecordsLoaded;
+  function isLifeMode(){ try { return new URLSearchParams(location.search).get('mode') === 'life'; } catch(e){ return false; } }
+
+  // 启动：首屏渲染让位后，按当前页面模式加载必要大文件；隐藏模块不抢首屏带宽
   function start(){
+    var mode = currentEmbedMode();
+    if (mode === 'ops') {
+      console.info('[bigdata] ops mode：跳过客户查询大文件，保持产业带/靶向内容完整加载');
+      window.__BIG_DATA_READY__ = true;
+      clearLoadingPlaceholders();
+      try { if (typeof notifyParentKanbanHeight === 'function') notifyParentKanbanHeight(); } catch(e){}
+      return Promise.resolve([]);
+    }
     var tasks = BIG_FILES.map(loadOne);
-    Promise.all(tasks).then(finalize).catch(function(e){
+    return Promise.all(tasks).then(finalize).catch(function(e){
       console.warn('[bigdata] loader error', e);
       // 即使异常也尽量 finalize，避免卡在 loading
       try { finalize(); } catch(_){}
@@ -4311,9 +4641,9 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   // 用 requestIdleCallback / 双 rAF 确保首屏 UI 先绘制完成，再启动大文件加载
   function kick(){
     if ('requestIdleCallback' in window){
-      requestIdleCallback(start, { timeout: 800 });
+      requestIdleCallback(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }, { timeout: 800 });
     } else {
-      requestAnimationFrame(function(){ requestAnimationFrame(start); });
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }); });
     }
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive'){
@@ -4321,6 +4651,38 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   } else {
     document.addEventListener('DOMContentLoaded', kick);
   }
+})();
+</script>
+<script>
+// 2026-06-14 子青：销售明细默认展开，可手动收起
+(function(){
+  var btn = document.getElementById('toggleSalesProgress');
+  var wrap = document.getElementById('salesProgressWrap');
+  if (!btn || !wrap) return;
+  var open = true;
+  function sync(){
+    wrap.style.display = open ? '' : 'none';
+    btn.textContent = open ? '收起' : '查看详情';
+  }
+  btn.addEventListener('click', function(){
+    open = !open;
+    sync();
+    if (open) {
+      try { wrap.scrollIntoView({behavior:'smooth', block:'nearest'}); } catch(e){}
+    }
+  });
+  sync();
+})();
+
+// 2026-06-14 子青：专项看板上下直排，入口卡只负责滚动到对应块，不再左右切换 Tab
+(function(){
+  function scrollSpecial(key){
+    var target = document.getElementById(key === 'pursuit' ? 'specialPursuitBlock' : 'specialBeltBlock');
+    try { (target || document.getElementById('specialProgressSection')).scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
+  }
+  document.querySelectorAll('[data-special-tab]').forEach(function(btn){
+    btn.addEventListener('click', function(){ scrollSpecial(btn.dataset.specialTab); });
+  });
 })();
 </script>
 </body>
