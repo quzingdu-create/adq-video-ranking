@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-24 11:30",
+  "updatedAt": "2026-06-25 10:20",
   "source": "/Users/duziqing/Downloads/修正归属.xlsx",
   "note": "子青2026-06-22确认：修正归属.xlsx中登记所属销售非其他/非空的客户，销售归属写死为最高优先级。",
   "overrides": {
@@ -5244,9 +5244,9 @@
       "date": "2026-06-22"
     },
     "泉州顺顺行贸易有限责任公司": {
-      "sale": "Jonzhu",
-      "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
-      "date": "2026-06-22"
+      "sale": "lijunwu",
+      "reason": "2026-06-25 子青指定严格写死 →lijunwu",
+      "date": "2026-06-25"
     },
     "泉州鲤城区骁腾商贸有限公司": {
       "sale": "lijunwu",
@@ -6029,9 +6029,9 @@
       "date": "2026-06-22"
     },
     "温州联硕鞋帽有限公司": {
-      "sale": "yvaineechen",
-      "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
-      "date": "2026-06-22"
+      "sale": "lijunwu",
+      "reason": "2026-06-25 子青指定严格写死 →lijunwu",
+      "date": "2026-06-25"
     },
     "温州聚忻电子商务有限公司": {
       "sale": "yvaineechen",
@@ -7707,6 +7707,11 @@
       "sale": "yvaineechen",
       "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
       "date": "2026-06-22"
+    },
+    "泉州风华正茂电子商务有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "2026-06-25 子青指定严格写死 →ruilingzhan",
+      "date": "2026-06-25"
     }
   }
 }

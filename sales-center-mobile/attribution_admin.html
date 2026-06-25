@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>归属管理面板 · 销售作战中心</title>
+<script src="auth-guard.js?v=20260624f"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_gray_switch.js?v=20260624f"></script>
+<script src="api_client.js?v=20260624f"></script>
+<style>
+:root{--bg:#F7F9FD;--panel:#fff;--border:#e5e9f0;--border2:#eef1f6;--text:#1f2937;--text2:#6b7280;--text3:#9ca3af;--primary:#3b82f6;--primary2:#2563eb;--ok:#0f9d58;--danger:#e24b4a;--warn:#ba7517}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);padding:0 0 60px}
+.wrap{max-width:1200px;margin:0 auto;padding:20px 24px}
+h1{font-size:21px;font-weight:700;margin:0 0 4px;background:linear-gradient(90deg,#b07,#3b82f6,#534ab7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:inline-block}
+.sub{font-size:13px;color:var(--text2);margin-bottom:18px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;background:var(--panel);padding:14px 16px;border:1px solid var(--border);border-radius:12px}
+.bar input,.bar select{padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:14px;outline:none}
+.bar input{flex:1;min-width:200px}
+.bar button{padding:9px 18px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer}
+.bar button:hover{background:var(--primary2)}
+.stat{font-size:12.5px;color:var(--text2);margin-left:auto}
+.stat b{color:var(--primary2);font-size:14px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+th{font-size:12px;color:var(--text2);font-weight:600;text-align:left;padding:11px 12px;background:#f8f9ff;border-bottom:1px solid var(--border)}
+td{font-size:13px;padding:10px 12px;border-bottom:1px solid var(--border2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.cname{font-weight:600;max-width:280px}
+.alias{font-size:11px;color:var(--text3);margin-top:2px}
+.salesel{padding:6px 9px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff}
+.src{font-size:11px;padding:2px 7px;border-radius:5px;background:#eef1f6;color:#5f5e5a}
+.src.override{background:#FAEEDA;color:#854f0b}
+.src.register_lock,.src.earliest_register{background:#E1F5EE;color:#0f6e56}
+.src.manual_update{background:#E6F1FB;color:#185fa5}
+.savebtn{padding:6px 14px;background:var(--ok);color:#fff;border:none;border-radius:7px;font-size:12.5px;cursor:pointer;font-weight:600}
+.savebtn:disabled{background:#cbd5e1;cursor:not-allowed}
+.logbtn{padding:5px 10px;background:#fff;color:var(--primary2);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#1f2937;color:#fff;padding:11px 22px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:.25s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{background:var(--danger)}
+.empty{text-align:center;color:var(--text3);padding:50px;font-size:14px}
+.pager{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:16px;font-size:13px;color:var(--text2)}
+.pager button{padding:7px 14px;border:1px solid var(--border);background:#fff;border-radius:8px;cursor:pointer;font-size:13px}
+.pager button:disabled{opacity:.4;cursor:not-allowed}
+.logbox{background:#fafbfd;border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--text2);margin:4px 0}
+.logbox .li{padding:3px 0;border-bottom:1px dashed #eee}
+.logbox .li:last-child{border:none}
+.banner{background:#E1F5EE;border:1px solid #5dcaa5;color:#0f6e56;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎯 归属管理面板</h1>
+<div class="sub">单一可信源（CloudBase sc_customers）· 改了立即生效、留痕、永不回滚</div>
+<div class="banner" id="banner">正在连接云端…</div>
+
+<div class="bar">
+  <input id="q" type="text" placeholder="搜客户名（主体全名 / 简称）回车搜索"/>
+  <select id="fsale">
+    <option value="">全部销售</option>
+    <option value="brownfan">brownfan</option>
+    <option value="Jonzhu">Jonzhu</option>
+    <option value="kaikaigenli">kaikaigenli</option>
+    <option value="kinsleyjin">kinsleyjin</option>
+    <option value="lijunwu">lijunwu</option>
+    <option value="ruilingzhan">ruilingzhan</option>
+    <option value="yvaineechen">yvaineechen</option>
+    <option value="__empty__">（未归属）</option>
+  </select>
+  <button id="searchBtn">搜索</button>
+  <span class="stat" id="stat">—</span>
+</div>
+
+<table>
+  <thead><tr><th>客户（主体全名）</th><th>当前归属</th><th>来源</th><th>首登人</th><th>改归属</th><th>留痕</th></tr></thead>
+  <tbody id="tb"><tr><td colspan="6" class="empty">加载中…</td></tr></tbody>
+</table>
+<div class="pager"><button id="prev">上一页</button><span id="pginfo">第 1 页</span><button id="next">下一页</button></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var SALES=['brownfan','Jonzhu','kaikaigenli','kinsleyjin','lijunwu','ruilingzhan','yvaineechen'];
+var ENV_ID='adq-tuoke-2-d9gktr9mn2e462acd';
+var page=1,pageSize=50,curQ='',curSale='',total=0;
+var app=null;
+
+function toast(msg,isErr){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(isErr?' err':'');setTimeout(function(){t.className='toast';},2200);}
+function getOperator(){try{return (localStorage.getItem('cloud_rtx_v2')||'admin').trim();}catch(e){return 'admin';}}
+
+function ensureLogin(){
+  return new Promise(function(resolve){
+    try{
+      if(!window.cloudbase){resolve(false);return;}
+      app=window.cloudbase.init({env:ENV_ID});
+      var auth=app.auth();
+      // 已登录直接用
+      var st=auth.hasLoginState&&auth.hasLoginState();
+      if(st){resolve(true);return;}
+      // 匿名登录兜底（云函数调用需要登录态）
+      if(auth.signInAnonymously){
+        auth.signInAnonymously().then(function(){resolve(true);}).catch(function(){resolve(true);});
+      }else if(auth.anonymousAuthProvider){
+        auth.anonymousAuthProvider().signIn().then(function(){resolve(true);}).catch(function(){resolve(true);});
+      }else{resolve(true);}
+    }catch(e){resolve(true);}
+  });
+}
+
+function api(action,params){
+  return window.SalesCenterApi.callCloud(action,params||{},{functionName:'salesCenterApi'});
+}
+
+function render(rows){
+  var tb=document.getElementById('tb');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">无匹配客户</td></tr>';return;}
+  tb.innerHTML=rows.map(function(c){
+    var cid=c.customerId||'';
+    var aliases=(c.aliases||[]).slice(0,3).join('、');
+    var sel='<select class="salesel" data-cid="'+cid+'">'+
+      '<option value="">（未归属）</option>'+
+      SALES.map(function(s){return '<option value="'+s+'"'+(c.sale===s?' selected':'')+'>'+s+'</option>';}).join('')+
+      '</select>';
+    var srcCls=(c.saleSource||'').replace(/[^a-z_]/g,'');
+    return '<tr data-cid="'+cid+'" data-name="'+(c.primaryName||'').replace(/"/g,'')+'">'+
+      '<td class="cname">'+(c.primaryName||'')+(aliases?'<div class="alias">别名：'+aliases+'</div>':'')+'</td>'+
+      '<td><b>'+(c.sale||'—')+'</b></td>'+
+      '<td><span class="src '+srcCls+'">'+(c.saleSource||'—')+'</span></td>'+
+      '<td>'+(c.firstRegisterBy||'—')+'</td>'+
+      '<td>'+sel+' <button class="savebtn" data-cid="'+cid+'" data-name="'+(c.primaryName||'').replace(/"/g,'')+'">保存</button></td>'+
+      '<td><button class="logbtn" data-cid="'+cid+'">历史</button></td>'+
+      '</tr><tr class="logrow" data-logfor="'+cid+'" style="display:none"><td colspan="6"><div class="logbox" data-logbox="'+cid+'">加载中…</div></td></tr>';
+  }).join('');
+  bindRow();
+}
+
+function bindRow(){
+  document.querySelectorAll('.savebtn').forEach(function(btn){
+    btn.onclick=function(){
+      var cid=btn.getAttribute('data-cid');
+      var name=btn.getAttribute('data-name');
+      var sel=document.querySelector('.salesel[data-cid="'+cid+'"]');
+      var newSale=sel.value;
+      btn.disabled=true;btn.textContent='保存中';
+      api('updateAttribution',{customerId:cid,name:name,sale:newSale,reason:'归属管理面板手动修改',operator:getOperator()}).then(function(res){
+        btn.disabled=false;btn.textContent='保存';
+        if(res&&res.ok){
+          toast('已保存：'+name+' → '+(newSale||'未归属')+'（已留痕，不会回滚）');
+          var row=document.querySelector('tr[data-cid="'+cid+'"]');
+          if(row){row.children[1].innerHTML='<b>'+(newSale||'—')+'</b>';row.children[2].innerHTML='<span class="src manual_update">manual_update</span>';}
+        }else{toast('保存失败：'+((res&&res.error&&res.error.message)||'未知'),true);}
+      }).catch(function(e){btn.disabled=false;btn.textContent='保存';toast('保存异常：'+e.message,true);});
+    };
+  });
+  document.querySelectorAll('.logbtn').forEach(function(btn){
+    btn.onclick=function(){
+      var cid=btn.getAttribute('data-cid');
+      var logrow=document.querySelector('tr.logrow[data-logfor="'+cid+'"]');
+      if(logrow.style.display==='none'){
+        logrow.style.display='';
+        var box=document.querySelector('[data-logbox="'+cid+'"]');
+        api('getAttributionLog',{customerId:cid,limit:20}).then(function(res){
+          var rows=(res&&res.data&&res.data.rows)||[];
+          if(!rows.length){box.innerHTML='暂无变更记录';return;}
+          box.innerHTML=rows.map(function(l){
+            var t=new Date(l.ts||0); var ds=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2)+' '+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2);
+            return '<div class="li">'+ds+' · '+(l.fromSale||'空')+' → <b>'+(l.toSale||'空')+'</b> · 操作人 '+(l.operator||'?')+' · '+(l.reason||'')+'</div>';
+          }).join('');
+        }).catch(function(e){box.innerHTML='加载失败：'+e.message;});
+      }else{logrow.style.display='none';}
+    };
+  });
+}
+
+function load(){
+  document.getElementById('tb').innerHTML='<tr><td colspan="6" class="empty">加载中…</td></tr>';
+  var params={page:page,pageSize:pageSize};
+  if(curQ)params.q=curQ;
+  if(curSale&&curSale!=='__empty__')params.sale=curSale;
+  api('queryCustomers',params).then(function(res){
+    if(!res||!res.ok){document.getElementById('tb').innerHTML='<tr><td colspan="6" class="empty">查询失败：'+((res&&res.error&&res.error.message)||'未知')+'</td></tr>';return;}
+    var d=res.data||{};var rows=d.rows||[];
+    if(curSale==='__empty__')rows=rows.filter(function(c){return !c.sale;});
+    total=d.total||rows.length;
+    render(rows);
+    document.getElementById('stat').innerHTML='共 <b>'+total+'</b> 个客户';
+    document.getElementById('pginfo').textContent='第 '+page+' 页 / 共 '+Math.max(1,Math.ceil(total/pageSize))+' 页';
+    document.getElementById('prev').disabled=page<=1;
+    document.getElementById('next').disabled=page>=Math.ceil(total/pageSize);
+  }).catch(function(e){document.getElementById('tb').innerHTML='<tr><td colspan="6" class="empty">异常：'+e.message+'</td></tr>';});
+}
+
+document.getElementById('searchBtn').onclick=function(){curQ=document.getElementById('q').value.trim();curSale=document.getElementById('fsale').value;page=1;load();};
+document.getElementById('q').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('searchBtn').click();});
+document.getElementById('fsale').onchange=function(){curSale=this.value;page=1;load();};
+document.getElementById('prev').onclick=function(){if(page>1){page--;load();}};
+document.getElementById('next').onclick=function(){if(page<Math.ceil(total/pageSize)){page++;load();}};
+
+ensureLogin().then(function(){
+  // 强制 cloud 模式让 callCloud 直连云函数
+  if(window.SalesCenterApi&&window.SalesCenterApi.setMode)window.SalesCenterApi.setMode('cloud');
+  return api('customersCount',{});
+}).then(function(res){
+  var n=(res&&res.data&&res.data.total)||0;
+  document.getElementById('banner').innerHTML='✅ 已连接云端 · sc_customers 共 <b>'+n+'</b> 个客户主记录 · 改归属即时生效并留痕';
+  load();
+}).catch(function(e){
+  document.getElementById('banner').innerHTML='⚠️ 云端连接异常：'+e.message;
+});
+})();
+</script>
+</body>
+</html>

@@ -2956,7 +2956,8 @@ function bindInlineRegisterEntry(){
   initInlineRegisterEntry();
   const ch = document.getElementById('inline-m-channel'); if (ch && !ch.dataset.bound) { ch.addEventListener('change', inlineChannelChange); ch.dataset.bound='1'; }
   const nm = document.getElementById('inline-m-name'); if (nm && !nm.dataset.bound) {
-    nm.addEventListener('input', () => { const h=document.getElementById('inline-m-name-hint'); if(h) h.innerHTML='输入完成后提交时将沿用原查重逻辑校验'; });
+    nm.addEventListener('input', onInlineNameInput);
+    nm.addEventListener('change', onInlineNameInput);
     nm.dataset.bound='1';
   }
   const ev = document.getElementById('inline-m-evidence'); if (ev && !ev.dataset.bound) { ev.addEventListener('change', onEvidenceChange); ev.dataset.bound='1'; }
@@ -3301,6 +3302,58 @@ function onNameInput() {
   }
   hintEl.innerHTML = hint;
   if (submitBtn) submitBtn.disabled = hasHardDup;
+  // 2026-06-24 V4.1：云端权威校验（异步增强，失败/超时保留本地兜底；全新客户保留本地字典识别）
+  cloudEnhanceNameHint(raw, 'm-name', 'm-name-hint', 'm-submit');
+}
+/* 2026-06-24 V4.1：登记实时识别接 CloudBase sc_customers 单一可信源（checkCustomer），
+   彻底解决「简称没认出/归属不准/字典异步没加载完」——云端 8265 客户权威数据，永远准。
+   策略：本地 lookupEntity 先即时渲染（不卡），云端返回后若客户已存在则用云端权威覆盖。 */
+function _normQuarter(q){ return String(q||'').replace(/[\s\/]/g,''); }
+function renderCloudNameHint(d, raw, hintId, submitId){
+  const hintEl = document.getElementById(hintId);
+  if (!hintEl) return;
+  const submitBtn = submitId ? document.getElementById(submitId) : null;
+  const shortName = (d.aliases && d.aliases.length) ? d.aliases[0] : (raw || '');
+  const fq = _normQuarter(d.firstQuarter);
+  const isLaoke = !!(d.isOld24 || (fq && fq < CURRENT_QUARTER));
+  let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
+  if (isLaoke) {
+    hint += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">非本季度新客（首投 ${d.firstQuarter || '-'}）</span>`;
+  } else {
+    hint += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客</span>`;
+  }
+  hint += `<span class="badge-short" style="background:#ecfdf5;color:#047857;border:1px solid #6ee7b7;">☁️ 云端实时</span>`;
+  const DSM = window.__DELIVERY_SIDE_MAP__ || {};
+  const ds = DSM[shortName] || DSM[raw] || '';
+  if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
+  hint += `</div>`;
+  let hasHardDup = false;
+  if (d.exists && d.alreadyAttributed && d.currentSale) {
+    hasHardDup = true;
+    const firstBy = d.firstRegisterBy || d.currentSale;
+    hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
+      ❌ <b>主体重复</b>：该客户当前归属 <b>${d.currentSale}</b>（最早由 <b>${firstBy}</b> 登记）。按「先登记先归属」规则<b>本次拒绝提交</b>。</div>`;
+  }
+  hintEl.innerHTML = hint;
+  if (submitBtn) submitBtn.disabled = hasHardDup;
+}
+function cloudEnhanceNameHint(raw, nameId, hintId, submitId){
+  try {
+    if (!raw || !window.SalesCenterApi || !window.SalesCenterApi.callCloud) return;
+    const seq = (window.__nameCheckSeq__ = (window.__nameCheckSeq__ || 0) + 1);
+    const qn = raw;
+    Promise.race([
+      window.SalesCenterApi.callCloud('checkCustomer', { name: qn }, { forceCloud: true }),
+      new Promise(r => setTimeout(() => r(null), 1500))
+    ]).then(res => {
+      if (seq !== window.__nameCheckSeq__) return;                 // 已有更新输入
+      const el = document.getElementById(nameId);
+      if (!el || (el.value || '').trim().replace(/\s+/g,'') !== qn.replace(/\s+/g,'')) return;
+      if (!res || res.ok === false || !res.data) return;           // 云端失败→保留本地兜底
+      if (!res.data.exists) return;                                // 全新客户→保留本地字典识别
+      renderCloudNameHint(res.data, qn, hintId, submitId);
+    }).catch(()=>{});
+  } catch(e){}
 }
 function onChannelChange() {
   const v = document.getElementById('m-channel').value;
