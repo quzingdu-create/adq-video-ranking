@@ -1,7 +1,7 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.1-audit-log-20260625';
+const VERSION = 'v6.2-bff-pagination-20260625';
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -520,6 +520,71 @@ async function writeKpiSnapshot(params, context) {
   }, { collection: COLLECTIONS.kpiSnapshots });
 }
 
+// R5.5.2 (2026-06-25): 看板首屏 BFF - 从 sc_kpi_snapshots 最新快照里取出几个核心字段直接返
+// 前端 data_adapter.js 走云模式时, 不再加载 data/center_*.js, 直接调本 action
+async function getCenterData(params) {
+  params = params || {};
+  const database = getDb();
+  let dataDate = params.dataDate;
+  // 默认拿最新快照 (排除 2099 测试 doc)
+  if (!dataDate) {
+    const _ = database.command;
+    const r = await database.collection(COLLECTIONS.kpiSnapshots)
+      .where({ dataDate: _.lt('2099-01-01') })
+      .orderBy('dataDate', 'desc').limit(1).get();
+    const rows = (r && r.data) || [];
+    if (!rows.length) return fail('getCenterData', 'NO_SNAPSHOT', 'no snapshot yet');
+    dataDate = rows[0].dataDate;
+  }
+  const r2 = await database.collection(COLLECTIONS.kpiSnapshots)
+    .where({ dataDate }).orderBy('version', 'desc').limit(1).get();
+  const snap = ((r2 && r2.data) || [])[0];
+  if (!snap) return fail('getCenterData', 'NOT_FOUND', 'dataDate=' + dataDate + ' not found');
+  // 按 type 切片返回, 避免一次拉太大
+  const t = params.type || 'all';
+  const out = { dataDate: snap.dataDate, reportDate: snap.reportDate, version: snap.version,
+                q2PassedDays: snap.q2PassedDays, q2RemainDays: snap.q2RemainDays };
+  if (t === 'daily' || t === 'all') out.centerDailyKpi = snap.centerDailyKpi;
+  if (t === 'quarter' || t === 'all') out.centerQuarterSummary = snap.centerQuarterSummary;
+  if (t === 'runtime' || t === 'all') out.dashboardRuntime = snap.dashboardRuntime;
+  return ok('getCenterData', out, { collection: COLLECTIONS.kpiSnapshots, type: t });
+}
+
+// R5.5.1 (2026-06-25): 登记记录分页 API - tuoke_real_records.js 9MB 拆解
+// 前端按需拉 (默认拉最近 100 条, 支持 since/sale/name filter)
+async function getRegisterRecords(params) {
+  params = params || {};
+  const database = getDb();
+  const _ = database.command;
+  const where = {};
+  if (params.sale) where.sale = String(params.sale);
+  if (params.name) where.name = String(params.name);
+  if (params.shortName) where.shortName = String(params.shortName);
+  if (params.since || params.until) {
+    const range = {};
+    if (params.since) range.$gte = String(params.since);  // date 字符串比较 YYYY-MM-DD
+    if (params.until) range.$lte = String(params.until);
+    where.date = range;
+  }
+  const limit = safeLimit(params.limit, 100, 500);
+  const skip = Math.max(0, Number(params.offset) || 0);
+  const orderField = params.orderBy === 'date' ? 'date' : '_updatedAt';
+  const orderDir = params.orderDir === 'asc' ? 'asc' : 'desc';
+  const res = await database.collection(COLLECTIONS.legacyRecords)
+    .where(where).orderBy(orderField, orderDir).skip(skip).limit(limit).get();
+  const rows = (res && res.data) || [];
+  // 可选 total (耗时, 仅当 params.withTotal=true 才查)
+  let total = null;
+  if (params.withTotal) {
+    try {
+      const c = await database.collection(COLLECTIONS.legacyRecords).where(where).count();
+      total = c && c.total;
+    } catch (_) {}
+  }
+  return ok('getRegisterRecords', { rows, count: rows.length, offset: skip, limit, total },
+            { collection: COLLECTIONS.legacyRecords });
+}
+
 async function getKpiSnapshot(params) {
   params = params || {};
   if (!params.dataDate) return fail('getKpiSnapshot', 'MISSING_DATA_DATE', 'dataDate is required');
@@ -633,6 +698,8 @@ async function handle(action, params, context) {
     // R5.2 KPI 快照
     case 'writeKpiSnapshot': return await writeKpiSnapshot(params, context);
     case 'getKpiSnapshot': return await getKpiSnapshot(params);
+    case 'getCenterData': return await getCenterData(params);
+    case 'getRegisterRecords': return await getRegisterRecords(params);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);
