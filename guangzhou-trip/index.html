@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>广州周末两日攻略 · v4</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f5;
+    color: #222;
+    line-height: 1.7;
+    font-size: 15px;
+    padding: 20px 0;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; background: #fff; padding: 30px 28px; }
+
+  h1 {
+    font-size: 24px;
+    color: #c8472b;
+    border-bottom: 3px solid #c8472b;
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+  }
+
+  h2 {
+    font-size: 18px;
+    color: #222;
+    background: #fef2e8;
+    padding: 8px 12px;
+    border-left: 4px solid #c8472b;
+    margin: 28px 0 14px;
+  }
+
+  /* 行程表 */
+  table.itin {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  table.itin th {
+    background: #f8f4ec;
+    color: #555;
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid #e8dcc4;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  table.itin td {
+    padding: 10px;
+    border: 1px solid #eee;
+    vertical-align: top;
+  }
+  table.itin td.time {
+    color: #c8472b;
+    font-weight: 700;
+    white-space: nowrap;
+    width: 80px;
+  }
+  table.itin td.place {
+    font-weight: 700;
+    width: 130px;
+  }
+  table.itin td.note {
+    font-size: 13px;
+    color: #555;
+  }
+
+  /* 预算/餐饮表 */
+  table.bud {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.bud th, table.bud td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  table.bud th { background: #f8f4ec; font-weight: 600; color: #555; }
+  table.bud td.p { text-align: right; color: #c8472b; font-weight: 700; }
+  table.bud tr.tot td { border-top: 2px solid #c8472b; border-bottom: none; font-weight: 800; padding-top: 12px; }
+  table.bud tr.sub td { background: #fafafa; font-weight: 600; }
+
+  ul.tips {
+    list-style: none;
+    padding-left: 0;
+  }
+  ul.tips li {
+    padding: 6px 0 6px 18px;
+    position: relative;
+    font-size: 14px;
+    border-bottom: 1px dashed #eee;
+  }
+  ul.tips li:last-child { border-bottom: none; }
+  ul.tips li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #c8472b;
+    font-weight: 700;
+  }
+  ul.tips li b { color: #c8472b; }
+
+  .key {
+    background: #fff8e1;
+    border: 1px solid #f0d090;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+  .key b { color: #c8472b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>广州周末两日攻略</h1>
+
+<!-- ============= 大交通 ============= -->
+<h2>① 高铁信息</h2>
+
+<table class="itin">
+  <thead>
+    <tr><th>方向</th><th>车次 / 时间</th><th>到站</th><th>到酒店</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>周六去程</td>
+      <td><b>10:00 准点出发</b><br>深圳北→广州南<br>约 30-37 分钟</td>
+      <td><b>广州南站</b><br>约 10:30-10:40</td>
+      <td>地铁 2 号线 → 公园前站<br>约 35 分钟，¥7/人</td>
+    </tr>
+    <tr>
+      <td>周日返程</td>
+      <td><b>16:00 后</b></td>
+      <td>广州南→深圳北<br>约 30-35 分钟</td>
+      <td>北京路→广州南<br>地铁 2 号线 ~35 分钟</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="key">
+  <b>关键时间锚点：</b><br>
+  · 周六 10:00 高铁 → 11:15 左右到北京路（含地铁+步行）<br>
+  · 周日返程从北京路出酒店要算 35 分钟地铁 + 30 分钟安检候车 = <b>提前 1.5 小时</b>
+</div>
+
+<!-- ============= DAY 1 ============= -->
+<h2>② 周六行程（方案 A：教堂 + 沙面）</h2>
+
+<table class="itin">
+  <thead>
+    <tr><th>时间</th><th>地点</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="time">10:00</td>
+      <td class="place">深圳北 上车</td>
+      <td class="note">建议 9:20 到站，安检+找候车厅留 30 分钟。</td>
+    </tr>
+    <tr>
+      <td class="time">10:35</td>
+      <td class="place">广州南站到达</td>
+      <td class="note">按 2 号线指示牌走，购票闸口用微信/支付宝刷码。</td>
+    </tr>
+    <tr>
+      <td class="time">11:15</td>
+      <td class="place">酒店寄存行李</td>
+      <td class="note">北京路酒店 14:00 才能 check-in，先寄存行李拿房卡定位。</td>
+    </tr>
+    <tr>
+      <td class="time">11:45</td>
+      <td class="place">午餐 · 陶陶居（北京路店）<br><span style="color:#c8472b;font-size:12px">★ 唯一一次早茶</span></td>
+      <td class="note">百年早茶老字号，午市继续供应点心。<br><b>必点：</b>水晶虾饺、流沙奶黄包、凤爪、艇仔粥。</td>
+    </tr>
+    <tr>
+      <td class="time">13:30</td>
+      <td class="place">北京路步行街</td>
+      <td class="note">酒店楼下，千年古道遗址（玻璃地面下可看）、广州百货大楼。步行 1 小时。</td>
+    </tr>
+    <tr style="background:#fff8e1;">
+      <td class="time">15:00</td>
+      <td class="place">石室圣心大教堂 ⛪<br><span style="color:#c8472b;font-size:12px">★ 必去</span></td>
+      <td class="note">北京路打车 ¥10 / 步行 15 分钟。<br>全亚洲最大全石结构哥特式教堂（1888 年建成）。<br><b>免费</b>，开放至 17:30。夕阳时彩窗光线最美。停留 1 小时。</td>
+    </tr>
+    <tr style="background:#fff8e1;">
+      <td class="time">16:30</td>
+      <td class="place">沙面岛</td>
+      <td class="note">教堂打车 ¥12 / 公交 6 路 ¥2，约 15 分钟。<br>150+ 栋百年欧陆建筑群，露德圣母堂、白天鹅宾馆。傍晚光线最好，停留 1.5 小时。</td>
+    </tr>
+    <tr>
+      <td class="time">19:00</td>
+      <td class="place">晚餐 · 银记肠粉（上下九店）</td>
+      <td class="note">沙面打车 ¥10 / 步行 15 分钟。<br><b>必点：</b>鲜虾肠、牛肉肠、艇仔粥、皮蛋瘦肉粥。</td>
+    </tr>
+    <tr>
+      <td class="time">20:30</td>
+      <td class="place">珠江夜游 / 海心沙</td>
+      <td class="note">天字码头（北京路步行 10 分钟）登船，1 小时 ¥88/人。<br><b>省钱方案：</b>地铁去珠江新城，海心沙看广州塔夜景免费。</td>
+    </tr>
+    <tr>
+      <td class="time">22:00</td>
+      <td class="place">回酒店</td>
+      <td class="note">天字码头/海心沙地铁回北京路。</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============= DAY 2 ============= -->
+<h2>③ 周日行程（玩到 14:30 出发）</h2>
+
+<table class="itin">
+  <thead>
+    <tr><th>时间</th><th>地点</th><th>说明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="time">08:30</td>
+      <td class="place">早餐 · 南信牛奶甜品</td>
+      <td class="note">北京路店。<b>必点：</b>双皮奶、姜撞奶、糯米鸡。</td>
+    </tr>
+    <tr>
+      <td class="time">09:30</td>
+      <td class="place">陈家祠</td>
+      <td class="note">地铁 1 号线 公园前→陈家祠（3 站，¥3/人）。<br>岭南建筑+砖雕木雕，门票 ¥10/人。停留 1.5 小时。</td>
+    </tr>
+    <tr>
+      <td class="time">11:30</td>
+      <td class="place">返回北京路</td>
+      <td class="note">地铁 1 号线 陈家祠→公园前。</td>
+    </tr>
+    <tr>
+      <td class="time">12:00</td>
+      <td class="place">退房 + 寄存行李</td>
+      <td class="note">12:00 退房，把行李寄存前台。</td>
+    </tr>
+    <tr>
+      <td class="time">12:30</td>
+      <td class="place">午餐 · 惠食佳（文德路店）</td>
+      <td class="note">距北京路步行 8 分钟。<br><b>必点：</b>避风塘炒蟹、啫啫滑鸡煲、青菜。</td>
+    </tr>
+    <tr>
+      <td class="time">14:00</td>
+      <td class="place">回酒店取行李</td>
+      <td class="note">休息 + 取行李。</td>
+    </tr>
+    <tr>
+      <td class="time">14:30</td>
+      <td class="place">出发→广州南</td>
+      <td class="note">地铁 2 号线 公园前→广州南站，约 35 分钟。<br>赶 16:25 高铁刚好（含安检候车 30 分钟）。</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============= 5 顿饭明细 ============= -->
+<h2>④ 餐饮明细（2 人共 ¥500，人均 ¥250）</h2>
+
+<table class="bud">
+  <thead>
+    <tr><th>顿数</th><th>店</th><th>必点</th><th style="text-align:right">2 人花费</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>周六午<br>（唯一早茶）</td>
+      <td><b>陶陶居</b><br>北京路 374 号</td>
+      <td>虾饺、流沙包、凤爪、艇仔粥</td>
+      <td class="p">¥160</td>
+    </tr>
+    <tr>
+      <td>周六晚</td>
+      <td><b>银记肠粉</b><br>上下九店</td>
+      <td>鲜虾肠、牛肉肠、艇仔粥</td>
+      <td class="p">¥80</td>
+    </tr>
+    <tr>
+      <td>周日早</td>
+      <td><b>南信牛奶甜品</b><br>北京路店</td>
+      <td>双皮奶、姜撞奶、糯米鸡</td>
+      <td class="p">¥40</td>
+    </tr>
+    <tr>
+      <td>周日午</td>
+      <td><b>惠食佳</b><br>文德路 75 号</td>
+      <td>避风塘炒蟹、啫啫滑鸡煲、青菜</td>
+      <td class="p">¥220</td>
+    </tr>
+    <tr class="sub">
+      <td colspan="3">5 顿合计</td>
+      <td class="p">¥500</td>
+    </tr>
+    <tr class="tot">
+      <td colspan="3">人均餐饮</td>
+      <td class="p">¥250 ✓</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ============= 实用 ============= -->
+<h2>⑤ 实用 Tips</h2>
+
+<h3 style="font-size:15px;color:#c8472b;margin:16px 0 6px;font-weight:700;">交通</h3>
+<ul class="tips">
+  <li>广州地铁支持微信/支付宝二维码乘车，不用买票</li>
+  <li>北京路最近地铁站：<b>公园前站（1/2 号线换乘大站）</b>，去哪都方便</li>
+  <li>市内打车便宜，3 公里内 ¥15 左右</li>
+  <li>广州南站 ↔ 北京路：地铁 2 号线直达，约 35 分钟 ¥7</li>
+</ul>
+
+<h3 style="font-size:15px;color:#c8472b;margin:16px 0 6px;font-weight:700;">避坑</h3>
+<ul class="tips">
+  <li>北京路、上下九沿街"老字号"小吃店良莠不齐，认准本地人排队的</li>
+  <li>珠江夜游：官方平台买票（携程/美团），码头黄牛溢价 50%+</li>
+  <li>陈家祠周末上午人最多，9:30 到刚开门相对清净</li>
+  <li>沙面附近别打三轮车，黑车价格离谱</li>
+  <li>石室圣心大教堂内安静参观，不要大声喧哗+不要随意拍照人物</li>
+  <li>6 月广州<b>雷阵雨多</b>，带把伞 + 防晒霜</li>
+</ul>
+
+<div class="key" style="margin-top:20px;">
+  <b>核心提醒：</b><br>
+  1. 周六 10:00 高铁准点，9:20 前到深圳北<br>
+  2. 周日返程<b>提前 1.5 小时</b>从酒店出发<br>
+  3. 北京路酒店位置好，吃饭逛街步行就行，不用来回挪窝
+</div>
+
+</div>
+</body>
+</html>
