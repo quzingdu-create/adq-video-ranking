@@ -1,7 +1,7 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.4-subcollections-20260625';
+const VERSION = 'v6.5-export-records-20260625';
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -79,6 +79,28 @@ async function getTopMetrics(params) {
   const rows = await queryByTypes(COLLECTIONS.top, types, params);
   return ok('getTopMetrics', { mode: 'cloud', records: rows, payload: rowsToMap(rows), count: rows.length }, { collection: COLLECTIONS.top });
 }
+
+// R8.3 (2026-06-25): tuoke_records 全量导出 (agent 端拉云端到本地, 替代浏览器 cloud.download)
+// 服务端分页拉, 默认 1000/页 (CloudBase 单次查询硬上限), 客户端用 nextCursor 翻页
+async function exportAllRecords(params) {
+  params = params || {};
+  const database = getDb();
+  const _ = database.command;
+  const pageSize = Math.min(Math.max(1, Number(params.pageSize) || 1000), 1000);
+  const cursor = params.cursor;
+  const q = database.collection(COLLECTIONS.legacyRecords);
+  const query = cursor ? q.where({ _id: _.gt(String(cursor)) }) : q;
+  const res = await query.orderBy('_id', 'asc').limit(pageSize).get();
+  const rows = (res && res.data) || [];
+  const lastId = rows.length ? rows[rows.length - 1]._id : null;
+  return ok('exportAllRecords', {
+    rows: rows,
+    count: rows.length,
+    hasMore: rows.length === pageSize,
+    nextCursor: lastId
+  }, { collection: COLLECTIONS.legacyRecords });
+}
+
 async function queryRecords(params) {
   params = params || {};
   const database = getDb();
@@ -849,6 +871,7 @@ async function handle(action, params, context) {
     case 'getCenterData': return await getCenterData(params);
     case 'getTopMetricsFromSnapshot': return await getTopMetricsFromSnapshot(params);
     case 'getRegisterRecords': return await getRegisterRecords(params);
+    case 'exportAllRecords': return await exportAllRecords(params);
     // R5.5.6-8
     case 'getCustomerLinks': return await getCustomerLinks(params);
     case 'getRegisterLookup': return await getRegisterLookup(params);
