@@ -1,7 +1,7 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.3-top-metrics-20260625';
+const VERSION = 'v6.4-subcollections-20260625';
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -17,7 +17,11 @@ const COLLECTIONS = {
   customers: 'sc_customers',
   attributionLog: 'sc_attribution_log',
   // R5.2 KPI 快照集合（不可变，append-only）
-  kpiSnapshots: 'sc_kpi_snapshots'
+  kpiSnapshots: 'sc_kpi_snapshots',
+  // R5.5.6-8 (2026-06-25) 子集合 BFF 化, 替代 4MB 静态 .js
+  customerLinks: 'sc_customer_links',          // 客户投放链路 (直播/小店/share)
+  registerLookup: 'sc_register_lookup',         // 登记查重字典 (主体→简称 mapping + 老客标记)
+  customerDiag: 'sc_customer_diag'              // 客户诊断指标
 };
 const SALES = ['brownfan', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
 
@@ -585,6 +589,117 @@ async function getTopMetricsFromSnapshot(params) {
 
 // R5.5.1 (2026-06-25): 登记记录分页 API - tuoke_real_records.js 9MB 拆解
 // 前端按需拉 (默认拉最近 100 条, 支持 since/sale/name filter)
+// R5.5.6 (2026-06-25): 客户投放链路 BFF (替代 customer_link_data.js 4.4MB)
+// 文档 schema (压缩存储): 1 个 _id='customer_link_blob' 的 doc, 字段 data={shortName: [...]}, _ts: ms
+// 单 doc 上限 16MB, 4.4MB 完全装得下
+async function getCustomerLinks(params) {
+  params = params || {};
+  const database = getDb();
+  const res = await database.collection(COLLECTIONS.customerLinks).limit(1).get();
+  const rows = (res && res.data) || [];
+  if (!rows.length) return ok('getCustomerLinks', { data: {}, _ts: 0 }, { collection: COLLECTIONS.customerLinks, mode: 'empty' });
+  const blob = rows[0];
+  // 切片返回 (避免大 payload)
+  if (params.shortName) {
+    const data = blob.data || {};
+    const v = data[String(params.shortName)] || null;
+    return ok('getCustomerLinks', { shortName: params.shortName, links: v, _ts: blob._ts },
+              { collection: COLLECTIONS.customerLinks, mode: 'single' });
+  }
+  if (params.shortNames && Array.isArray(params.shortNames)) {
+    const data = blob.data || {};
+    const out = {};
+    for (const k of params.shortNames) out[String(k)] = data[String(k)] || null;
+    return ok('getCustomerLinks', { data: out, _ts: blob._ts },
+              { collection: COLLECTIONS.customerLinks, mode: 'batch', requested: params.shortNames.length });
+  }
+  // 默认 full
+  return ok('getCustomerLinks', { data: blob.data || {}, _ts: blob._ts },
+            { collection: COLLECTIONS.customerLinks, mode: 'full', count: Object.keys(blob.data || {}).length });
+}
+
+// R5.5.7 (2026-06-25): 登记查重字典 BFF (替代 register_lookup_data.js 4.2MB)
+async function getRegisterLookup(params) {
+  params = params || {};
+  const database = getDb();
+  const res = await database.collection(COLLECTIONS.registerLookup).limit(1).get();
+  const rows = (res && res.data) || [];
+  if (!rows.length) return ok('getRegisterLookup', { mapping:{}, registered:{}, _ts:0 }, { collection: COLLECTIONS.registerLookup, mode:'empty' });
+  const blob = rows[0];
+  if (params.name) {
+    const n = String(params.name);
+    return ok('getRegisterLookup', {
+      name: n,
+      mapping: (blob.mapping || {})[n] || null,
+      registered: (blob.registered || {})[n] || null,
+      _ts: blob._ts
+    }, { collection: COLLECTIONS.registerLookup, mode: 'single' });
+  }
+  // 默认返全集 (4MB, 看板首屏走灰度时按需)
+  return ok('getRegisterLookup', {
+    mapping: blob.mapping || {},
+    registered: blob.registered || {},
+    _ts: blob._ts
+  }, { collection: COLLECTIONS.registerLookup, mode: 'full',
+       mappingCount: Object.keys(blob.mapping || {}).length,
+       registeredCount: Object.keys(blob.registered || {}).length });
+}
+
+// R5.5.8 (2026-06-25): 客户诊断指标 BFF (替代 customer_diag_metrics.js 3.3MB)
+async function getCustomerDiag(params) {
+  params = params || {};
+  const database = getDb();
+  const res = await database.collection(COLLECTIONS.customerDiag).limit(1).get();
+  const rows = (res && res.data) || [];
+  if (!rows.length) return ok('getCustomerDiag', { data:{}, _ts:0 }, { collection: COLLECTIONS.customerDiag, mode:'empty' });
+  const blob = rows[0];
+  if (params.shortName) {
+    const v = (blob.data || {})[String(params.shortName)] || null;
+    return ok('getCustomerDiag', { shortName: params.shortName, metrics: v, _ts: blob._ts },
+              { collection: COLLECTIONS.customerDiag, mode: 'single' });
+  }
+  return ok('getCustomerDiag', { data: blob.data || {}, _ts: blob._ts },
+            { collection: COLLECTIONS.customerDiag, mode: 'full', count: Object.keys(blob.data || {}).length });
+}
+
+// R5.5.6-8 通用 blob 上传 action (一次写一个超大 doc, 16MB 内安全)
+async function uploadBlobSubCollection(params, context) {
+  params = params || {};
+  const collKey = params.collection;
+  if (!collKey || !COLLECTIONS[collKey]) return fail('uploadBlobSubCollection', 'INVALID_COLLECTION');
+  if (!params.blob) return fail('uploadBlobSubCollection', 'MISSING_BLOB');
+  const database = getDb();
+  // 自动建集合
+  try {
+    const a = app && app.database ? app.database() : null;
+    if (a && a.createCollection) { try { await a.createCollection(COLLECTIONS[collKey]); } catch(_){} }
+    else if (database && database.createCollection) { try { await database.createCollection(COLLECTIONS[collKey]); } catch(_){} }
+  } catch(_){}
+  // 先清空 (单 blob doc 模式)
+  try {
+    let total = 0;
+    while (true) {
+      const r = await database.collection(COLLECTIONS[collKey]).limit(100).get();
+      const list = (r && r.data) || [];
+      if (!list.length) break;
+      for (const x of list) {
+        try { await database.collection(COLLECTIONS[collKey]).doc(x._id).remove(); total++; }
+        catch(_){}
+      }
+      if (list.length < 100) break;
+    }
+  } catch(_){}
+  // 写新 doc
+  const doc = Object.assign({}, params.blob, {
+    _ts: Date.now(),
+    _writtenBy: getActor(params, context),
+    _generator: params.generator || 'upload_subcollections.py'
+  });
+  const addRes = await database.collection(COLLECTIONS[collKey]).add(doc);
+  return ok('uploadBlobSubCollection', { collection: collKey, _id: addRes && addRes.id, blob_keys: Object.keys(params.blob).filter(k=>k!=='_id') },
+            { collection: COLLECTIONS[collKey] });
+}
+
 async function getRegisterRecords(params) {
   params = params || {};
   const database = getDb();
@@ -734,6 +849,11 @@ async function handle(action, params, context) {
     case 'getCenterData': return await getCenterData(params);
     case 'getTopMetricsFromSnapshot': return await getTopMetricsFromSnapshot(params);
     case 'getRegisterRecords': return await getRegisterRecords(params);
+    // R5.5.6-8
+    case 'getCustomerLinks': return await getCustomerLinks(params);
+    case 'getRegisterLookup': return await getRegisterLookup(params);
+    case 'getCustomerDiag': return await getCustomerDiag(params);
+    case 'uploadBlobSubCollection': return await uploadBlobSubCollection(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);
