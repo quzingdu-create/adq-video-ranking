@@ -1,1 +1,1 @@
-{"v":"20260625i","dataDate":"2026-06-24","note":"R3.1 override 锁定 - 云端 cloud.download 不再覆盖 __MANUAL_SALE_OVERRIDE__ 客户的 sale 字段"}
+{"v":"20260625j","dataDate":"2026-06-24","note":"R3.2 lookupDuplicates 按 _ts 时间序排; _dupCurrentOwner 加云端 attribution_log fallback 防顺序污染"}

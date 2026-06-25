@@ -39,26 +39,26 @@ window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
 window.__BIG_DATA_READY__ = false;
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260625i"></script>
-<script defer src="api_client.js?v=20260625i"></script>
-<script defer src="data_adapter.js?v=20260625i"></script>
+<script defer src="cloud_gray_switch.js?v=20260625j"></script>
+<script defer src="api_client.js?v=20260625j"></script>
+<script defer src="data_adapter.js?v=20260625j"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260625i"></script>
-<script src="data/center_sales_summary.js?v=20260625i"></script>
-<script src="data/center_quarter_summary.js?v=20260625i"></script>
-<script src="data/center_daily_kpi.js?v=20260625i"></script>
-<script src="data/top80_effective_metrics.js?v=20260625i"></script>
-<script src="data/top_status_data.js?v=20260625i"></script>
-<script src="data/enough_candidates.js?v=20260625i"></script>
-<script src="data/handover_customers_519.js?v=20260625i"></script>
-<script src="data/customer_main_product.js?v=20260625i"></script>
+<script src="data/bulk_import_rows.js?v=20260625j"></script>
+<script src="data/center_sales_summary.js?v=20260625j"></script>
+<script src="data/center_quarter_summary.js?v=20260625j"></script>
+<script src="data/center_daily_kpi.js?v=20260625j"></script>
+<script src="data/top80_effective_metrics.js?v=20260625j"></script>
+<script src="data/top_status_data.js?v=20260625j"></script>
+<script src="data/enough_candidates.js?v=20260625j"></script>
+<script src="data/handover_customers_519.js?v=20260625j"></script>
+<script src="data/customer_main_product.js?v=20260625j"></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260625i"></script>
-<script src="dual_check.js?v=20260625i"></script>
-<script src="big_data_dual_check.js?v=20260625i"></script>
+<script src="cloud_sync.js?v=20260625j"></script>
+<script src="dual_check.js?v=20260625j"></script>
+<script src="big_data_dual_check.js?v=20260625j"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -840,7 +840,7 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260625i`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260625j`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1038,7 +1038,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260625i" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260625j" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1054,7 +1054,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260625i" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260625j" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1138,7 +1138,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260625i" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260625j" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -2807,34 +2807,71 @@ function lookupDuplicates(name) {
   if (Object.prototype.hasOwnProperty.call(REGISTERED_SUBJECTS, n)) {
     const r = REGISTERED_SUBJECTS[n];
     if (isRealSale(r.sale)) {
-      entries.push({ sales: r.sale, date: r.date || "", src: "底表" });
+      entries.push({ sales: r.sale, date: r.date || "", src: "底表", _ts: 0 });
     }
   }
   // 2. 历史表（兼容旧种子）—— 只算真销售归属
   if (Object.prototype.hasOwnProperty.call(HISTORY_MAP, n)) {
-    (HISTORY_MAP[n] || []).forEach(s => { if (isRealSale(s)) entries.push({ sales:s, date:"", src:"历史" }); });
+    (HISTORY_MAP[n] || []).forEach(s => { if (isRealSale(s)) entries.push({ sales:s, date:"", src:"历史", _ts: 0 }); });
   }
   // 3. 本地 records —— 只算真销售归属
+  //    R3.2 (2026-06-25): entries 带 _ts 字段(_createdAt 或 _updatedAt),供 _dupCurrentOwner 按时间序定 owner
   if (typeof RECORDS !== 'undefined' && Array.isArray(RECORDS)) {
     RECORDS.forEach(r => {
       if ((r.name || "").trim().replace(/\s+/g,'') === n && isRealSale(r.sale)) {
-        entries.push({ sales:r.sale, date:r.date || "", src:"本地" });
+        entries.push({ sales:r.sale, date:r.date || "", src:"本地", _ts: (r._updatedAt || r._createdAt || 0) });
       }
     });
   }
   return { total:entries.length, entries };
 }
 /* 2026-06-10 子青拍板：判重命中多个销售时，区分「真·先登记先归属」与「归属被改过」。
-   优先级 本地(date最新) > 底表 > 历史 = 当前归属，其余视为历史归属。 */
-function _dupCurrentOwner(entries){
-  const local = (entries||[]).filter(e=>e.src==='本地' && e.date).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  if(local.length) return local[0].sales;
-  const localAny = (entries||[]).filter(e=>e.src==='本地');
-  if(localAny.length) return localAny[localAny.length-1].sales;
+   优先级 本地(date最新) > 底表 > 历史 = 当前归属，其余视为历史归属。
+   R3.2 (2026-06-25) 增强：本地 entries 多条 → 按 _ts(时间戳) 取最新,不再靠数组物理顺序;
+   多条 _ts 都同 → fallback 到云端 attribution_log 的 toSale 最新值(异步预加载到 window.__ATTR_LOG_CACHE__).
+   这能彻底解决子青 12:47 "由 X 改为 Y 顺序倒置" 问题: 同毫秒/数组反向 都会被时间序兜住. */
+function _dupCurrentOwner(entries, queryName){
+  const local = (entries||[]).filter(e=>e.src==='本地');
+  if(local.length){
+    // 优先 1: 有 date 的取最新
+    const withDate = local.filter(e=>e.date).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    if (withDate.length && withDate[0].date !== (withDate[1] && withDate[1].date)) return withDate[0].sales;
+    // 优先 2: 按 _ts 取最新 (R3.2 新增)
+    const withTs = local.filter(e=>e._ts).sort((a,b)=>(b._ts||0)-(a._ts||0));
+    if (withTs.length && withTs[0]._ts !== (withTs[1] && withTs[1]._ts)) return withTs[0].sales;
+    // 优先 3: 查云端 attribution_log 最新一条 (异步缓存,同步可用)
+    if (queryName && window.__ATTR_LOG_CACHE__ && window.__ATTR_LOG_CACHE__[queryName]) {
+      const latestToSale = window.__ATTR_LOG_CACHE__[queryName];
+      if (latestToSale) return latestToSale;
+    }
+    // 优先 4: 兜底用数组最后一项
+    return local[local.length-1].sales;
+  }
   const base = (entries||[]).filter(e=>e.src==='底表');
   if(base.length) return base[base.length-1].sales;
   return (entries&&entries.length) ? entries[entries.length-1].sales : '';
 }
+// R3.2: 异步预加载 attribution_log 到本地缓存(避免每次 lookupDuplicates 都同步阻塞)
+window.__ATTR_LOG_CACHE__ = window.__ATTR_LOG_CACHE__ || {};
+window.__prefetchAttrLog = function(name){
+  try {
+    if (!name || !window.cloud || !window.cloud.callFunction) return;
+    if (window.__ATTR_LOG_CACHE__[name] !== undefined) return; // 已缓存
+    window.__ATTR_LOG_CACHE__[name] = ''; // 占位防重入
+    window.cloud.callFunction('salesCenterApi', {
+      action: 'getAuditLog',
+      params: { primaryName: name, limit: 5 }
+    }).then(function(r){
+      const rows = r && r.result && r.result.data && r.result.data.rows;
+      if (rows && rows.length) {
+        // 取 ts 最大的 toSale
+        rows.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+        const latest = rows[0].toSale;
+        if (latest) window.__ATTR_LOG_CACHE__[name] = latest;
+      }
+    }).catch(function(){});
+  } catch(_){}
+};
 let pendingImages = [];
 function fillModalSelect(id, arr) { const el = document.getElementById(id); if (el) el.innerHTML = arr.map(x => `<option>${x}</option>`).join(''); }
 function initRegisterModal() {
@@ -3284,7 +3321,9 @@ function onNameInput() {
       return `<b>${d.sales}</b>${tag}`;
     }).join('、');
     if (hasHardDup) {
-      const _owner = _dupCurrentOwner(dup.entries);
+      // R3.2: 把 raw(查询名)传给 _dupCurrentOwner,触发云端 attribution_log fallback
+      try { window.__prefetchAttrLog && window.__prefetchAttrLog((raw||'').trim().replace(/\s+/g,'')); } catch(_){}
+      const _owner = _dupCurrentOwner(dup.entries, (raw||'').trim().replace(/\s+/g,''));
       const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
       const _changed = _others.length > 0;  // 出现过别的销售 = 归属被改过
       const _ownerHtml = `<b>${_owner}</b>`;
