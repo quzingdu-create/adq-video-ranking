@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 服饰拓新日报快报 · 销售作战中心</title>
+<script src="auth-guard.js?v=20260625h"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_sync.js?v=20260625h"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#f0f4ff,#fff7ed);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#1f2937;font-size:12px;padding:12px}
+.container{max-width:1120px;margin:auto}
+.topbar{background:#fff;border:1px solid #edf0f7;border-radius:12px;padding:10px 16px;margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.topbar label{font-size:12px;color:#6b7280;font-weight:600}
+.topbar input,.topbar select{padding:6px 10px;border:1px solid #e5e9f0;border-radius:7px;font-size:13px;outline:none}
+.topbar button{padding:6px 14px;background:#3b82f6;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer}
+.topbar button:hover{background:#2563eb}
+.topbar .meta{margin-left:auto;font-size:11px;color:#9ca3af}
+header{background:linear-gradient(135deg,#5867ff,#9b5cff);color:white;border-radius:14px;padding:16px 20px;margin-bottom:12px;box-shadow:0 8px 24px rgba(88,103,255,.18)}
+h1{font-size:20px;margin:0 0 5px}.sub{opacity:.94}
+section{background:white;border:1px solid #edf0f7;border-radius:13px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+h2{font-size:15px;margin:0 0 10px;border-bottom:1px solid #f0f2f8;padding-bottom:8px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{border-radius:12px;padding:13px;border:1px solid #ffd7d7;background:linear-gradient(135deg,#fff5f5,#fff)}
+.card.cost{border-color:#ffe0a8;background:linear-gradient(135deg,#fff7e6,#fff)}
+.label{color:#6b7280;font-weight:700}
+.big{font-size:28px;font-weight:800;color:#ef4444}
+.card.cost .big{color:#f59e0b}.unit{font-size:14px}
+.bar,.cell-bar{height:7px;background:#eef1f7;border-radius:99px;overflow:hidden;margin:6px 0 2px}
+.fill,.cell-bar-fill{display:block;height:100%;background:linear-gradient(90deg,#ef4444,#fb7185)}
+.fill.cost{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.fill.alert,.cell-bar-fill.alert{background:linear-gradient(90deg,#dc2626,#f87171)}
+.muted,.meta{color:#6b7280;font-size:11px}
+.kpi-need{display:inline-block;margin-top:4px;padding:3px 8px;border-radius:7px;background:#fff1f2;color:#be123c;font-weight:700}
+.card.cost .kpi-need{background:#fffbeb;color:#b45309}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mini{background:#fafbff;border:1px solid #edf0f7;border-radius:10px;padding:10px}
+.mini b{font-size:17px}
+table{width:100%;border-collapse:collapse}
+th{background:#f8f9ff;text-align:left;color:#374151;padding:8px;border-bottom:2px solid #e5e7eb}
+td{padding:8px;border-bottom:1px solid #f0f2f8}
+.sale{font-weight:700}.sale-kpi{color:#9ca3af;font-size:10px}
+.trend{color:#10b981;font-weight:700;font-size:11px}
+.cell-bar-pct{font-size:11px;color:#6b7280}
+.b-ok{color:#10b981;font-weight:700}
+.note{color:#6b7280;font-size:11px;margin-top:10px;line-height:1.6}
+.loading{text-align:center;padding:60px;color:#9ca3af}
+.err{text-align:center;padding:60px;color:#ef4444}
+.badge{font-size:10px;padding:2px 6px;border-radius:5px;background:#e6f1fb;color:#185fa5;font-weight:600}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <label>数据日</label>
+    <input type="date" id="dataDate" min="2026-04-01" max="2026-06-30">
+    <label>版本</label>
+    <select id="version"><option value="">最新</option></select>
+    <button onclick="loadReport()">刷新</button>
+    <span class="badge" id="src">CloudBase · sc_kpi_snapshots</span>
+    <span class="meta" id="meta"></span>
+  </div>
+  <div id="content"><div class="loading">⏳ 加载中…</div></div>
+</div>
+<script>
+const SALES_ORDER = ['kaikaigenli','brownfan','lijunwu','Jonzhu','yvaineechen','kinsleyjin','ruilingzhan','其他'];
+const SALE_TARGETS = {
+  'kaikaigenli':{rise:40,cost:30},'brownfan':{rise:40,cost:30},
+  'lijunwu':{rise:40,cost:30},'Jonzhu':{rise:40,cost:30},
+  'yvaineechen':{rise:40,cost:20},'kinsleyjin':{rise:null,cost:null},
+  'ruilingzhan':{rise:null,cost:10},'其他':{rise:null,cost:null}
+};
+
+function defaultDataDate() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0,10);
+}
+
+async function fetchSnapshot(dataDate, version) {
+  const params = { dataDate };
+  if (version) params.version = parseInt(version);
+  const r = await window.cloud.callFunction('salesCenterApi', { action:'getKpiSnapshot', params });
+  if (!r.result || !r.result.ok) throw new Error(r.result && r.result.error || '云函数失败');
+  return r.result.data.snapshot;
+}
+
+async function fetchVersions(dataDate) {
+  const r = await window.cloud.callFunction('salesCenterApi', { action:'listKpiSnapshots', params:{ dataDate, limit:50 } });
+  if (!r.result || !r.result.ok) return [];
+  return r.result.data.list || [];
+}
+
+function need(o, k) {
+  if (o == null || o[k] === undefined) throw new Error('快照缺字段: '+k);
+  return o[k];
+}
+
+function fmt(n, suffix) {
+  if (typeof n !== 'number' || isNaN(n)) return '—';
+  return n.toFixed(1) + (suffix||'');
+}
+
+function render(snap) {
+  const cdk = need(snap, 'centerDailyKpi');
+  const cqs = need(snap, 'centerQuarterSummary');
+  const dataDate = snap.dataDate;
+  const reportDate = snap.reportDate;
+  const passed = snap.q2PassedDays;
+  const remain = snap.q2RemainDays;
+  const q2Rise = cdk.q2RisingCount || 0;
+  const q2RiseDD = cdk.q2RisingDayDelta || 0;
+  const tgtRise = cdk.q2TargetRise || 207;
+  const risePct = q2Rise / tgtRise * 100;
+  const riseNeed = remain ? Math.max(0, (tgtRise - q2Rise) / remain) : 0;
+  const totalRow = cqs.find(r=>r.quarter==='2026Q2' && r.sale==='合计') || {};
+  const qCost = (totalRow.quarterCost || 0) / 1e4;
+  const tgtCost = cdk.q2TargetCost || 10920;
+  const costPct = qCost / tgtCost * 100;
+  const costNeed = remain ? Math.max(0, (tgtCost - qCost) / remain) : 0;
+  const qdaCenter = (totalRow.qda || 0) / 1e4;
+  const q2New = cdk.q2NewCount;
+  const q2NewDD = cdk.q2NewDayDelta || 0;
+  const centerYest = (cdk.centerYestCost || 0)/1e4;
+  const centerRate = (cdk.centerDayCostRate || 0)*100;
+  const centerDlt = ((cdk.centerYestCost||0) - (cdk.centerPrevCost||0))/1e4;
+  const q2NewYest = (cdk.q2NewYestCost || 0)/1e4;
+  const q2NewYestRate = (cdk.q2NewYestCostRate || 0)*100;
+  const q2NewYestDlt = ((cdk.q2NewYestCost||0)-(cdk.prevQ2NewYestCost||0))/1e4;
+  const cumYest = (totalRow.cumYestCost || 0)/1e4;
+  const cumRate = (totalRow.cumYestCostRate || 0)*100;
+  const cumDlt = ((totalRow.cumYestCost||0)-(totalRow.prevCumYestCost||0))/1e4;
+
+  let rowsHtml = '';
+  for (const s of SALES_ORDER) {
+    const row = cqs.find(r=>r.quarter==='2026Q2' && r.sale===s);
+    if (!row) continue;
+    const riseN = row.risingCount || 0;
+    const riseDD = row.risingDayDelta || 0;
+    const yest = (row.yestCost||0)/1e4;
+    const yestRate = (row.yestCostRate||0)*100;
+    const prevYest = (row.prevYestCost||0)/1e4;
+    const yestDlt = yest - prevYest;
+    const qda = (row.qda||0)/1e4;
+    const cumY = (row.cumYestCost||0)/1e4;
+    const cumR = (row.cumYestCostRate||0)*100;
+    const prevCum = (row.prevCumYestCost||0)/1e4;
+    const cumD = cumY - prevCum;
+    const t = SALE_TARGETS[s] || {};
+    const tRise = t.rise, tCost = t.cost;
+    const kpiR = tRise ? tRise : '—';
+    const kpiC = tCost ? tCost+'万' : '—';
+    const riseW = tRise ? (riseN/tRise*100).toFixed(1) : 0;
+    const risePctS = tRise ? (riseN/tRise*100).toFixed(1)+'%' : '—';
+    const riseCls = (tRise && riseN/tRise<0.3) ? 'alert' : '';
+    const qdaW = tCost ? (qda/tCost*100).toFixed(1) : 0;
+    const qdaPctS = tCost ? (qda/tCost*100).toFixed(1)+'%' : '—';
+    rowsHtml += `<tr><td class="sale">${s}<div class="sale-kpi">KPI · 新锐 ${kpiR} / 日耗 ${kpiC}</div></td>`
+      + `<td><b>${riseN}个 <span class="trend">→${riseDD}</span></b>`
+      + `<div class="cell-bar ${riseCls}"><span class="cell-bar-fill ${riseCls}" style="width:${riseW}%"></span></div>`
+      + `<span class="cell-bar-pct">${risePctS}</span></td>`
+      + `<td><b>${yest.toFixed(1)}万</b><div class="muted">${yestDlt>=0?'+':''}${yestDlt.toFixed(1)}万 / ${yestRate>=0?'+':''}${yestRate.toFixed(1)}%</div></td>`
+      + `<td><b>${qda.toFixed(1)}万</b><div class="cell-bar"><span class="cell-bar-fill" style="width:${qdaW}%"></span></div>`
+      + `<span class="cell-bar-pct">${qdaPctS}</span></td>`
+      + `<td><b>${cumY.toFixed(1)}万</b><div class="muted">${cumD>=0?'+':''}${cumD.toFixed(1)}万 / ${cumR>=0?'+':''}${cumR.toFixed(1)}%</div></td></tr>`;
+  }
+  rowsHtml += `<tr style="font-weight:700;background:#f8f9ff"><td class="sale">合计</td>`
+    + `<td><b>${q2Rise}个 →${q2RiseDD}</b></td>`
+    + `<td><b>${q2NewYest.toFixed(1)}万</b><div class="muted">${q2NewYestDlt>=0?'+':''}${q2NewYestDlt.toFixed(1)}万 / ${q2NewYestRate>=0?'+':''}${q2NewYestRate.toFixed(1)}%</div></td>`
+    + `<td><b>${qdaCenter.toFixed(1)}万</b></td>`
+    + `<td><b>${cumYest.toFixed(1)}万</b><div class="muted">${cumDlt>=0?'+':''}${cumDlt.toFixed(1)}万 / ${cumRate>=0?'+':''}${cumRate.toFixed(1)}%</div></td></tr>`;
+
+  const runtime = snap.dashboardRuntime || {};
+  const todos = runtime.todosBySale || {};
+  let todoHtml = '';
+  let sumD=0,sumP=0,sumY=0;
+  for (const s of SALES_ORDER) {
+    const i = todos[s] || {drop:0,potential:0,yestNew:0};
+    sumD+=i.drop||0;sumP+=i.potential||0;sumY+=i.yestNew||0;
+    todoHtml += `<tr><td class="sale">${s}</td><td>${i.drop||0}</td><td>${i.potential||0}</td>`
+      + `<td><span class="b-ok">${i.yestNew||0}</span></td><td><b>${(i.drop||0)+(i.potential||0)+(i.yestNew||0)}</b></td></tr>`;
+  }
+  todoHtml += `<tr style="font-weight:700;background:#f8f9ff"><td class="sale">合计</td><td>${sumD}</td><td>${sumP}</td>`
+    + `<td><span class="b-ok">${sumY}</span></td><td><b>${sumD+sumP+sumY}</b></td></tr>`;
+
+  const attrNote = snap.attributionNote || '';
+
+  document.getElementById('content').innerHTML =
+    `<header><h1>📊 服饰拓新日报快报</h1><div class="sub">报告日期 <b>${reportDate}</b> · 数据日 <b>${dataDate}</b> · 数据来源 销售作战中心 v3.2 · KPI 快照 v${snap.version}</div></header>`
+    + `<section><h2>🎯 KPI 指标进展</h2><div class="kpis">`
+    + `<div class="card"><div class="label">新锐客户达成</div>`
+    + `<div class="big">${q2Rise}<span class="unit">个</span> <span class="unit">→${q2RiseDD}</span></div>`
+    + `<div class="bar"><span class="fill" style="width:${risePct.toFixed(1)}%"></span></div>`
+    + `<div class="meta">完成率 ${risePct.toFixed(1)}% · 目标 ${tgtRise} 个</div>`
+    + `<span class="kpi-need">剩${remain}天 · 日均还需 ${riseNeed.toFixed(1)}个</span></div>`
+    + `<div class="card cost"><div class="label">季度消耗达成</div>`
+    + `<div class="big">${qCost.toFixed(1)}<span class="unit">万</span></div>`
+    + `<div class="bar"><span class="fill cost" style="width:${costPct.toFixed(1)}%"></span></div>`
+    + `<div class="meta">完成率 ${costPct.toFixed(1)}% · 目标 ${tgtCost} 万</div>`
+    + `<span class="kpi-need">剩${remain}天 · 日耗需到 ${costNeed.toFixed(1)}万</span>`
+    + `<div class="meta">本季新客季度日耗 ${qdaCenter.toFixed(1)}万 · 考核目标日耗 120.0万</div></div></div></section>`
+    + `<section><h2>📌 其余参考指标</h2><div class="grid4">`
+    + `<div class="mini"><div class="muted">本季度新客</div><b>${q2New}</b><span class="b-ok"> +${q2NewDD}</span></div>`
+    + `<div class="mini"><div class="muted">服饰中心闭环日耗</div><b>${centerYest.toFixed(1)}万</b><div class="muted">${centerDlt>=0?'+':''}${centerDlt.toFixed(1)}万 / ${centerRate>=0?'+':''}${centerRate.toFixed(1)}%</div></div>`
+    + `<div class="mini"><div class="muted">本季新客昨日消耗</div><b>${q2NewYest.toFixed(1)}万</b><div class="muted">${q2NewYestDlt>=0?'+':''}${q2NewYestDlt.toFixed(1)}万 / ${q2NewYestRate>=0?'+':''}${q2NewYestRate.toFixed(1)}%</div></div>`
+    + `<div class="mini"><div class="muted">累计新客昨日消耗</div><b>${cumYest.toFixed(1)}万</b><div class="muted">${cumDlt>=0?'+':''}${cumDlt.toFixed(1)}万 / ${cumRate>=0?'+':''}${cumRate.toFixed(1)}%</div></div></div></section>`
+    + `<section><h2>📈 销售维度明细</h2><table><thead><tr><th>销售</th><th>本季度新锐客户</th><th>昨日日耗</th><th>季度累计日均</th><th>累计新客昨日消耗</th></tr></thead><tbody>${rowsHtml}</tbody></table></section>`
+    + `<section><h2>📋 待办清单</h2><table><thead><tr><th>销售</th><th>头部掉量客户</th><th>潜力起量客户</th><th>昨日新客</th><th>合计</th></tr></thead><tbody>${todoHtml}</tbody></table>`
+    + `<div class="note">📌 Q2 仅剩 ${remain} 天 (${dataDate}→6/30 含两端), 新锐缺口 ${tgtRise-q2Rise} 个, 季耗缺口 ${(tgtCost-qCost).toFixed(0)} 万, 全员冲刺.<br>`
+    + `📌 ${attrNote}<br>`
+    + `📌 环比口径: 昨日日耗 vs T-2 同档 yestCost; 累计 vs T-2 四季度合计; 季度日均 = Q2 季耗 / 已过 ${passed} 天.</div></section>`;
+
+  document.getElementById('meta').textContent = 'snapshotId=' + (snap.snapshotId || '') + ' · calculatedAt=' + new Date(snap.calculatedAt || 0).toLocaleString();
+}
+
+async function loadReport() {
+  const dataDate = document.getElementById('dataDate').value;
+  const version = document.getElementById('version').value;
+  document.getElementById('content').innerHTML = '<div class="loading">⏳ 加载中…</div>';
+  try {
+    const snap = await fetchSnapshot(dataDate, version);
+    render(snap);
+    // 同步刷 version 选项
+    const list = await fetchVersions(dataDate);
+    const sel = document.getElementById('version');
+    sel.innerHTML = '<option value="">最新</option>' + list.map(s=>`<option value="${s.version}">v${s.version} (${new Date(s.calculatedAt||0).toLocaleString()})</option>`).join('');
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div class="err">❌ '+ (e.message||e) +'</div>';
+  }
+}
+
+window.addEventListener('load', ()=>{
+  document.getElementById('dataDate').value = defaultDataDate();
+  // 等 cloud 登录
+  const tryLoad = () => {
+    if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+      loadReport();
+    } else {
+      setTimeout(tryLoad, 500);
+    }
+  };
+  tryLoad();
+});
+</script>
+</body>
+</html>
