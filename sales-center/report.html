@@ -232,11 +232,17 @@ async function loadReport() {
 
 window.addEventListener('load', ()=>{
   document.getElementById('dataDate').value = defaultDataDate();
-  // 等 cloud 登录
+  // R8.2: 等 cloud 登录, 加 8 秒超时友好提示
+  let waited = 0;
   const tryLoad = () => {
     if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
       loadReport();
+    } else if (waited >= 8000) {
+      document.getElementById('content').innerHTML =
+        '<div class="err">⚠️ 云端未登录, 报告页依赖 CloudBase 实时拉快照<br><br>'
+        + '<a href="index.html" style="color:#5867ff;font-weight:600;">先去首页登录</a> 再回来即可</div>';
     } else {
+      waited += 500;
       setTimeout(tryLoad, 500);
     }
   };
