@@ -1,7 +1,7 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.2-bff-pagination-20260625';
+const VERSION = 'v6.3-top-metrics-20260625';
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -547,7 +547,40 @@ async function getCenterData(params) {
   if (t === 'daily' || t === 'all') out.centerDailyKpi = snap.centerDailyKpi;
   if (t === 'quarter' || t === 'all') out.centerQuarterSummary = snap.centerQuarterSummary;
   if (t === 'runtime' || t === 'all') out.dashboardRuntime = snap.dashboardRuntime;
+  // R5.5.4: top 三件套切片
+  if (t === 'topStatus' || t === 'all') out.topStatusData = snap.topStatusData;
+  if (t === 'topRising' || t === 'all') out.topRisingData = snap.topRisingData;
+  if (t === 'top80' || t === 'all') out.top80Metrics = snap.top80Metrics;
   return ok('getCenterData', out, { collection: COLLECTIONS.kpiSnapshots, type: t });
+}
+
+// R5.5.4 (2026-06-25): 看板 Top 三件套独立 BFF, 单独拉某一个时省流量
+async function getTopMetricsFromSnapshot(params) {
+  params = params || {};
+  const t = params.type;  // 'status' | 'rising' | 'top80'
+  if (!t) return fail('getTopMetrics', 'MISSING_TYPE', 'type=status|rising|top80');
+  const database = getDb();
+  const _ = database.command;
+  let dataDate = params.dataDate;
+  if (!dataDate) {
+    const r = await database.collection(COLLECTIONS.kpiSnapshots)
+      .where({ dataDate: _.lt('2099-01-01') })
+      .orderBy('dataDate', 'desc').limit(1).get();
+    const rows = (r && r.data) || [];
+    if (!rows.length) return fail('getTopMetrics', 'NO_SNAPSHOT');
+    dataDate = rows[0].dataDate;
+  }
+  const r2 = await database.collection(COLLECTIONS.kpiSnapshots)
+    .where({ dataDate }).orderBy('version', 'desc').limit(1).get();
+  const snap = ((r2 && r2.data) || [])[0];
+  if (!snap) return fail('getTopMetrics', 'NOT_FOUND', 'dataDate=' + dataDate);
+  let data;
+  if (t === 'status') data = snap.topStatusData || {};
+  else if (t === 'rising') data = snap.topRisingData || [];
+  else if (t === 'top80') data = snap.top80Metrics || [];
+  else return fail('getTopMetrics', 'INVALID_TYPE', 'type must be status|rising|top80');
+  return ok('getTopMetrics', { dataDate: snap.dataDate, version: snap.version, type: t, data },
+            { collection: COLLECTIONS.kpiSnapshots });
 }
 
 // R5.5.1 (2026-06-25): 登记记录分页 API - tuoke_real_records.js 9MB 拆解
@@ -699,6 +732,7 @@ async function handle(action, params, context) {
     case 'writeKpiSnapshot': return await writeKpiSnapshot(params, context);
     case 'getKpiSnapshot': return await getKpiSnapshot(params);
     case 'getCenterData': return await getCenterData(params);
+    case 'getTopMetricsFromSnapshot': return await getTopMetricsFromSnapshot(params);
     case 'getRegisterRecords': return await getRegisterRecords(params);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
