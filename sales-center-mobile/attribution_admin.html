@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>归属管理面板 · 销售作战中心</title>
-<script src="auth-guard.js?v=20260624f"></script>
+<script src="auth-guard.js?v=20260625a"></script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_gray_switch.js?v=20260624f"></script>
-<script src="api_client.js?v=20260624f"></script>
+<script src="cloud_sync.js?v=20260625a"></script>
 <style>
 :root{--bg:#F7F9FD;--panel:#fff;--border:#e5e9f0;--border2:#eef1f6;--text:#1f2937;--text2:#6b7280;--text3:#9ca3af;--primary:#3b82f6;--primary2:#2563eb;--ok:#0f9d58;--danger:#e24b4a;--warn:#ba7517}
 *{box-sizing:border-box}
@@ -92,26 +91,21 @@ function toast(msg,isErr){var t=document.getElementById('toast');t.textContent=m
 function getOperator(){try{return (localStorage.getItem('cloud_rtx_v2')||'admin').trim();}catch(e){return 'admin';}}
 
 function ensureLogin(){
-  return new Promise(function(resolve){
-    try{
-      if(!window.cloudbase){resolve(false);return;}
-      app=window.cloudbase.init({env:ENV_ID});
-      var auth=app.auth();
-      // 已登录直接用
-      var st=auth.hasLoginState&&auth.hasLoginState();
-      if(st){resolve(true);return;}
-      // 匿名登录兜底（云函数调用需要登录态）
-      if(auth.signInAnonymously){
-        auth.signInAnonymously().then(function(){resolve(true);}).catch(function(){resolve(true);});
-      }else if(auth.anonymousAuthProvider){
-        auth.anonymousAuthProvider().signIn().then(function(){resolve(true);}).catch(function(){resolve(true);});
-      }else{resolve(true);}
-    }catch(e){resolve(true);}
+  // 复用看板现成的 RTX+密码登录态（window.cloud，cloud_sync.js）。
+  // 不用匿名登录——本 CloudBase 环境只开了用户名密码登录。
+  return new Promise(function(resolve,reject){
+    if(!window.cloud){reject(new Error('cloud_sync 未加载'));return;}
+    if(window.cloud.isLoggedIn && window.cloud.isLoggedIn()){resolve(true);return;}
+    // 未登录 → 弹看板同款登录框
+    if(window.cloud.requireLogin){
+      window.cloud.requireLogin(function(){resolve(true);});
+    }else{resolve(true);}
   });
 }
 
 function api(action,params){
-  return window.SalesCenterApi.callCloud(action,params||{},{functionName:'salesCenterApi'});
+  // 走 window.cloud.callFunction（已带 RTX+密码登录态），返回云函数 result={ok,action,data,meta}
+  return window.cloud.callFunction('salesCenterApi',{action:action,params:params||{}});
 }
 
 function render(rows){
@@ -200,8 +194,6 @@ document.getElementById('prev').onclick=function(){if(page>1){page--;load();}};
 document.getElementById('next').onclick=function(){if(page<Math.ceil(total/pageSize)){page++;load();}};
 
 ensureLogin().then(function(){
-  // 强制 cloud 模式让 callCloud 直连云函数
-  if(window.SalesCenterApi&&window.SalesCenterApi.setMode)window.SalesCenterApi.setMode('cloud');
   return api('customersCount',{});
 }).then(function(res){
   var n=(res&&res.data&&res.data.total)||0;

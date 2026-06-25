@@ -3339,11 +3339,18 @@ function renderCloudNameHint(d, raw, hintId, submitId){
 }
 function cloudEnhanceNameHint(raw, nameId, hintId, submitId){
   try {
-    if (!raw || !window.SalesCenterApi || !window.SalesCenterApi.callCloud) return;
+    if (!raw) return;
+    // 优先用 window.cloud.callFunction（已带 RTX+密码登录态，本环境只开密码登录，匿名不可用）
+    const hasCloud = window.cloud && typeof window.cloud.callFunction === 'function' && window.cloud.isLoggedIn && window.cloud.isLoggedIn();
+    const hasApi = window.SalesCenterApi && window.SalesCenterApi.callCloud;
+    if (!hasCloud && !hasApi) return;
     const seq = (window.__nameCheckSeq__ = (window.__nameCheckSeq__ || 0) + 1);
     const qn = raw;
+    const cloudCall = hasCloud
+      ? window.cloud.callFunction('salesCenterApi', { action:'checkCustomer', params:{ name: qn } })
+      : window.SalesCenterApi.callCloud('checkCustomer', { name: qn }, { forceCloud: true });
     Promise.race([
-      window.SalesCenterApi.callCloud('checkCustomer', { name: qn }, { forceCloud: true }),
+      cloudCall,
       new Promise(r => setTimeout(() => r(null), 1500))
     ]).then(res => {
       if (seq !== window.__nameCheckSeq__) return;                 // 已有更新输入
