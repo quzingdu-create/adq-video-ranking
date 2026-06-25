@@ -1,7 +1,7 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6-kpi-snapshots-20260625';
+const VERSION = 'v6.1-audit-log-20260625';
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -216,8 +216,32 @@ async function upsertRecord(params, context) {
     const row = res && res.data && res.data[0];
     if (row && row._id) { await database.collection(COLLECTIONS.legacyRecords).doc(row._id).update(record); updated = true; updatedId = row._id; }
   }
-  if (updated) return ok('upsertRecord', { updated: true, id: updatedId, record }, { collection: COLLECTIONS.legacyRecords });
+  if (updated) {
+    // R6.3 审计日志: 如果 record 改了 sale, 自动 append attribution_log
+    try {
+      if (record.sale || record._rtx) {
+        await database.collection(COLLECTIONS.attributionLog).add({
+          customerId: record.customerId || '', primaryName: record.name || record.shortName || '',
+          shortName: record.shortName || '', fromSale: '', toSale: record.sale || record._rtx || '',
+          operator: getActor(params, context), reason: 'upsertRecord:update',
+          ts: now, action: 'upsertRecord', source: 'tuoke_records', _id_target: updatedId
+        });
+      }
+    } catch (_) { /* 不阻断主流程 */ }
+    return ok('upsertRecord', { updated: true, id: updatedId, record }, { collection: COLLECTIONS.legacyRecords });
+  }
   const addRes = await database.collection(COLLECTIONS.legacyRecords).add(record);
+  // R6.3 审计日志: 新增登记也记一条
+  try {
+    if (record.sale || record._rtx) {
+      await database.collection(COLLECTIONS.attributionLog).add({
+        customerId: record.customerId || '', primaryName: record.name || record.shortName || '',
+        shortName: record.shortName || '', fromSale: '', toSale: record.sale || record._rtx || '',
+        operator: getActor(params, context), reason: 'upsertRecord:insert',
+        ts: now, action: 'upsertRecord', source: 'tuoke_records', _id_target: addRes && addRes.id
+      });
+    }
+  } catch (_) { /* 不阻断 */ }
   return ok('upsertRecord', { updated: false, id: addRes && addRes.id, record }, { collection: COLLECTIONS.legacyRecords });
 }
 async function deleteRecord(params, context) {
@@ -374,13 +398,27 @@ async function queryCustomers(params) {
 async function getAttributionLog(params) {
   params = params || {};
   const database = getDb();
+  const _ = database.command;
   const where = {};
   if (params.customerId) where.customerId = String(params.customerId);
   if (params.primaryName) where.primaryName = String(params.primaryName);
-  const limit = safeLimit(params.limit, 50, 200);
+  if (params.shortName) where.shortName = String(params.shortName);
+  if (params.operator) where.operator = String(params.operator);
+  // R6.3 时间窗
+  if (params.since || params.until) {
+    const range = {};
+    if (params.since) range.$gte = Number(params.since);
+    if (params.until) range.$lte = Number(params.until);
+    where.ts = range;
+  }
+  const limit = safeLimit(params.limit, 50, 500);
   const res = await database.collection(COLLECTIONS.attributionLog).where(where).orderBy('ts', 'desc').limit(limit).get();
   const rows = res && res.data ? res.data : [];
   return ok('getAttributionLog', { rows, count: rows.length }, { collection: COLLECTIONS.attributionLog });
+}
+// R6.3 别名: getAuditLog (语义更通用, 兼容 attribution_log)
+async function getAuditLog(params) {
+  return getAttributionLog(params);
 }
 async function customersCount() {
   const database = getDb();
@@ -589,6 +627,7 @@ async function handle(action, params, context) {
     case 'updateAttribution': return await updateAttribution(params, context);
     case 'queryCustomers': return await queryCustomers(params);
     case 'getAttributionLog': return await getAttributionLog(params);
+    case 'getAuditLog': return await getAuditLog(params);
     case 'customersCount': return await customersCount();
     case 'bulkImportCustomers': return await bulkImportCustomers(params);
     // R5.2 KPI 快照
