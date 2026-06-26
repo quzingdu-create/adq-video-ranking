@@ -39,27 +39,30 @@ window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
 window.__BIG_DATA_READY__ = false;
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260626c"></script>
-<script defer src="api_client.js?v=20260626c"></script>
-<script defer src="data_adapter.js?v=20260626c"></script>
+<script defer src="cloud_gray_switch.js?v=20260626g"></script>
+<script defer src="api_client.js?v=20260626g"></script>
+<script defer src="data_adapter.js?v=20260626g"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260626c"></script> -->
-<script src="data/center_sales_summary.js?v=20260626c"></script>
-<script src="data/center_quarter_summary.js?v=20260626c"></script>
-<script src="data/center_daily_kpi.js?v=20260626c"></script>
-<script src="data/top80_effective_metrics.js?v=20260626c"></script>
-<script src="data/top_status_data.js?v=20260626c"></script>
-<script src="data/enough_candidates.js?v=20260626c"></script>
-<script src="data/handover_customers_519.js?v=20260626c"></script>
-<script src="data/customer_main_product.js?v=20260626c" defer></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260626g"></script> -->
+<script src="data/center_sales_summary.js?v=20260626g"></script>
+<script src="data/center_quarter_summary.js?v=20260626g"></script>
+<script src="data/center_daily_kpi.js?v=20260626g"></script>
+<script src="data/top80_effective_metrics.js?v=20260626g"></script>
+<script src="data/top_status_data.js?v=20260626g"></script>
+<script src="data/enough_candidates.js?v=20260626g"></script>
+<script src="data/handover_customers_519.js?v=20260626g"></script>
+<!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
+     Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
+<!-- <script src="data/customer_main_product.js?v=20260626g" defer></script> -->
+<script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260626c"></script>
-<script src="dual_check.js?v=20260626c"></script>
-<script src="big_data_dual_check.js?v=20260626c"></script>
+<script src="cloud_sync.js?v=20260626g"></script>
+<script src="dual_check.js?v=20260626g"></script>
+<script src="big_data_dual_check.js?v=20260626g"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -580,8 +583,14 @@ window.__BIG_DATA_READY__ = false;
   .sales-detail-tbl .main-num.rising { color:#dc2626; }
   .sales-detail-tbl .main-num.cost { color:#7c3aed; }
   .sales-detail-tbl .sub-meta { font-size:10.5px; color:#9ca3af; margin-top:2px; line-height:1.2; }
-  .sales-detail-tbl .chase-cell { text-align:center; min-width:132px; background:#f8fbff; }
+  .sales-detail-tbl .chase-cell { text-align:center; min-width:160px; background:#f8fbff; }
   .sales-detail-tbl .chase-cell .sub-meta { display:block;width:max-content;margin:3px auto 0;padding:2px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:12px;font-weight:800;line-height:1.35; }
+  /* 80%冲刺目标: 更醒目 */
+  .sales-detail-tbl .chase-cell .sprint80 { background:linear-gradient(135deg,#fef2f2,#fee2e2); color:#b91c1c; font-weight:800; font-size:13px; padding:4px 10px; border-radius:10px; border:1px solid #fecaca; }
+  .sales-detail-tbl .chase-cell .sprint80.done { background:linear-gradient(135deg,#f0fdf4,#dcfce7); color:#15803d; border-color:#bbf7d0; }
+  .sales-detail-tbl .sprint80-label { display:block; font-size:10px; color:#6b7280; margin-bottom:2px; }
+  .sales-detail-tbl .sprint80-gap { font-size:14px; font-weight:800; }
+  .sales-detail-tbl .sprint80-daily { font-size:11px; color:#9ca3af; margin-top:2px; }
   .sales-detail-tbl .sub-meta .delta-up { color:#dc2626; }
   .sales-detail-tbl .sub-meta .delta-down { color:#16a34a; }
   .sales-detail-tbl .sub-meta .delta-flat { color:#9ca3af; }
@@ -841,7 +850,7 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260626c`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260626g`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1039,7 +1048,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260626c" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260626g" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1055,7 +1064,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260626c" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260626g" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1139,7 +1148,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260626c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260626g" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1753,15 +1762,15 @@ function renderSalesProgress() {
   // 剩余天数按“今天到 Q2 结束”含当天算；数据日=截止昨天/当天看板口径时，6/16 到 6/30 = 15 天。
   const remainDays = Math.max(1, qTotalDays - days + 1);
   const QTD_TARGETS = {
-    total: { rising: 207, costDaily: 120 },
-    brownfan: { rising: 40, costDaily: 30 },
-    lijunwu: { rising: 40, costDaily: 30 },
-    Jonzhu: { rising: 40, costDaily: 30 },
-    kaikaigenli: { rising: 40, costDaily: 30 },
-    yvaineechen: { rising: 30, costDaily: 20 },
-    ruilingzhan: { rising: 20, costDaily: 10 },
-    kinsleyjin: { rising: 0, costDaily: 0 },
-    other: { rising: 0, costDaily: 0 }
+    total: { rising: 207, costDaily: 120, rising80: 207, costDaily80: 96 }, // 80%冲刺: 新锐不变, 日耗 120×0.8=96
+    brownfan: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
+    lijunwu: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
+    Jonzhu: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
+    kaikaigenli: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
+    yvaineechen: { rising: 30, costDaily: 20, rising80: 30, costDaily80: 16 },
+    ruilingzhan: { rising: 20, costDaily: 10, rising80: 20, costDaily80: 8 },
+    kinsleyjin: { rising: 0, costDaily: 0, rising80: 0, costDaily80: 0 },
+    other: { rising: 0, costDaily: 0, rising80: 0, costDaily80: 0 }
   };
   function targetConfigForRow(rowKind, row){
     if (rowKind === 'total') return QTD_TARGETS.total;
@@ -1769,13 +1778,17 @@ function renderSalesProgress() {
     return QTD_TARGETS[String(row && row.sale || '')] || { rising: 0, costDaily: 0 };
   }
   function targetForRow(rowKind, metric, row){
-    // 2026-06-16 子青拍板：每个销售用单独目标，不能再平均摊。
-    // 日耗需到 = (个人日耗目标 * 91 - 截止到昨天的季度消耗) / 今天到 Q2 结束天数。
+    // 2026-06-26 子青拍板: 新增 80%冲刺目标 (sprint80)
+    // - 新锐不变 (拓新组只看新锐, 不看日耗)
+    // - 日耗 = 原目标 × 0.8
+    // metric: 'rising' | 'cost' | 'rising80' | 'cost80'
     const cfg = targetConfigForRow(rowKind, row);
+    if (metric === 'rising80') return cfg.rising80 != null ? cfg.rising80 : cfg.rising;
+    if (metric === 'cost80') return cfg.costDaily80 != null ? cfg.costDaily80 * qTotalDays : cfg.costDaily * qTotalDays;
     return metric === 'rising' ? cfg.rising : cfg.costDaily * qTotalDays;
   }
-  function chaseCostDailyNeed(rowKind, row){
-    const targetWan = targetForRow(rowKind, 'cost', row);
+  function chaseCostDailyNeed(rowKind, row, use80){
+    const targetWan = targetForRow(rowKind, use80 ? 'cost80' : 'cost', row);
     const currentWan = Number(row && row.quarterCost || 0) / 10000;
     return Math.max(0, (targetWan - currentWan) / remainDays);
   }
@@ -1858,8 +1871,13 @@ function renderSalesProgress() {
         <div class="sub-meta">季耗÷${days}天</div>
       </td>
       <td class="chase-cell">
-        <div class="sub-meta">新锐还需${Math.max(0, Math.ceil(targetForRow(rowKind,'rising', r) - Number(r.risingCount||0)))}个</div>
-        <div class="sub-meta">日耗需到${chaseCostDailyNeed(rowKind, r).toFixed(1)}万</div>
+        <div class="sprint80">
+          <div class="sprint80-label">80%冲刺</div>
+          <div class="sprint80-gap" id="sprint80-rise-${rowKind}-${r.sale||''}">新锐${Math.max(0, Math.ceil(targetForRow(rowKind,'rising80', r) - Number(r.risingCount||0)))}个</div>
+          <div class="sprint80-daily">日耗${chaseCostDailyNeed(rowKind, r, true).toFixed(1)}万/天</div>
+        </div>
+        <div class="sub-meta" style="margin-top:6px;">100%还需${Math.max(0, Math.ceil(targetForRow(rowKind,'rising', r) - Number(r.risingCount||0)))}个</div>
+        <div class="sub-meta">100%日耗${chaseCostDailyNeed(rowKind, r).toFixed(1)}万</div>
       </td>
       <td>
         ${fmtMain(fmtWan(r.yestCost))}
@@ -3622,7 +3640,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260626c';
+  s.src = 'data/bulk_import_rows.js?v=20260626g';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4574,7 +4592,8 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
     { file:'data/customer_link_data.js',     vars:['__CUSTOMER_LINK_DATA__'], cloudLookupType:'customer_link_data',             label:'客户链路数据' },
     { file:'data/delivery_side_summary.js',  vars:['__DELIVERY_SIDE_MAP__','__DELIVERY_COUNTS__'],                             label:'交付侧汇总' },
     { file:'data/first_quarter.js',          vars:['__FIRST_QUARTER__'],                                                       label:'首投季度映射' },
-    { file:'data/customer_lifecycle.js',     vars:['__CUSTOMER_LIFECYCLE__'],   isRaw:true,                                   label:'客户生命周期' }
+    { file:'data/customer_lifecycle.js',     vars:['__CUSTOMER_LIFECYCLE__'],   isRaw:true,                                   label:'客户生命周期' },
+    { file:'data/customer_main_product.js',  vars:['__CUSTOMER_MAIN_PRODUCT__'],                                              label:'客户主营品类' }
   ];
 
   var _loaded = {};          // 已加载文件缓存：file -> true，避免重复请求
