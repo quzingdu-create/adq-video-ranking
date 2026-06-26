@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-06-25 10:20",
+  "updatedAt": "2026-06-26 15:45",
   "source": "/Users/duziqing/Downloads/修正归属.xlsx",
-  "note": "子青2026-06-22确认：修正归属.xlsx中登记所属销售非其他/非空的客户，销售归属写死为最高优先级。",
+  "note": "子青2026-06-22确认+2026-06-25增量(义乌市芝托/温州联硕/顺顺行=文字优先于云端;风华正茂走A方案归并足力健已删) | R3.1.1 (2026-06-26): inline override 反向同步 5 条 (杭启 lijunwu→Jonzhu 等)",
   "overrides": {
     "CALLIVEN居家健身": {
       "sale": "brownfan",
@@ -3164,9 +3164,9 @@
       "date": "2026-06-22"
     },
     "广州杭启科技有限公司": {
-      "sale": "lijunwu",
-      "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
-      "date": "2026-06-22"
+      "sale": "Jonzhu",
+      "reason": "2026-06-26 R3.1.1 inline override 反向同步: lijunwu→Jonzhu (inline 为子青最新拍板,优先级最高)",
+      "date": "2026-06-26"
     },
     "广州林小鹿电子商务有限公司": {
       "sale": "Jonzhu",
@@ -5245,7 +5245,7 @@
     },
     "泉州顺顺行贸易有限责任公司": {
       "sale": "lijunwu",
-      "reason": "2026-06-25 子青指定严格写死 →lijunwu",
+      "reason": "2026-06-25 子青指定严格写死 →lijunwu (文字优先,覆盖云端)",
       "date": "2026-06-25"
     },
     "泉州鲤城区骁腾商贸有限公司": {
@@ -6030,7 +6030,7 @@
     },
     "温州联硕鞋帽有限公司": {
       "sale": "lijunwu",
-      "reason": "2026-06-25 子青指定严格写死 →lijunwu",
+      "reason": "2026-06-25 子青指定严格写死 →lijunwu (文字优先,覆盖云端)",
       "date": "2026-06-25"
     },
     "温州聚忻电子商务有限公司": {
@@ -7708,10 +7708,40 @@
       "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
       "date": "2026-06-22"
     },
-    "泉州风华正茂电子商务有限公司": {
+    "义乌市芝托电子商务商行(个体工商户)": {
       "sale": "ruilingzhan",
-      "reason": "2026-06-25 子青指定严格写死 →ruilingzhan",
+      "reason": "2026-06-25 子青指定严格写死 →ruilingzhan (文字优先)",
       "date": "2026-06-25"
+    },
+    "义乌市芝托电子商务商行（个体工商户）": {
+      "sale": "ruilingzhan",
+      "reason": "2026-06-25 子青指定严格写死 →ruilingzhan (文字优先)",
+      "date": "2026-06-25"
+    },
+    "义乌市芝托电子商务商行(个体工商户）": {
+      "sale": "ruilingzhan",
+      "reason": "2026-06-25 子青指定严格写死 →ruilingzhan (文字优先)",
+      "date": "2026-06-25"
+    },
+    "泉州丰泽区驰宇商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-06-26 R3.1.1 inline override 反向同步 (manual_attr_override 缺失补入)",
+      "date": "2026-06-26"
+    },
+    "泉州兰迪商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-06-26 R3.1.1 inline override 反向同步 (manual_attr_override 缺失补入)",
+      "date": "2026-06-26"
+    },
+    "淮安华顶鞋业有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-06-26 R3.1.1 inline override 反向同步 (manual_attr_override 缺失补入)",
+      "date": "2026-06-26"
+    },
+    "杭州荧柏网络科技有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-06-26 R3.1.1 inline override 反向同步 (manual_attr_override 缺失补入)",
+      "date": "2026-06-26"
     }
   }
 }

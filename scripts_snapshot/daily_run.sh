@@ -152,14 +152,17 @@ done
 SNAP_COUNT=$(ls "$SNAP_DIR" 2>/dev/null | wc -l | tr -d ' ')
 echo "  ✅ snapshot ${SNAP_COUNT} 个文件"
 
-# 5.7 R11.5 同步 mobile 镜像
+# 5.7 R11.5 同步 mobile 镜像 (HTML + data/ 全镜像, R3.1.3 补 data/)
 echo ""
-echo "[Step 8/12] 同步 sales-center-mobile/ 镜像"
+echo "[Step 8/12] 同步 sales-center-mobile/ 镜像 (HTML + data/)"
 cp "$SC/mobile.html" "$SCMOBILE/index.html"
 cp "$SC/kanban_embed.html" "$SCMOBILE/kanban_embed.html"
 cp "$SC/industry-belt.html" "$SCMOBILE/industry-belt.html"
 cp "$SC/report.html" "$SCMOBILE/report.html"
-echo "  ✅ mobile 4 个 HTML 已同步"
+# R3.1.3: 之前漏同步 data/, 导致 mobile 端杭启等 override 修复不生效 → 截图打脸的根因之一
+# 用 rsync 同步全部 data/, 排除 *.bak 备份文件
+rsync -a --delete --exclude='*.bak*' --exclude='snapshots/' "$SC/data/" "$SCMOBILE/data/" 2>&1 | tail -3
+echo "  ✅ mobile 4 个 HTML + data/ 已全镜像同步"
 
 # 6. postflight + anomaly
 echo ""
