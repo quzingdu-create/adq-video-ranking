@@ -1,1 +1,1 @@
-{"v":"20260626b","dataDate":"2026-06-25","note":"R7.7 report.html 加归属变更链路 tab + R11 daily_run.sh 补 4 步"}
+{"v":"20260626c","dataDate":"2026-06-25","note":"R12.1 bulk_import 改懒加载首屏省 360KB + R12.2 customer_main_product 加 defer 不阻塞首屏渲染"}

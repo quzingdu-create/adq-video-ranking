@@ -39,26 +39,27 @@ window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
 window.__BIG_DATA_READY__ = false;
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260626b"></script>
-<script defer src="api_client.js?v=20260626b"></script>
-<script defer src="data_adapter.js?v=20260626b"></script>
+<script defer src="cloud_gray_switch.js?v=20260626c"></script>
+<script defer src="api_client.js?v=20260626c"></script>
+<script defer src="data_adapter.js?v=20260626c"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
-<script src="data/bulk_import_rows.js?v=20260626b"></script>
-<script src="data/center_sales_summary.js?v=20260626b"></script>
-<script src="data/center_quarter_summary.js?v=20260626b"></script>
-<script src="data/center_daily_kpi.js?v=20260626b"></script>
-<script src="data/top80_effective_metrics.js?v=20260626b"></script>
-<script src="data/top_status_data.js?v=20260626b"></script>
-<script src="data/enough_candidates.js?v=20260626b"></script>
-<script src="data/handover_customers_519.js?v=20260626b"></script>
-<script src="data/customer_main_product.js?v=20260626b"></script>
+<!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
+<!-- <script src="data/bulk_import_rows.js?v=20260626c"></script> -->
+<script src="data/center_sales_summary.js?v=20260626c"></script>
+<script src="data/center_quarter_summary.js?v=20260626c"></script>
+<script src="data/center_daily_kpi.js?v=20260626c"></script>
+<script src="data/top80_effective_metrics.js?v=20260626c"></script>
+<script src="data/top_status_data.js?v=20260626c"></script>
+<script src="data/enough_candidates.js?v=20260626c"></script>
+<script src="data/handover_customers_519.js?v=20260626c"></script>
+<script src="data/customer_main_product.js?v=20260626c" defer></script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260626b"></script>
-<script src="dual_check.js?v=20260626b"></script>
-<script src="big_data_dual_check.js?v=20260626b"></script>
+<script src="cloud_sync.js?v=20260626c"></script>
+<script src="dual_check.js?v=20260626c"></script>
+<script src="big_data_dual_check.js?v=20260626c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -840,7 +841,7 @@ window.__BIG_DATA_READY__ = false;
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260626b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260626c`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1038,7 +1039,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260626b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260626c" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1054,7 +1055,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260626b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260626c" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1138,7 +1139,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260626b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260626c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3614,8 +3615,23 @@ function importRows(rows) {
   alert(`批量导入完成：${records.length} 条；已自动切换到「全部」周期并清空筛选。缺少字段已留空。数据量较大时仅前2000条持久化，当前页面已载入全部导入记录。`);
 }
 function importPresetBulkRows() {
-  const rows = window.__BULK_IMPORT_ROWS__ || [];
-  if (!rows.length) return alert('未找到预置批量数据，请确认 data/bulk_import_rows.js 已加载');
+  // R12.1 (2026-06-26): 改懒加载, 首屏省 360KB
+  if (window.__BULK_IMPORT_ROWS__ && window.__BULK_IMPORT_ROWS__.length) {
+    _doImportBulkRows(window.__BULK_IMPORT_ROWS__);
+    return;
+  }
+  // 动态 fetch
+  const s = document.createElement('script');
+  s.src = 'data/bulk_import_rows.js?v=20260626c';
+  s.onload = () => {
+    const rows = window.__BULK_IMPORT_ROWS__ || [];
+    if (!rows.length) return alert('未找到预置批量数据');
+    _doImportBulkRows(rows);
+  };
+  s.onerror = () => alert('加载 bulk_import_rows.js 失败');
+  document.head.appendChild(s);
+}
+function _doImportBulkRows(rows) {
   if (!confirm(`确认导入预置批量.xlsx 数据 ${rows.length} 条？\n缺少字段将留空。`)) return;
   importRows(rows);
 }
