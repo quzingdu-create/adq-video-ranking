@@ -80,6 +80,10 @@ echo "  [Step 3.5/12] override 自愈 (按 manual_attr_override.json 校正 regi
 $PY $PROJ/scripts/sync_override_all.py --apply 2>&1 | grep -E "校正|✓"
 $PY $PROJ/scripts/preflight_override_consistency.py || { echo "❌ rebuild+build_register_lookup 后 override 自检失败"; exit 2; }
 
+# 3.6 R3.1.3-D4 类目自愈 (按 bulk_import 登记类目校正 tuoke_records.cat)
+echo "  [Step 3.6/12] 类目自愈 (按 bulk_import 登记类目)"
+$PY $PROJ/scripts/sync_category_from_bulk.py --apply 2>&1 | grep -E "冲突|空|✓"
+
 # 4. R11.1: 产业带 rebuild (今早 6/26 手动跑过, 现纳入 SOP)
 echo ""
 echo "[Step 4/12] 产业带 industry-belt rebuild"

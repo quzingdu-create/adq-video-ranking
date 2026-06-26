@@ -78,10 +78,13 @@ def d4_category():
     try:
         records = load_records(f'{SC}/data/tuoke_real_records.js')
     except: return ('D4 类目', False, '读 tuoke_records 失败')
+    # 类目归一化 (bulk 用简称, tuoke 用全称, 同义合并)
+    CAT_NORM = {'运动':'运动户外', '珠宝':'珠宝文玩'}
+    norm = lambda c: CAT_NORM.get(str(c or '').strip(), str(c or '').strip())
     tk_cat = {}
     for r in records:
         n = (r.get('name','') or '').strip()
-        if n: tk_cat.setdefault(n, set()).add(str(r.get('cat','')))
+        if n: tk_cat.setdefault(n, set()).add(norm(r.get('cat','')))
     bulk_path = f'{SC}/data/bulk_import_rows.js'
     if not os.path.exists(bulk_path): return ('D4 类目', True, '跳过(bulk_import 不存在)')
     with open(bulk_path) as f: t = f.read()
@@ -90,7 +93,7 @@ def d4_category():
     bk_cat = {}
     for r in bulk:
         n = r.get('主体名称（红色主体代表重复，请自查去重）','').strip()
-        if n: bk_cat.setdefault(n, set()).add(str(r.get('类目','')))
+        if n: bk_cat.setdefault(n, set()).add(norm(r.get('类目','')))
     mismatch = 0
     for n in (set(tk_cat) & set(bk_cat)):
         tcs = {x for x in tk_cat[n] if x and x != '未打标'}
