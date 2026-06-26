@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📊 服饰拓新日报快报 · 销售作战中心</title>
-<script src="auth-guard.js?v=20260626a"></script>
+<script src="auth-guard.js?v=20260626b"></script>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260626a"></script>
+<script src="cloud_sync.js?v=20260626b"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(135deg,#f0f4ff,#fff7ed);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;color:#1f2937;font-size:12px;padding:12px}
@@ -61,7 +61,27 @@ td{padding:8px;border-bottom:1px solid #f0f2f8}
     <span class="badge" id="src">CloudBase · sc_kpi_snapshots</span>
     <span class="meta" id="meta"></span>
   </div>
+  <div class="topbar" style="padding:6px 10px;margin-bottom:8px;">
+    <button id="tabReport" onclick="switchTab('report')" style="background:#3b82f6;color:#fff;">📊 日报快报</button>
+    <button id="tabAudit" onclick="switchTab('audit')" style="background:#e5e9f0;color:#374151;">📜 归属变更链路</button>
+    <span class="meta" style="margin-left:auto;">R7.7 子青文字优先死规矩 9</span>
+  </div>
   <div id="content"><div class="loading">⏳ 加载中…</div></div>
+  <div id="auditContent" style="display:none;">
+    <section>
+      <h2>📜 归属变更链路（sc_attribution_log）</h2>
+      <div style="margin-bottom:10px;">
+        <label>查询：</label>
+        <input type="text" id="auditQuery" placeholder="客户主体名 / 客户简称 / 销售 RTX" style="width:280px;padding:6px 10px;border:1px solid #e5e9f0;border-radius:7px;">
+        <button onclick="loadAuditLog()" style="padding:6px 14px;background:#3b82f6;color:#fff;border:none;border-radius:7px;font-weight:600;cursor:pointer;">查询</button>
+        <button onclick="loadAuditLog(true)" style="padding:6px 14px;background:#e5e9f0;color:#374151;border:none;border-radius:7px;font-weight:600;cursor:pointer;">最近 50 条</button>
+        <span class="meta" id="auditMeta" style="margin-left:8px;"></span>
+      </div>
+      <div id="auditTable">
+        <div class="loading" style="padding:20px;">点"最近 50 条"加载，或输入客户名查询</div>
+      </div>
+    </section>
+  </div>
 </div>
 <script>
 const SALES_ORDER = ['kaikaigenli','brownfan','lijunwu','Jonzhu','yvaineechen','kinsleyjin','ruilingzhan','其他'];
@@ -248,6 +268,69 @@ window.addEventListener('load', ()=>{
   };
   tryLoad();
 });
+
+// R7.7 (2026-06-26): 归属变更链路 tab
+function switchTab(tab) {
+  const r = document.getElementById('content');
+  const a = document.getElementById('auditContent');
+  const tr = document.getElementById('tabReport');
+  const ta = document.getElementById('tabAudit');
+  if (tab === 'audit') {
+    r.style.display = 'none'; a.style.display = '';
+    tr.style.background = '#e5e9f0'; tr.style.color = '#374151';
+    ta.style.background = '#3b82f6'; ta.style.color = '#fff';
+  } else {
+    r.style.display = ''; a.style.display = 'none';
+    tr.style.background = '#3b82f6'; tr.style.color = '#fff';
+    ta.style.background = '#e5e9f0'; ta.style.color = '#374151';
+  }
+}
+
+async function loadAuditLog(recent) {
+  const tbody = document.getElementById('auditTable');
+  const meta = document.getElementById('auditMeta');
+  tbody.innerHTML = '<div class="loading" style="padding:20px;">⏳ 查询中…</div>';
+  const q = document.getElementById('auditQuery').value.trim();
+  const params = recent ? { limit: 50 } : (
+    q ? (q.match(/^[a-zA-Z0-9]+$/) ? { operator: q, limit: 100 }
+         : (q.length > 6 ? { primaryName: q, limit: 100 }
+                         : { shortName: q, limit: 100 }))
+      : { limit: 50 });
+  try {
+    const res = await window.cloud.callFunction('salesCenterApi', {
+      action: 'getAuditLog', params: params
+    });
+    const rows = ((res && res.result && res.result.data) || {}).rows || [];
+    meta.textContent = `共 ${rows.length} 条`;
+    if (!rows.length) {
+      tbody.innerHTML = '<div class="loading" style="padding:20px;">无记录</div>';
+      return;
+    }
+    let html = '<table><thead><tr>'
+      + '<th>时间</th><th>客户主体</th><th>简称</th>'
+      + '<th>从→到</th><th>操作人</th><th>原因</th><th>来源</th>'
+      + '</tr></thead><tbody>';
+    rows.forEach(r => {
+      const ts = r.ts ? new Date(r.ts).toLocaleString('zh-CN', {hour12:false}) : '';
+      const from = r.fromSale || '(空)';
+      const to = r.toSale || '(空)';
+      const colorTo = (to !== from) ? '#ef4444' : '#10b981';
+      html += `<tr>
+        <td style="white-space:nowrap;color:#6b7280;font-size:11px;">${ts}</td>
+        <td>${(r.primaryName||r.name||'').replace(/[<>]/g,'')}</td>
+        <td style="color:#6b7280;font-size:11px;">${(r.shortName||'').replace(/[<>]/g,'')}</td>
+        <td><span style="color:#6b7280;">${from}</span> → <b style="color:${colorTo};">${to}</b></td>
+        <td>${(r.operator||'').replace(/[<>]/g,'')}</td>
+        <td style="font-size:11px;color:#6b7280;">${(r.reason||'').replace(/[<>]/g,'').slice(0,40)}</td>
+        <td style="font-size:11px;color:#9ca3af;">${(r.source||r.action||'').replace(/[<>]/g,'')}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    tbody.innerHTML = html;
+  } catch (e) {
+    tbody.innerHTML = '<div class="err" style="padding:20px;">❌ 查询失败: ' + (e.message || e) + '</div>';
+  }
+}
 </script>
 </body>
 </html>
