@@ -1,1 +1,1 @@
-{"v":"20260626c","dataDate":"2026-06-25","note":"R12.1 bulk_import 改懒加载首屏省 360KB + R12.2 customer_main_product 加 defer 不阻塞首屏渲染"}
+{"v":"20260629a","dataDate":"2026-06-28","note":"6-29 每日更新：跨周末数据（6-26/27/28 三天累计日Δ用 6-25 snapshot 兜底）"}
