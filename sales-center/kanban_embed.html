@@ -39,30 +39,30 @@ window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
 window.__BIG_DATA_READY__ = false;
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260629b"></script>
-<script defer src="api_client.js?v=20260629b"></script>
-<script defer src="data_adapter.js?v=20260629b"></script>
+<script defer src="cloud_gray_switch.js?v=20260629c"></script>
+<script defer src="api_client.js?v=20260629c"></script>
+<script defer src="data_adapter.js?v=20260629c"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260629b"></script> -->
-<script src="data/center_sales_summary.js?v=20260629b"></script>
-<script src="data/center_quarter_summary.js?v=20260629b"></script>
-<script src="data/center_daily_kpi.js?v=20260629b"></script>
-<script src="data/top80_effective_metrics.js?v=20260629b"></script>
-<script src="data/top_status_data.js?v=20260629b"></script>
-<script src="data/enough_candidates.js?v=20260629b"></script>
-<script src="data/handover_customers_519.js?v=20260629b"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260629c"></script> -->
+<script src="data/center_sales_summary.js?v=20260629c"></script>
+<script src="data/center_quarter_summary.js?v=20260629c"></script>
+<script src="data/center_daily_kpi.js?v=20260629c"></script>
+<script src="data/top80_effective_metrics.js?v=20260629c"></script>
+<script src="data/top_status_data.js?v=20260629c"></script>
+<script src="data/enough_candidates.js?v=20260629c"></script>
+<script src="data/handover_customers_519.js?v=20260629c"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260629b" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260629c" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260629b"></script>
-<script src="dual_check.js?v=20260629b"></script>
-<script src="big_data_dual_check.js?v=20260629b"></script>
+<script src="cloud_sync.js?v=20260629c"></script>
+<script src="dual_check.js?v=20260629c"></script>
+<script src="big_data_dual_check.js?v=20260629c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -2363,9 +2363,59 @@ function enrichRecordMetrics(r, metricMap) {
   });
   return out;
 }
+// R3.2 (2026-06-29): 登记明细表显示用 sale 必须套 manual_attr_override 锁
+//   bug: __TUOKE_REAL_RECORDS__ 是云端流水原始登记表(每条登记保留原销售)
+//        即便 override 锁了归属,这层 RECORDS 也不会被改写 → 表里显示旧 sale
+//   修法: 渲染期套一遍 override → 不动底层数据,只改展示
+function _buildRecordOverrideMap() {
+  const m = Object.create(null);
+  try {
+    const _m1 = (typeof window !== 'undefined' && window.__MANUAL_SALE_OVERRIDE__) || {};
+    Object.keys(_m1).forEach(function(k){ if (_m1[k]) m[String(k).replace(/\s+/g,'')] = _m1[k]; });
+  } catch(_){}
+  try {
+    const _ov = (typeof window !== 'undefined' && window.__MANUAL_ATTR_OVERRIDE__ && window.__MANUAL_ATTR_OVERRIDE__.overrides) || {};
+    Object.keys(_ov).forEach(function(k){
+      const sale = _ov[k] && _ov[k].sale;
+      if (!sale) return;
+      m[String(k).replace(/\s+/g,'')] = sale;
+    });
+  } catch(_){}
+  return m;
+}
+function applyRecordOverride(r, m) {
+  if (!r || !m) return r;
+  const keys = [r.name, r.shortName, r.brand].filter(Boolean).map(k => String(k).replace(/\s+/g,''));
+  for (let i = 0; i < keys.length; i++) {
+    const locked = m[keys[i]];
+    if (locked && locked !== r.sale) {
+      // R8.4 兼容: 若云端 saleHistory 最新一条 when > override.date,销售最新优先,不动
+      try {
+        const _ov = (window.__MANUAL_ATTR_OVERRIDE__ && window.__MANUAL_ATTR_OVERRIDE__.overrides) || {};
+        const ovRec = _ov[keys[i]];
+        const ovDate = ovRec && ovRec.date;
+        const hist = Array.isArray(r.saleHistory) ? r.saleHistory : [];
+        if (ovDate && hist.length) {
+          const lastWhen = String(hist[hist.length-1].when || '').slice(0,10);
+          if (lastWhen && lastWhen > ovDate) return r;  // 销售最新优先
+        }
+      } catch(_){}
+      const out = Object.assign({}, r);
+      out.sale = locked;
+      out._rtx = locked;
+      out._recorded_by = locked;
+      out._override_applied = true;
+      return out;
+    }
+  }
+  return r;
+}
 function currentRecordList() {
   const metricMap = buildRecordMetricMap();
-  let list = dedupeRecordsByEarliest(RECORDS).map(r => enrichRecordMetrics(r, metricMap));
+  const overrideMap = _buildRecordOverrideMap();
+  let list = dedupeRecordsByEarliest(RECORDS)
+    .map(r => enrichRecordMetrics(r, metricMap))
+    .map(r => applyRecordOverride(r, overrideMap));
   if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
   const todayStr = latestRecordDate(list);
   if (state.recordRange === 'today') {
@@ -3640,7 +3690,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260629b';
+  s.src = 'data/bulk_import_rows.js?v=20260629c';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
