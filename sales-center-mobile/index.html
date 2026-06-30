@@ -451,7 +451,7 @@ window.__TOP80_EFFECTIVE_METRICS__ = [{"sale":"brownfan","rank":1,"name":"广州
   <script defer src="dual_check.js?v=20260630a"></script>
   <script defer src="big_data_dual_check.js?v=20260630a"></script>
   <script defer src="login_guard_banner.js?v=20260630a"></script>
-  <script defer src="export_tuoke.js?v=20260630b"></script>
+  <script defer src="export_tuoke.js?v=20260630c"></script>
 </head>
 <body>
   <header class="hero">
@@ -1562,7 +1562,7 @@ window.__TOP80_EFFECTIVE_METRICS__ = [{"sale":"brownfan","rank":1,"name":"广州
     if (records && records.length) return Promise.resolve(records);
     const box = document.getElementById('yestTopList');
     if (box) box.innerHTML = '<div class="empty">昨日消耗Top客户加载中…</div>';
-    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260630a', '__MOBILE_TUOKE_READY__').then(() => {
+    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260630c', '__MOBILE_TUOKE_READY__').then(() => {
       // R3.3 (2026-06-29): 加载 manual_attr_override 锁
       return fetch('data/manual_attr_override.json?v=20260630a').then(r=>r.json()).then(j=>{ window.__MANUAL_ATTR_OVERRIDE__ = j; }).catch(()=>{}).then(()=>{
         var raw = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];

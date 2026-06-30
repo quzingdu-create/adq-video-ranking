@@ -1,4 +1,4 @@
-/* 拓新组双导出按钮 — 公共逻辑 v1.3（2026-06-30）
+/* 拓新组双导出按钮 — 公共逻辑 v1.4（2026-06-30）
  * 用法：每个页面 (index.html / kanban_embed.html / register_v3.2.html / mobile.html) 都需要：
  *   1. 加载 lib_loader.js（导出前按需加载 xlsx）
  *   2. 引入本文件 export_tuoke.js
@@ -7,20 +7,24 @@
  *
  * 数据口径：
  *   - 全量「拓新组登记客户明细」：window.__TUOKE_REAL_RECORDS__ 全部 (14631 登记表口径)
+ *     表头 18 列 = 登记日期/销售/主体/简称/首投季度/是否新客/有效/新锐/链路（手填）/投放端（AData）
+ *                /类目/拓客途径/拓客来源/商品消费链路/链路日耗/全域通日耗/ADQ日耗/综合投放端
  *   - 新客「25Q3-26Q2新客明细」：data/kanban_new_customer_view.js 大盘视图 (30402 / 与 KPI 卡 8142 同源)
- *     表头 = 客户简称 / 登记销售 / 首投季度 / 是否新客 / 是否有效 / 是否新锐
+ *     表头 6 列 = 客户简称 / 登记销售 / 首投季度 / 是否新客 / 是否有效 / 是否新锐
  *
  * 2026-06-15 修复1：PC / mobile 首屏提速后不再同步加载 tuoke_real_records.js，
  * 点击右上角下载时必须先按需加载 data/tuoke_real_records.js，再生成 xlsx。
  * 2026-06-15 修复2：登记日期按业务口径修正，月份 7-12 一律归 2025 年，月份 1-6 一律归 2026 年。
- * 2026-06-30 修复3：新客明细按钮改为读 kanban_new_customer_view.js 大盘视图（与 KPI 卡 8142 同源），
- *                  彻底解决"按钮 5344 vs KPI 卡 8142 对不上"的口径偏差。
+ * 2026-06-30 修复3：新客明细按钮改为读 kanban_new_customer_view.js 大盘视图（与 KPI 卡 8142 同源）。
+ * 2026-06-30 修复4：登记表明细新增 5 列（商品消费链路/链路日耗/全域通日耗/ADQ日耗/综合投放端），
+ *                  来源 = enrich_tuoke_with_link_delivery.py 把每日 链路/全域通/adq 三份CSV
+ *                  按客户简称 left-join 进 tuoke_real_records.js。
  */
 (function () {
   if (window.__EXPORT_TUOKE_BOUND__) return;
   window.__EXPORT_TUOKE_BOUND__ = true;
 
-  var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路','投放端','类目','拓客途径','拓客来源'];
+  var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路（手填）','投放端（AData）','类目','拓客途径','拓客来源','商品消费链路','链路日耗','全域通日耗','ADQ日耗','综合投放端'];
   var NEW_VIEW_HEADERS = ['客户简称','登记销售','首投季度','是否新客','是否有效','是否新锐'];
   var EXPORT_FALLBACK_VERSION = '20260622c';
   var _tuokePromise = null;
@@ -139,7 +143,12 @@
       r.deliverySide || '',
       r.cat || '',
       r.channel || '',
-      r.source || ''
+      r.source || '',
+      r.linkType || '',
+      (r.linkCost != null && r.linkCost !== '') ? Number(r.linkCost) : 0,
+      (r.qytCost != null && r.qytCost !== '') ? Number(r.qytCost) : 0,
+      (r.adqCost != null && r.adqCost !== '') ? Number(r.adqCost) : 0,
+      r.deliverySideEnriched || ''
     ];
   }
 
@@ -165,7 +174,8 @@
       var ws = XLSX.utils.aoa_to_sheet(aoa);
       ws['!cols'] = [
         { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 24 }, { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
-        { wch: 18 }, { wch: 10 }, { wch: 12 }, { wch: 18 }, { wch: 18 }
+        { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
+        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }
       ];
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
