@@ -209,7 +209,7 @@ function card(p,i){
        <div class="m"><div class="mv">¥${p.price||'—'}</div><div class="ml">下单单价</div></div>
        <div class="m"><div class="mv">${p.ctr?p.ctr+'%':'—'}</div><div class="ml">点击率 CTR</div><div class="bar"><i style="width:${p.ctr_v/ctrMax*100}%;background:var(--blue)"></i></div></div>
        <div class="m"><div class="mv">${p.cvr?p.cvr+'%':'—'}</div><div class="ml">下单率</div><div class="bar"><i style="width:${p.cvr_v/cvrMax*100}%;background:var(--blue)"></i></div></div>
-       <div class="m refund ${refHigh?'high':''}" style="grid-column:span 2"><div class="mv">${p.refund}</div><div class="ml">7日退款率(5%区间)</div>${hasRef?`<div class="bar"><i style="width:${p.refund_v/refMax*100}%;background:${refHigh?'var(--warn)':'var(--gold)'}"></i></div>`:''}</div>
+       <div class="m refund ${refHigh?'high':''}" style="grid-column:span 2"><div class="mv">${p.refundRate||p.refund||'-'}</div><div class="ml">7日退款率(5%区间)</div>${hasRef?`<div class="bar"><i style="width:${p.refund_v/refMax*100}%;background:${refHigh?'var(--warn)':'var(--gold)'}"></i></div>`:''}</div>
      </div>
      <div class="linkrow">
        <button class="btn copy" onclick='copyLink(this,${JSON.stringify(p.video||"")})'>&#128203; 复制素材链接</button>
