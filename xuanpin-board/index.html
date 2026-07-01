@@ -192,8 +192,8 @@ function card(p,i){
   const refHigh = p.refund_v>=45;
   const hasRef = p.refund_v>=0;
   const roiMax=maxOf('roi_v'),ctrMax=maxOf('ctr_v'),cvrMax=maxOf('cvr_v'),refMax=maxOf('refund_v');
-  const sellHtml = (p.sell&&p.sell.length)
-    ? `<div class="sell"><div class="selltop"><span class="selll">爆品卖点</span></div>${p.sell.map(s=>`<div class="sellrow"><span class="sellk">${s.k}</span><span class="sellv">${s.v}</span></div>`).join('')}</div>`
+  const sellHtml = (p.sellList&&p.sellList.length)
+    ? `<div class="sell"><div class="selltop"><span class="selll">爆品卖点</span></div>${p.sellList.map(s=>`<div class="sellrow"><span class="sellk">${s.k}</span><span class="sellv">${s.v}</span></div>`).join('')}</div>`
     : '';
   return `<div class="card">
    <div class="thumb">
@@ -220,7 +220,7 @@ function card(p,i){
 }
 function render(){
   const q=$('#q').value.trim(), sort=$('#sort').value, tool=$('#tool').value;
-  let list=scope().filter(p=>(!q||p.category.includes(q)||(p.sell||[]).some(s=>s.v.includes(q)))&&(!tool||(p.tool||'').includes(tool)));
+  let list=scope().filter(p=>(!q||p.category.includes(q)||(p.sellList||[]).some(s=>s.v.includes(q)))&&(!tool||(p.tool||'').includes(tool)));
   if(sort==='refund_v_asc') list.sort((a,b)=>(a.refund_v<0?999:a.refund_v)-(b.refund_v<0?999:b.refund_v));
   else list.sort((a,b)=>b[sort]-a[sort]);
   $('#grid').innerHTML = list.length? list.map((p,i)=>card(p,i)).join('') : '<div class="empty">无匹配商品</div>';
