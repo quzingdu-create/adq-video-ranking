@@ -153,8 +153,7 @@ async function loadIndex(){
 async function loadPeriod(){
   $('#grid').innerHTML = '<div class="loading">加载中...</div>';
   const r = await fetch('data/' + curPeriod + '.json?_=' + Date.now());
-  const raw = await r.json();
-  DATA = raw.data || raw;
+  DATA = await r.json();
   const meta = PERIODS.find(p=>p.id===curPeriod);
   $('#periodCnt').textContent = (meta?meta.count:DATA.length) + ' 款';
   curInd = '全部';
