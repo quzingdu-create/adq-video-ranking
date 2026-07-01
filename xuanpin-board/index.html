@@ -205,7 +205,7 @@ function card(p,i){
      ${sellHtml}
      <div class="tags"><span class="toolk">优化目标</span><span class="tag tool">${p.tool||'—'}</span></div>
      <div class="metrics">
-       <div class="m roi"><div class="mv">${p.roi||'—'}</div><div class="ml">下单ROI</div><div class="bar"><i style="width:${p.roi_v/roiMax*100}%;background:var(--good)"></i></div></div>
+       <div class="m roi"><div class="mv">${p.roi||'—'}</div><div class="ml">下单ROI(0.5区间)</div><div class="bar"><i style="width:${p.roi_v/roiMax*100}%;background:var(--good)"></i></div></div>
        <div class="m"><div class="mv">¥${p.price||'—'}</div><div class="ml">下单单价</div></div>
        <div class="m"><div class="mv">${p.ctr?p.ctr+'%':'—'}</div><div class="ml">点击率 CTR</div><div class="bar"><i style="width:${p.ctr_v/ctrMax*100}%;background:var(--blue)"></i></div></div>
        <div class="m"><div class="mv">${p.cvr?p.cvr+'%':'—'}</div><div class="ml">下单率</div><div class="bar"><i style="width:${p.cvr_v/cvrMax*100}%;background:var(--blue)"></i></div></div>
