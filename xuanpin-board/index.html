@@ -177,10 +177,11 @@ function renderTabs(){
 }
 function setInd(ind){ curInd=ind; renderTabs(); renderStats(); render(); }
 function avg(k){ const s=scope().filter(d=>d[k]>0); return s.length? s.reduce((a,b)=>a+b[k],0)/s.length : 0; }
+function roiSnap(v){ const lo=Math.floor(v*2)/2; return lo.toFixed(1)+'~'+(lo+0.5).toFixed(1); }
 function renderStats(){
   const items=[
     ['款商品', scope().length],
-    ['平均下单ROI', avg('roi_v').toFixed(1)],
+    ['平均下单ROI(0.5区间)', roiSnap(avg('roi_v'))],
     ['平均下单率', avg('cvr_v').toFixed(1)+'%'],
     ['平均客单价', '¥'+avg('price_v').toFixed(0)],
     ['平均退款区间下界', avg('refund_v').toFixed(0)+'%'],
