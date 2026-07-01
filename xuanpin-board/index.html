@@ -197,7 +197,7 @@ function card(p,i){
     : '';
   return `<div class="card">
    <div class="thumb">
-     ${p.img?`<img src="${p.img}" loading="lazy">`:'<div class="noimg">无素材 · 暂无图</div>'}
+     ${p.img?`<img src="${p.img.startsWith('data:')?p.img:'data:image/jpeg;base64,'+p.img}" loading="lazy">`:'<div class="noimg">无素材 · 暂无图</div>'}
      ${p.video?`<div class="play" onclick="playV('${p.video}')"><span>&#9654;</span></div>`:''}
    </div>
    <div class="body">
