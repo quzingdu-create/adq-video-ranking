@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>服饰各行业选品看板</title>
 <style>
 :root{
@@ -242,7 +245,10 @@ function closeV(){ $('#modal').classList.remove('open'); $('#v').pause(); $('#v'
 $('#modal').onclick=e=>{ if(e.target.id==='modal') closeV(); };
 ['q','sort','tool'].forEach(id=>$('#'+id).addEventListener('input',render));
 
-loadIndex().catch(e=>{ $('#grid').innerHTML = '<div class="empty">加载失败: '+e.message+'</div>'; });
+loadIndex().catch(e=>{
+  console.error('[xuanpin] load error:', e, 'stack:', e.stack);
+  $('#grid').innerHTML = '<div class="empty">加载失败: '+e.message+'<br><small style="color:#999">请F12打开Console截图给AI排查</small></div>';
+});
 </script>
 </body>
 </html>
