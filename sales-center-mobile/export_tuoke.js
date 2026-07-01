@@ -67,16 +67,83 @@
     return _scriptState[src];
   }
 
+  // R11.9 (2026-07-01): 下载前合并云端 T-0 新登记 (含今天销售登记的)
+  // 之前: 只读 tuoke_real_records.js 静态 T-1 快照 → 同事下载看不到今天登记 → 打脸
+  // 现在: 静态 + 云端最近 3 天增量, 按 _id 去重合并
+  function fetchCloudRecentTuoke() {
+    if (!window.cloud || typeof window.cloud.callFunction !== 'function') {
+      return Promise.resolve([]);
+    }
+    // 拉云端全量 tuoke_records (与 exportAllRecords 云函数对齐), 无 cursor 从头拉
+    var acc = [];
+    function pullPage(cursor) {
+      var params = { pageSize: 1000 };
+      if (cursor) params.cursor = cursor;
+      return window.cloud.callFunction('salesCenterApi', {
+        action: 'exportAllRecords',
+        params: params
+      }).then(function (r) {
+        var body = (r && r.result) || {};
+        if (!body.ok) return acc;
+        var data = body.data || {};
+        var rows = data.rows || [];
+        acc = acc.concat(rows);
+        if (data.hasMore && data.nextCursor && acc.length < 5000) {
+          return pullPage(data.nextCursor);
+        }
+        return acc;
+      });
+    }
+    return pullPage(null).catch(function (err) {
+      console.warn('[export_tuoke] 拉云端 tuoke 失败, 用静态兜底:', err);
+      return [];
+    });
+  }
+
   function ensureTuokeRecords() {
-    var existing = window.__TUOKE_REAL_RECORDS__;
-    if (Array.isArray(existing) && existing.length) return Promise.resolve(existing);
     if (_tuokePromise) return _tuokePromise;
-    toast('正在加载登记底表，请稍等…');
+    toast('正在加载登记底表 + 拉取云端最新登记，请稍等…');
     var src = 'data/tuoke_real_records.js?v=' + currentVersion();
-    _tuokePromise = loadScriptOnce(src).then(function () {
-      var rows = window.__TUOKE_REAL_RECORDS__;
-      if (!Array.isArray(rows) || !rows.length) throw new Error('登记底表为空，请刷新页面后重试');
-      return rows;
+    var staticP = (Array.isArray(window.__TUOKE_REAL_RECORDS__) && window.__TUOKE_REAL_RECORDS__.length)
+      ? Promise.resolve(window.__TUOKE_REAL_RECORDS__)
+      : loadScriptOnce(src).then(function () {
+          var rows = window.__TUOKE_REAL_RECORDS__;
+          if (!Array.isArray(rows) || !rows.length) throw new Error('登记底表为空，请刷新页面后重试');
+          return rows;
+        });
+    _tuokePromise = Promise.all([staticP, fetchCloudRecentTuoke()]).then(function (arr) {
+      var staticRows = arr[0] || [];
+      var cloudRows = arr[1] || [];
+      if (!cloudRows.length) return staticRows;
+      // 用 _id 建索引; 云端 _id 已存在则跳过 (静态口径已是最终), 不存在则 append
+      var ids = {};
+      staticRows.forEach(function (r) {
+        var k = r && (r._id || r.id);
+        if (k) ids[String(k)] = true;
+      });
+      // 同 (name, date) 也算已合并 (避免云端同客户多 _id 造成重复)
+      function nk(r) {
+        var nm = (r && (r.name || r.shortName) || '').replace(/\s+/g, '');
+        var dt = String((r && r.date) || '').slice(0, 10);
+        return nm + '|' + dt;
+      }
+      var nks = {};
+      staticRows.forEach(function (r) { nks[nk(r)] = true; });
+      var merged = staticRows.slice();
+      var appendedCnt = 0;
+      cloudRows.forEach(function (r) {
+        if (!r || !r.name) return;
+        var k = String(r._id || r.id || '');
+        if (k && ids[k]) return;
+        if (nks[nk(r)]) return;
+        merged.push(r);
+        appendedCnt++;
+      });
+      if (appendedCnt > 0) {
+        toast('已合并云端 ' + appendedCnt + ' 条最新登记');
+        console.info('[export_tuoke] 云端补集 append: ' + appendedCnt + ' 条 (static=' + staticRows.length + ' cloud=' + cloudRows.length + ')');
+      }
+      return merged;
     });
     return _tuokePromise;
   }
