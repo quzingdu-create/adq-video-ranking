@@ -52,6 +52,7 @@ td{padding:8px;border-bottom:1px solid #f0f2f8}
 .chase-cell .chase-tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.4}
 .chase-cell .chase-tag.warn{background:#fef2f2;color:#b91c1c}
 .chase-cell .chase-tag.ok{background:#f0fdf4;color:#15803d}
+.chase-cell .chase-daily{font-size:11px;color:#6b7280;margin-top:2px}
 </style>
 </head>
 <body>
@@ -180,11 +181,12 @@ function render(snap) {
     const riseCls = (tRise && riseN/tRise<0.3) ? 'alert' : '';
     const qdaW = tCost ? (qda/tCost*100).toFixed(1) : 0;
     const qdaPctS = tCost ? (qda/tCost*100).toFixed(1)+'%' : '—';
-    const costDaily80 = (tCost || 0) * 0.8;
+    const costDaily80 = (tCost || 0) * 0.8; // 80%冲刺日耗
+    const remainDays = Math.max(1, 91 - days + 1);
     const gap80 = Math.max(0, costDaily80 * 91 - Number(row.quarterCost || 0));
-    const chaseDaily80 = remain > 0 ? gap80 / remain : 0;
+    const chaseDaily80 = remainDays > 0 ? gap80 / remainDays : 0;
     const chaseCls = chaseDaily80 > costDaily80 * 1.5 ? 'warn' : 'ok';
-    const chaseTag = gap80 > 0 ? `差${(gap80/1e4).toFixed(0)}万 · 需${chaseDaily80.toFixed(1)}万/天` : '已完成';
+    const chaseTag = gap80 > 0 ? `差${gap80/1e4>=0?gap80/1e4:0.toFixed(0)}万 · 需${chaseDaily80.toFixed(1)}万/天` : '已完成';
     rowsHtml += `<tr><td class="sale">${s}<div class="sale-kpi">KPI · 新锐 ${kpiR} / 日耗 ${kpiC}</div></td>`
       + `<td><b>${riseN}个 <span class="trend">→${riseDD}</span></b>`
       + `<div class="cell-bar ${riseCls}"><span class="cell-bar-fill ${riseCls}" style="width:${riseW}%"></span></div>`
