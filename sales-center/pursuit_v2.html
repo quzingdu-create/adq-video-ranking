@@ -202,7 +202,7 @@ var UI = {tab:'claim', q:'', sale:'', contact:'', place:'', regOnly:false};
 // ========== 工具 ==========
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
 function fmt(n){if(n==null||isNaN(n))return '-';n=+n;if(n>=10000)return (n/10000).toFixed(1)+'万';return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
-function fmtMoney(n){if(n==null||isNaN(n))return '-';n=Math.round((+n)*100)/100;if(n>=10000)return (Math.round(n/1000)/10)+'万';return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d\.))/g,',');}
+function fmtMoney(n){if(n==null||isNaN(n))return '-';n=+n;if(!n)return '0.0万';var v=Math.round(n/1000)/10;return v.toFixed(1)+'万';}
 function pct(a,b){if(!b)return '0%';return (Math.round(a*1000/b)/10)+'%';}
 
 // ========== 渲染: 顶部漏斗 ==========
@@ -240,10 +240,9 @@ function renderClaimCards(){
   arr.sort(function(a,b){return (b.claim||0)-(a.claim||0);});
   var maxClaim = Math.max.apply(null, arr.map(function(x){return x.claim||0;}).concat([1]));
   var html = arr.map(function(x, i){
-    var nm = SALE_NAME_ZH[x.sale] || x.sale;
     return ''
       + '<div class="sc">'
-      +   '<div class="hd"><b>'+esc(nm)+'</b><span class="rk">#'+(i+1)+' · '+esc(x.sale)+'</span></div>'
+      +   '<div class="hd"><b>'+esc(x.sale)+'</b><span class="rk">#'+(i+1)+'</span></div>'
       +   '<div class="row">'
       +     '<div class="kv"><div class="k">认领品牌</div><div class="v">'+fmt(x.claim||0)+'</div></div>'
       +     '<div class="kv"><div class="k">已建联</div><div class="v">'+fmt(x.contact||0)+'</div></div>'
@@ -391,7 +390,7 @@ function renderTypeTables(){
         + '<td>'+shopPill+'</td>'
         + '<td>'+esc(r.shopServicer||'-')+'</td>'
         + '<td>'+esc(r.entity||'-')+'</td>'
-        + '<td style="text-align:right">'+(cost?fmt(cost):'-')+'</td>'
+        + '<td style="text-align:right">'+(cost?fmtMoney(cost):'-')+'</td>'
         + '<td>'+esc(r.firstTime||'-')+'</td>'
         + '<td>'+esc(r.noPlaceReason||'-')+'</td>'
         + '</tr>';
