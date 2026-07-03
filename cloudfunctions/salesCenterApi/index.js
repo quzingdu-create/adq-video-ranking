@@ -1,10 +1,13 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.6-target-brand-limit-20260703';
+const VERSION = 'v6.7-audit-idempotency-20260703';
 // R12.1 (2026-07-03): 靶向品牌覆盖上限 3 次(跨销售累计). source in TARGET_SOURCES 且 brand 非空 才计数
 const TARGET_SOURCES = ['26年4月后竞媒靶向名单'];
 const BRAND_LIMIT = 3;
+// Q1+Q2+Q3 (2026-07-03): 幂等键 + audit_log + traceId 三件套
+const WRITE_ACTIONS = ['upsertRecord', 'deleteRecord', 'registerCustomer', 'updateAttribution', 'updateProgress', 'bulkImportCustomers', 'writeKpiSnapshot', 'uploadBlobSubCollection'];
+const IDEMPOTENCY_TTL_MS = 24 * 3600 * 1000; // 24h
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -24,7 +27,10 @@ const COLLECTIONS = {
   // R5.5.6-8 (2026-06-25) 子集合 BFF 化, 替代 4MB 静态 .js
   customerLinks: 'sc_customer_links',          // 客户投放链路 (直播/小店/share)
   registerLookup: 'sc_register_lookup',         // 登记查重字典 (主体→简称 mapping + 老客标记)
-  customerDiag: 'sc_customer_diag'              // 客户诊断指标
+  customerDiag: 'sc_customer_diag',             // 客户诊断指标
+  // Q1+Q2+Q3 (2026-07-03) 写操作可观测三件套
+  auditLog: 'sc_audit_log',                     // 通用审计日志(所有写操作,含 traceId+idempotencyKey)
+  idempotency: 'sc_idempotency'                 // 幂等键缓存(24h 窗口,同 key 直接回放结果)
 };
 const SALES = ['brownfan', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
 
@@ -921,6 +927,49 @@ async function checkBrandLimit(params) {
   }, { collection: COLLECTIONS.legacyRecords });
 }
 
+/* ============ Q1+Q2+Q3 (2026-07-03) 写操作可观测三件套 ============ */
+// Q1: 幂等键 - 相同 idempotencyKey 24h 内重复请求直接回放上次结果
+async function tryIdempotencyReplay(idempotencyKey, action) {
+  if (!idempotencyKey) return null;
+  try {
+    const database = getDb();
+    const res = await database.collection(COLLECTIONS.idempotency)
+      .where({ key: String(idempotencyKey) }).limit(1).get();
+    const row = res && res.data && res.data[0];
+    if (!row) return null;
+    // 过期?
+    if (row.expireAt && row.expireAt < Date.now()) return null;
+    // action 必须一致(防串)
+    if (row.action && row.action !== action) return null;
+    return row.result || null;
+  } catch (_) { return null; }
+}
+async function saveIdempotencyResult(idempotencyKey, action, result, traceId) {
+  if (!idempotencyKey) return;
+  try {
+    const database = getDb();
+    const now = Date.now();
+    await database.collection(COLLECTIONS.idempotency).add({
+      key: String(idempotencyKey), action: action, result: result,
+      traceId: traceId || '', createdAt: now, expireAt: now + IDEMPOTENCY_TTL_MS
+    });
+  } catch (_) { /* 不阻断 */ }
+}
+// Q2: audit_log - 所有写操作追加通用审计
+async function appendAuditLog(entry) {
+  try {
+    const database = getDb();
+    await database.collection(COLLECTIONS.auditLog).add(Object.assign({ ts: Date.now() }, entry));
+  } catch (_) { /* 不阻断 */ }
+}
+// Q3: traceId - 若未提供则生成
+function ensureTraceId(params, context) {
+  const t = (params && params.traceId) || (context && context.requestId);
+  if (t) return String(t);
+  return 't_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+}
+function isWriteAction(action) { return WRITE_ACTIONS.indexOf(action) >= 0; }
+
 async function handle(action, params, context) {
   switch (action) {
     case 'healthcheck': return ok(action, { status: 'ok', service: 'salesCenterApi', mode: 'v4-read-write-bff', collections: COLLECTIONS, cloudbaseSdkReady: !!cloudbase, received: params || {} }, { requestId: context && context.requestId ? context.requestId : undefined });
@@ -962,4 +1011,60 @@ async function handle(action, params, context) {
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);
   }
 }
-exports.main = async function (event, context) { const action = event && event.action ? String(event.action) : 'healthcheck'; const params = event && event.params ? event.params : {}; try { return await handle(action, params, context || {}); } catch (err) { return fail(action, err && err.code ? err.code : 'INTERNAL_ERROR', err && err.message ? err.message : String(err)); } };
+exports.main = async function (event, context) {
+  const action = event && event.action ? String(event.action) : 'healthcheck';
+  const params = event && event.params ? event.params : {};
+  const ctx = context || {};
+  // Q3: traceId 全链路
+  const traceId = ensureTraceId(params, ctx);
+  const actor = getActor(params, ctx);
+  const idempotencyKey = params.idempotencyKey || params._idempotencyKey || '';
+  const t0 = Date.now();
+  const isWrite = isWriteAction(action);
+  // Q1: 幂等回放(仅写操作)
+  if (isWrite && idempotencyKey) {
+    const cached = await tryIdempotencyReplay(idempotencyKey, action);
+    if (cached) {
+      // 补 meta 标记
+      const replayed = Object.assign({}, cached);
+      replayed.meta = Object.assign({}, replayed.meta || {}, { replayed: true, traceId: traceId, idempotencyKey: idempotencyKey });
+      return replayed;
+    }
+  }
+  let result = null; let errFlag = false;
+  try {
+    result = await handle(action, params, ctx);
+  } catch (err) {
+    errFlag = true;
+    result = fail(action, err && err.code ? err.code : 'INTERNAL_ERROR', err && err.message ? err.message : String(err));
+  }
+  // 附加 traceId 到 meta
+  try { result.meta = Object.assign({}, result.meta || {}, { traceId: traceId }); } catch (_) {}
+  const durMs = Date.now() - t0;
+  // Q2: 所有写操作落 audit_log (只读操作不记,避免爆量)
+  if (isWrite) {
+    // 参数摘要(避免存整条 record 大字段)
+    const paramSummary = {
+      name: params.name || params.primaryName || (params.record && (params.record.name || params.record.shortName)) || '',
+      shortName: params.shortName || (params.record && params.record.shortName) || '',
+      sale: params.sale || (params.record && params.record.sale) || '',
+      source: params.source || (params.record && params.record.source) || '',
+      brand: params.brand || (params.record && params.record.brand) || '',
+      customerId: params.customerId || '',
+      _id: params._id || (params.record && params.record._id) || '',
+      taskKey: params.taskKey || '', dataDate: params.dataDate || ''
+    };
+    await appendAuditLog({
+      action: action, traceId: traceId, idempotencyKey: idempotencyKey,
+      operator: actor, ok: !!(result && result.ok), errCode: (result && result.error && result.error.code) || '',
+      durMs: durMs, params: paramSummary,
+      resultId: (result && result.data && (result.data.id || result.data.customerId || result.data.docId)) || '',
+      version: VERSION
+    });
+    // Q1: 成功且带 idempotencyKey 时写入回放缓存
+    if (idempotencyKey && result && result.ok) {
+      await saveIdempotencyResult(idempotencyKey, action, result, traceId);
+    }
+  }
+  return result;
+};

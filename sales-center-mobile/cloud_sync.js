@@ -470,6 +470,13 @@
     var n = parseInt(v, 10);
     return isFinite(n) ? n : (fallback || 0);
   }
+  // Q1 (2026-07-03): 简易 hash (djb2), 用于生成 idempotencyKey
+  function _hashStr(s) {
+    s = String(s || '');
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) + h) + s.charCodeAt(i); h = h & 0xffffffff; }
+    return Math.abs(h).toString(36);
+  }
   function _isPageVisible() {
     return typeof document.visibilityState === 'undefined' || document.visibilityState !== 'hidden';
   }
@@ -767,6 +774,43 @@
         });
       });
     },
+
+    // Q1+Q2+Q3 (2026-07-03): salesCenterApi 统一入口, 自动注入 traceId + idempotencyKey
+    // 用法: cloud.callApi('checkBrandLimit', { brand: 'X' })
+    // 用法: cloud.callApi('upsertRecord', { record: {...} }, { idempotencyKey: 'reg:abc123' })
+    // 返回: 云函数返回结果 { ok, action, data, meta:{traceId,replayed?,...} }
+    callApi: function (action, params, options) {
+      params = params || {}; options = options || {};
+      // 生成 traceId (前端优先, 云端 fallback)
+      var traceId = params.traceId || options.traceId || ('t_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8));
+      // 幂等键(仅写操作有意义, 由调用方或自动生成)
+      var WRITE_ACTIONS = ['upsertRecord','deleteRecord','registerCustomer','updateAttribution','updateProgress','bulkImportCustomers','writeKpiSnapshot','uploadBlobSubCollection'];
+      var isWrite = WRITE_ACTIONS.indexOf(action) >= 0;
+      var idempotencyKey = params.idempotencyKey || options.idempotencyKey || '';
+      if (isWrite && !idempotencyKey) {
+        // 自动生成: action + 关键字段 hash + 分钟窗口(避免用户误双击时被 24h 缓存拦掉真正的重试)
+        var seed = [
+          action,
+          params.name || params.primaryName || (params.record && (params.record.name || params.record.shortName)) || '',
+          params.shortName || (params.record && params.record.shortName) || '',
+          params.sale || (params.record && params.record.sale) || '',
+          params._id || (params.record && params.record._id) || '',
+          Math.floor(Date.now() / 60000)  // 分钟窗
+        ].join('|');
+        idempotencyKey = 'auto_' + _hashStr(seed);
+      }
+      var enriched = Object.assign({}, params, { traceId: traceId });
+      if (idempotencyKey) enriched.idempotencyKey = idempotencyKey;
+      // 调用云函数
+      return this.callFunction('salesCenterApi', { action: action, params: enriched }).then(function (r) {
+        // 记入前端调试队列(可选,方便控制台排错)
+        try {
+          window.__SC_LAST_API__ = { action: action, traceId: traceId, idempotencyKey: idempotencyKey, ok: !!(r && r.ok), ts: Date.now() };
+        } catch(_) {}
+        return r;
+      });
+    },
+    getTraceId: function () { return 't_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); },
 
     kpi: {
       upsert: kpiUpsert,

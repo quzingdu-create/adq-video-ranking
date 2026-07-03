@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>靶向进展 v2 · 服饰增长组</title>
+<script>try{if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode');}catch(e){}</script>
+<!--
+  靶向进展 v2 (2026-07-03)
+  数据源:
+    A. data/pursuit_brand_pool.js  企微文档《服饰新锐靶向品牌引入进度表-总表 · sheet1》清洗后 1222 品牌
+    B. data/tuoke_real_records.js  拓客登记底表，筛 source='26年4月后竞媒靶向名单'
+  漏斗口径 (A 严格): 建联/投放各自独立计数,不隐式补齐
+  计数单位: 品牌数 (非主体数)
+  by-sale 双 tab:
+    Tab-1 销售认领维度 = 文档「对接销售」列的认领/建联/投放
+    Tab-2 销售登记维度 = 底表 26年4月后竞媒靶向名单 来源的登记数/新锐/消耗
+-->
+<link rel="preconnect" href="https://static.cloudbase.net">
+<script src="data/pursuit_brand_pool.js?v=20260703c"></script>
+<script src="data/tuoke_real_records.js?v=20260703c" defer></script>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#fff; --ink:#222b38; --ink2:#5c6878; --muted:#9aa6b8; --faint:#c2cbd9;
+    --line:#edf0f6; --line2:#e1e6ef;
+    --brand:#3a6ff7; --brand-d:#2454d8; --brand-s:#eef3ff;
+    --f-lead:#9cc0ff; --f-claim:#5b8def; --f-contact:#7b6ef0; --f-place:#22b07d;
+    --shadow-sm:0 1px 2px rgba(30,40,70,.04);
+    --shadow:0 2px 8px rgba(30,40,70,.05),0 12px 32px rgba(30,40,70,.06);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  html.embed-mode .topbar{display:none!important}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;
+       background:var(--bg);color:var(--ink);font-size:13px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .topbar{background:linear-gradient(120deg,#5b3ff0 0%,#6f51f5 45%,#8a6bf8 100%);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:12px}
+  .topbar .brand{font-size:16px;font-weight:800}
+  .topbar .brand small{font-weight:500;color:rgba(255,255,255,.8);font-size:11px;margin-left:6px}
+  .wrap{padding:14px 18px 40px}
+  .section{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px 16px 16px;margin-bottom:14px}
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .sec-head .bar{width:4px;height:16px;border-radius:2px;background:var(--brand)}
+  .sec-head h2{margin:0;font-size:15px;font-weight:700}
+  .sec-head .desc{color:var(--muted);font-size:12px;margin-left:6px}
+  .sec-head .right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .badge{display:inline-block;padding:2px 8px;font-size:11px;background:var(--brand-s);color:var(--brand-d);border-radius:10px}
+  .badge.alt{background:#fef3e6;color:#e07b00}
+  .badge.warn{background:#fee;color:#c33}
+
+  /* Funnel */
+  .funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .fn-card{position:relative;border-radius:12px;padding:14px 14px 12px;color:#fff;overflow:hidden}
+  .fn-card .lbl{font-size:12px;opacity:.92}
+  .fn-card .val{font-size:26px;font-weight:800;line-height:1.15;margin-top:4px}
+  .fn-card .sub{font-size:11px;opacity:.86;margin-top:2px}
+  .fn-lead{background:linear-gradient(135deg,var(--f-lead),#7ba8f7)}
+  .fn-claim{background:linear-gradient(135deg,var(--f-claim),#4272e0)}
+  .fn-contact{background:linear-gradient(135deg,var(--f-contact),#5f4fd1)}
+  .fn-place{background:linear-gradient(135deg,var(--f-place),#188a5f)}
+  .rate-row{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--ink2);flex-wrap:wrap}
+  .rate-row b{color:var(--ink);font-weight:700}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:12px}
+  .tab-btn{padding:8px 14px;border:0;background:transparent;color:var(--ink2);font-size:13px;cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+  .tab-btn:hover{color:var(--brand)}
+  .tab-btn.active{color:var(--brand);border-bottom-color:var(--brand);font-weight:700}
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+
+  /* Cards */
+  .scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+  .sc .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .sc .hd b{font-size:14px}
+  .sc .hd .rk{font-size:11px;color:var(--muted)}
+  .sc .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
+  .sc .kv{text-align:center;padding:6px 4px;border-radius:8px;background:#f8fafc}
+  .sc .kv .k{font-size:10px;color:var(--muted)}
+  .sc .kv .v{font-size:15px;font-weight:700;margin-top:2px}
+  .sc .rate{display:flex;gap:6px;font-size:11px;color:var(--ink2)}
+  .sc .rate span{padding:1px 6px;border-radius:6px;background:#eef3ff;color:var(--brand-d)}
+
+  /* Type funnel */
+  .mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .mn{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .mn .t{font-weight:700;font-size:13px;margin-bottom:8px}
+  .mn .row{display:grid;grid-template-columns:70px 1fr 42px;gap:6px;align-items:center;font-size:11px;margin-bottom:4px}
+  .mn .row .b{height:10px;background:#e6edf9;border-radius:6px;position:relative;overflow:hidden}
+  .mn .row .b i{display:block;height:100%;border-radius:6px}
+  .mn .row .v{text-align:right;font-weight:700;color:var(--ink)}
+
+  /* Detail table */
+  .detail-wrap{margin-top:8px}
+  .det-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .det-toolbar select,.det-toolbar input{padding:5px 8px;border:1px solid var(--line2);border-radius:8px;font-size:12px;outline:none}
+  .det-toolbar input{width:200px}
+  .det-toolbar .cnt{color:var(--muted);font-size:11px;margin-left:auto}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  table.dt{width:100%;border-collapse:collapse;font-size:12px;min-width:920px}
+  table.dt thead th{background:#f6f8fc;color:var(--ink2);padding:8px 10px;text-align:left;font-weight:600;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--line2)}
+  table.dt tbody td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.dt tbody tr:hover{background:#f6f8fc}
+  .pill{display:inline-block;padding:1px 8px;font-size:10px;border-radius:8px;background:#eef3ff;color:var(--brand-d)}
+  .pill.g{background:#e8f7ef;color:#188a5f}
+  .pill.r{background:#fee;color:#c33}
+  .pill.o{background:#fef3e6;color:#e07b00}
+  .pill.gray{background:#f0f2f6;color:var(--muted)}
+  .empty{color:var(--muted);padding:14px;text-align:center;font-size:12px}
+  .warn-box{background:#fef7e6;border:1px solid #fce8b3;color:#b06d00;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px}
+  .source-link{color:var(--brand-d);text-decoration:none;font-size:11px}
+  .source-link:hover{text-decoration:underline}
+  .type-group{margin-bottom:20px}
+  .type-group h3{margin:0 0 8px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .type-group h3 .count{font-size:11px;color:var(--muted);font-weight:400}
+  @media (max-width:780px){
+    .funnel{grid-template-columns:repeat(2,1fr)}
+    .scards{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+  <div class="topbar"><span class="brand">🎯 靶向进展 v2<small id="metaDesc">数据加载中…</small></span></div>
+  <div class="wrap">
+
+    <!-- 顶部漏斗 -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="bar"></span><h2>渗透漏斗</h2>
+        <span class="desc">数据源：企微文档《靶向品牌总表》· sheet1 清洗后</span>
+        <div class="right">
+          <span class="badge" id="ruleBadge">A 严格 · 品牌数</span>
+          <a class="source-link" id="srcLink" href="#" target="_blank">查看文档 ↗</a>
+        </div>
+      </div>
+      <div class="funnel" id="funnel"></div>
+      <div class="rate-row" id="rateRow"></div>
+    </div>
+
+    <!-- By 销售跟踪 双 tab -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="bar" style="background:var(--f-contact)"></span>
+        <h2>By 销售跟踪</h2>
+        <span class="desc">两种视角对比认领 vs 实际登记</span>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="claim">销售认领维度（文档「对接销售」）</button>
+        <button class="tab-btn" data-tab="reg">销售登记维度（拓客登记）</button>
+      </div>
+      <div class="tab-pane active" data-pane="claim">
+        <div class="scards" id="claimCards"></div>
+      </div>
+      <div class="tab-pane" data-pane="reg">
+        <div id="regNote" class="warn-box" style="display:none"></div>
+        <div class="scards" id="regCards"></div>
+      </div>
+    </div>
+
+    <!-- 名单类型小漏斗 -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="bar" style="background:var(--f-lead)"></span>
+        <h2>各名单类型渗透</h2>
+        <span class="desc">按品牌数分组</span>
+      </div>
+      <div class="mini-grid" id="typeGrid"></div>
+    </div>
+
+    <!-- 客户明细 按名单类型分表 -->
+    <div class="section">
+      <div class="sec-head">
+        <span class="bar" style="background:#7b6ef0"></span>
+        <h2>客户明细（按名单类型分表）</h2>
+        <span class="desc">🔗 表示销售已在拓客登记里登记（26年4月后竞媒靶向名单）</span>
+      </div>
+      <div class="det-toolbar">
+        <input id="qSearch" placeholder="搜索品牌/主体/销售…" />
+        <select id="fSale"><option value="">全部销售</option></select>
+        <select id="fContact"><option value="">全部建联状态</option><option value="已建联">已建联</option><option value="未建联">未建联</option></select>
+        <select id="fPlace"><option value="">全部投放状态</option><option value="已投放">已投放</option><option value="未投放">未投放</option></select>
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink2)"><input type="checkbox" id="fRegOnly">只看已登记</label>
+        <span class="cnt" id="cnt"></span>
+      </div>
+      <div id="typeTables"></div>
+    </div>
+  </div>
+
+<script>
+'use strict';
+var __POOL__ = window.__PURSUIT_BRAND_POOL__ || {meta:{},funnel:{},by_sale:[],by_type:[],brands:[]};
+var __TUOKE__ = [];
+try{ __TUOKE__ = (window.__TUOKE_REAL_RECORDS__ || []); }catch(e){}
+
+var VALID_SALES = ["lijunwu","kaikaigenli","Jonzhu","brownfan","yvaineechen","ruilingzhan","kinsleyjin"];
+var SALE_NAME_ZH = {lijunwu:"厉俊武",kaikaigenli:"凯凯",Jonzhu:"Jonzhu",brownfan:"BrownFan",yvaineechen:"陈依芸",ruilingzhan:"瑞玲",kinsleyjin:"金斯利"};
+
+// ========== 状态 ==========
+var UI = {tab:'claim', q:'', sale:'', contact:'', place:'', regOnly:false};
+
+// ========== 工具 ==========
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+function fmt(n){if(n==null||isNaN(n))return '-';n=+n;if(n>=10000)return (n/10000).toFixed(1)+'万';return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function pct(a,b){if(!b)return '0%';return (Math.round(a*1000/b)/10)+'%';}
+
+// ========== 渲染: 顶部漏斗 ==========
+function renderFunnel(){
+  var f = __POOL__.funnel || {lead:0,claim:0,contact:0,place:0};
+  var lead = f.lead||0, claim = f.claim||0, contact = f.contact||0, place = f.place||0;
+  document.getElementById('funnel').innerHTML = ''
+    + card('fn-lead','待引入品牌数', lead, '清洗后（剔重复/放弃/25年首投）')
+    + card('fn-claim','已认领', claim, '有对接销售 · '+pct(claim,lead))
+    + card('fn-contact','已建联', contact, '销售填「已建联」· 建联率 '+pct(contact,lead))
+    + card('fn-place','已投放', place, '销售填「已投放」· 投放率 '+pct(place,lead));
+
+  document.getElementById('rateRow').innerHTML = ''
+    + '<span>建联率 = <b>'+pct(contact,lead)+'</b>（'+contact+' / '+lead+'）</span>'
+    + '<span>投放率 = <b>'+pct(place,lead)+'</b>（'+place+' / '+lead+'）</span>'
+    + '<span>认领→建联 <b>'+pct(contact,claim)+'</b></span>'
+    + '<span>建联→投放 <b>'+pct(place,contact)+'</b></span>';
+
+  var m = __POOL__.meta || {};
+  document.getElementById('metaDesc').textContent =
+    '数据源：企微文档 sheet1 · 原始 '+(m.raw_rows||0)+' 行 → 清洗后 '+(m.brand_unique||lead)+' 品牌 · 更新 '+(m.updated_at||__POOL__.updated_at||'');
+  var link = document.getElementById('srcLink');
+  if(m.source_url) link.href = m.source_url;
+  else link.style.display = 'none';
+}
+function card(cls, label, val, sub){
+  return '<div class="fn-card '+cls+'"><div class="lbl">'+esc(label)+'</div>'
+       + '<div class="val">'+fmt(val)+'</div>'
+       + '<div class="sub">'+esc(sub||'')+'</div></div>';
+}
+
+// ========== 渲染: By 销售 认领维度 ==========
+function renderClaimCards(){
+  var arr = (__POOL__.by_sale||[]).filter(function(x){return x.sale && x.sale!=='_未认领' && VALID_SALES.indexOf(x.sale)>=0;});
+  arr.sort(function(a,b){return (b.claim||0)-(a.claim||0);});
+  var maxClaim = Math.max.apply(null, arr.map(function(x){return x.claim||0;}).concat([1]));
+  var html = arr.map(function(x, i){
+    var nm = SALE_NAME_ZH[x.sale] || x.sale;
+    return ''
+      + '<div class="sc">'
+      +   '<div class="hd"><b>'+esc(nm)+'</b><span class="rk">#'+(i+1)+' · '+esc(x.sale)+'</span></div>'
+      +   '<div class="row">'
+      +     '<div class="kv"><div class="k">认领品牌</div><div class="v">'+fmt(x.claim||0)+'</div></div>'
+      +     '<div class="kv"><div class="k">已建联</div><div class="v">'+fmt(x.contact||0)+'</div></div>'
+      +     '<div class="kv"><div class="k">已投放</div><div class="v">'+fmt(x.place||0)+'</div></div>'
+      +   '</div>'
+      +   '<div class="rate">'
+      +     '<span>建联率 '+pct(x.contact||0,x.claim||0)+'</span>'
+      +     '<span>投放率 '+pct(x.place||0,x.claim||0)+'</span>'
+      +   '</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('claimCards').innerHTML = html || '<div class="empty">暂无认领数据</div>';
+}
+
+// ========== 渲染: By 销售 登记维度 (读 tuoke_records) ==========
+function renderRegCards(){
+  var recs = __TUOKE__.filter(function(r){return r && r.source === '26年4月后竞媒靶向名单';});
+  var groups = {};
+  VALID_SALES.forEach(function(s){groups[s] = {reg:0, rising:0, cost:0, valid:0, newCust:0, brands:[]};});
+  recs.forEach(function(r){
+    var s = r.sale || r._recorded_by || '';
+    if(VALID_SALES.indexOf(s)<0) return;
+    var g = groups[s];
+    g.reg++;
+    if(r.isRising === '是' || r.isRising === true) g.rising++;
+    if(r.isValid === true || r.isValid === 'True') g.valid++;
+    if(r.customerType && r.customerType.indexOf('新客')>=0 && r.customerType.indexOf('非本')<0) g.newCust++;
+    g.cost += (+r.yestCost || 0);
+    if(r.brand) g.brands.push(r.brand);
+  });
+  var arr = VALID_SALES.map(function(s){return Object.assign({sale:s}, groups[s]);});
+  arr.sort(function(a,b){return b.reg-a.reg;});
+  var totalReg = arr.reduce(function(s,x){return s+x.reg;},0);
+  var note = document.getElementById('regNote');
+  if(totalReg === 0){
+    note.style.display = 'block';
+    note.innerHTML = '⚠️ 底表中尚无 <b>26年4月后竞媒靶向名单</b> 来源的登记（销售未选此来源）。当销售选择此来源时会自动出现在此。';
+  } else {
+    note.style.display = 'block';
+    note.innerHTML = '共 <b>'+totalReg+'</b> 条 26年4月后竞媒靶向名单 登记 · 按销售分组';
+  }
+  var html = arr.map(function(x, i){
+    var nm = SALE_NAME_ZH[x.sale] || x.sale;
+    return ''
+      + '<div class="sc">'
+      +   '<div class="hd"><b>'+esc(nm)+'</b><span class="rk">#'+(i+1)+' · '+esc(x.sale)+'</span></div>'
+      +   '<div class="row">'
+      +     '<div class="kv"><div class="k">登记数</div><div class="v">'+fmt(x.reg)+'</div></div>'
+      +     '<div class="kv"><div class="k">本季新客</div><div class="v">'+fmt(x.newCust)+'</div></div>'
+      +     '<div class="kv"><div class="k">新锐</div><div class="v">'+fmt(x.rising)+'</div></div>'
+      +   '</div>'
+      +   '<div class="row" style="grid-template-columns:1fr 1fr">'
+      +     '<div class="kv"><div class="k">昨日消耗</div><div class="v" style="font-size:13px">'+fmt(x.cost)+'</div></div>'
+      +     '<div class="kv"><div class="k">有效新客</div><div class="v">'+fmt(x.valid)+'</div></div>'
+      +   '</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('regCards').innerHTML = html || '<div class="empty">暂无登记</div>';
+}
+
+// ========== 渲染: 名单类型漏斗 ==========
+function renderTypeGrid(){
+  var arr = (__POOL__.by_type||[]).filter(function(x){return x.type && x.type!=='_未分类';});
+  arr.sort(function(a,b){return (b.total||0)-(a.total||0);});
+  var maxT = Math.max.apply(null, arr.map(function(x){return x.total||0;}).concat([1]));
+  var html = arr.map(function(x){
+    var bar = function(k, val, color){
+      var w = (val||0)/maxT*100;
+      return '<div class="row"><span>'+esc(k)+'</span><div class="b"><i style="width:'+w.toFixed(1)+'%;background:'+color+'"></i></div><span class="v">'+fmt(val||0)+'</span></div>';
+    };
+    return ''
+      + '<div class="mn"><div class="t">'+esc(x.type)+'</div>'
+      +   bar('待引入', x.total, 'var(--f-lead)')
+      +   bar('已认领', x.claim, 'var(--f-claim)')
+      +   bar('已建联', x.contact, 'var(--f-contact)')
+      +   bar('已投放', x.place, 'var(--f-place)')
+      + '</div>';
+  }).join('');
+  document.getElementById('typeGrid').innerHTML = html || '<div class="empty">暂无名单类型数据</div>';
+}
+
+// ========== 渲染: 客户明细 分表 ==========
+function buildRegisteredIndex(){
+  // 返回 {brand -> [tuoke record]} 支持联动
+  var idx = {};
+  (__TUOKE__||[]).forEach(function(r){
+    if(!r || r.source !== '26年4月后竞媒靶向名单') return;
+    var b = (r.brand || r.name || '').trim();
+    if(!b) return;
+    (idx[b] = idx[b] || []).push(r);
+    // 同时用 shortName 做索引 (客户简称匹配)
+    var sn = (r.shortName || '').trim();
+    if(sn && sn !== b){
+      (idx[sn] = idx[sn] || []).push(r);
+    }
+  });
+  return idx;
+}
+
+function renderTypeTables(){
+  var regIdx = buildRegisteredIndex();
+  var q = UI.q.trim().toLowerCase();
+  var brands = (__POOL__.brands || []).filter(function(r){
+    if(UI.sale && r.sale !== UI.sale) return false;
+    if(UI.contact && r.contactStatus !== UI.contact) return false;
+    if(UI.place && r.placeStatus !== UI.place) return false;
+    if(UI.regOnly && !regIdx[r.brand]) return false;
+    if(q){
+      var hay = ((r.brand||'')+' '+(r.entity||'')+' '+(r.shortName||'')+' '+(r.sale||'')+' '+(r.shopName||'')).toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    return true;
+  });
+
+  // 按名单类型分组
+  var byType = {};
+  brands.forEach(function(r){
+    var t = r.listType || '_未分类';
+    (byType[t] = byType[t] || []).push(r);
+  });
+  var types = Object.keys(byType).sort(function(a,b){return byType[b].length - byType[a].length;});
+
+  var html = types.map(function(t){
+    var rows = byType[t].map(function(r){
+      var reg = regIdx[r.brand];
+      var regBadge = reg ? '<span class="pill g" title="已在拓客登记里登记 · '+reg.length+' 条">🔗 已登记</span>' : '';
+      var contactPill = r.contactStatus === '已建联' ? '<span class="pill g">已建联</span>'
+        : (r.contactStatus === '未建联' ? '<span class="pill r">未建联</span>' : '<span class="pill gray">-</span>');
+      var placePill = r.placeStatus === '已投放' ? '<span class="pill g">已投放</span>'
+        : (r.placeStatus ? '<span class="pill o">'+esc(r.placeStatus)+'</span>' : '<span class="pill gray">-</span>');
+      var shopPill = r.hasShop === '是' ? '<span class="pill">已开店</span>' : '<span class="pill gray">未开店</span>';
+      var cost = (+r.cost||0);
+      return '<tr>'
+        + '<td><b>'+esc(r.brand)+'</b>'+(regBadge?' '+regBadge:'')+'</td>'
+        + '<td>'+esc(r.category||'-')+'</td>'
+        + '<td>'+esc(r.sale? (SALE_NAME_ZH[r.sale]||r.sale) : '_未认领')+'</td>'
+        + '<td>'+contactPill+'</td>'
+        + '<td>'+placePill+'</td>'
+        + '<td>'+shopPill+'</td>'
+        + '<td>'+esc(r.shopServicer||'-')+'</td>'
+        + '<td>'+esc(r.entity||'-')+'</td>'
+        + '<td style="text-align:right">'+(cost?fmt(cost):'-')+'</td>'
+        + '<td>'+esc(r.firstTime||'-')+'</td>'
+        + '<td>'+esc(r.noPlaceReason||'-')+'</td>'
+        + '</tr>';
+    }).join('');
+    return ''
+      + '<div class="type-group">'
+      +   '<h3>📋 '+esc(t)+' <span class="count">('+byType[t].length+' 品牌)</span></h3>'
+      +   '<div class="tblwrap"><table class="dt">'
+      +     '<thead><tr><th>品牌</th><th>二级类目</th><th>对接销售</th><th>建联</th><th>投放</th><th>开店</th><th>小店服务商</th><th>主体</th><th style="text-align:right">累计消耗</th><th>首投时间</th><th>未投放原因</th></tr></thead>'
+      +     '<tbody>'+(rows||'<tr><td colspan="11" class="empty">无</td></tr>')+'</tbody>'
+      +   '</table></div>'
+      + '</div>';
+  }).join('');
+
+  document.getElementById('typeTables').innerHTML = html || '<div class="empty">无匹配数据</div>';
+  document.getElementById('cnt').textContent = '筛出 '+brands.length+' / '+(__POOL__.brands||[]).length+' 品牌';
+}
+
+// ========== 事件 ==========
+function bindEvents(){
+  // Tab 切换
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.onclick = function(){
+      document.querySelectorAll('.tab-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      UI.tab = b.dataset.tab;
+      document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.toggle('active', p.dataset.pane === UI.tab);});
+    };
+  });
+  // 明细筛选
+  var qs = document.getElementById('qSearch'); if(qs) qs.oninput = function(){UI.q=this.value;renderTypeTables();};
+  var fs = document.getElementById('fSale'); if(fs){
+    // 填充销售
+    var opts = VALID_SALES.map(function(s){return '<option value="'+s+'">'+(SALE_NAME_ZH[s]||s)+'</option>';}).join('');
+    fs.insertAdjacentHTML('beforeend', opts);
+    fs.onchange = function(){UI.sale=this.value;renderTypeTables();};
+  }
+  var fc = document.getElementById('fContact'); if(fc) fc.onchange = function(){UI.contact=this.value;renderTypeTables();};
+  var fp = document.getElementById('fPlace'); if(fp) fp.onchange = function(){UI.place=this.value;renderTypeTables();};
+  var fr = document.getElementById('fRegOnly'); if(fr) fr.onchange = function(){UI.regOnly=this.checked;renderTypeTables();};
+}
+
+// ========== 高度上报 (embed 模式) ==========
+function reportHeight(){
+  if(window.parent === window) return;
+  var h = 0;
+  ['.wrap', 'body'].forEach(function(sel){var el = document.querySelector(sel); if(!el) return; var r = el.getBoundingClientRect(); h = Math.max(h, Math.ceil(r.bottom + (window.scrollY||0)));});
+  h = Math.max(h, 720);
+  parent.postMessage({type:'pageHeight', height:h}, '*');
+}
+window.addEventListener('load', function(){setTimeout(reportHeight, 100);});
+if(window.ResizeObserver) new ResizeObserver(function(){reportHeight();}).observe(document.body);
+
+// ========== 主入口 ==========
+function init(){
+  bindEvents();
+  renderFunnel();
+  renderClaimCards();
+  renderRegCards();
+  renderTypeGrid();
+  renderTypeTables();
+  setTimeout(reportHeight, 300);
+}
+// 等 tuoke_records defer 加载
+if(document.readyState === 'complete' || document.readyState === 'interactive'){
+  setTimeout(function(){
+    try{ __TUOKE__ = window.__TUOKE_REAL_RECORDS__ || __TUOKE__; }catch(e){}
+    init();
+  }, 50);
+}else{
+  window.addEventListener('DOMContentLoaded', function(){
+    try{ __TUOKE__ = window.__TUOKE_REAL_RECORDS__ || __TUOKE__; }catch(e){}
+    init();
+  });
+}
+</script>
+</body>
+</html>
