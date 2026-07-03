@@ -46,7 +46,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260702c')
+    return fetch('data/manual_attr_override.json?v=20260703a')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -61,30 +61,30 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260702c"></script>
-<script defer src="api_client.js?v=20260702c"></script>
-<script defer src="data_adapter.js?v=20260702c"></script>
+<script defer src="cloud_gray_switch.js?v=20260703a"></script>
+<script defer src="api_client.js?v=20260703a"></script>
+<script defer src="data_adapter.js?v=20260703a"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260702c"></script> -->
-<script src="data/center_sales_summary.js?v=20260702c"></script>
-<script src="data/center_quarter_summary.js?v=20260702c"></script>
-<script src="data/center_daily_kpi.js?v=20260702c"></script>
-<script src="data/top80_effective_metrics.js?v=20260702c"></script>
-<script src="data/top_status_data.js?v=20260702c"></script>
-<script src="data/enough_candidates.js?v=20260702c"></script>
-<script src="data/handover_customers_519.js?v=20260702c"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260703a"></script> -->
+<script src="data/center_sales_summary.js?v=20260703a"></script>
+<script src="data/center_quarter_summary.js?v=20260703a"></script>
+<script src="data/center_daily_kpi.js?v=20260703a"></script>
+<script src="data/top80_effective_metrics.js?v=20260703a"></script>
+<script src="data/top_status_data.js?v=20260703a"></script>
+<script src="data/enough_candidates.js?v=20260703a"></script>
+<script src="data/handover_customers_519.js?v=20260703a"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260702c" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260703a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260702c"></script>
-<script src="dual_check.js?v=20260702c"></script>
-<script src="big_data_dual_check.js?v=20260702c"></script>
+<script src="cloud_sync.js?v=20260703a"></script>
+<script src="dual_check.js?v=20260703a"></script>
+<script src="big_data_dual_check.js?v=20260703a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -872,7 +872,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260702c`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260703a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1071,7 +1071,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260702c" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260703a" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1087,7 +1087,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260702c" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260703a" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1171,7 +1171,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260702c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260703a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1773,10 +1773,10 @@ function renderKPI() {
     const cumYestWan = cumYestSum / 10000;
     const cumCard = `
       <div class="kpi-card purple">
-        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3-26Q2 合计 · ${dailyKpi.dataDate || 'T-1'}</span></div>
+        <div class="label">累计新客昨日消耗 <span style="color:#9ca3af;font-size:11px;font-weight:400;">25Q3-26Q3 合计 · ${dailyKpi.dataDate || 'T-1'}</span></div>
         <div class="value-row"><div class="value">${cumYestWan.toFixed(1)}万</div></div>
         <div class="meta">
-          <span style="color:#6b7280;">25Q3-26Q2 全部新客昨日消耗合计</span>
+          <span style="color:#6b7280;">25Q3-26Q3 全部新客昨日消耗合计</span>
         </div>
       </div>`;
 
@@ -1966,8 +1966,8 @@ function renderSalesProgress() {
       </td>`;
 
     // 参考列（默认隐藏，2026-05-21 拍板：删交接3列、加 2 列累计新客 = 现有新客 + 交接客户中的新客）
-    // 2026-05-25 17:11 修：副标写"25Q3-26Q2"但代码只算了当前季度+交接，名实不符
-    //   → 改为 25Q3-26Q2 该销售四个季度 yestCost 加和 + 交接客户中新客的昨耗
+    // 2026-05-25 17:11 修：副标写"25Q3-26Q3"但代码只算了当前季度+交接，名实不符
+    //   → 改为 25Q3-26Q3 该销售四个季度 yestCost 加和 + 交接客户中新客的昨耗
     const _allQs = window.__CENTER_QUARTER_SUMMARY__ || [];
     const _curQ = ((window.__CENTER_DAILY_KPI__||{}).currentQuarter) || '2026Q2';
     const _cumQs = Array.from(new Set(['2025Q3','2025Q4','2026Q1','2026Q2', _curQ]));
@@ -3775,7 +3775,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260702c';
+  s.src = 'data/bulk_import_rows.js?v=20260703a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');

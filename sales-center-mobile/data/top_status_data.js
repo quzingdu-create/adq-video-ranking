@@ -1,3 +1,3 @@
-/* Auto-generated 2026-05-17 (T-1=2026-07-01) - 7销售 x Top10 = max 70 */
-window.__TOP_STATUS_DATA__ = {};
-window.__TOP_STATUS_LIST__ = [];
+/* Auto-generated 2026-05-17 (T-1=2026-07-02) - 7销售 x Top10 = max 70 */
+window.__TOP_STATUS_DATA__ = {"上海杰装服饰有限公司":{"sale":"其他","rank":1,"short":"上海杰装服饰有限公司","quarterCost":2584.1,"cost":2584.05,"costRatePct":0.0,"roi":0.11454886708848512,"roiRatePct":0.0,"status":"基本稳定"},"四会市欢颂珠宝店(个体工商户)":{"sale":"其他","rank":2,"short":"四会市欢颂珠宝店(个体工商户)","quarterCost":1295.1,"cost":910.31,"costRatePct":null,"roi":14.801441267260603,"roiRatePct":-2.77994953219764,"status":"基本稳定"},"广州腾兴信息技术有限公司":{"sale":"其他","rank":3,"short":"广州腾兴信息技术有限公司","quarterCost":1006.9,"cost":1006.85,"costRatePct":0.0,"roi":1.4662561454039826,"roiRatePct":0.0,"status":"基本稳定"}};
+window.__TOP_STATUS_LIST__ = [{"sale":"其他","rank":1,"short":"上海杰装服饰有限公司","quarterCost":2584.1,"cost":2584.05,"costRatePct":0.0,"roi":0.11454886708848512,"roiRatePct":0.0,"status":"基本稳定"},{"sale":"其他","rank":2,"short":"四会市欢颂珠宝店(个体工商户)","quarterCost":1295.1,"cost":910.31,"costRatePct":null,"roi":14.801441267260603,"roiRatePct":-2.77994953219764,"status":"基本稳定"},{"sale":"其他","rank":3,"short":"广州腾兴信息技术有限公司","quarterCost":1006.9,"cost":1006.85,"costRatePct":0.0,"roi":1.4662561454039826,"roiRatePct":0.0,"status":"基本稳定"}];

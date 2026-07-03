@@ -802,7 +802,7 @@
           '<div id="cloud-menu-info" style="padding:10px 14px;font-size:12px;color:#6b7280;border-bottom:1px solid #f3f4f6;background:#f9fafb;"></div>' +
           '<button id="cloud-menu-upload" class="cloud-menu-item" style="display:none;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">⬆️ 补推未同步记录</button>' +
           '<button id="cloud-menu-export-all" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#2563eb;font-weight:600;">⬇️ 拓新组登记客户明细（全量）</button>' +
-          '<button id="cloud-menu-export-new" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#10b981;font-weight:600;">⬇️ 25Q3-26Q2新客明细</button>' +
+          '<button id="cloud-menu-export-new" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#10b981;font-weight:600;">⬇️ 25Q3-26Q3新客明细</button>' +
           '<button id="cloud-menu-export" class="cloud-menu-item" style="display:none;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;border-bottom:1px solid #f3f4f6;font-size:13px;cursor:pointer;color:#1f2937;">💾 导出全量备份（管理员）</button>' +
           '<button id="cloud-menu-logout" class="cloud-menu-item" style="display:block;width:100%;text-align:left;padding:10px 14px;background:#fff;border:none;font-size:13px;cursor:pointer;color:#dc2626;">🚪 退出登录</button>' +
         '</div>' +
@@ -937,7 +937,7 @@
       showToast('export_tuoke.js 未加载，请刷新页面', true);
     };
 
-    // 新增：25Q3-26Q2 新客明细 — 同上
+    // 新增：25Q3-26Q3 新客明细 — 同上
     if (btnExportNew) btnExportNew.onclick = function () {
       menu.style.display = 'none';
       var hiddenBtn = document.getElementById('btnExportTuokeNew');
