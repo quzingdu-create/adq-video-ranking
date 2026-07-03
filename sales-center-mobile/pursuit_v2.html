@@ -202,6 +202,7 @@ var UI = {tab:'claim', q:'', sale:'', contact:'', place:'', regOnly:false};
 // ========== 工具 ==========
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
 function fmt(n){if(n==null||isNaN(n))return '-';n=+n;if(n>=10000)return (n/10000).toFixed(1)+'万';return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function fmtMoney(n){if(n==null||isNaN(n))return '-';n=Math.round((+n)*100)/100;if(n>=10000)return (Math.round(n/1000)/10)+'万';return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d\.))/g,',');}
 function pct(a,b){if(!b)return '0%';return (Math.round(a*1000/b)/10)+'%';}
 
 // ========== 渲染: 顶部漏斗 ==========
@@ -261,42 +262,48 @@ function renderClaimCards(){
 function renderRegCards(){
   var recs = __TUOKE__.filter(function(r){return r && r.source === '26年4月后竞媒靶向名单';});
   var groups = {};
-  VALID_SALES.forEach(function(s){groups[s] = {reg:0, rising:0, cost:0, valid:0, newCust:0, brands:[]};});
+  // 5 字段: subjects(登记主体去重), newCust(新客), rising(新锐), yestCost(新客昨日消耗), qCost(季度日耗)
+  VALID_SALES.forEach(function(s){groups[s] = {subjects:{}, newCust:0, rising:0, yestCost:0, qCost:0};});
   recs.forEach(function(r){
     var s = r.sale || r._recorded_by || '';
     if(VALID_SALES.indexOf(s)<0) return;
     var g = groups[s];
-    g.reg++;
+    var subj = (r.name || r.shortName || r.brand || '').trim();
+    if(subj) g.subjects[subj] = 1;
+    var isNewCust = r.customerType && r.customerType.indexOf('新客')>=0 && r.customerType.indexOf('非本')<0;
+    if(isNewCust){
+      g.newCust++;
+      g.yestCost += (+r.yestCost || 0);
+      g.qCost += (+r.quarterCost || 0);
+    }
     if(r.isRising === '是' || r.isRising === true) g.rising++;
-    if(r.isValid === true || r.isValid === 'True') g.valid++;
-    if(r.customerType && r.customerType.indexOf('新客')>=0 && r.customerType.indexOf('非本')<0) g.newCust++;
-    g.cost += (+r.yestCost || 0);
-    if(r.brand) g.brands.push(r.brand);
   });
-  var arr = VALID_SALES.map(function(s){return Object.assign({sale:s}, groups[s]);});
-  arr.sort(function(a,b){return b.reg-a.reg;});
-  var totalReg = arr.reduce(function(s,x){return s+x.reg;},0);
+  var arr = VALID_SALES.map(function(s){
+    var g = groups[s];
+    return {sale:s, subjects:Object.keys(g.subjects).length, newCust:g.newCust, rising:g.rising, yestCost:g.yestCost, qCost:g.qCost};
+  });
+  arr.sort(function(a,b){return b.subjects-a.subjects;});
+  var totalSubj = arr.reduce(function(s,x){return s+x.subjects;},0);
   var note = document.getElementById('regNote');
-  if(totalReg === 0){
+  if(totalSubj === 0){
     note.style.display = 'block';
-    note.innerHTML = '⚠️ 底表中尚无 <b>26年4月后竞媒靶向名单</b> 来源的登记（销售未选此来源）。当销售选择此来源时会自动出现在此。';
+    note.innerHTML = '⚠️ 底表中尚无 <b>26年4月后竞媒靶向名单</b> 来源的登记。销售在拓客登记时选此来源即自动出现。';
   } else {
     note.style.display = 'block';
-    note.innerHTML = '共 <b>'+totalReg+'</b> 条 26年4月后竞媒靶向名单 登记 · 按销售分组';
+    note.innerHTML = '共 <b>'+totalSubj+'</b> 个登记主体 · 26年4月后竞媒靶向名单来源 · 按销售分组（消耗仅统计本季新客）';
   }
   var html = arr.map(function(x, i){
-    var nm = SALE_NAME_ZH[x.sale] || x.sale;
     return ''
       + '<div class="sc">'
-      +   '<div class="hd"><b>'+esc(nm)+'</b><span class="rk">#'+(i+1)+' · '+esc(x.sale)+'</span></div>'
-      +   '<div class="row">'
-      +     '<div class="kv"><div class="k">登记数</div><div class="v">'+fmt(x.reg)+'</div></div>'
-      +     '<div class="kv"><div class="k">本季新客</div><div class="v">'+fmt(x.newCust)+'</div></div>'
+      +   '<div class="hd"><b>'+esc(x.sale)+'</b><span class="rk">#'+(i+1)+'</span></div>'
+      +   '<div class="row" style="grid-template-columns:1fr 1fr 1fr">'
+      +     '<div class="kv"><div class="k">登记主体数</div><div class="v">'+fmt(x.subjects)+'</div></div>'
+      +     '<div class="kv"><div class="k">新客数</div><div class="v">'+fmt(x.newCust)+'</div></div>'
       +     '<div class="kv"><div class="k">新锐</div><div class="v">'+fmt(x.rising)+'</div></div>'
       +   '</div>'
       +   '<div class="row" style="grid-template-columns:1fr 1fr">'
-      +     '<div class="kv"><div class="k">昨日消耗</div><div class="v" style="font-size:13px">'+fmt(x.cost)+'</div></div>'
-      +     '<div class="kv"><div class="k">有效新客</div><div class="v">'+fmt(x.valid)+'</div></div>'
+      +     '<div class="kv"><div class="k">新客昨日消耗</div><div class="v" style="font-size:13px">'+fmtMoney(x.yestCost)+'</div></div>'
+      +     '<div class="kv"><div class="k">季度日耗</div><div class="v" style="font-size:13px">'+fmtMoney(x.qCost)+'</div></div>'
       +   '</div>'
       + '</div>';
   }).join('');
