@@ -1,7 +1,10 @@
 'use strict';
 
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
-const VERSION = 'v6.5-export-records-20260625';
+const VERSION = 'v6.6-target-brand-limit-20260703';
+// R12.1 (2026-07-03): 靶向品牌覆盖上限 3 次(跨销售累计). source in TARGET_SOURCES 且 brand 非空 才计数
+const TARGET_SOURCES = ['26年4月后竞媒靶向名单'];
+const BRAND_LIMIT = 3;
 const DEFAULT_V2_VERSION = '20260622_v2_light';
 const DEFAULT_V3_VERSION = '20260622_v3_big';
 const COLLECTIONS = {
@@ -843,9 +846,86 @@ async function listKpiSnapshots(params) {
   return ok('listKpiSnapshots', { rows: (res && res.data) || [] }, { collection: COLLECTIONS.kpiSnapshots });
 }
 
+// R12.1 (2026-07-03): 靶向品牌覆盖计数 - 全池一次拉，前端 UI 灰置已满 3 次品牌
+async function getTargetBrandCounts(params) {
+  params = params || {};
+  const database = getDb();
+  const _ = database.command;
+  // 拉 source 命中 TARGET_SOURCES && brand 非空 && !_deleted 的所有 tuoke_records
+  // 已知云端 tuoke_records 约 1700 条, 靶向占比极小(<5%), cursor 翻页拉全量
+  const where = {
+    source: _.in(TARGET_SOURCES),
+    brand: _.exists(true).and(_.neq('')),
+    _deleted: _.neq(true)
+  };
+  const counts = {};   // brand -> count
+  const occupied = {}; // brand -> [{sale, name, date, _id}]
+  let cursor = null;
+  const pageSize = 1000;
+  let total = 0;
+  for (let page = 0; page < 30; page++) {
+    const q = cursor
+      ? database.collection(COLLECTIONS.legacyRecords).where(Object.assign({}, where, { _id: _.gt(String(cursor)) }))
+      : database.collection(COLLECTIONS.legacyRecords).where(where);
+    const res = await q.orderBy('_id', 'asc').limit(pageSize).get();
+    const rows = (res && res.data) || [];
+    if (!rows.length) break;
+    for (const r of rows) {
+      const b = String(r.brand || '').trim();
+      if (!b) continue;
+      counts[b] = (counts[b] || 0) + 1;
+      if (!occupied[b]) occupied[b] = [];
+      occupied[b].push({
+        sale: r.sale || r._rtx || '',
+        name: r.name || r.shortName || '',
+        date: r.date || '',
+        _id: r._id
+      });
+      total++;
+    }
+    cursor = rows[rows.length - 1]._id;
+    if (rows.length < pageSize) break;
+  }
+  return ok('getTargetBrandCounts', {
+    counts, occupied, total,
+    limit: BRAND_LIMIT,
+    targetSources: TARGET_SOURCES,
+    brandsFull: Object.keys(counts).filter(b => counts[b] >= BRAND_LIMIT)
+  }, { collection: COLLECTIONS.legacyRecords });
+}
+
+// R12.1 (2026-07-03): 单品牌事务式复核 - 提交前 last-check, 避免并发多写
+async function checkBrandLimit(params) {
+  params = params || {};
+  const brand = String(params.brand || '').trim();
+  if (!brand) return fail('checkBrandLimit', 'MISSING_BRAND', 'brand is required');
+  const database = getDb();
+  const _ = database.command;
+  const where = {
+    source: _.in(TARGET_SOURCES),
+    brand: brand,
+    _deleted: _.neq(true)
+  };
+  const res = await database.collection(COLLECTIONS.legacyRecords).where(where).limit(20).get();
+  const rows = (res && res.data) || [];
+  const count = rows.length;
+  const occupiedBy = rows.map(r => ({
+    sale: r.sale || r._rtx || '',
+    name: r.name || r.shortName || '',
+    date: r.date || '',
+    _id: r._id
+  }));
+  return ok('checkBrandLimit', {
+    brand, count, allowed: count < BRAND_LIMIT, limit: BRAND_LIMIT,
+    occupiedBy
+  }, { collection: COLLECTIONS.legacyRecords });
+}
+
 async function handle(action, params, context) {
   switch (action) {
     case 'healthcheck': return ok(action, { status: 'ok', service: 'salesCenterApi', mode: 'v4-read-write-bff', collections: COLLECTIONS, cloudbaseSdkReady: !!cloudbase, received: params || {} }, { requestId: context && context.requestId ? context.requestId : undefined });
+    case 'getTargetBrandCounts': return await getTargetBrandCounts(params);
+    case 'checkBrandLimit': return await checkBrandLimit(params);
     case 'listVersions': return await listVersions();
     case 'getBootstrap': return await getBootstrap(params);
     case 'getTopMetrics': return await getTopMetrics(params);

@@ -46,7 +46,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260703a')
+    return fetch('data/manual_attr_override.json?v=20260703b')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -61,30 +61,31 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260703a"></script>
-<script defer src="api_client.js?v=20260703a"></script>
-<script defer src="data_adapter.js?v=20260703a"></script>
+<script defer src="cloud_gray_switch.js?v=20260703b"></script>
+<script defer src="api_client.js?v=20260703b"></script>
+<script defer src="data_adapter.js?v=20260703b"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260703a"></script> -->
-<script src="data/center_sales_summary.js?v=20260703a"></script>
-<script src="data/center_quarter_summary.js?v=20260703a"></script>
-<script src="data/center_daily_kpi.js?v=20260703a"></script>
-<script src="data/top80_effective_metrics.js?v=20260703a"></script>
-<script src="data/top_status_data.js?v=20260703a"></script>
-<script src="data/enough_candidates.js?v=20260703a"></script>
-<script src="data/handover_customers_519.js?v=20260703a"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260703b"></script> -->
+<script src="data/center_sales_summary.js?v=20260703b"></script>
+<script src="data/center_quarter_summary.js?v=20260703b"></script>
+<script src="data/center_daily_kpi.js?v=20260703b"></script>
+<script src="data/top80_effective_metrics.js?v=20260703b"></script>
+<script src="data/top_status_data.js?v=20260703b"></script>
+<script src="data/enough_candidates.js?v=20260703b"></script>
+<script src="data/handover_customers_519.js?v=20260703b"></script>
+<script src="data/target_brand_pool.js?v=20260703b"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260703a" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260703b" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260703a"></script>
-<script src="dual_check.js?v=20260703a"></script>
-<script src="big_data_dual_check.js?v=20260703a"></script>
+<script src="cloud_sync.js?v=20260703b"></script>
+<script src="dual_check.js?v=20260703b"></script>
+<script src="big_data_dual_check.js?v=20260703b"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -872,7 +873,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260703a`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260703b`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1071,7 +1072,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260703a" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260703b" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1087,7 +1088,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260703a" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit.html?embed=1&v=20260703b" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1122,6 +1123,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="inline-m-channel"></select></div>
         <div class="field"><label id="inline-m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="inline-m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
         <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="inline-m-source"></select></div>
+        <div class="field" id="inline-m-brand-wrap" style="grid-column:span 2;display:none;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">靶向品牌 <span style="color:#bfbfbf;font-weight:normal;">（从竞媒靶向名单选择；同品牌全渠道累计最多 3 次）</span></label><select id="inline-m-brand"><option value="">请选择品牌...</option></select><div id="inline-m-brand-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;"></div></div>
         <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="inline-m-date" type="date" /></div>
         <div class="field" style="grid-column:span 2;">
           <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
@@ -1171,7 +1173,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260703a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260703b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1243,7 +1245,8 @@ window.applyManualSaleOverride = function(r) {
       </div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="m-channel" onchange="onChannelChange()"></select></div>
       <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
-      <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source"></select></div>
+      <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source" onchange="onSourceChange('modal')"></select></div>
+      <div class="field" id="m-brand-wrap" style="grid-column:span 2;display:none;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">靶向品牌 <span style="color:#bfbfbf;font-weight:normal;">（从竞媒靶向名单选择；同品牌全渠道累计最多 3 次）</span></label><select id="m-brand"><option value="">请选择品牌...</option></select><div id="m-brand-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;"></div></div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
       <div class="field" style="grid-column:span 2;">
         <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
@@ -1273,7 +1276,102 @@ const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店�
 const AGENTS = ["蓝色光标","利欧数字","引力传媒","华扬联众","天与空","直接对接"];
 const SOURCES = ["沙龙拓客","1v1走访","全域通电销","服务商转介绍","客户转介绍","主动来询"]; // 兼容旧字段（实际是「拓客途径」）
 const TUOKE_WAYS = SOURCES; // v3.2 别名：拓客途径
-const CUSTOMER_SOURCES = ["26年4月后产业带拓客", "26年4月后CID专项引入", "26年4月后竞媒靶向名单", "全域通反向拓客", "竞媒top靶向名单", "小店高GMV", "小店动销客户"]; // v3.2 真·客户来源
+const CUSTOMER_SOURCES = ["26年4月后产业带拓客", "26年4月后CID专项引入", "26年4月后竞媒靶向名单", "26年4月后自拓", "全域通反向拓客", "竞媒top靶向名单", "小店高GMV", "小店动销客户"]; // v3.2 真·客户来源
+// R12.1 (2026-07-03) 靶向品牌池 + 上限 3 次覆盖 (跨销售累计)
+const TARGET_BRAND_SOURCE = "26年4月后竞媒靶向名单";  // 触发品牌选择器的来源
+const TARGET_FALLBACK_SOURCE = "26年4月后自拓";       // 覆盖上限时的降级来源
+const TARGET_BRAND_LIMIT = 3;
+// 品牌池 (window.__TARGET_BRAND_POOL__ 由 data/target_brand_pool.js 加载)
+// 覆盖 count 快照 (从云端 checkBrandLimit 预拉, 提交时会二次复核)
+window.__TARGET_BRAND_COUNTS__ = window.__TARGET_BRAND_COUNTS__ || {};
+window.__TARGET_BRAND_COUNTS_TS__ = 0;
+async function refreshTargetBrandCounts() {
+  try {
+    if (!(window.cloud && window.cloud.callApi)) return;
+    const res = await window.cloud.callApi('getTargetBrandCounts', {});
+    if (res && res.ok && res.data && res.data.counts) {
+      window.__TARGET_BRAND_COUNTS__ = res.data.counts;
+      window.__TARGET_BRAND_COUNTS_TS__ = Date.now();
+      console.info('[targetBrand] counts refreshed:', Object.keys(res.data.counts).length, 'brands, full:', (res.data.brandsFull||[]).length);
+    }
+  } catch (e) { console.warn('[targetBrand] refresh failed:', e && e.message); }
+}
+// R12.1 填充品牌 select (置灰已满 3 次品牌; label 显示 [已选 N/3])
+function fillBrandSelect(selectId) {
+  const el = document.getElementById(selectId);
+  if (!el) return;
+  const pool = window.__TARGET_BRAND_POOL__ || [];
+  const counts = window.__TARGET_BRAND_COUNTS__ || {};
+  const opts = ['<option value="">请选择品牌...</option>'];
+  // 按 已满 (置底) → 品牌名 排序; 顶部先展示可选品牌
+  const enriched = pool.map(function(p){
+    const c = counts[p.brand] || 0;
+    return { brand: p.brand, listType: p.listType || '', count: c, full: c >= TARGET_BRAND_LIMIT };
+  }).sort(function(a,b){
+    if (a.full !== b.full) return a.full ? 1 : -1;
+    return a.brand.localeCompare(b.brand, 'zh');
+  });
+  enriched.forEach(function(p){
+    const badge = p.full ? '🔒 已满 3 次' : ('剩 ' + (TARGET_BRAND_LIMIT - p.count) + '/3');
+    const label = p.brand + '  [' + badge + (p.listType ? ' · ' + p.listType : '') + ']';
+    opts.push('<option value="' + p.brand.replace(/"/g,'&quot;') + '"' + (p.full ? ' disabled style="color:#bfbfbf;"' : '') + '>' + label + '</option>');
+  });
+  el.innerHTML = opts.join('');
+}
+// R12.1 客户来源切换: 靶向 → 显示品牌选择 + 拉最新 count; 否则隐藏
+function onSourceChange(scope) {
+  scope = scope || 'modal';
+  const prefix = scope === 'inline' ? 'inline-m' : 'm';
+  const src = document.getElementById(prefix + '-source');
+  const wrap = document.getElementById(prefix + '-brand-wrap');
+  const sel = document.getElementById(prefix + '-brand');
+  const hint = document.getElementById(prefix + '-brand-hint');
+  if (!src || !wrap) return;
+  const isTarget = src.value === TARGET_BRAND_SOURCE;
+  wrap.style.display = isTarget ? '' : 'none';
+  if (isTarget) {
+    fillBrandSelect(prefix + '-brand');
+    // 异步刷新 count 后重填 (确保下拉里的 [剩 N/3] 是最新的)
+    refreshTargetBrandCounts().then(function(){ fillBrandSelect(prefix + '-brand'); });
+    if (hint) hint.textContent = '同一品牌全销售历史累计最多录入 3 次；超过后仍作新客登记，但客户来源自动改为「26年4月后自拓」，且不计入靶向拓客。';
+  } else {
+    if (sel) sel.value = '';
+    if (hint) hint.textContent = '';
+  }
+}
+// R12.1 提交前二次复核: 云端事务查询 → allowed=false 则弹窗降级
+async function ensureTargetBrandAllowed(scope) {
+  scope = scope || 'modal';
+  const prefix = scope === 'inline' ? 'inline-m' : 'm';
+  const src = document.getElementById(prefix + '-source');
+  const sel = document.getElementById(prefix + '-brand');
+  if (!src || src.value !== TARGET_BRAND_SOURCE) return { ok: true, source: src ? src.value : '', brand: '', targetRejected: false };
+  const brand = sel ? (sel.value || '').trim() : '';
+  if (!brand) { alert('客户来源为「' + TARGET_BRAND_SOURCE + '」时，必须选择靶向品牌'); return { ok: false }; }
+  try {
+    if (window.cloud && window.cloud.callApi) {
+      const res = await window.cloud.callApi('checkBrandLimit', { brand: brand });
+      if (res && res.ok && res.data) {
+        if (res.data.allowed) {
+          return { ok: true, source: TARGET_BRAND_SOURCE, brand: brand, targetRejected: false };
+        }
+        // 已满 3 次 → 弹窗降级
+        const occ = (res.data.occupiedBy || []).join('、') || '（历史记录）';
+        const msg = '⚠️ 此品牌【' + brand + '】已被覆盖 3 次（' + occ + '），此主体仍可作为新客登记，但无法录入靶向拓客。\n\n点击"确定"→ 客户来源将自动改为「' + TARGET_FALLBACK_SOURCE + '」并写入；点击"取消"→ 停止提交，可回到表单换一个品牌。';
+        if (!confirm(msg)) return { ok: false };
+        return { ok: true, source: TARGET_FALLBACK_SOURCE, brand: '', targetRejected: true, rejectedBrand: brand };
+      }
+    }
+  } catch (e) { console.warn('[targetBrand] checkBrandLimit failed:', e && e.message); }
+  // 云函数不可达 → 用本地缓存 count 兜底判断
+  const localCount = (window.__TARGET_BRAND_COUNTS__ || {})[brand] || 0;
+  if (localCount >= TARGET_BRAND_LIMIT) {
+    const msg = '⚠️ 此品牌【' + brand + '】已被覆盖 ' + localCount + ' 次（离线判定，可能不精确）。是否仍作为新客登记但改为「' + TARGET_FALLBACK_SOURCE + '」？';
+    if (!confirm(msg)) return { ok: false };
+    return { ok: true, source: TARGET_FALLBACK_SOURCE, brand: '', targetRejected: true, rejectedBrand: brand };
+  }
+  return { ok: true, source: TARGET_BRAND_SOURCE, brand: brand, targetRejected: false };
+}
 const CHANNELS = ["自拓", "小店服务商转介绍", "广告服务商转介绍", "二代转介绍", "客户转介绍", "同事转介绍", "其他"]; // register 原口径：拓客途径
 const PRIORITIES = ["S","A","B"];
 
@@ -3078,6 +3176,10 @@ function initRegisterModal() {
       hint.style.cssText = 'font-size:11px;color:#6b7280;margin-top:4px;';
     }
   } catch(e){}
+  // R12.1 modal 初始化时隐藏品牌选择器
+  const bw = document.getElementById('m-brand-wrap'); if (bw) bw.style.display = 'none';
+  const bs = document.getElementById('m-brand'); if (bs) bs.value = '';
+  setTimeout(function(){ onSourceChange('modal'); }, 0);
 }
 function fillInlineSelect(id, arr) { const el = document.getElementById(id); if (el) el.innerHTML = arr.map(x => `<option>${x}</option>`).join(''); }
 function currentRegisterUser(){
@@ -3117,6 +3219,11 @@ function initInlineRegisterEntry(){
     if (userHint) userHint.textContent = msg.replace(/<[^>]+>/g, '');
   } catch(e){}
   inlineChannelChange();
+  // R12.1 初始化时隐藏品牌选择器 (source 默认非靶向)
+  const bw = document.getElementById('inline-m-brand-wrap'); if (bw) bw.style.display = 'none';
+  const bs = document.getElementById('inline-m-brand'); if (bs) bs.value = '';
+  // 若默认 source 已是靶向,重新触发一次显示逻辑
+  setTimeout(function(){ onSourceChange('inline'); }, 0);
 }
 function inlineChannelChange(){
   const v = (document.getElementById('inline-m-channel') || {}).value;
@@ -3133,6 +3240,10 @@ function resetInlineRegister(){
   const prev = document.getElementById('inline-m-evidence-preview'); if (prev) prev.innerHTML='';
   pendingImages = []; renderThumbs();
   const date = document.getElementById('inline-m-date'); if (date) date.value = new Date().toISOString().slice(0,10);
+  // R12.1 重置品牌选择器
+  const bw = document.getElementById('inline-m-brand-wrap'); if (bw) bw.style.display = 'none';
+  const bs = document.getElementById('inline-m-brand'); if (bs) bs.value = '';
+  const bh = document.getElementById('inline-m-brand-hint'); if (bh) bh.textContent = '';
 }
 function copyInlineToModalAndSubmit(){
   if (!document.getElementById('inline-m-name')) return;
@@ -3140,6 +3251,16 @@ function copyInlineToModalAndSubmit(){
   const map = [['inline-m-name','m-name'],['inline-m-category','m-category'],['inline-m-sales','m-sales'],['inline-m-channel','m-channel'],['inline-m-resource','m-resource'],['inline-m-source','m-source'],['inline-m-date','m-date']];
   map.forEach(([a,b]) => { const src=document.getElementById(a), dst=document.getElementById(b); if(src&&dst) dst.value=src.value; });
   onChannelChange();
+  // R12.1 靶向品牌同步 (先触发 modal 侧的 source 切换, 再复制品牌值)
+  onSourceChange('modal');
+  const ib = document.getElementById('inline-m-brand'); const mb = document.getElementById('m-brand');
+  if (ib && mb && ib.value) {
+    // 若品牌在下拉里, 直接赋值; 否则动态追加
+    let found = false;
+    Array.from(mb.options).forEach(function(o){ if (o.value === ib.value) found = true; });
+    if (!found) { const opt = document.createElement('option'); opt.value = ib.value; opt.text = ib.value; mb.appendChild(opt); }
+    mb.value = ib.value;
+  }
   submitRecord();
   setTimeout(resetInlineRegister, 250);
 }
@@ -3152,6 +3273,8 @@ function bindInlineRegisterEntry(){
     nm.dataset.bound='1';
   }
   const ev = document.getElementById('inline-m-evidence'); if (ev && !ev.dataset.bound) { ev.addEventListener('change', onEvidenceChange); ev.dataset.bound='1'; }
+  // R12.1 inline 客户来源切换绑定
+  const isrc = document.getElementById('inline-m-source'); if (isrc && !isrc.dataset.brandBound) { isrc.addEventListener('change', function(){ onSourceChange('inline'); }); isrc.dataset.brandBound='1'; }
   const sub = document.getElementById('inlineSubmitRegister'); if (sub && !sub.dataset.bound) { sub.onclick = copyInlineToModalAndSubmit; sub.dataset.bound='1'; }
   const reset = document.getElementById('inlineResetRegister'); if (reset && !reset.dataset.bound) { reset.onclick = resetInlineRegister; reset.dataset.bound='1'; }
   const bp = document.getElementById('inlineBatchPaste'); if (bp && !bp.dataset.bound) { bp.onclick = () => openBatchPasteModal(); bp.dataset.bound='1'; }
@@ -3591,7 +3714,7 @@ document.addEventListener('paste', e => {
   const modal = document.getElementById('modalRecord'); if (!modal || !modal.classList.contains('show')) return;
   Array.from(e.clipboardData?.items || []).forEach(it => { if (it.type.startsWith('image/')) { const f=it.getAsFile(); if (f) addImageFromFile(f); } });
 });
-window.submitRecord = () => {
+window.submitRecord = async () => {
   // EDIT 模式：补充已有记录的字段（含建联截图）
   if (window.__EDITING_RID__) {
     const rec = (window.RECORDS || []).find(r => String(r.id) === String(window.__EDITING_RID__));
@@ -3611,7 +3734,18 @@ window.submitRecord = () => {
       }
       rec.channel = document.getElementById('m-channel').value || rec.channel;
       rec.resource = document.getElementById('m-resource').value.trim() || rec.resource;
-      rec.source = document.getElementById('m-source').value || rec.source;
+      // R12.1 EDIT 模式:若 source 改到靶向,同样走 checkBrandLimit + 降级
+      const _newSrc = document.getElementById('m-source').value || rec.source;
+      if (_newSrc === TARGET_BRAND_SOURCE && rec.source !== TARGET_BRAND_SOURCE) {
+        const _judge = await ensureTargetBrandAllowed('modal');
+        if (!_judge.ok) return;  // 用户取消
+        rec.source = _judge.source;
+        rec.brand = _judge.brand || rec.brand;
+        rec.targetRejected = !!_judge.targetRejected;
+        if (_judge.rejectedBrand) rec.rejectedBrand = _judge.rejectedBrand;
+      } else {
+        rec.source = _newSrc;
+      }
       rec.date = document.getElementById('m-date').value || rec.date;
       // 建联截图合并：保留已有 + 新增
       const existImgs = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
@@ -3641,7 +3775,7 @@ window.submitRecord = () => {
   const links = [];
   const channel = document.getElementById('m-channel').value;
   const resource = document.getElementById('m-resource').value.trim();
-  const source = document.getElementById('m-source').value;
+  let source = document.getElementById('m-source').value;
   const date = document.getElementById('m-date').value;
   if (!name) return alert('客户主体名称必填');
   if (channel !== '自拓' && !resource) return alert('拓客途径为「' + channel + '」时，资源方需要填写');
@@ -3662,7 +3796,17 @@ window.submitRecord = () => {
     const salesList = dup.entries.map(d => d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`).join('、');
     if (!confirm(`客户主体「${name}」在历史表出现 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
   }
-  const finalBrand = shortName;
+  // R12.1 靶向来源: 云端二次判决 (allowed=false 弹窗降级)
+  let targetRejected = false, rejectedBrand = '', targetBrand = '';
+  if (source === TARGET_BRAND_SOURCE) {
+    const judge = await ensureTargetBrandAllowed('modal');
+    if (!judge.ok) return;  // 用户取消
+    source = judge.source;
+    targetBrand = judge.brand || '';
+    targetRejected = !!judge.targetRejected;
+    rejectedBrand = judge.rejectedBrand || '';
+  }
+  const finalBrand = targetBrand || shortName;
   // 自动匹配投放端（基于今晚的字典；查不到 = 未匹配投放）
   const DELIVERY_SIDE_MAP = window.__DELIVERY_SIDE_MAP__ || {};
   const deliverySide = DELIVERY_SIDE_MAP[shortName] || DELIVERY_SIDE_MAP[name] || '未匹配投放';
@@ -3672,12 +3816,21 @@ window.submitRecord = () => {
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:!look.isLaoke, isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', customerType:look.isLaoke ? `非本季度新客 ${look.firstQuarter || ''}老客` : '新客', status:look.isLaoke ? '存量' : '新客',
-    cost:0, zone:'', maturity:'', deliverySide, images:[]
+    cost:0, zone:'', maturity:'', deliverySide, images:[],
+    // R12.1 靶向登记留痕
+    targetRejected: targetRejected, rejectedBrand: rejectedBrand
   };
   saveUserRecord(rec);
+  // R12.1 靶向登记成功后异步刷新本地 count 快照 (下次提交/切换时 count+1 生效)
+  if (rec.source === TARGET_BRAND_SOURCE && rec.brand) {
+    window.__TARGET_BRAND_COUNTS__[rec.brand] = (window.__TARGET_BRAND_COUNTS__[rec.brand] || 0) + 1;
+  }
   closeModal('modalRecord');
   renderAll();
-  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}`);
+  let __targetInfo = '';
+  if (rec.source === TARGET_BRAND_SOURCE && rec.brand) __targetInfo = `\n🎯 靶向拓客：${rec.brand}`;
+  else if (targetRejected) __targetInfo = `\n⚠️ 品牌【${rejectedBrand}】已被覆盖 3 次，本次已作为「${TARGET_FALLBACK_SOURCE}」入库（不计入靶向拓客）。`;
+  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}${__targetInfo}`);
 };
 
 
@@ -3775,7 +3928,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260703a';
+  s.src = 'data/bulk_import_rows.js?v=20260703b';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4174,6 +4327,8 @@ document.addEventListener('click', e => {
     doPull(true);
   };
   doPull(false);
+  // R12.1 靶向品牌 count 快照 (登录后预拉,让品牌下拉显示 [剩 N/3])
+  setTimeout(function(){ try { refreshTargetBrandCounts(); } catch(e){ console.warn('[targetBrand] boot refresh skipped:', e && e.message); } }, 1500);
 })();
 </script>
 
