@@ -46,7 +46,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260707b')
+    return fetch('data/manual_attr_override.json?v=20260707c')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -61,31 +61,31 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260707b"></script>
-<script defer src="api_client.js?v=20260707b"></script>
-<script defer src="data_adapter.js?v=20260707b"></script>
+<script defer src="cloud_gray_switch.js?v=20260707c"></script>
+<script defer src="api_client.js?v=20260707c"></script>
+<script defer src="data_adapter.js?v=20260707c"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260707b"></script> -->
-<script src="data/center_sales_summary.js?v=20260707b"></script>
-<script src="data/center_quarter_summary.js?v=20260707b"></script>
-<script src="data/center_daily_kpi.js?v=20260707b"></script>
-<script src="data/top80_effective_metrics.js?v=20260707b"></script>
-<script src="data/top_status_data.js?v=20260707b"></script>
-<script src="data/enough_candidates.js?v=20260707b"></script>
-<script src="data/handover_customers_519.js?v=20260707b"></script>
-<script src="data/target_brand_pool.js?v=20260707b"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260707c"></script> -->
+<script src="data/center_sales_summary.js?v=20260707c"></script>
+<script src="data/center_quarter_summary.js?v=20260707c"></script>
+<script src="data/center_daily_kpi.js?v=20260707c"></script>
+<script src="data/top80_effective_metrics.js?v=20260707c"></script>
+<script src="data/top_status_data.js?v=20260707c"></script>
+<script src="data/enough_candidates.js?v=20260707c"></script>
+<script src="data/handover_customers_519.js?v=20260707c"></script>
+<script src="data/target_brand_pool.js?v=20260707c"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260707b" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260707c" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260707b"></script>
-<script src="dual_check.js?v=20260707b"></script>
-<script src="big_data_dual_check.js?v=20260707b"></script>
+<script src="cloud_sync.js?v=20260707c"></script>
+<script src="dual_check.js?v=20260707c"></script>
+<script src="big_data_dual_check.js?v=20260707c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -893,7 +893,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260707b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260707c`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1092,7 +1092,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260707b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260707c" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1108,7 +1108,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260707b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260707c" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1193,7 +1193,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260707b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260707c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -2629,8 +2629,11 @@ function recordDedupKey(r) {
   return raw.replace(/\s+/g, '').toLowerCase();
 }
 function latestRecordDate(records) {
-  const dates = (records || []).map(r => String(r.date || '').slice(0,10)).filter(Boolean).sort();
-  return dates.length ? dates[dates.length - 1] : new Date().toISOString().slice(0,10);
+  // 2026-07-07 修复：底表混入未来日期脏数据(2026-08~12共2353条)，导致"今日"被锚到2026-12-25
+  // 过滤策略：只取 <= 今天 的日期，未来日期不参与"最新登记日"判定
+  const todayStr = new Date().toISOString().slice(0,10);
+  const dates = (records || []).map(r => String(r.date || '').slice(0,10)).filter(Boolean).filter(d => d <= todayStr).sort();
+  return dates.length ? dates[dates.length - 1] : todayStr;
 }
 function dedupeRecordsByEarliest(records) {
   const map = new Map();
@@ -2720,7 +2723,10 @@ function applyRecordOverride(r, m) {
 function currentRecordList() {
   const metricMap = buildRecordMetricMap();
   const overrideMap = _buildRecordOverrideMap();
+  // 2026-07-07 过滤未来日期：底表混入2353条(2026-08~12)脏数据，必须在消费层隔离
+  const todayStr = new Date().toISOString().slice(0,10);
   let list = dedupeRecordsByEarliest(RECORDS)
+    .filter(r => { const d = String(r.date || '').slice(0,10); return d && d <= todayStr; })
     .map(r => enrichRecordMetrics(r, metricMap))
     .map(r => applyRecordOverride(r, overrideMap));
   if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
@@ -3745,6 +3751,69 @@ function onNameInput() {
   // 2026-06-24 V4.1：云端权威校验（异步增强，失败/超时保留本地兜底；全新客户保留本地字典识别）
   cloudEnhanceNameHint(raw, 'm-name', 'm-name-hint', 'm-submit');
 }
+/* 2026-07-07 补齐：内联登记弹窗（inline-*）的名称输入回调。
+   原来绑定了 onInlineNameInput 但函数从未定义，导致内联弹窗输入客户名时
+   完全无重复检测/简称匹配/老客提示——用户反馈了多次"为什么不提示重复"的根因。
+   逻辑与 onNameInput 完全一致，仅 DOM ID 从 m-* 换为 inline-m-* 。 */
+function onInlineNameInput() {
+  const raw = document.getElementById('inline-m-name').value.trim();
+  const hintEl = document.getElementById('inline-m-name-hint');
+  const submitBtn = document.getElementById('inlineSubmitRegister');
+  if (!raw) {
+    hintEl.innerHTML = '';
+    if (submitBtn) submitBtn.disabled = false;
+    return;
+  }
+  const look = lookupEntity(raw);
+  const shortName = look.short || raw;
+  const dup = lookupDuplicates(raw);
+  let hint = `<div class="row"><span style="color:#8c8c8c;">系统识别简称：</span><span class="badge-short">${shortName}</span>`;
+  if (look.isLaoke) {
+    hint += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">非本季度新客（首投 ${look.firstQuarter || '-'}）</span>`;
+  } else if (look.needReconcile) {
+    hint += `<span class="badge-newk" style="background:#f3f4f6;color:#6b7280;">⏳ 主体兜底（次日回扫补简称）</span>`;
+  } else {
+    hint += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客</span>`;
+  }
+  const DSM = window.__DELIVERY_SIDE_MAP__ || {};
+  const ds = DSM[shortName] || DSM[raw] || '';
+  if (ds) hint += `<span class="badge-short" style="background:#eef4ff;color:#2563eb;">投放端：${ds}</span>`;
+  if (!look.matched) hint += `<span style="font-size:11px;color:#bfbfbf;">（未命中字典，默认以主体作为简称）</span>`;
+  hint += `</div>`;
+  // 重复登记：底表/本地 = 强重复，禁用提交
+  let hasHardDup = false;
+  if (dup.total) {
+    const hardDups = dup.entries.filter(d => d.src === "底表" || d.src === "本地");
+    hasHardDup = hardDups.length > 0;
+    const salesList = dup.entries.map(d => {
+      const tag = d.src === "底表" ? '<span style="font-size:11px;color:#6b7280;">[底表]</span>'
+                : d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>'
+                : `<span style="font-size:11px;color:#bfbfbf;">[${d.date}]</span>`;
+      return `<b>${d.sales}</b>${tag}`;
+    }).join('、');
+    if (hasHardDup) {
+      try { window.__prefetchAttrLog && window.__prefetchAttrLog((raw||'').trim().replace(/\s+/g,'')); } catch(_){}
+      const _owner = _dupCurrentOwner(dup.entries, (raw||'').trim().replace(/\s+/g,''));
+      const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
+      const _changed = _others.length > 0;
+      const _ownerHtml = `<b>${_owner}</b>`;
+      const _bodyHtml = _changed
+        ? `❌ <b>主体重复</b>：该客户当前归属 ${_ownerHtml}（销售已由 ${_others.map(s=>`<span style="text-decoration:line-through;color:#9ca3af;">${s}</span>`).join('、')} 修改为 ${_ownerHtml}）。按「先登记先归属」规则<b>本次拒绝提交</b>。`
+        : `❌ <b>主体重复</b>：该客户已被 ${_ownerHtml} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。`;
+      hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
+        ${_bodyHtml}
+      </div>`;
+    } else {
+      hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
+        ⚠️ 该主体在历史表出现 <b>${dup.total}</b> 次：${salesList}。如确为同一客户请确认是否继续。
+      </div>`;
+    }
+  }
+  hintEl.innerHTML = hint;
+  if (submitBtn) submitBtn.disabled = hasHardDup;
+  // 云端权威校验（异步增强，inline 版）
+  cloudEnhanceNameHint(raw, 'inline-m-name', 'inline-m-name-hint', 'inlineSubmitRegister');
+}
 /* 2026-06-24 V4.1：登记实时识别接 CloudBase sc_customers 单一可信源（checkCustomer），
    彻底解决「简称没认出/归属不准/字典异步没加载完」——云端 8265 客户权威数据，永远准。
    策略：本地 lookupEntity 先即时渲染（不卡），云端返回后若客户已存在则用云端权威覆盖。 */
@@ -4052,7 +4121,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260707b';
+  s.src = 'data/bulk_import_rows.js?v=20260707c';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
