@@ -7,30 +7,30 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260707a"></script>
+<script src="auth-guard.js?v=20260707b"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260707a"></script>
-<script defer src="api_client.js?v=20260707a"></script>
-<script defer src="data_adapter.js?v=20260707a"></script>
+<script defer src="cloud_gray_switch.js?v=20260707b"></script>
+<script defer src="api_client.js?v=20260707b"></script>
+<script defer src="data_adapter.js?v=20260707b"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script defer src="lib_loader.js?v=20260707a"></script>
-<script src="data/current_rising_data.js?v=20260707a"></script>
+<script defer src="lib_loader.js?v=20260707b"></script>
+<script src="data/current_rising_data.js?v=20260707b"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260707a"></script>
-<script src="data/center_quarter_summary.js?v=20260707a"></script>
-<script src="data/center_daily_kpi.js?v=20260707a"></script>
-<script src="data/top80_effective_metrics.js?v=20260707a"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260707b"></script>
+<script src="data/center_quarter_summary.js?v=20260707b"></script>
+<script src="data/center_daily_kpi.js?v=20260707b"></script>
+<script src="data/top80_effective_metrics.js?v=20260707b"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260707a"></script>
-<script src="data/redblack_data.js?v=20260707a"></script>
+<script src="data/top_rising_data.js?v=20260707b"></script>
+<script src="data/redblack_data.js?v=20260707b"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260707a"></script>
-<script defer src="dual_check.js?v=20260707a"></script>
-<script defer src="big_data_dual_check.js?v=20260707a"></script>
-<script defer src="login_guard_banner.js?v=20260707a"></script>
+<script defer src="cloud_sync.js?v=20260707b"></script>
+<script defer src="dual_check.js?v=20260707b"></script>
+<script defer src="big_data_dual_check.js?v=20260707b"></script>
+<script defer src="login_guard_banner.js?v=20260707b"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script defer src="export_tuoke.js?v=20260707a"></script>
+<script defer src="export_tuoke.js?v=20260707b"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -759,7 +759,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&user=kinsleyjin&v=20260707a"
+      src="mobile.html?embed=1&user=kinsleyjin&v=20260707b"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -823,7 +823,7 @@
 
 <script>
 (function(){
-  const CORE_PROJECTS = [{"name":"4+m","type":"提消耗","cls":"wrn","owner":"嘉润","desc":"提高客户ARPU","target":"消耗、消耗占直播消耗比例","progress":"截止 6/4 双周，服饰直播 4+m 日耗 61万，环比 -6%，投放客户数 99家，4+m 消耗占比直播消耗 14%。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"审核","type":"提消耗","cls":"ok","owner":"ricky","desc":"监控服饰审核问题","target":"sheet2 原表此项未填","progress":"近14日服饰提报审核放宽需求共计 3条，均为品牌类客户的单 case 需求。其中 1条已支持放宽 / 1条等待运营补充信息 / 1条待审核反馈。","focus":"","docLink":"https://doc.weixin.qq.com/sheet/e3_AKcAPgaIAE0CNhZudjzqIRt0yfeGT?scode=AJEAIQdfAAomaUAAPDAKcAPgaIAE0&tab=BB08J2","docLinkText":"服饰审核放宽提报记录","dataLink":"","dataNote":""},{"name":"腾飞","type":"提消耗","cls":"ok","owner":"嘉润","desc":"行业腾飞扶持","target":"扶持带来消耗、撬动比","progress":"截止 5/31，Q2TD 累计腾飞花费 243.65万，带来消耗 1266万，扶持撬动比 5.20。","focus":"","docLink":"https://doc.weixin.qq.com/sheet/e3_ABcA0gbtACgCNVhKJLQ15RlCx4B3Y?scode=AJEAIQdfAAop5inPc0ABcA0gbtACg&tab=BB08J2","docLinkText":"服饰腾飞复盘","dataLink":"","dataNote":""},{"name":"创意基建","type":"提消耗","cls":"ok","owner":"俊昊","desc":"通过提升创意量供给，提升消耗","target":"曝光创意唯一性ID数 / 全新创意唯一性ID数 / 在线创意唯一性ID数 提升","progress":"视频号：近双周日均曝光创意唯一性ID数 177,182，对比基准期日均提升 16.9%；\n朋友圈9图：近双周日均曝光创意唯一性ID数 20,920，对比基准期日均提升 77.9%。","focus":"每日关注数据，将提升创意基建融入客户服务","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"CID 专项","type":"基础必备","cls":"ok","owner":"小美","desc":"CID 链路消耗增长","target":"H1 日耗 185w","progress":"双周日耗 233w，环比 -3.01%。","focus":"测试 paa-官方pa链路","docLink":"","docLinkText":"","dataLink":"https://adata.woa.com/bi/view/new/g:biz_main_multiple:log_time?s=3AD3qP","dataNote":""},{"name":"直播专项","type":"基础必备","cls":"ok","owner":"嘉润","desc":"闭环直播链路消耗增长及能力应用","target":"H1 日耗 480w","progress":"截止 6/4 双周，服饰直播日耗 427w，年同比 +28%，服饰直播消耗占比行一直播 20%。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"小店专项","type":"基础必备","cls":"wrn","owner":"俊昊","desc":"闭环小店直购链路消耗增长","target":"H1 日耗 240w","progress":"双周日耗 249w，环比 -12%（绝对值 -12w）。\n分投放端：ADQ 日耗 162w（占比 65%）环比 -11% / 全域通日耗 86w（占比 35%）环比 -14%；ADQ 下跌主要来自跑品客户的休闲裤持续衰退。\n分类目：本周期 ADQ 掉量主要来自男装 -21%。\n① 男装 同比 -21%，男装夏季品（短袖T恤、冰丝裤等）生命周期进入衰退期，头部客户（合肥邦鑫、广州后时代等）主力产品大幅衰减；\n② 男鞋 同比 +26%，夏季凉鞋/洞洞鞋/一脚蹬旺季效应明显，瓯海鸿星、花花公子等品牌新品放量；\n③ 女装 同比 +20%，主曼（+27%）等客户拉动，整体回暖；\n④ 时尚饰品 同比 -19%（绝对值 -1.2w），貔貅手串、胸针衰退。","focus":"1、流量盖帽策略；2、潜客优投能力测试，再营销支路配合种草人群提价竞争。","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"AIGC","type":"基础必备","cls":"wrn","owner":"ricky","desc":"监控服饰 AIGC 消耗，优化产品能力适配客户实际素材使用需求，推进客户 AI 素材生产 & 消耗提升","target":"消耗达到 80w/d","progress":"sheet2 原表此项填「可以和周报内容一致」，未给出具体双周日耗数字。","focus":"消耗持续持平，辛苦各赛道关注 AIGC 消耗，push 客户打开衍生开关 & 使用妙思平台自主创作 AI 素材投放","docLink":"","docLinkText":"","dataLink":"https://adata.woa.com/bi/view/10140?s=pk750","dataNote":"数据进展具体数值待运营补充"},{"name":"回传质量","type":"基础必备","cls":"ok","owner":"megan","desc":"数据回传异常 case 跟进、推动客户提升回传质量。","target":"回传质量 case 2 个工作日内跟进 + 反馈结论。","progress":"按节奏跟进中，case 2 个工作日内闭环。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"腰尾部跃迁","type":"组织发展","cls":"ok","owner":"橘子","desc":"监控赛道客户分层构成，挖掘潜在跃迁客户，并总结有效的促跃迁动作，通过跃迁专项培训营等形式，提升赛道腰尾向头部跃迁的客户数。","target":"与 OKR 对齐：Q2 推动闭环腰部跃迁到头部客户，数量 30个","progress":"Q2TD 跃迁客户数 52个（vs 目标 30个，达成 173%）。","focus":"1、各赛道看清跃迁情况：跃迁了多少客户数、原因是什么、是自然跃迁还是运营结果；潜在跃迁客户是哪些、是否已建立动态追踪机制及追踪结果；总结有效的跃迁动作有哪些、下一步如何做。\n2、持续提升对外发声（销售群 / 服务商群 / 运营群），强化「跃迁」心智。\n3、橘子跑通跃迁专项培训营，拿到数据结果，跨部门合作发声 + 争资源。","docLink":"","docLinkText":"","dataLink":"https://jiejin903.github.io/xiyou-dashboard/?v=20260707a-fix","dataNote":""},{"name":"全店托管","type":"新机会测试","cls":"wrn","owner":"海友","desc":"提升全店托管消耗","target":"全店托管客户数提升至 120家","progress":"sheet2 原表此项填「可以和周报内容一致」，未给出当前家数。","focus":"关注全店托管中新品起量率和消耗情况","docLink":"","docLinkText":"","dataLink":"","dataNote":"当前客户家数待运营补充"},{"name":"互选联投·达人素材加热","type":"新机会测试","cls":"urg","owner":"待定","desc":"sheet2 原表此项未填","target":"sheet2 原表此项未填","progress":"sheet2 原表此项填「可以和周报内容一致」。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":"负责人 / 核心目标 / 具体内容待补充"}];
+  const CORE_PROJECTS = [{"name":"4+m","type":"提消耗","cls":"wrn","owner":"嘉润","desc":"提高客户ARPU","target":"消耗、消耗占直播消耗比例","progress":"截止 6/4 双周，服饰直播 4+m 日耗 61万，环比 -6%，投放客户数 99家，4+m 消耗占比直播消耗 14%。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"审核","type":"提消耗","cls":"ok","owner":"ricky","desc":"监控服饰审核问题","target":"sheet2 原表此项未填","progress":"近14日服饰提报审核放宽需求共计 3条，均为品牌类客户的单 case 需求。其中 1条已支持放宽 / 1条等待运营补充信息 / 1条待审核反馈。","focus":"","docLink":"https://doc.weixin.qq.com/sheet/e3_AKcAPgaIAE0CNhZudjzqIRt0yfeGT?scode=AJEAIQdfAAomaUAAPDAKcAPgaIAE0&tab=BB08J2","docLinkText":"服饰审核放宽提报记录","dataLink":"","dataNote":""},{"name":"腾飞","type":"提消耗","cls":"ok","owner":"嘉润","desc":"行业腾飞扶持","target":"扶持带来消耗、撬动比","progress":"截止 5/31，Q2TD 累计腾飞花费 243.65万，带来消耗 1266万，扶持撬动比 5.20。","focus":"","docLink":"https://doc.weixin.qq.com/sheet/e3_ABcA0gbtACgCNVhKJLQ15RlCx4B3Y?scode=AJEAIQdfAAop5inPc0ABcA0gbtACg&tab=BB08J2","docLinkText":"服饰腾飞复盘","dataLink":"","dataNote":""},{"name":"创意基建","type":"提消耗","cls":"ok","owner":"俊昊","desc":"通过提升创意量供给，提升消耗","target":"曝光创意唯一性ID数 / 全新创意唯一性ID数 / 在线创意唯一性ID数 提升","progress":"视频号：近双周日均曝光创意唯一性ID数 177,182，对比基准期日均提升 16.9%；\n朋友圈9图：近双周日均曝光创意唯一性ID数 20,920，对比基准期日均提升 77.9%。","focus":"每日关注数据，将提升创意基建融入客户服务","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"CID 专项","type":"基础必备","cls":"ok","owner":"小美","desc":"CID 链路消耗增长","target":"H1 日耗 185w","progress":"双周日耗 233w，环比 -3.01%。","focus":"测试 paa-官方pa链路","docLink":"","docLinkText":"","dataLink":"https://adata.woa.com/bi/view/new/g:biz_main_multiple:log_time?s=3AD3qP","dataNote":""},{"name":"直播专项","type":"基础必备","cls":"ok","owner":"嘉润","desc":"闭环直播链路消耗增长及能力应用","target":"H1 日耗 480w","progress":"截止 6/4 双周，服饰直播日耗 427w，年同比 +28%，服饰直播消耗占比行一直播 20%。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"小店专项","type":"基础必备","cls":"wrn","owner":"俊昊","desc":"闭环小店直购链路消耗增长","target":"H1 日耗 240w","progress":"双周日耗 249w，环比 -12%（绝对值 -12w）。\n分投放端：ADQ 日耗 162w（占比 65%）环比 -11% / 全域通日耗 86w（占比 35%）环比 -14%；ADQ 下跌主要来自跑品客户的休闲裤持续衰退。\n分类目：本周期 ADQ 掉量主要来自男装 -21%。\n① 男装 同比 -21%，男装夏季品（短袖T恤、冰丝裤等）生命周期进入衰退期，头部客户（合肥邦鑫、广州后时代等）主力产品大幅衰减；\n② 男鞋 同比 +26%，夏季凉鞋/洞洞鞋/一脚蹬旺季效应明显，瓯海鸿星、花花公子等品牌新品放量；\n③ 女装 同比 +20%，主曼（+27%）等客户拉动，整体回暖；\n④ 时尚饰品 同比 -19%（绝对值 -1.2w），貔貅手串、胸针衰退。","focus":"1、流量盖帽策略；2、潜客优投能力测试，再营销支路配合种草人群提价竞争。","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"AIGC","type":"基础必备","cls":"wrn","owner":"ricky","desc":"监控服饰 AIGC 消耗，优化产品能力适配客户实际素材使用需求，推进客户 AI 素材生产 & 消耗提升","target":"消耗达到 80w/d","progress":"sheet2 原表此项填「可以和周报内容一致」，未给出具体双周日耗数字。","focus":"消耗持续持平，辛苦各赛道关注 AIGC 消耗，push 客户打开衍生开关 & 使用妙思平台自主创作 AI 素材投放","docLink":"","docLinkText":"","dataLink":"https://adata.woa.com/bi/view/10140?s=pk750","dataNote":"数据进展具体数值待运营补充"},{"name":"回传质量","type":"基础必备","cls":"ok","owner":"megan","desc":"数据回传异常 case 跟进、推动客户提升回传质量。","target":"回传质量 case 2 个工作日内跟进 + 反馈结论。","progress":"按节奏跟进中，case 2 个工作日内闭环。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":""},{"name":"腰尾部跃迁","type":"组织发展","cls":"ok","owner":"橘子","desc":"监控赛道客户分层构成，挖掘潜在跃迁客户，并总结有效的促跃迁动作，通过跃迁专项培训营等形式，提升赛道腰尾向头部跃迁的客户数。","target":"与 OKR 对齐：Q2 推动闭环腰部跃迁到头部客户，数量 30个","progress":"Q2TD 跃迁客户数 52个（vs 目标 30个，达成 173%）。","focus":"1、各赛道看清跃迁情况：跃迁了多少客户数、原因是什么、是自然跃迁还是运营结果；潜在跃迁客户是哪些、是否已建立动态追踪机制及追踪结果；总结有效的跃迁动作有哪些、下一步如何做。\n2、持续提升对外发声（销售群 / 服务商群 / 运营群），强化「跃迁」心智。\n3、橘子跑通跃迁专项培训营，拿到数据结果，跨部门合作发声 + 争资源。","docLink":"","docLinkText":"","dataLink":"https://jiejin903.github.io/xiyou-dashboard/?v=20260707b-fix","dataNote":""},{"name":"全店托管","type":"新机会测试","cls":"wrn","owner":"海友","desc":"提升全店托管消耗","target":"全店托管客户数提升至 120家","progress":"sheet2 原表此项填「可以和周报内容一致」，未给出当前家数。","focus":"关注全店托管中新品起量率和消耗情况","docLink":"","docLinkText":"","dataLink":"","dataNote":"当前客户家数待运营补充"},{"name":"互选联投·达人素材加热","type":"新机会测试","cls":"urg","owner":"待定","desc":"sheet2 原表此项未填","target":"sheet2 原表此项未填","progress":"sheet2 原表此项填「可以和周报内容一致」。","focus":"","docLink":"","docLinkText":"","dataLink":"","dataNote":"负责人 / 核心目标 / 具体内容待补充"}];
   const TYPES = ["全部","提消耗","基础必备","组织发展","新机会测试"];
   let currentType = "全部";
   function esc(s){ return String(s || "").replace(/[&<>"']/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]; }); }
@@ -1343,7 +1343,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="battleFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260707a" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260707b" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1359,7 +1359,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="lifeFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260707a" scrolling="no" style="width:100%;height:520px;min-height:320px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260707b" scrolling="no" style="width:100%;height:520px;min-height:320px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -1746,7 +1746,7 @@ function updateHomeMobileFrameUser(forceReload){
   const frame = document.getElementById('homeMobileFrame');
   if (!frame) return;
   const user = encodeURIComponent(syncCurrentUserFromCloud() || 'kinsleyjin');
-  const target = `mobile.html?embed=1&user=${user}&v=20260707a`;
+  const target = `mobile.html?embed=1&user=${user}&v=20260707b`;
   const src = frame.getAttribute('src') || '';
   if (forceReload || src === 'about:blank' || !src.includes(`user=${user}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   try { frame.contentWindow && frame.contentWindow.postMessage({type:'set-mobile-sale', sale: CURRENT_USER}, '*'); } catch(e){}
@@ -2176,7 +2176,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const minH = mode === 'life' ? 320 : 760;
   bindKanbanFrameResize(frameId, minH);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260707a`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260707b`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2198,7 +2198,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260707a`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260707b`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2281,12 +2281,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260707a`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260707b`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260707a`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260707b`);
   }
 }
 function updateViewToggle() {
@@ -3628,7 +3628,7 @@ function renderAll() {
 renderAll();
 // 2026-06-15 子青：今日待办首屏 3 秒优先，主营商品标签后置加载，加载后补渲染。
 (function loadMainProductAfterFirstPaint(){
-  const run = () => fetch('data/customer_main_product.js?v=20260707a', {cache:'force-cache'})
+  const run = () => fetch('data/customer_main_product.js?v=20260707b', {cache:'force-cache'})
     .then(r => r.ok ? r.text() : '')
     .then(code => { if (code) (0, eval)(code); try { renderSummaryBoard(); } catch(e){} })
     .catch(e => console.warn('[lazy-product]', e));
