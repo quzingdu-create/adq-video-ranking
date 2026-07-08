@@ -1,5 +1,6 @@
 # Ignore snapshots/ (historical data backups, kept locally only)
 sales-center/data/snapshots/
+sales-center-mobile/data/snapshots/
 
 # Ignore archive directory (legacy files moved out of sales-center/)
 archive/
