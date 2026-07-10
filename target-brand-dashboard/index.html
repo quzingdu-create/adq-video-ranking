@@ -83,6 +83,32 @@ tbody tr:hover{background:rgba(0,229,255,.07)}
 .note{background:rgba(255,214,0,.08);border:1px solid rgba(255,214,0,.35);border-radius:12px;
   padding:12px 16px;font-size:12.5px;color:var(--yellow);margin:0 0 20px;line-height:1.7}
 .note b{color:#fff}
+/* ==== 转化漏斗 ==== */
+.funnel-wrap{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);
+  border-radius:18px;padding:18px 22px 22px;margin:0 0 24px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+.funnel-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.funnel-head .ttl{font-size:15px;font-weight:800;color:var(--txt)}
+.funnel-rates{display:flex;gap:12px;flex-wrap:wrap}
+.rate-pill{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 16px;border-radius:12px;
+  font-weight:800;color:#06122b;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.rate-pill small{font-size:11px;font-weight:700;opacity:.85}
+.rate-pill b{font-size:18px;line-height:1}
+.rate-pill.jl{background:var(--grad-jl)}
+.rate-pill.tf{background:var(--grad-tf)}
+.funnel-body{display:flex;flex-direction:column;align-items:center;gap:8px}
+.fl{width:100%;display:flex;justify-content:center}
+.fl-bar{position:relative;display:flex;align-items:center;justify-content:space-between;
+  height:56px;border-radius:12px;padding:0 22px;color:#fff;font-weight:800;
+  transition:width .7s cubic-bezier(.2,.8,.2,1);min-width:150px;
+  box-shadow:0 8px 22px rgba(0,0,0,.3);overflow:hidden}
+.fl-bar::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 55%);pointer-events:none}
+.fl-bar .fl-name{font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.35)}
+.fl-bar .fl-val{font-size:22px;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.fl1{background:linear-gradient(135deg,#7c5cff,#4d9bff)}
+.fl2{background:linear-gradient(135deg,#22e6ee,#46e87a)}
+.fl3{background:linear-gradient(135deg,#ffa62e,#ff5fa2)}
+.fl-conv{font-size:12px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
+.fl-conv b{color:var(--yellow)}
 </style>
 </head>
 <body>
@@ -101,6 +127,8 @@ tbody tr:hover{background:rgba(0,229,255,.07)}
 </div>
 
 <div class="kpis" id="kpis"></div>
+
+<div class="funnel-wrap" id="funnel"></div>
 
 <div class="tabs">
   <div class="tab active" data-p="pSales">📊 销售视角</div>
@@ -155,6 +183,35 @@ function renderKPIs(rows){
    <div class="kpi c3"><div class="v">${m.tr.toFixed(1)}%</div><div class="l">投放率（已投放 ${m.ty}）</div></div>
    <div class="kpi c4"><div class="v">${money(SPEND_META.TOTAL_MATCHED_SPEND)}</div>
      <div class="l">日耗（匹配 ${SPEND_META.MATCHED_N} 客户）</div></div>`;
+}
+function renderFunnel(rows){
+  const m=metrics(rows);
+  const n=m.n, jy=m.jy, ty=m.ty;
+  // 宽度按占分母比例，设最小宽度保证文字可读
+  const MIN=26;
+  const w1=100;
+  const w2=n? Math.max(MIN, jy/n*100):MIN;
+  const w3=n? Math.max(MIN, ty/n*100):MIN;
+  // 层间转化：建联→投放
+  const j2t = jy? (ty/jy*100):0;
+  document.getElementById('funnel').innerHTML=`
+   <div class="funnel-head">
+     <div class="ttl">🔻 转化漏斗（待引入品牌数 → 建联 → 投放）</div>
+     <div class="funnel-rates">
+       <div class="rate-pill jl"><small>建联率</small><b>${m.jr.toFixed(1)}%</b></div>
+       <div class="rate-pill tf"><small>投放率</small><b>${m.tr.toFixed(1)}%</b></div>
+     </div>
+   </div>
+   <div class="funnel-body">
+     <div class="fl"><div class="fl-bar fl1" style="width:${w1}%">
+        <span class="fl-name">待引入品牌数</span><span class="fl-val">${fmt(n)}</span></div></div>
+     <div class="fl-conv">↓ 建联率 <b>${m.jr.toFixed(1)}%</b></div>
+     <div class="fl"><div class="fl-bar fl2" style="width:${w2}%">
+        <span class="fl-name">建联数</span><span class="fl-val">${fmt(jy)}</span></div></div>
+     <div class="fl-conv">↓ 建联→投放 <b>${j2t.toFixed(1)}%</b>（占分母投放率 ${m.tr.toFixed(1)}%）</div>
+     <div class="fl"><div class="fl-bar fl3" style="width:${w3}%">
+        <span class="fl-name">投放数</span><span class="fl-val">${fmt(ty)}</span></div></div>
+   </div>`;
 }
 function cardHTML(name,sub,mmax,maxv,denom,spendVal){
   const jr=mmax.jr, tr=mmax.tr;
@@ -211,7 +268,7 @@ function renderDetail(rows){
 }
 function renderAll(){
   const rows=getFiltered();
-  renderKPIs(rows); renderSales(rows); renderProv(rows); renderType(rows); renderDetail(rows);
+  renderKPIs(rows); renderFunnel(rows); renderSales(rows); renderProv(rows); renderType(rows); renderDetail(rows);
 }
 // init selects
 [...new Set(ROWS.map(r=>r.clue))].sort().forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;document.getElementById('fClue').appendChild(o);});
