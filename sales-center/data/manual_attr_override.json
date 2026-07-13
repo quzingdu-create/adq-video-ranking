@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-07-11T11:41:23+08:00",
+  "updatedAt": "2026-07-13T11:25:00+08:00",
   "source": "/Users/duziqing/Downloads/修正归属.xlsx",
-  "note": "子青2026-06-22确认+2026-06-25增量(义乌市芝托/温州联硕/顺顺行=文字优先于云端;风华正茂走A方案归并足力健已删) | R3.1.1 (2026-06-26): inline override 反向同步 5 条 (杭启 lijunwu→Jonzhu 等) | 2026-06-29: 补 2 条 (广州元介→lijunwu / 厦门反重丽嗦→ruilingzhan), 总数 1550 | 2026-06-30 补锁 5 客户 ruilingzhan | 2026-07-07 19:10 还原：7/7转让任务误将1552条覆盖为3条，已还原基准(34d2dca)并叠加3条转让 | 2026-07-11: +2条(岑莱/馨锌 kaikaigenli→ruilingzhan)",
+  "note": "子青2026-06-22确认+2026-06-25增量(义乌市芝托/温州联硕/顺顺行=文字优先于云端;风华正茂走A方案归并足力健已删) | R3.1.1 (2026-06-26): inline override 反向同步 5 条 (杭启 lijunwu→Jonzhu 等) | 2026-06-29: 补 2 条 (广州元介→lijunwu / 厦门反重丽嗦→ruilingzhan), 总数 1550 | 2026-06-30 补锁 5 客户 ruilingzhan | 2026-07-07 19:10 还原：7/7转让任务误将1552条覆盖为3条，已还原基准(34d2dca)并叠加3条转让 | 2026-07-11: +2条(岑莱/馨锌 kaikaigenli→ruilingzhan) | 2026-07-13: +1条(应城市传福珠宝商行 Jonzhu→yvaineechen)",
   "overrides": {
     "CALLIVEN居家健身": {
       "sale": "brownfan",
@@ -8808,6 +8808,11 @@
       "sale": "ruilingzhan",
       "reason": "子青07/11拍板：kaikaigenli→ruilingzhan归属转让",
       "date": "2026-07-11"
+    },
+    "应城市传福珠宝商行(个体工商户)": {
+      "sale": "yvaineechen",
+      "reason": "2026-07-13 子青指定转移 Jonzhu→yvaineechen",
+      "date": "2026-07-13"
     }
   }
 }
