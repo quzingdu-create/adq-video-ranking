@@ -1,4 +1,4 @@
-/* 拓新组双导出按钮 — 公共逻辑 v1.4（2026-06-30）
+/* 拓新组双导出按钮 — 公共逻辑 v1.5（2026-07-13）
  * 用法：每个页面 (index.html / kanban_embed.html / register_v3.2.html / mobile.html) 都需要：
  *   1. 加载 lib_loader.js（导出前按需加载 xlsx）
  *   2. 引入本文件 export_tuoke.js
@@ -184,14 +184,13 @@
   var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1 };
   function normalizeQuarter(v) { return String(v || '').replace('/', ''); }
   function isNewByFq(r) { return !!NEW_QSET[normalizeQuarter(r.firstQuarter)]; }
+  // 2026-07-13 修复：废除硬编码年份映射（原逻辑 7-12月→2025 / 1-6月→2026）。
+  // 原因：进入2026年7月后，该函数将合法的 2026-07-* 日期强制改为 2025-07-*，
+  //       导致导出Excel筛选"2026年"最新只到06-30，7月数据全部消失。
+  // 现在底表(tuoke_real_records.js)日期已由 merge_cloud_records.py 统一年份口径，
+  // 导出层直接透传，不再做年份修正。
   function fixRegYear(d) {
-    var s = String(d || '').slice(0, 10);
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-    if (!m) return d || '';
-    var mon = Number(m[2]);
-    if (mon >= 7 && mon <= 12) return '2025-' + m[2] + '-' + m[3];
-    if (mon >= 1 && mon <= 6) return '2026-' + m[2] + '-' + m[3];
-    return d || '';
+    return String(d || '').slice(0, 10) || '';
   }
   window.__fixRegYearForExport = fixRegYear;
 
