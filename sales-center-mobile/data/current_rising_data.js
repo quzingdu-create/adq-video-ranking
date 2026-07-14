@@ -1,2 +1,2 @@
-/* Auto-generated 2026-07-09 from 新锐名单-7.2.xlsx */
-window.__CURRENT_RISING_SET__ = new Set([]);
+/* Auto-generated 2026-07-13 from 新锐名单-7.13.xlsx */
+window.__CURRENT_RISING_SET__ = new Set(["景德镇好雅美陶瓷文化有限公司"]);
