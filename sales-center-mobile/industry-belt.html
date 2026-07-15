@@ -369,10 +369,16 @@ if(window.ResizeObserver) new ResizeObserver(postH).observe(document.body);
 
 </script>
 <script>
-/* 26年4月后产业带拓客名单 可视化逻辑 */
+/* 26年4月后产业带拓客名单 可视化逻辑 — go()为唯一渲染入口 */
 (function(){
-const D = window.__BAND_DATA__;
-/* ===== 季度Tab切换 ===== */
+var D = window.__BAND_DATA__;
+var CATCOLOR={'男装':'#3b82f6','女装':'#ec4899','箱包鞋靴':'#d97706','贴身衣物':'#8b5cf6','配饰':'#10b981','运动户外':'#06b6d4','珠宝文玩':'#f59e0b','未打标':'#9ca3af','其他':'#64748b'};
+function catColor(c){return CATCOLOR[c]||'#9ca3af';}
+function fmt(n){return(n||0).toLocaleString();}
+function fmtW(n){return((n||0)/1e4).toFixed(1)+'w';}
+function isOther(n){return n.startsWith('其他');}
+
+/* ===== 季度Tab切换 + 全模块渲染 ===== */
 (function(){
 var ALL=D.detail.slice();
 var C2=ALL.filter(function(d){return /2026.Q?2/i.test(d.fq||'');}).length;
@@ -380,173 +386,222 @@ var C3=ALL.filter(function(d){return /2026.Q?3/i.test(d.fq||'');}).length;
 document.getElementById('qc-all').textContent='('+ALL.length+')';
 document.getElementById('qc-q2').textContent='('+C2+')';
 document.getElementById('qc-q3').textContent='('+C3+')';
+
+var PROV_GEO={'北京':[116.4,39.9],'天津':[117.2,39.1],'河北':[114.5,38.0],'山西':[112.5,37.6],'内蒙古':[111.7,40.8],'辽宁':[123.4,41.8],'吉林':[125.3,43.9],'黑龙江':[126.6,45.8],'上海':[121.5,31.2],'江苏':[118.8,32.1],'浙江':[120.2,29.8],'安徽':[117.3,31.9],'福建':[118.3,25.8],'江西':[115.9,27.6],'山东':[117.0,36.4],'河南':[113.6,34.0],'湖北':[112.3,30.7],'湖南':[112.0,27.6],'广东':[113.4,23.1],'广西':[108.3,22.8],'海南':[110.3,19.8],'重庆':[107.5,29.6],'四川':[103.9,30.6],'贵州':[106.7,26.6],'云南':[102.7,24.9],'陕西':[108.9,34.3],'甘肃':[103.8,36.1],'青海':[96.8,35.6],'宁夏':[106.2,38.5],'新疆':[85.3,42.5],'西藏':[91.1,29.6],'台湾':[121.0,23.5],'香港':[114.2,22.3],'澳门':[113.5,22.2]};
+var mapChart=null;
+
 function go(tab){
   document.querySelectorAll('.qt').forEach(function(b){b.classList.toggle('active',b.dataset.q===tab);});
   var fd=(tab==='all')?ALL:(tab==='Q2'?ALL.filter(function(d){return /2026.Q?2/i.test(d.fq||'');}):ALL.filter(function(d){return /2026.Q?3/i.test(d.fq||'');}));
-  var n=fd.length,nw=fd.filter(function(d){return d.new;}).length,ne=fd.filter(function(d){return d.eff;}).length,nr=fd.filter(function(d){return d.rise;}).length,ny=fd.reduce(function(s,d){return s+(d.yest||0);},0),nq=fd.reduce(function(s,d){return s+(d.quarter||0);},0);
-  function f(x){return(x||0).toLocaleString();}
-  function fw(x){return((x||0)/1e4).toFixed(1)+'w';}
+
+  var n=fd.length;
+  var nw=fd.filter(function(d){return d.new;}).length;
+  var ne=fd.filter(function(d){return d.eff;}).length;
+  var nr=fd.filter(function(d){return d.rise;}).length;
+  var ny=fd.reduce(function(s,d){return s+(d.yest||0);},0);
+  var nq=fd.reduce(function(s,d){return s+(d.quarter||0);},0);
+
+  /* 核心产业带数 = 唯一(省市·类目)组合数 */
+  var bandSet={};
+  fd.forEach(function(d){var key=(d.loc||'?')+'\u00b7'+(d.cat||'?');bandSet[key]=true;});
+  var bandTotal=Object.keys(bandSet).length;
+
+  /* --- 1. KPI 卡片 --- */
   document.getElementById('kpis').innerHTML=[
     {lab:'\u76ee\u6807\u5ba2\u6237\u603b\u6570',num:n,u:'\u4e2a',ft:'',c:'c1'},
-    {lab:'\u6838\u5fc3\u4ea7\u4e1a\u5e26',num:D.kpi.band_total,u:'\u4e2a',ft:'\u7701\u5e02\xd7\u7c7b\u76ee \u00b7 \u5171'+D.kpi.band_total+'\u5e26',c:'c2'},
+    {lab:'\u6838\u5fc3\u4ea7\u4e1e\u5e26',num:bandTotal,u:'\u4e2a',ft:'\u7701\u5e02\xd7\u7c7b\u76ee \u00b7 \u5171'+bandTotal+'\u5e26',c:'c2'},
     {lab:'\u65b0\u5ba2',num:nw,u:'\u4e2a',ft:'\u662f\u5426\u65b0\u5ba2=\u662f',c:'c3'},
     {lab:'\u6709\u6548\u65b0\u5ba2',num:ne,u:'\u4e2a',ft:'\u662f\u5426\u6709\u6548=\u662f',c:'c4'},
     {lab:'\u65b0\u9510\u5ba2\u6237',num:nr,u:'\u4e2a',ft:'\u65b0\u9510\u540d\u5355\u547d\u4e2d',c:'c5'},
     {lab:'\u6628\u65e5\u603b\u6d88\u8017',num:(ny/1e4).toFixed(1),u:'w',ft:'\u5b63\u5ea6\u7d2f\u8ba1 '+(nq/1e8).toFixed(2)+'\u4ebf',c:'c6'}
-  ].map(function(k){return '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="num">'+(typeof k.num==='string'?k.num:f(k.num))+'<span class="u">'+k.u+'</span></div><div class="ft">'+k.ft+'</div></div>';}).join('');
-  var bm={};fd.forEach(function(d){var c=d.cluster;if(!bm[c])bm[c]={cnt:0,nw:0,ne:0,nr:0,y:0,q:0,s:{}};var g=bm[c];g.cnt++;if(d.new)g.nw++;if(d.eff)g.ne++;if(d.rise)g.nr++;g.y+=(d.yest||0);g.q+=(d.quarter||0);if(d.sale)g.s[d.sale]=(g.s[d.sale]||0)+1;});
-  var vs=Object.entries(bm).map(function(e){var nm=e[0],g=e[1];var se=Object.entries(g.s).sort(function(a,b){return b[1]-a[1];})[0]||['',0];return{name:nm,cnt:g.cnt,mainSale:se[0],msN:se[1],nw:g.nw,ne:g.ne,nr:g.nr,y:g.y,q:g.q};}).sort(function(a,b){return b.cnt-a.cnt||b.q-a.q;});
-  document.getElementById('top3').innerHTML=vs.slice(0,3).map(function(t,i){
-    return '<div class="t3 g'+(i+1)+'"><div class="rk">'+(i+1)+'</div><div class="nm">'+t.name+'</div><div class="cn">'+t.cnt+'<span class="u"> \u4e2a\u5ba2\u6237</span></div><div class="ct">\u65b0\u5ba2'+t.nw+' \u00b7 \u6709\u6548'+t.ne+' \u00b7 \u65b0\u9510'+t.nr+' \u00b7 \u6628\u8017'+fw(t.y)+' \u00b7 \u5b63\u7d2f'+(t.q/1e4).toFixed(1)+'w</div><div class="ct">\u4e8b\u8981\u9500\u552e\uff1a'+t.mainSale+'\uff08'+t.msN+'\u5bb6\uff09</div></div>';
+  ].map(function(k){
+    return '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="num">'+(typeof k.num==='string'?k.num:fmt(k.num))+'<span class="u">'+k.u+'</span></div><div class="ft">'+k.ft+'</div></div>';
   }).join('');
-  var pm={};fd.forEach(function(d){var p=(d.loc||'').replace(/[\u5e02\u53bf\u533a].*$/,'')||'\u5176\u4ed6';if(!pm[p])pm[p]={cnt:0,nr:0,y:0};var pp=pm[p];pp.cnt++;if(d.nr)pp.nr++;pp.y+=(d.yest||0);});
-  var prs=Object.entries(pm).map(function(e){return{prov:e[0],...e[1]};}).sort(function(a,b){return a.prov==='\u5176\u4ed6'?1:b.prov==='\u5176\u4ed4'?-1:b.cnt-a.cnt;});
+
+  /* --- 2. Top3 核心产业带（按 cluster 聚合）--- */
+  var bm={};
+  fd.forEach(function(d){
+    var c=d.cluster;if(!c)c=(d.loc||'')+'\u00b7'+(d.cat||'\u5176\u4ed6');
+    if(!bm[c])bm[c]={cnt:0,nw:0,ne:0,nr:0,y:0,q:0,s:{}};
+    var g=bm[c];g.cnt++;
+    if(d.new)g.nw++;if(d.eff)g.ne++;if(d.rise)g.nr++;
+    g.y+=(d.yest||0);g.q+=(d.quarter||0);
+    if(d.sale)g.s[d.sale]=(g.s[d.sale]||0)+1;
+  });
+  var vs=Object.entries(bm).map(function(e){
+    var nm=e[0],g=e[1];
+    var se=Object.entries(g.s).sort(function(a,b){return b[1]-a[1];})[0]||['',0];
+    return{name:nm,cnt:g.cnt,mainSale:se[0],msN:se[1],nw:g.nw,ne:g.ne,nr:g.nr,y:g.y,q:g.q};
+  }).sort(function(a,b){return b.cnt-a.cnt||b.q-a.q;});
+  document.getElementById('top3').innerHTML=vs.slice(0,3).map(function(t,i){
+    return '<div class="t3 g'+(i+1)+'"><div class="rk">'+(i+1)+'</div><div class="nm">'+t.name+'</div><div class="cn">'+t.cnt+'<span class="u"> \u4e2a\u5ba2\u6237</span></div><div class="ct">\u65b0\u5ba2'+t.nw+' \u00b7 \u6709\u6548'+t.ne+' \u00b7 \u65b0\u9510'+t.nr+' \u00b7 \u6628\u8017'+fmtW(t.y)+' \u00b7 \u5b63\u7d2f'+(t.q/1e4).toFixed(1)+'w</div><div class="ct">\u4e8b\u8981\u9500\u552e\uff1a'+t.mainSale+'\uff08'+t.msN+'\u5bb6\uff09</div></div>';
+  }).join('');
+
+  /* --- 3. 省份排名 + 展开类目明细 --- */
+  var pm={};
+  fd.forEach(function(d){
+    var p=(d.loc||'').replace(/[\u5e02\u53bf\u533a].*$/,'')||'\u5176\u4ed6';
+    if(!pm[p])pm[p]={cnt:0,nr:0,y:0,catMap:{},cities:{}};
+    var pp=pm[p];pp.cnt++;
+    if(d.rise)pp.nr++;pp.y+=(d.yest||0);
+    var ct=d.cat||'\u672a\u6253\u6807';
+    if(!pp.catMap[ct])pp.catMap[ct]={cnt:0,yest:0,quarter:0};
+    pp.catMap[ct].cnt++;pp.catMap[ct].yest+=(d.yest||0);pp.catMap[ct].quarter+=(d.quarter||0);
+    var city=d.loc||'';if(city&&!pp.cities[city])pp.cities[city]=0;pp.cities[city]++;
+  });
+  var prs=Object.entries(pm).map(function(e){
+    var prov=e[0],g=e[1];
+    var catBreak=Object.entries(g.catMap).map(function(c){
+      return{cat:c[0],cnt:c[1].cnt,yest:c[1].yest,quarter:c[1].quarter};
+    }).sort(function(a,b){return b.cnt-a.cnt});
+    var topCity=Object.entries(g.cities).sort(function(a,b){return b[1]-a[1];}).slice(0,3).map(function(e){return e[0]+'('+e[1]+')';});
+    var topCat=catBreak.slice(0,3).map(function(c){return c.cat+'('+c.cnt+')';});
+    return{prov:prov,cnt:g.cnt,nr:g.nr,y:g.y,bands:Object.keys(g.catMap).length,new:g.nw||0,eff:g.ne||0,rise:g.nr,catBreak:catBreak,topCity:topCity,topCat:topCat};
+  }).sort(function(a,b){return a.prov==='\u5176\u4ed6'?1:b.prov==='\u5176\u4ed4'?-1:b.cnt-a.cnt;});
+
   document.getElementById('maprank').innerHTML=prs.map(function(p,i){
     var c=i===0?'':i===1?'g2':i===2?'g3':'gm';
-    return '<div class="mr-wrap"><div class="mr" data-rank="'+i+'"><div class="rk '+c+'">'+(i+1)+'</div><div class="pn">'+p.prov+' <span class="mr-caret">&#9662;</span></div><div class="pv"><b>'+p.cnt+'</b> \u5ba2\u6237 \u00b7 \u65b0\u9510'+p.nr+' · '+fw(p.y)+'</div></div></div>';
+    var cb=p.catBreak;
+    var catRows=cb.map(function(cc){
+      return '<div class="cb-row"><span class="cb-dot" style="background:'+catColor(cc.cat)+'"></span><span class="cb-cat">'+cc.cat+'</span><span class="cb-cnt">'+cc.cnt+'\u5bb6</span><span class="cb-cost">\u5b63\u5ea6\u65e5\u8017 '+fmtW(cc.quarter/Math.max(D.kpi.passed_days||1,1))+' \u00b7 \u6628\u8017 '+fmtW(cc.yest)+'</span></div>';
+    }).join('');
+    return '<div class="mr-wrap"><div class="mr" data-rank="'+i+'"><div class="rk '+c+'">'+(i+1)+'</div><div class="pn">'+p.prov+' <span class="mr-caret">&#9662;</span></div><div class="pv"><b>'+p.cnt+'</b> \u5ba2\u6237 \u00b7 \u65b0\u9510'+p.nr+' \u00b7 '+fmtW(p.y)+'</div></div><div class="cb-panel"><div class="cb-title">\u7c7b\u76ee\u5206\u5e03\uff08\u7701\u5e02\xd7\u7c7b\u76ee=\u4ea7\u4e1e\u5e26\uff09</div>'+(catRows||'<div class="cb-empty">\u6682\u65e0\u7c7b\u76ee\u660e\u7ec6</div>')+'</div></div>';
   }).join('');
-  // Re-bind click for expand toggle on rank items
   document.querySelectorAll('.mr-wrap .mr[data-rank]').forEach(function(el){
     el.addEventListener('click',function(){this.parentNode.classList.toggle('open');});
   });
+
+  /* --- 4. 地图重绘 --- */
+  var maxYest=Math.max.apply(null,prs.map(function(p){return p.y;}),1);
+  var scatterData=prs.filter(function(p){return PROV_GEO[p.prov];}).map(function(p){
+    return{name:p.prov,value:[PROV_GEO[p.prov][0],PROV_GEO[p.prov][1],p.cnt],raw:p};
+  });
+  function drawFilteredMap(geo){
+    if(!geo)return;
+    echarts.registerMap('china',geo);
+    if(!mapChart)mapChart=echarts.init(document.getElementById('mapchart'));
+    mapChart.setOption({
+      tooltip:{trigger:'item',backgroundColor:'#fff',borderColor:'#e5e9f0',borderWidth:1,
+        textStyle:{color:'#1f2937',fontSize:12},extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.1);border-radius:8px;',
+        formatter:function(p){
+          if(!p.data||!p.data.raw)return p.name;
+          var r=p.data.raw;
+          var tc=r.topCity.join(' ');
+          var tk=r.topCat.join(' ');
+          return '<div style="font-weight:700;font-size:13px;margin-bottom:6px">'+p.name+'</div>'
+            +'<div style="line-height:1.8;font-size:12px">'
+            +'\u5ba2\u6237\u6570\uff1a<b style="color:#2563eb">'+r.cnt+'</b> \u4e2a \u00b7 \u8986\u76d6 '+r.bands+' \u4e2a\u4ea7\u4e1e\u5e26<br>'
+            +'\u65b0\u9510 <b style="color:#d97706">'+r.rise+'</b><br>'
+            +'\u6628\u65e5\u6d88\u8017\uff1a<b style="color:#dc2626">'+fmtW(r.yest)+'</b><br>'
+            +'\u4e3b\u529b\u57ce\u5e02\uff1a'+tc+'<br>\u4e3b\u529b\u7c7b\u76ee\uff1a'+tk+'</div>';
+        }},
+      geo:{map:'china',roam:false,zoom:1.18,top:18,bottom:8,
+        itemStyle:{areaColor:'#f0f4fa',borderColor:'#d8e0ea',borderWidth:.8},
+        emphasis:{itemStyle:{areaColor:'#e0ecff'},label:{show:false}},
+        regions:prs.map(function(p){
+          var t=p.y/maxYest;
+          var col='rgba(59,130,246,'+(0.10+t*0.55).toFixed(2)+')';
+          return{name:p.prov,itemStyle:{areaColor:col}};
+        })},
+      series:[{
+        type:'effectScatter',coordinateSystem:'geo',data:scatterData,
+        symbolSize:function(v){return Math.max(8,Math.sqrt(v[2])*2.3);},
+        showEffectOn:'render',rippleEffect:{brushType:'stroke',scale:2.4},
+        itemStyle:{color:'#ef4444',shadowBlur:8,shadowColor:'rgba(239,68,68,.4)'},
+        label:{show:true,formatter:function(p){return p.name;},position:'right',fontSize:10,color:'#374151'}
+      }]
+    },true);
+  }
+  if(typeof echarts!=='undefined'){
+    if(window.__CHINA_GEO__){try{drawFilteredMap(window.__CHINA_GEO__);}catch(e){}}
+    else{
+      var SRC=['https://unpkg.com/echarts@4.9.0/map/json/china.json','https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json'];
+      (function tryFetch(idx){
+        if(idx>=SRC.length)return;
+        fetch(SRC[idx]).then(function(r){return r.json();}).then(function(geo){
+          if(geo&&geo.features)geo.features.forEach(function(f){var n=f.properties&&f.properties.name;if(n)f.properties.name=n.replace(/(\u7ef4\u543e\u5c14\u81ea\u6cbb\u533a|\u56de\u65cf\u81ea\u6cbb\u533a|\u58ee\u65cf\u81ea\u6cbb\u533a|\u7279\u522b\u884c\u653f\u533a|\u81ea\u6cbb\u533a|\u7701|\u5e02)$/,'');});
+          drawFilteredMap(geo);
+        }).catch(function(){tryFetch(idx+1);});
+      })(0);
+    }
+  }
+
+  /* --- 5. 产业带分布（bandgroups）--- */
+  var bg={};
+  fd.forEach(function(d){
+    var cat=d.cat||'\u672a\u6253\u6807';
+    if(!bg[cat])bg[cat]=[];
+    bg[cat].push(d);
+  });
+  var catOrder=['\u7537\u88c5','\u5973\u88c5','\u7bb1\u5305\u978b\x9774','\u8d34\u8eab\u7269\u8863','\u914d\u9970','\u8fd0\u52a8\u6237\u5916','\u73e0\u5b9d\u6587\u73a9'];
+  var catsorted=Object.keys(bg).sort(function(a,b){
+    var ia=catOrder.indexOf(a),ib=catOrder.indexOf(b);
+    if(ia>=0&&ib>=0)return ia-ib;if(ia>=0)return -1;if(ib>=0)return 1;return a.localeCompare(b);
+  });
+  var bandHtml='';
+  var totalBands=0,totalClients=0;
+  catsorted.forEach(function(cat){
+    var arr=bg[cat];
+    totalBands+=arr.length;totalClients+=arr.length;
+    var cm={};
+    arr.forEach(function(d){
+      var k=d.city||(d.loc||'');if(!cm[k])cm[k]={list:[],nw:0,ne:0,nr:0,y:0,q:0,sale:null};
+      cm[k].list.push(d);if(d.new)cm[k].nw++;if(d.eff)cm[k].ne++;if(d.rise)cm[k].nr++;
+      cm[k].y+=(d.yest||0);cm[k].q+=(d.quarter||0);if(d.sale&&!cm[k].sale)cm[k].sale=d.sale;
+    });
+    var cities=Object.entries(cm).sort(function(a,b){return b[1].list.length-a[1].list.length;});
+    bandHtml+='<div class="bandgroup"><div class="bg-head"><div class="gdot" style="background:'+catColor(cat)+'"></div><div class="gnm">'+cat+'</div><div class="gcnt">'+arr.length+' \u4e2a\u4ea7\u4e1e\u5e02 \u00b7 '+arr.length+' \u5ba2\u6237</div><div class="gline"></div></div><div class="bandgrid">';
+    cities.slice(0,15).forEach(function(ci){
+      var nm=ci[0],info=ci[1];
+      bandHtml+='<div class="bcard" style="--bc:'+catColor(cat)+'"><div class="bcity">'+nm+'</div><div class="bnum">'+info.list.length+'<span class="u"> \u5bb6</span></div><div class="brow2">';
+      if(info.nw)bandHtml+='<span class="mtag new">\u65b0'+info.nw+'</span>';
+      if(info.ne)bandHtml+='<span class="mtag eff">\u6709\u6548'+info.ne+'</span>';
+      if(info.nr)bandHtml+='<span class="mtag rise">\u65b0\u9510'+info.nr+'</span>';
+      if(info.y>0)bandHtml+='<span class="mtag cost">'+fmtW(info.y)+'</span>';
+      bandHtml+='</div>';
+      if(info.sale)bandHtml+='<div class="bsale"><span class="sv">'+info.sale+'</span></div>';
+      bandHtml+='</div>';
+    });
+    if(cities.length>15)bandHtml+='<div style="grid-column:1/-1;text-align:center;padding:8px;color:var(--text-3);font-size:11.5px">... \u53e6\u6709 '+(cities.length-15)+' \u4e2a'+cat+'\u4ea7\u4e1e\u5e02\uff0c\u70b9\u4e0b\u65b9\u5c55\u5f00</div>';
+    bandHtml+='</div></div>';
+  });
+  document.getElementById('bandgroups').innerHTML=bandHtml;
+  document.getElementById('clcnt').textContent='\u5171 '+totalBands+' \u4e2a\u4ea7\u4e1e\u5e02 \u00b7 '+totalClients+' \u5ba2\u6237';
+
+  /* --- 6. 主营类目分布 pills --- */
+  var pillData=catsorted.map(function(cat){
+    return{cat:cat,cnt:bg[cat].length,color:catColor(cat)};
+  });
+  document.getElementById('cats').innerHTML=pillData.map(function(p){
+    return '<div class="cpill"><span class="cdot" style="background:'+p.color+'"></span><span class="cnm">'+p.cat+'</span><span class="ccn">'+p.cnt+'</span><span class="cpc">\u4e2a\u4ea7\u4e1e\u5e02</span></div>';
+  }).join('');
 }
+
+go('all');
+
 document.getElementById('qtbar').addEventListener('click',function(e){
   var btn=e.target.closest('.qt');
   if(btn&&btn.dataset.q)go(btn.dataset.q);
 });
+
 })();
 
-const K = D.kpi;
-const CATCOLOR={'男装':'#3b82f6','女装':'#ec4899','箱包鞋靴':'#d97706','贴身衣物':'#8b5cf6','配饰':'#10b981','运动户外':'#06b6d4','珠宝文玩':'#f59e0b','未打标':'#9ca3af','其他':'#64748b'};
-const catColor=c=>CATCOLOR[c]||'#9ca3af';
-const fmt=n=>(n||0).toLocaleString();
-const fmtW=n=>((n||0)/1e4).toFixed(1)+'w';
-const isOther=n=>n.startsWith('其他');
+document.getElementById('raw').textContent=fmt(D.kpi.raw_rows);
+document.getElementById('ded').textContent=fmt(D.kpi.total);
 
-document.getElementById('raw').textContent=fmt(K.raw_rows);
-document.getElementById('ded').textContent=fmt(K.total);
-
-/* ===== KPI ===== */
-const kpis=[
- {lab:'目标客户总数',num:K.total,u:'个',ft:'',c:'c1'},
- {lab:'核心产业带',num:K.cluster_cnt,u:'个',ft:'省市×类目 · 共'+K.band_total+'带',c:'c2'},
- {lab:'新客',num:K.new,u:'个',ft:'是否新客=是',c:'c3'},
- {lab:'有效新客',num:K.eff,u:'个',ft:'是否有效=是',c:'c4'},
- {lab:'新锐客户',num:K.rise,u:'个',ft:'新锐名单命中',c:'c5'},
- {lab:'昨日总消耗',num:(K.yest/1e4).toFixed(1),u:'w',ft:'季度累计 '+(K.quarter/1e8).toFixed(2)+'亿',c:'c6'},
-];
-document.getElementById('kpis').innerHTML=kpis.map(k=>`
- <div class="kpi ${k.c}"><div class="lab">${k.lab}</div>
- <div class="num">${typeof k.num==='string'?k.num:fmt(k.num)}<span class="u">${k.u}</span></div>
- <div class="ft">${k.ft}</div></div>`).join('');
-
-/* ===== 省份中心经纬度 ===== */
-const PROV_GEO={
- '北京':[116.4,39.9],'天津':[117.2,39.1],'河北':[114.5,38.0],'山西':[112.5,37.6],'内蒙古':[111.7,40.8],
- '辽宁':[123.4,41.8],'吉林':[125.3,43.9],'黑龙江':[126.6,45.8],'上海':[121.5,31.2],'江苏':[118.8,32.1],
- '浙江':[120.2,29.8],'安徽':[117.3,31.9],'福建':[118.3,25.8],'江西':[115.9,27.6],'山东':[117.0,36.4],
- '河南':[113.6,34.0],'湖北':[112.3,30.7],'湖南':[112.0,27.6],'广东':[113.4,23.1],'广西':[108.3,22.8],
- '海南':[110.3,19.8],'重庆':[107.5,29.6],'四川':[103.9,30.6],'贵州':[106.7,26.6],'云南':[102.7,24.9],
- '陕西':[108.9,34.3],'甘肃':[103.8,36.1],'青海':[96.8,35.6],'宁夏':[106.2,38.5],'新疆':[85.3,42.5],
- '西藏':[91.1,29.6],'台湾':[121.0,23.5],'香港':[114.2,22.3],'澳门':[113.5,22.2]
-};
-
-/* ===== 地图 ===== */
-const provArr=Object.entries(D.provmap).map(([p,g])=>({prov:p,...g}));
-const maxYest=Math.max(...provArr.map(p=>p.yest),1);
-const scatterData=provArr.filter(p=>PROV_GEO[p.prov]).map(p=>({
-  name:p.prov, value:[...PROV_GEO[p.prov], p.cnt], raw:p
-}));
-function drawMap(geo){
-   echarts.registerMap('china',geo);
-   const ch=echarts.init(document.getElementById('mapchart'));
-   ch.setOption({
-    tooltip:{trigger:'item',backgroundColor:'#fff',borderColor:'#e5e9f0',borderWidth:1,
-      textStyle:{color:'#1f2937',fontSize:12},extraCssText:'box-shadow:0 4px 16px rgba(0,0,0,.1);border-radius:8px;',
-      formatter:p=>{
-        if(!p.data||!p.data.raw)return p.name;
-        const r=p.data.raw;
-        const tc=r.topCity.map(c=>c[0]+'('+c[1]+')').join(' ');
-        const tk=r.topCat.map(c=>c[0]+'('+c[1]+')').join(' ');
-        return `<div style="font-weight:700;font-size:13px;margin-bottom:6px">${p.name}</div>
-         <div style="line-height:1.8;font-size:12px">
-         客户数：<b style="color:#2563eb">${r.cnt}</b> 个 · 覆盖 ${r.bands} 个产业带<br>
-         新客 <b>${r.new}</b> · 有效 <b style="color:#10b981">${r.eff}</b> · 新锐 <b style="color:#d97706">${r.rise}</b><br>
-         昨日消耗：<b style="color:#dc2626">${fmtW(r.yest)}</b><br>
-         主力城市：${tc}<br>主力类目：${tk}</div>`;
-      }},
-    geo:{map:'china',roam:false,zoom:1.18,top:18,bottom:8,
-      itemStyle:{areaColor:'#f0f4fa',borderColor:'#d8e0ea',borderWidth:.8},
-      emphasis:{itemStyle:{areaColor:'#e0ecff'},label:{show:false}},
-      regions:provArr.map(p=>{
-        const t=p.yest/maxYest;
-        const col=`rgba(59,130,246,${(0.10+t*0.55).toFixed(2)})`;
-        return {name:p.prov,itemStyle:{areaColor:col}};
-      })},
-    series:[{
-      type:'effectScatter',coordinateSystem:'geo',data:scatterData,
-      symbolSize:v=>Math.max(8,Math.sqrt(v[2])*2.3),
-      showEffectOn:'render',rippleEffect:{brushType:'stroke',scale:2.4},
-      itemStyle:{color:'#ef4444',shadowBlur:8,shadowColor:'rgba(239,68,68,.4)'},
-      label:{show:true,formatter:p=>p.name,position:'right',fontSize:10,color:'#374151'}
-    }]
-   });
-   window.addEventListener('resize',()=>ch.resize());
-   setTimeout(()=>ch.resize(),300);
+function measurePageHeight(){
+  var h=0;
+  var roots=[document.querySelector('.wrap'),document.querySelector('main'),document.body];
+  roots.forEach(function(el){if(!el)return;var r=el.getBoundingClientRect();h=Math.max(h,Math.ceil(r.bottom+(window.scrollY||0)));});
+  Array.from(document.body.children||[]).forEach(function(el){var cs=getComputedStyle(el);if(cs.position==='fixed'||cs.display==='none')return;var r=el.getBoundingClientRect();h=Math.max(h,Math.ceil(r.bottom+(window.scrollY||0)));});
+  return Math.max(h,520);
 }
-function mapFail(msg){
-   document.getElementById('mapchart').innerHTML='<div style="padding:40px;text-align:center;color:#9ca3af">'+(msg||'地图底图加载失败。右侧省份榜单不受影响。')+'</div>';
-}
-function initMap(){
- if(typeof echarts==='undefined'){ mapFail('地图组件未能加载（需联网加载 echarts）。右侧省份榜单不受影响。'); return; }
- // 优先用内置地图(china-geo.js 内联,断网也可用)
- if(window.__CHINA_GEO__){ try{ drawMap(window.__CHINA_GEO__); return; }catch(e){} }
- // 兜底:联网拉取(jsdelivr echarts5 已移除 map/json,改用 unpkg echarts4 源)
- const SRC=['https://unpkg.com/echarts@4.9.0/map/json/china.json','https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json'];
- (function tryFetch(i){
-   if(i>=SRC.length){ mapFail(); return; }
-   fetch(SRC[i]).then(r=>r.json()).then(geo=>{
-     // datav 源省名带后缀,需归一为简称
-     if(geo&&geo.features){geo.features.forEach(f=>{const n=f.properties&&f.properties.name;if(n)f.properties.name=n.replace(/(维吾尔自治区|回族自治区|壮族自治区|特别行政区|自治区|省|市)$/,'');});}
-     drawMap(geo);
-   }).catch(()=>tryFetch(i+1));
- })(0);
-}
+function postH(){if(window.parent!==window){parent.postMessage({type:'pageHeight',height:measurePageHeight()},'*');}}
+window.addEventListener('load',postH);
+if(window.ResizeObserver)new ResizeObserver(postH).observe(document.body);
 
-/* ===== 省份榜单（可点击展开类目分布）— 先渲染，不依赖地图 ===== */
-const rankArr=provArr.slice().sort((a,b)=>b.cnt-a.cnt);
-const catColorMap={'男装':'#3b82f6','女装':'#ec4899','贴身衣物':'#8b5cf6','箱包鞋靴':'#f59e0b','珠宝文玩':'#10b981','配饰':'#06b6d4','运动户外':'#ef4444','其他':'#94a3b8','未打标':'#cbd5e1'};
-document.getElementById('maprank').innerHTML=rankArr.map((p,i)=>{
- const cls=i===0?'':i===1?'g2':i===2?'g3':'gm';
- const cb=(p.catBreak||[]).filter(c=>c.cnt>0);
- const catRows=cb.map(c=>`<div class="cb-row">
-   <span class="cb-dot" style="background:${catColorMap[c.cat]||'#94a3b8'}"></span>
-   <span class="cb-cat">${c.cat}</span>
-   <span class="cb-cnt">${c.cnt}家</span>
-   <span class="cb-cost">季度日耗 ${fmtW(c.dayCost)} · 昨耗 ${fmtW(c.yest)}</span>
- </div>`).join('');
- return `<div class="mr-wrap"><div class="mr" onclick="this.parentNode.classList.toggle('open')">
-  <div class="rk ${cls}">${i+1}</div>
-  <div class="pn">${p.prov} <span class="mr-caret">▾</span></div>
-  <div class="pv"><b>${p.cnt}</b> 客户 · 新锐${p.rise} · ${fmtW(p.yest)}</div></div>
-  <div class="cb-panel"><div class="cb-title">类目分布（省市×类目=产业带）</div>${catRows||'<div class="cb-empty">暂无类目明细</div>'}</div>
- </div>`;
-}).join('');
-
-/* ===== Top3 ===== */
-document.getElementById('top3').innerHTML=D.top3.map((t,i)=>`
- <div class="t3 g${i+1}"><div class="rk">${i+1}</div>
- <div class="nm">${t.name}</div>
- <div class="cn">${t.cnt}<span class="u"> 个客户</span></div>
- <div class="ct">新客${t.new} · 有效${t.eff} · 新锐${t.rise} · 昨耗${fmtW(t.yest)} · 季累${(t.quarter/1e4).toFixed(1)}w</div>
- <div class="ct">主要销售：${t.mainSale}（${t.mainSaleN}家）· ${t.citys}</div></div>`).join('');
-
-window.__BAND_RENDER2__ && window.__BAND_RENDER2__(D,{catColor,fmt,fmtW,isOther});
-
-/* 地图最后初始化：即使 echarts CDN 失败也不影响上面已渲染的榜单/Top3/明细 */
-try{ initMap(); }catch(e){ console.warn('map init failed', e); }
+window.__BAND_RENDER2__ && window.__BAND_RENDER2__(D,{catColor:catColor,fmt:fmt,fmtW:fmtW,isOther:isOther})();
 })();
-
 </script>
 </body>
 </html>
