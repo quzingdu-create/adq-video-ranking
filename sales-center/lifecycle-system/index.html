@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20260715e"></script>
+<script src="data/mock_data.js?v=20260715f"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -894,6 +894,8 @@ let currentStageFilter = 'all';
 let currentCostFilter = 'all';
 let currentSearchQuery = '';
 let customerGridExpanded = false;
+let customerPage = 0;
+const CUST_PAGE = 100;
 const __lifeParams = new URLSearchParams(location.search);
 let currentSalesFilter = __lifeParams.get('sales') || 'all'; // 嵌入时由父看板传入云端登录销售；无参数则展示团队视图
 
@@ -1020,8 +1022,14 @@ function renderCustomerGrid() {
     notifyLifecycleParentHeight()
     return;
   }
-  const visibleList = customerGridExpanded ? list : list.slice(0, 10);
-  grid.innerHTML = visibleList.map(c => {
+  // 分页：未展开看前10；展开后按页（每页 CUST_PAGE），不一次渲染 3 万条
+  if (customerPage < 0) customerPage = 0;
+  const maxPage = Math.max(0, Math.ceil(list.length / CUST_PAGE) - 1);
+  if (customerPage > maxPage) customerPage = 0;   // 越界或筛选/搜索后重置到第1页
+  const renderList = customerGridExpanded
+    ? list.slice(customerPage * CUST_PAGE, customerPage * CUST_PAGE + CUST_PAGE)
+    : list.slice(0, 10);
+  grid.innerHTML = renderList.map(c => {
     const lights = Object.values(c.metrics).map(m => m.status);
     const greenN = lights.filter(s => s === 'green').length;
     const yellowN = lights.filter(s => s === 'yellow').length;
@@ -1057,13 +1065,27 @@ function renderCustomerGrid() {
   if (moreWrap) {
     if (list.length > 10) {
       moreWrap.style.display = 'flex';
-      moreWrap.innerHTML = customerGridExpanded
-        ? `<span>已展开全部 ${list.length} 个客户</span><button id="customer-collapse-btn">收起，只看前10个</button>`
-        : `<span>默认展示前 10 个客户，共 ${list.length} 个</span><button id="customer-expand-btn">查看更多</button>`;
-      const ex = document.getElementById('customer-expand-btn');
-      const co = document.getElementById('customer-collapse-btn');
-      if (ex) ex.onclick = () => { customerGridExpanded = true; renderCustomerGrid(); };
-      if (co) co.onclick = () => { customerGridExpanded = false; renderCustomerGrid(); };
+      if (!customerGridExpanded) {
+        moreWrap.innerHTML = `<span>默认展示前 10 个客户，共 ${list.length} 个</span><button id="customer-expand-btn">展开全量（分页浏览）</button>`;
+        const ex = document.getElementById('customer-expand-btn');
+        if (ex) ex.onclick = () => { customerGridExpanded = true; customerPage = 0; renderCustomerGrid(); window.scrollTo({top: grid.offsetTop - 80, behavior: 'smooth'}); };
+      } else {
+        const start = customerPage * CUST_PAGE;
+        const end = Math.min(start + CUST_PAGE, list.length);
+        const hasPrev = customerPage > 0;
+        const hasNext = end < list.length;
+        moreWrap.innerHTML =
+          `<span>已展开：第 ${start + 1}-${end} 个 / 共 ${list.length} 个</span>` +
+          (hasPrev ? `<button id="cust-prev-btn">← 上一页</button>` : '') +
+          (hasNext ? `<button id="cust-next-btn">下一页 →</button>` : '') +
+          `<button id="customer-collapse-btn">收起，只看前10个</button>`;
+        const pv = document.getElementById('cust-prev-btn');
+        const nx = document.getElementById('cust-next-btn');
+        const co = document.getElementById('customer-collapse-btn');
+        if (pv) pv.onclick = () => { customerPage--; renderCustomerGrid(); window.scrollTo({top: grid.offsetTop - 80, behavior: 'smooth'}); };
+        if (nx) nx.onclick = () => { customerPage++; renderCustomerGrid(); window.scrollTo({top: grid.offsetTop - 80, behavior: 'smooth'}); };
+        if (co) co.onclick = () => { customerGridExpanded = false; customerPage = 0; renderCustomerGrid(); };
+      }
     } else {
       moreWrap.style.display = 'none';
       moreWrap.innerHTML = '';
