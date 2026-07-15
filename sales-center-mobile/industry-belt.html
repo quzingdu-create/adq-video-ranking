@@ -440,7 +440,11 @@ function go(tab){
   /* --- 3. 省份排名 + 展开类目明细 --- */
   var pm={};
   fd.forEach(function(d){
-    var p=(d.loc||'').replace(/[\u5e02\u53bf\u533a].*$/,'')||'\u5176\u4ed6';
+    var p=(function(l){
+      var s=l||'';
+      for(var k in PROV_GEO){if(s.indexOf(k)===0)return k;}
+      return '\u5176\u4ed6';
+    })(d.loc);
     if(!pm[p])pm[p]={cnt:0,nr:0,y:0,catMap:{},cities:{}};
     var pp=pm[p];pp.cnt++;
     if(d.rise)pp.nr++;pp.y+=(d.yest||0);
