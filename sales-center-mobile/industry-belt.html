@@ -134,12 +134,14 @@ tbody tr:hover{background:#f8fafc}tbody tr:last-child td{border-bottom:none}
 .foot{text-align:center;color:var(--text-3);font-size:11px;margin-top:24px;line-height:1.8}
 @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.maprow{grid-template-columns:1fr}.top3{grid-template-columns:1fr}#mapchart{height:420px}}
 
-.qtbar{display:flex;gap:0;margin-bottom:18px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
-.qt{flex:1;padding:11px 0;text-align:center;font-size:13.5px;font-weight:600;color:var(--text-2);background:transparent;border:none;cursor:pointer;transition:.18s;position:relative}
-.qt:hover{background:var(--panel-2);color:var(--text)}
-.qt.active{background:var(--primary-bg);color:var(--primary-2);font-weight:700}
-.qt .qcnt{font-size:11px;font-weight:500;opacity:.7;margin-left:4px}
-.qt.active .qcnt{opacity:1}
+/* 季度Tab - 紧凑行内 */
+.qtbar{display:inline-flex;gap:0;margin-bottom:14px;background:transparent;border:none;box-shadow:none}
+.qt{padding:5px 14px;font-size:12.5px;font-weight:600;color:var(--text-2);background:var(--panel);border:1px solid var(--border);cursor:pointer:transition:.15s;border-radius:6px}
+.qt:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-bg)}
+.qt.active{background:var(--primary);color:#fff;border-color:var(--primary);font-weight:700}
+.qt:first-child{border-radius:6px 0 0 6px}
+.qt:last-child{border-radius:0 6px 6px 0}
+.qt+.qt{margin-left:-1px}
 </style>
 
 <style>
@@ -371,143 +373,48 @@ if(window.ResizeObserver) new ResizeObserver(postH).observe(document.body);
 (function(){
 const D = window.__BAND_DATA__;
 /* ===== 季度Tab切换 ===== */
-const ALL_DETAIL = D.detail.slice();
-// 预计算各季度计数
-const Q2_CNT = ALL_DETAIL.filter(d => /2026.Q?2/i.test(d.fq || '')).length;
-const Q3_CNT = ALL_DETAIL.filter(d => /2026.Q?3/i.test(d.fq || '')).length;
-document.getElementById('qc-all').textContent = '(' + ALL_DETAIL.length + ')';
-document.getElementById('qc-q2').textContent = '(' + Q2_CNT + ')';
-document.getElementById('qc-q3').textContent = '(' + Q3_CNT + ')';
-
-let ACTIVE_TAB = 'all';
-function filterByQuarter(tab) {
-  ACTIVE_TAB = tab;
-  // 更新按钮状态
-  document.querySelectorAll('.qt').forEach(b => b.classList.toggle('active', b.dataset.q === tab));
-  
-  let fdetail;
-  if (tab === 'all') {
-    fdetail = ALL_DETAIL;
-  } else {
-    const qre = tab === 'Q2' ? /2026.Q?2/i : /2026.Q?3/i;
-    fdetail = ALL_DETAIL.filter(d => qre.test(d.fq || ''));
-  }
-  
-  // 从 filtered detail 重算聚合
-  const ftotal = fdetail.length;
-  const fnew = fdetail.filter(d => d.new).length;
-  const feff = fdetail.filter(d => d.eff).length;
-  const frise = fdetail.filter(d => d.rise).length;
-  const fyest = fdetail.reduce((s, d) => s + (d.yest || 0), 0);
-  const fquarter = fdetail.reduce((s, d) => s + (d.quarter || 0), 0);
-  
-  const fKPI = { total: ftotal, new: fnew, eff: feff, rise: frise, yest: fyest, quarter: fquarter,
-                 band_total: K.band_total, cluster_cnt: K.cluster_cnt, raw_rows: K.raw_rows };
-  
-  // 按产业带单元重算 summary / top3
-  const bandMap = {};
-  fdetail.forEach(d => {
-    if (!bandMap[d.cluster]) bandMap[d.cluster] = {cnt:0,new:0,eff:0,rise:0,yest:0,quarter:0,sales:{}};
-    const g = bandMap[d.cluster]; g.cnt++;
-    if(d.new)g.new++; if(d.eff)g.eff++; if(d.rise)g.rise++;
-    g.yest += (d.yest||0); g.quarter += (d.quarter||0);
-    if(d.sale){ g.sales[d.sale]=(g.sales[d.sale]||0)+1; }
-  });
-  let fsummary = Object.entries(bandMap).map(([name,g])=>{
-    const [ms,msn]=Object.entries(g.sales).sort((a,b)=>b[1]-a[1])[0]||['',0];
-    const cat=name.split('·').slice(-1)[0]||name;
-    return { name,cnt:g.cnt,pct:Math.round(g.cnt/Math.max(ftotal,1)*100)/10,cat,citys:'',
-             mainSale:ms,mainSaleN:msn,new:g.new,eff:g.eff,rise:g.rise,
-             yest:+g.yest.toFixed(2),quarter:+g.quarter.toFixed(2) };
-  }).sort((a,b)=>b.cnt-a.cnt||b.quarter-a.quarter);
-  let ftop3 = fsummary.slice(0,3);
-  
-  // 类目分布
-  const fcatCnt = {}; fdetail.forEach(d=>{ fcatCnt[d.cat]=(fcatCnt[d.cat]||0)+1; });
-  let fcatDist = CATCOLOR_ORDER.filter(c=>fcatCnt[c]).map(c=>[c,fcatCnt[c]]);
-  Object.keys(fcatCnt).sort().forEach(c=>{ if(!fcatDist.find(x=>x[0]===c)) fcatDist.push([c,fcatCnt[c]]); });
-  
-  // 省份聚合
-  const pmap = {};
-  fdetail.forEach(d=>{
-    const prov = (d.loc||'').replace(/[市县区].*$/,'') || '其他';
-    if(!pmap[prov]) pmap[prov]={cnt:0,new:0,eff:0,rise:0,yest:0,quarter:0,cities:{},cats:{}};
-    const p=pmap[prov]; p.cnt++; if(d.new)p.new++; if(d.eff)p.eff++; if(d.rise)p.rise++;
-    p.yest+=(d.yest||0);p.quarter+=(d.quarter||0);
-    const city=(d.loc||'').replace(/^.{0,3}/,'')||'未知';
-    p.cities[city]=(p.cities[city]||0)+1; p.cats[d.cat]=(p.cats[d.cat]||0)+1;
-  });
-  let fprovmap = {};
-  Object.entries(pmap).forEach(([prov,g])=>{
-    const tc=Object.entries(g.cities).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const tcat=Object.entries(g.cats).sort((a,b)=>b[1]-a[1]).slice(0,5);
-    const dc = +(g.quarter/PASSED_DAYS).toFixed(2)||0;
-    const cb = tcat.map(([cn])=>({cat:cn,cnt:g.cats[cn],dayCost:+(dc*g.cnts[Math.max(ftotal,1)]/g.cnt||0).toFixed(2),yest:+(g.yest*g.cnts[Math.max(ftotal,1)]/g.cnt||0).toFixed(2)}));
-    fprovmap[prov]={cnt:g.cnt,new:g.new,eff:g.eff,rise:g.rise,yest:+g.yest.toFixed(2),quarter:+g.quarter.toFixed(2),
-                     dayCost:dc,topCity:tc,topCat:tcat,bands:cb.length,catBreak:cb};
-  });
-  let fprovSorted = Object.entries(fprovmap).sort((a,b)=>(a[0]==='其他')?1:(b[0]==='其他')?-1:b[1].cnt-a[1].cnt);
-  
-  const fD = { kpi:fKPI, top3:ftop3, summary:fsummary, cat_dist:fcatDist, provmap:Object.fromEntries(fprovSorted), detail:fdetail };
-  
-  // ===== 用 fD 重绘所有模块 =====
-  const fK = fD.kpi;
+(function(){
+var ALL=D.detail.slice();
+var C2=ALL.filter(function(d){return /2026.Q?2/i.test(d.fq||'');}).length;
+var C3=ALL.filter(function(d){return /2026.Q?3/i.test(d.fq||'');}).length;
+document.getElementById('qc-all').textContent='('+ALL.length+')';
+document.getElementById('qc-q2').textContent='('+C2+')';
+document.getElementById('qc-q3').textContent='('+C3+')';
+function go(tab){
+  document.querySelectorAll('.qt').forEach(function(b){b.classList.toggle('active',b.dataset.q===tab);});
+  var fd=(tab==='all')?ALL:(tab==='Q2'?ALL.filter(function(d){return /2026.Q?2/i.test(d.fq||'');}):ALL.filter(function(d){return /2026.Q?3/i.test(d.fq||'');}));
+  var n=fd.length,nw=fd.filter(function(d){return d.new;}).length,ne=fd.filter(function(d){return d.eff;}).length,nr=fd.filter(function(d){return d.rise;}).length,ny=fd.reduce(function(s,d){return s+(d.yest||0);},0),nq=fd.reduce(function(s,d){return s+(d.quarter||0);},0);
+  function f(x){return(x||0).toLocaleString();}
+  function fw(x){return((x||0)/1e4).toFixed(1)+'w';}
   document.getElementById('kpis').innerHTML=[
-    {lab:'目标客户总数',num:fK.total,u:'个',ft:'',c:'c1'},
-    {lab:'核心产业带',num:fK.band_total,u:'个',ft:'省市×类目 · 共'+fK.band_total+'带',c:'c2'},
-    {lab:'新客',num:fK.new,u:'个',ft:'是否新客=是',c:'c3'},
-    {lab:'有效新客',num:fK.eff,u:'个',ft:'是否有效=是',c:'c4'},
-    {lab:'新锐客户',num:fK.rise,u:'个',ft:'新锐名单命中',c:'c5'},
-    {lab:'昨日总消耗',num:(fK.yest/1e4).toFixed(1),u:'w',ft:'季度累计 '+(fK.quarter/1e8).toFixed(2)+'亿',c:'c6'},
-  ].map(k=>`<div class="kpi ${k.c}"><div class="lab">${k.lab}</div><div class="num">${typeof k.num==='string'?k.num:fmt(k.num)}<span class="u">${k.u}</span></div><div class="ft">${k.ft}</div></div>`).join('');
-  
-  // Top3
-  document.getElementById('top3').innerHTML=fD.top3.map((t,i)=>
-    `<div class="t3 g${i+1}"><div class="rk">${i+1}</div><div class="nm">${t.name}</div>`+
-    `<div class="cn">${t.cnt}<span class="u"> 个客户</span></div>`+
-    `<div class="ct">新客${t.new} · 有效${t.eff} · 新锐${t.rise} · 昨耗${fmtW(t.yest)} · 季累${(t.quarter/1e4).toFixed(1)}w</div>`+
-    `<div class="ct">主要销售：${t.mainSale}（${t.mainSaleN}家）· ${t.citys}</div></div>`).join('');
-  
-  // 省份榜单
-  const rankArr2 = Object.entries(fD.provmap).map(([p,g])=>({...g,prov:p})).sort((a,b)=>b.cnt-a.cnt);
-  document.getElementById('maprank').innerHTML=rankArr2.map((p,i)=>{
-    const cls=i===0?'':i===1?'g2':i===2?'g3':'gm';
-    const cb=(p.catBreak||[]).filter(c=>c.cnt>0);
-    return `<div class="mr-wrap"><div class="mr" onclick="this.parentNode.classList.toggle('open')">`+
-      `<div class="rk ${cls}">${i+1}</div><div class="pn">${p.prov} <span class="mr-caret">▾</span></div>`+
-      `<div class="pv"><b>${p.cnt}</b> 客户 · 新锐${p.rise} · ${fmtW(p.yest)}</div></div>`+
-      `<div class="cb-panel"><div class="cb-title">类目分布</div>${cb.map(c=>`<div class="cb-row">`+
-        `<span class="cb-dot" style="background:${catColorMap[c.cat]||'#94a3b8'}"></span>`+
-        `<span class="cb-cat">${c.cat}</span><span class="cb-cnt">${c.cnt}家</span>`+
-        `<span class="cb-cost">季度日耗 ${fmtW(c.dayCost)} · 昨耗 ${fmtW(c.yest)}</span></div>`).join('')||
-        '<div class="cb-empty">暂无类目明细</div>'}</div></div>`;
+    {lab:'\u76ee\u6807\u5ba2\u6237\u603b\u6570',num:n,u:'\u4e2a',ft:'',c:'c1'},
+    {lab:'\u6838\u5fc3\u4ea7\u4e1a\u5e26',num:D.kpi.band_total,u:'\u4e2a',ft:'\u7701\u5e02\xd7\u7c7b\u76ee \u00b7 \u5171'+D.kpi.band_total+'\u5e26',c:'c2'},
+    {lab:'\u65b0\u5ba2',num:nw,u:'\u4e2a',ft:'\u662f\u5426\u65b0\u5ba2=\u662f',c:'c3'},
+    {lab:'\u6709\u6548\u65b0\u5ba2',num:ne,u:'\u4e2a',ft:'\u662f\u5426\u6709\u6548=\u662f',c:'c4'},
+    {lab:'\u65b0\u9510\u5ba2\u6237',num:nr,u:'\u4e2a',ft:'\u65b0\u9510\u540d\u5355\u547d\u4e2d',c:'c5'},
+    {lab:'\u6628\u65e5\u603b\u6d88\u8017',num:(ny/1e4).toFixed(1),u:'w',ft:'\u5b63\u5ea6\u7d2f\u8ba1 '+(nq/1e8).toFixed(2)+'\u4ebf',c:'c6'}
+  ].map(function(k){return '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="num">'+(typeof k.num==='string'?k.num:f(k.num))+'<span class="u">'+k.u+'</span></div><div class="ft">'+k.ft+'</div></div>';}).join('');
+  var bm={};fd.forEach(function(d){var c=d.cluster;if(!bm[c])bm[c]={cnt:0,nw:0,ne:0,nr:0,y:0,q:0,s:{}};var g=bm[c];g.cnt++;if(d.new)g.nw++;if(d.eff)g.ne++;if(d.rise)g.nr++;g.y+=(d.yest||0);g.q+=(d.quarter||0);if(d.sale)g.s[d.sale]=(g.s[d.sale]||0)+1;});
+  var vs=Object.entries(bm).map(function(e){var nm=e[0],g=e[1];var se=Object.entries(g.s).sort(function(a,b){return b[1]-a[1];})[0]||['',0];return{name:nm,cnt:g.cnt,mainSale:se[0],msN:se[1],nw:g.nw,ne:g.ne,nr:g.nr,y:g.y,q:g.q};}).sort(function(a,b){return b.cnt-a.cnt||b.q-a.q;});
+  document.getElementById('top3').innerHTML=vs.slice(0,3).map(function(t,i){
+    return '<div class="t3 g'+(i+1)+'"><div class="rk">'+(i+1)+'</div><div class="nm">'+t.name+'</div><div class="cn">'+t.cnt+'<span class="u"> \u4e2a\u5ba2\u6237</span></div><div class="ct">\u65b0\u5ba2'+t.nw+' \u00b7 \u6709\u6548'+t.ne+' \u00b7 \u65b0\u9510'+t.nr+' \u00b7 \u6628\u8017'+fw(t.y)+' \u00b7 \u5b63\u7d2f'+(t.q/1e4).toFixed(1)+'w</div><div class="ct">\u4e8b\u8981\u9500\u552e\uff1a'+t.mainSale+'\uff08'+t.msN+'\u5bb6\uff09</div></div>';
   }).join('');
-  
-  // 地图气泡数据刷新
-  const provArr2 = Object.entries(fD.provmap).map(([p,g])=>({prov:p,...g}));
-  const maxYest2 = Math.max(...provArr2.map(p=>p.yest),1);
-  if(typeof echarts!=='undefined' && window.__CHINA_GEO__) try{
-    const ch = echarts.getInstanceByDom(document.getElementById('mapchart'));
-    if(ch){
-      ch.setOption({
-        series:[{data:provArr2.filter(p=>PROV_GEO[p.prov]).map(p=>({
-          name:p.prov,value:[...PROV_GEO[p.prov],p.cnt],raw:p})]}],
-        geo:{regions:provArr2.map(p=>{
-          const t=p.yest/maxYest2;
-          return{name:p.prov,itemStyle:{areaColor:`rgba(59,130,246,${(0.10+t*0.55).toFixed(2)})}`};})}}
-      }, false);
-    }
-  }catch(e){}
-  
-  // 产业带卡片 + 类目 + 明细表 — 调用已有 render 函数
-  if(window.__BAND_RENDER2__) window.__BAND_RENDER2__(fD,{catColor,fmt,fmtW,isOther});
+  var pm={};fd.forEach(function(d){var p=(d.loc||'').replace(/[\u5e02\u53bf\u533a].*$/,'')||'\u5176\u4ed6';if(!pm[p])pm[p]={cnt:0,nr:0,y:0};var pp=pm[p];pp.cnt++;if(d.nr)pp.nr++;pp.y+=(d.yest||0);});
+  var prs=Object.entries(pm).map(function(e){return{prov:e[0],...e[1]};}).sort(function(a,b){return a.prov==='\u5176\u4ed6'?1:b.prov==='\u5176\u4ed4'?-1:b.cnt-a.cnt;});
+  document.getElementById('maprank').innerHTML=prs.map(function(p,i){
+    var c=i===0?'':i===1?'g2':i===2?'g3':'gm';
+    return '<div class="mr-wrap"><div class="mr" data-rank="'+i+'"><div class="rk '+c+'">'+(i+1)+'</div><div class="pn">'+p.prov+' <span class="mr-caret">&#9662;</span></div><div class="pv"><b>'+p.cnt+'</b> \u5ba2\u6237 \u00b7 \u65b0\u9510'+p.nr+' · '+fw(p.y)+'</div></div></div>';
+  }).join('');
+  // Re-bind click for expand toggle on rank items
+  document.querySelectorAll('.mr-wrap .mr[data-rank]').forEach(function(el){
+    el.addEventListener('click',function(){this.parentNode.classList.toggle('open');});
+  });
 }
-
-// 绑定 tab 点击
-document.getElementById('qtbar').addEventListener('click', function(e){
-  const btn = e.target.closest('.qt');
-  if(btn && btn.dataset.q) filterByQuarter(btn.dataset.q);
+document.getElementById('qtbar').addEventListener('click',function(e){
+  var btn=e.target.closest('.qt');
+  if(btn&&btn.dataset.q)go(btn.dataset.q);
 });
+})();
 
 const K = D.kpi;
 const CATCOLOR={'男装':'#3b82f6','女装':'#ec4899','箱包鞋靴':'#d97706','贴身衣物':'#8b5cf6','配饰':'#10b981','运动户外':'#06b6d4','珠宝文玩':'#f59e0b','未打标':'#9ca3af','其他':'#64748b'};
