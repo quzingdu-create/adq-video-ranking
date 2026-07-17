@@ -30,7 +30,9 @@ const COLLECTIONS = {
   customerDiag: 'sc_customer_diag',             // 客户诊断指标
   // Q1+Q2+Q3 (2026-07-03) 写操作可观测三件套
   auditLog: 'sc_audit_log',                     // 通用审计日志(所有写操作,含 traceId+idempotencyKey)
-  idempotency: 'sc_idempotency'                 // 幂等键缓存(24h 窗口,同 key 直接回放结果)
+  idempotency: 'sc_idempotency',                // 幂等键缓存(24h 窗口,同 key 直接回放结果)
+  // 2026-07-17 拓客登记同步审计：每个销售端浏览器自检上报「本机未同步记录」
+  syncAudit: 'tuoke_sync_audit'
 };
 const SALES = ['brownfan', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
 
@@ -50,6 +52,18 @@ function getDb() {
   if (!app) app = cloudbase.init({ env: ENV_ID });
   if (!db) db = app.database();
   return db;
+}
+// 幂等建表：集合不存在时尝试创建（CloudBase 部分环境允许云函数内建表）
+async function ensureCollection(name) {
+  try {
+    const database = getDb();
+    await database.createCollection(name);
+    return true;
+  } catch (e) {
+    // 已存在或无权建表 → 视为已就绪（写入时若仍失败会报错）
+    console.warn('[ensureCollection] ' + name + ' create skipped:', e && e.message);
+    return false;
+  }
 }
 function rowsToMap(rows) { const out = {}; (rows || []).forEach((row) => { if (row && row.type) out[row.type] = row.payload; }); return out; }
 function cleanChunk(row) { if (!row) return row; const out = Object.assign({}, row); delete out.payload; delete out.keys; return out; }
@@ -731,6 +745,81 @@ async function uploadBlobSubCollection(params, context) {
             { collection: COLLECTIONS[collKey] });
 }
 
+/**
+ * reportPending — 销售端浏览器自检上报「本机未同步记录」
+ * 前端在页面加载（已登录）时调用：统计 localStorage 中尚未 push 到 CloudBase 的记录，
+ * 上报 {rtx, pendingCount, pendingNames}。每个 rtx 保留一条最新记录，供管理端大排查。
+ * 权限：销售本人（rtx 来自 CloudBase 登录态，可信）。
+ */
+async function reportPending(params, context) {
+  params = params || {};
+  const rtx = String(params.rtx || getActor(params, context) || '').trim();
+  if (!rtx) return fail('reportPending', 'MISSING_RTX', 'rtx is required');
+  if (!SALES.includes(rtx)) return fail('reportPending', 'INVALID_RTX', 'rtx not in SALES list');
+  const database = getDb();
+  await ensureCollection(COLLECTIONS.syncAudit); // 幂等建表
+  const now = Date.now();
+  const count = Number(params.pendingCount) || 0;
+  const names = Array.isArray(params.pendingNames) ? params.pendingNames.slice(0, 200) : [];
+  const doc = {
+    rtx,
+    pendingCount: count,
+    pendingNames: names,
+    lastSeen: params.lastSeen || new Date(now).toISOString(),
+    clientVersion: String(params.clientVersion || ''),
+    serverTime: now,
+    _updatedAt: now
+  };
+  // upsert by rtx
+  const res = await database.collection(COLLECTIONS.syncAudit).where({ rtx }).limit(1).get();
+  const row = res && res.data && res.data[0];
+  if (row && row._id) {
+    await database.collection(COLLECTIONS.syncAudit).doc(row._id).update(doc);
+    return ok('reportPending', { rtx, pendingCount: count, updated: true, _id: row._id });
+  }
+  const addRes = await database.collection(COLLECTIONS.syncAudit).add(doc);
+  return ok('reportPending', { rtx, pendingCount: count, created: true, _id: addRes && addRes.id });
+}
+
+/**
+ * listSyncAudit — 管理端大排查：返回每个销售的最近一次自检上报
+ * 支持 params.withPendingOnly=true 只返回仍有遗留记录的销售。
+ */
+async function listSyncAudit(params, context) {
+  params = params || {};
+  const database = getDb();
+  await ensureCollection(COLLECTIONS.syncAudit); // 幂等建表
+  const res = await database.collection(COLLECTIONS.syncAudit).limit(1000).get();
+  const rows = (res && res.data) || [];
+  // 按 rtx 取最新一条
+  const latest = {};
+  for (const r of rows) {
+    if (!latest[r.rtx] || (r.serverTime || 0) > (latest[r.rtx].serverTime || 0)) latest[r.rtx] = r;
+  }
+  let list = Object.values(latest);
+  if (params.withPendingOnly) list = list.filter(r => (r.pendingCount || 0) > 0);
+  list.sort((a, b) => (b.serverTime || 0) - (a.serverTime || 0));
+  const withPending = list.filter(r => (r.pendingCount || 0) > 0);
+  return ok('listSyncAudit', {
+    totalReported: list.length,
+    withPending: withPending.length,
+    clean: list.length - withPending.length,
+    reports: list
+  });
+}
+
+// 幂等建表（供首次部署后调用一次）
+async function ensureSyncAuditCollection(params, context) {
+  const created = await ensureCollection(COLLECTIONS.syncAudit);
+  // 验证可读
+  let readable = false;
+  try {
+    const res = await getDb().collection(COLLECTIONS.syncAudit).limit(1).get();
+    readable = !!(res && res.data);
+  } catch (e) { /* ignore */ }
+  return ok('ensureSyncAuditCollection', { collection: COLLECTIONS.syncAudit, created: !!created, readable });
+}
+
 async function getRegisterRecords(params) {
   params = params || {};
   const database = getDb();
@@ -1006,6 +1095,9 @@ async function handle(action, params, context) {
     case 'getRegisterLookup': return await getRegisterLookup(params);
     case 'getCustomerDiag': return await getCustomerDiag(params);
     case 'uploadBlobSubCollection': return await uploadBlobSubCollection(params, context);
+    case 'reportPending': return await reportPending(params, context);
+    case 'listSyncAudit': return await listSyncAudit(params, context);
+    case 'ensureSyncAuditCollection': return await ensureSyncAuditCollection(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);
