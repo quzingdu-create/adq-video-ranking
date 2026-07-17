@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>拓客登记同步审计 · 大排查</title>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script src="cloud_sync.js?v=20260717g"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6fa; color: #1f2937; padding: 24px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+  .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  button { padding: 8px 16px; border: none; border-radius: 8px; background: #2563eb; color: #fff; font-size: 14px; cursor: pointer; }
+  button.ghost { background: #e5e7eb; color: #1f2937; }
+  .summary { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .card { background: #fff; border-radius: 10px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.06); min-width: 140px; }
+  .card .n { font-size: 26px; font-weight: 700; }
+  .card .l { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .card.warn .n { color: #dc2626; }
+  .card.ok .n { color: #16a34a; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #f3f4f6; font-size: 13px; vertical-align: top; }
+  th { background: #f9fafb; font-weight: 600; color: #374151; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .badge.p { background: #fee2e2; color: #dc2626; }
+  .badge.c { background: #dcfce7; color: #16a34a; }
+  .names { color: #6b7280; font-size: 12px; max-width: 420px; }
+  .empty { text-align: center; color: #9ca3af; padding: 40px; }
+  code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>拓客登记同步审计 · 大排查</h1>
+  <div class="sub">每个销售打开看板时自动上报「本机未同步记录」。下表实时显示谁还有遗留（无需逐个问销售）。</div>
+
+  <div class="toolbar">
+    <button id="btnLogin">🔐 登录云端</button>
+    <button id="btnRefresh">🔄 刷新审计</button>
+    <button id="btnPending" class="ghost">只看有遗留的</button>
+    <span id="status" class="sub"></span>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <table>
+    <thead>
+      <tr><th>销售</th><th>遗留条数</th><th>最后活跃</th><th>客户端版本</th><th>遗留客户</th></tr>
+    </thead>
+    <tbody id="tbody">
+      <tr><td colspan="5" class="empty">请先登录云端，再点「刷新审计」</td></tr>
+    </tbody>
+  </table>
+
+<script>
+  var onlyPending = false;
+  function setStatus(t){ document.getElementById('status').textContent = t || ''; }
+  function fmtTime(iso){
+    if (!iso) return '-';
+    try { var d = new Date(iso); return d.toLocaleString('zh-CN', {hour12:false}); } catch(e){ return iso; }
+  }
+  function render(data){
+    var reports = (data && data.reports) || [];
+    var total = data.totalReported || 0;
+    var withPending = data.withPending || 0;
+    var clean = data.clean || 0;
+    document.getElementById('summary').innerHTML =
+      '<div class="card"><div class="n">'+total+'</div><div class="l">已上报销售</div></div>' +
+      '<div class="card warn"><div class="n">'+withPending+'</div><div class="l">仍有遗留</div></div>' +
+      '<div class="card ok"><div class="n">'+clean+'</div><div class="l">已干净</div></div>';
+    var rows = onlyPending ? reports.filter(function(r){ return (r.pendingCount||0) > 0; }) : reports;
+    if (!rows.length){
+      document.getElementById('tbody').innerHTML = '<tr><td colspan="5" class="empty">暂无数据</td></tr>';
+      return;
+    }
+    var html = rows.map(function(r){
+      var n = r.pendingCount || 0;
+      var badge = n > 0 ? '<span class="badge p">'+n+' 条</span>' : '<span class="badge c">已同步</span>';
+      var names = (r.pendingNames && r.pendingNames.length) ? r.pendingNames.join('、') : (n>0 ? '(记录无名称)' : '');
+      return '<tr><td><b>'+r.rtx+'</b></td><td>'+badge+'</td><td>'+fmtTime(r.lastSeen)+'</td><td><code>'+(r.clientVersion||'-')+'</code></td><td class="names">'+names+'</td></tr>';
+    }).join('');
+    document.getElementById('tbody').innerHTML = html;
+  }
+  function loadAudit(){
+    if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()){
+      setStatus('未登录，请先点「登录云端」'); return;
+    }
+    setStatus('加载中…');
+    window.cloud.callFunction('salesCenterApi', { action: 'listSyncAudit', params: {} })
+      .then(function(res){
+        var d = res && res.data ? res.data : res;
+        if (d && d.ok){ render(d.data); setStatus('已更新 · '+new Date().toLocaleString('zh-CN',{hour12:false})); }
+        else { setStatus('返回异常：' + JSON.stringify(d && d.error)); }
+      })
+      .catch(function(e){ setStatus('调用失败：' + (e && e.message)); });
+  }
+  document.getElementById('btnLogin').onclick = function(){
+    if (window.cloud && window.cloud.requireLogin) window.cloud.requireLogin(function(){ setStatus('已登录'); loadAudit(); });
+    else setStatus('云端未就绪');
+  };
+  document.getElementById('btnRefresh').onclick = loadAudit;
+  document.getElementById('btnPending').onclick = function(){
+    onlyPending = !onlyPending;
+    this.textContent = onlyPending ? '看全部' : '只看有遗留的';
+    loadAudit();
+  };
+  // 自动尝试（若已登录）
+  window.addEventListener('load', function(){ setTimeout(function(){ if (window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn()) loadAudit(); }, 1500); });
+</script>
+</body>
+</html>

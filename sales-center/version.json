@@ -1,1 +1,1 @@
-{"v": "20260717f", "date": "2026-07-17", "note": "hotfix 2026-07-17: recover 3 more ruilingzhan local-only registrations (袁州区楠黎服装店, 深圳市温纤科技, 晋江金井镇造物)"}
+{"v": "20260717g", "date": "2026-07-17", "note": "hotfix 2026-07-17: auto self-audit + recover local-only tuoke records on boot, report to CloudBase sync_audit; add admin sync_audit.html"}
