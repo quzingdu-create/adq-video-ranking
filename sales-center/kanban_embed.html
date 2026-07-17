@@ -46,7 +46,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260717c')
+    return fetch('data/manual_attr_override.json?v=20260717d')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -82,31 +82,31 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260717c"></script>
-<script defer src="api_client.js?v=20260717c"></script>
-<script defer src="data_adapter.js?v=20260717c"></script>
+<script defer src="cloud_gray_switch.js?v=20260717d"></script>
+<script defer src="api_client.js?v=20260717d"></script>
+<script defer src="data_adapter.js?v=20260717d"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260717c"></script> -->
-<script src="data/center_sales_summary.js?v=20260717c"></script>
-<script src="data/center_quarter_summary.js?v=20260717c"></script>
-<script src="data/center_daily_kpi.js?v=20260717c"></script>
-<script src="data/top80_effective_metrics.js?v=20260717c"></script>
-<script src="data/top_status_data.js?v=20260717c"></script>
-<script src="data/enough_candidates.js?v=20260717c"></script>
-<script src="data/handover_customers_519.js?v=20260717c"></script>
-<script src="data/target_brand_pool.js?v=20260717c"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260717d"></script> -->
+<script src="data/center_sales_summary.js?v=20260717d"></script>
+<script src="data/center_quarter_summary.js?v=20260717d"></script>
+<script src="data/center_daily_kpi.js?v=20260717d"></script>
+<script src="data/top80_effective_metrics.js?v=20260717d"></script>
+<script src="data/top_status_data.js?v=20260717d"></script>
+<script src="data/enough_candidates.js?v=20260717d"></script>
+<script src="data/handover_customers_519.js?v=20260717d"></script>
+<script src="data/target_brand_pool.js?v=20260717d"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260717c" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260717d" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260717c"></script>
-<script src="dual_check.js?v=20260717c"></script>
-<script src="big_data_dual_check.js?v=20260717c"></script>
+<script src="cloud_sync.js?v=20260717d"></script>
+<script src="dual_check.js?v=20260717d"></script>
+<script src="big_data_dual_check.js?v=20260717d"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -909,7 +909,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260717c`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260717d`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1108,7 +1108,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260717c" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260717d" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1124,7 +1124,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260717c" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260717d" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1209,7 +1209,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260717c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260717d" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1785,71 +1785,71 @@ function persistUserRecordsBestEffort() {
     console.warn('批量导入数据过大，已保留本次内存展示并仅持久化前500条', e);
   }
 }
+const CLOUD_SYNCED_KEY = "cloud_synced_ids_v1";
+function markRecordsCloudSynced(records) {
+  try {
+    const synced = JSON.parse(localStorage.getItem(CLOUD_SYNCED_KEY) || "{}") || {};
+    (records || []).forEach(function(r){ if (r && r.id != null) synced[r.id] = 1; });
+    localStorage.setItem(CLOUD_SYNCED_KEY, JSON.stringify(synced));
+  } catch(_) {}
+}
+function warnLocalOnlyRecords(records, label) {
+  const count = (records && records.length) || 0;
+  const msg = '⚠️ ' + (label || '登记记录') + '已先保存在本机，但尚未确认进入云端。未进云端前，管理员页、其他电脑、导出登记明细和新客明细都可能看不到。请完成弹出的云端登录，或点右上角「补推未同步记录」。';
+  try { if (window.cloud && window.cloud.toast) window.cloud.toast(msg, true); else alert(msg); } catch(_) {}
+  console.warn('[cloud] local-only pending records=' + count + ' label=' + (label || ''));
+}
+function uploadRecordsWithLogin(records, label, retrying) {
+  records = (records || []).filter(Boolean);
+  if (!records.length) return;
+  try {
+    if (!(window.cloud && typeof window.cloud.upload === 'function')) {
+      warnLocalOnlyRecords(records, label);
+      return;
+    }
+    const doUpload = function() {
+      window.cloud.upload(records).then(function(d){
+        console.info('[cloud] saved ok n=' + records.length + ' created=' + (d.created || 0) + ' updated=' + (d.updated || 0) + ' failed=' + (d.failed || 0));
+        if (!d.failed) markRecordsCloudSynced(records);
+        if (window.cloud.toast) window.cloud.toast('☁️ 已同步云端 ' + records.length + ' 条，管理员页和导出可见', false);
+      }).catch(function(e){
+        const msg = (e && e.message) || '';
+        console.warn('[cloud] save fail n=' + records.length, msg);
+        const needLogin = msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0;
+        if (!retrying && needLogin && window.cloud.requireLogin) {
+          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框；登录成功后自动补推…', true);
+          window.cloud.requireLogin(function(){ uploadRecordsWithLogin(records, label, true); });
+        } else {
+          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + msg + '（已本地保存，请点右上角「补推未同步记录」）', true);
+        }
+      });
+    };
+    if (window.cloud.isLoggedIn && window.cloud.isLoggedIn()) {
+      doUpload();
+    } else if (window.cloud.requireLogin) {
+      warnLocalOnlyRecords(records, label);
+      window.cloud.requireLogin(doUpload);
+    } else {
+      warnLocalOnlyRecords(records, label);
+    }
+  } catch(e) {
+    console.warn('[cloud] upload wrapper error', e && e.message);
+    warnLocalOnlyRecords(records, label);
+  }
+}
 function saveUserRecord(rec) {
   USER_RECORDS.unshift(rec);
   persistUserRecordsBestEffort();
   RECORDS.unshift(rec);
-  // 🦞 云端双写（橘橘有500w加，2026-05-20 19:55）：本地写完立即推一条到后端
-  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推（对齐 register_v3.2 逻辑）
-  try {
-    if (window.cloud && window.cloud.isLoggedIn()) {
-      window.cloud.upload([rec]).then(function(d){
-        console.info('[cloud] saved single ok created=' + d.created + ' updated=' + d.updated);
-      }).catch(function(e){
-        console.warn('[cloud] save single fail:', e && e.message);
-        var msg = (e && e.message) || '';
-        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
-          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
-          try {
-            window.cloud.requireLogin(function(){
-              window.cloud.upload([rec]).then(function(d){
-                console.info('[cloud] save single retry ok created=' + d.created + ' updated=' + d.updated);
-                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 1 条', false);
-              }).catch(function(e2){
-                console.warn('[cloud] save single retry fail:', e2 && e2.message);
-                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
-              });
-            });
-          } catch(_) {}
-        } else {
-          if (window.cloud.toast) window.cloud.toast('云端保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
-        }
-      });
-    }
-  } catch(_){}
+  // 2026-07-17 防再次漏数：本地先存只作兜底，必须同步云端；未登录/失败要显性告警并弹登录补推。
+  uploadRecordsWithLogin([rec], '新登记客户');
 }
 function saveUserRecordsBulk(records) {
   USER_RECORDS = [...records, ...USER_RECORDS];
   persistUserRecordsBestEffort();
   RECORDS.unshift(...records);
-  // 🦞 云端双写
-  // 2026-05-26 19:54 修：token 过期 / 未登录 → 自动弹密码框，登录成功后自动重推
-  try {
-    if (records && records.length && window.cloud && window.cloud.isLoggedIn()) {
-      window.cloud.upload(records).then(function(d){
-        console.info('[cloud] saved bulk ok n=' + records.length + ' created=' + d.created);
-      }).catch(function(e){
-        console.warn('[cloud] save bulk fail:', e && e.message);
-        var msg = (e && e.message) || '';
-        if (msg.indexOf('NEED_PASSWORD') >= 0 || msg.indexOf('登录') >= 0 || msg.indexOf('token') >= 0) {
-          if (window.cloud.toast) window.cloud.toast('云端登录已过期，正在弹出登录框…', true);
-          try {
-            window.cloud.requireLogin(function(){
-              window.cloud.upload(records).then(function(d){
-                console.info('[cloud] save bulk retry ok n=' + records.length + ' created=' + d.created);
-                if (window.cloud.toast) window.cloud.toast('☁️ 重新登录后已自动上传 ' + records.length + ' 条', false);
-              }).catch(function(e2){
-                console.warn('[cloud] save bulk retry fail:', e2 && e2.message);
-                if (window.cloud.toast) window.cloud.toast('重试仍失败：' + (e2&&e2.message||'') + '（已本地保存，可顶栏「同步」补推）', true);
-              });
-            });
-          } catch(_) {}
-        } else {
-          if (window.cloud.toast) window.cloud.toast('云端批量保存失败：' + msg + '（已本地保存，可顶栏「同步」补推）', true);
-        }
-      });
-    }
-  } catch(_){}
+  // 2026-07-17 防再次漏数：批量导入同样强制走云端补推链路，避免只留在某台电脑 localStorage。
+  uploadRecordsWithLogin(records, '批量登记客户');
 }
 
 </script>
@@ -4160,7 +4160,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260717c';
+  s.src = 'data/bulk_import_rows.js?v=20260717d';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');

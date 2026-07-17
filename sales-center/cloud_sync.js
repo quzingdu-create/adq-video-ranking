@@ -184,7 +184,7 @@
     t.textContent = msg;
     t.style.display = 'block';
     clearTimeout(t._timer);
-    t._timer = setTimeout(function () { t.style.display = 'none'; }, 2800);
+    t._timer = setTimeout(function () { t.style.display = 'none'; }, isErr ? 8000 : 2800);
   }
 
   // ============== 选人弹窗 ==============
@@ -873,12 +873,14 @@
         mainBtn.style.background = s && s.is_admin ? 'linear-gradient(135deg,#7c3aed,#5b21b6)' : 'linear-gradient(135deg,#059669,#047857)';
         mainBtn.style.color = '#fff';
         menuInfo.textContent = '当前身份：' + label;
+        if (btnUpload) btnUpload.style.display = (typeof opts.getLocalRecords === 'function') ? 'block' : 'none';
         if (btnExport) btnExport.style.display = (s && s.is_admin) ? 'block' : 'none';
       } else {
         mainBtn.innerHTML = '🔐 登录云端';
         mainBtn.style.background = 'linear-gradient(135deg,#FF6B35,#F7931E)';
         mainBtn.style.color = '#fff';
         menuInfo.textContent = '未登录';
+        if (btnUpload) btnUpload.style.display = 'none';
         if (btnExport) btnExport.style.display = 'none';
       }
     }
