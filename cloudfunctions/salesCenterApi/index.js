@@ -32,7 +32,9 @@ const COLLECTIONS = {
   auditLog: 'sc_audit_log',                     // 通用审计日志(所有写操作,含 traceId+idempotencyKey)
   idempotency: 'sc_idempotency',                // 幂等键缓存(24h 窗口,同 key 直接回放结果)
   // 2026-07-17 拓客登记同步审计：每个销售端浏览器自检上报「本机未同步记录」
-  syncAudit: 'tuoke_sync_audit'
+  syncAudit: 'tuoke_sync_audit',
+  // 2026-07-17h 销售实时登记集合（免登录直写，单一可信源 for 销售侧 live 登记）
+  userRecords: 'tuoke_user_records'
 };
 const SALES = ['brownfan', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
 
@@ -820,6 +822,122 @@ async function ensureSyncAuditCollection(params, context) {
   return ok('ensureSyncAuditCollection', { collection: COLLECTIONS.syncAudit, created: !!created, readable });
 }
 
+/* ============ 2026-07-17h 销售实时登记（免登录直写单一可信源） ============ */
+// 设计：前端登记即 callFunction('saveUserRecord')，云函数用服务端密钥直写 tuoke_user_records，
+// 不依赖销售登录态。Display = 静态种子(__TUOKE_REAL_RECORDS__) + 本集合(实时) 合并。
+// 该集合与官方底表 tuoke_records(legacy) 解耦：legacy 由 AI 维护的历史种子，本集合是销售 live 登记。
+async function ensureUserRecordsCollection() {
+  return await ensureCollection(COLLECTIONS.userRecords);
+}
+async function saveUserRecord(params, context) {
+  params = params || {};
+  const record = Object.assign({}, params.record || params.payload || params);
+  const rawName = record.name || record.shortName || params.name || params.shortName;
+  if (!rawName) return fail('saveUserRecord', 'MISSING_NAME', 'name/shortName required');
+  const name = normName(rawName);
+  const sale = normName(record.sale || params.sale || '');
+  const actor = getActor(params, context) || sale || 'unknown';
+  const now = Date.now();
+  const id = (record.id != null) ? String(record.id) : (now + '_' + Math.random().toString(36).slice(2, 8));
+  const rec = {
+    id: id,
+    name: name,
+    shortName: normName(record.shortName || record.name || params.shortName || params.name) || name,
+    sale: sale,
+    _rtx: sale || actor,
+    _recorded_by: sale || actor,
+    cat: normName(record.cat || params.cat || ''),
+    source: normName(record.source || params.source || 'sales_register'),
+    channel: normName(record.channel || params.channel || ''),
+    firstQuarter: normName(record.firstQuarter || params.firstQuarter || ''),
+    deliverySide: normName(record.deliverySide || params.deliverySide || ''),
+    date: normName(record.date || params.date) || new Date(now).toISOString().slice(0, 10),
+    link: normName(record.link || params.link || ''),
+    brand: normName(record.brand || params.brand || ''),
+    isRising: !!(record.isRising),
+    isTarget: !!(record.isTarget),
+    isNew: !!(record.isNew),
+    isLaoke: !!(record.isLaoke),
+    evidenceImages: Array.isArray(record.evidenceImages) ? record.evidenceImages : [],
+    _clientVersion: String(params.clientVersion || record.clientVersion || ''),
+    _createdAt: now,
+    _updatedAt: now
+  };
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  // 去重：同 id 更新，否则新增
+  let updated = false;
+  try {
+    const res = await database.collection(COLLECTIONS.userRecords).where({ id: String(rec.id) }).limit(1).get();
+    const row = res && res.data && res.data[0];
+    if (row && row._id) {
+      await database.collection(COLLECTIONS.userRecords).doc(row._id).update(rec);
+      updated = true;
+    }
+  } catch (_) { /* ignore */ }
+  let docId = '';
+  if (!updated) {
+    const addRes = await database.collection(COLLECTIONS.userRecords).add(rec);
+    docId = (addRes && addRes.id) || '';
+  }
+  // 归属留痕
+  if (sale) {
+    try {
+      await database.collection(COLLECTIONS.attributionLog).add({
+        customerId: '', primaryName: name, fromSale: '', toSale: sale,
+        operator: actor, reason: 'saveUserRecord', ts: now, action: 'saveUserRecord', source: COLLECTIONS.userRecords
+      });
+    } catch (_) { /* 不阻断 */ }
+  }
+  return ok('saveUserRecord', { updated: updated, id: rec.id, docId: docId, name: name, sale: sale });
+}
+async function saveUserRecordsBatch(params, context) {
+  params = params || {};
+  const records = Array.isArray(params.records) ? params.records : (Array.isArray(params) ? params : []);
+  let okN = 0, failN = 0;
+  for (const r of records) {
+    try {
+      const res = await saveUserRecord({ record: r, clientVersion: params.clientVersion }, context);
+      if (res && res.ok) okN++; else failN++;
+    } catch (_) { failN++; }
+  }
+  return ok('saveUserRecordsBatch', { requested: records.length, ok: okN, failed: failN });
+}
+async function listUserRecords(params) {
+  params = params || {};
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  const _ = database.command;
+  const where = {};
+  if (params.sale) where.sale = String(params.sale);
+  if (params.since) where._updatedAt = _.gte(Number(params.since));
+  const limit = safeLimit(params.limit, 200, 1000);
+  const res = await database.collection(COLLECTIONS.userRecords).where(where).orderBy('_updatedAt', 'desc').limit(limit).get();
+  const rows = (res && res.data) || [];
+  return ok('listUserRecords', { count: rows.length, records: rows }, { collection: COLLECTIONS.userRecords });
+}
+// 删除单条销售登记（按 id 或 _id）。用于清理测试数据/纠错。
+async function deleteUserRecord(params, context) {
+  params = params || {};
+  const database = getDb();
+  const key = params.id != null ? String(params.id) : (params._id ? String(params._id) : '');
+  if (!key) return fail('deleteUserRecord', 'MISSING_ID', 'id or _id required');
+  let removed = 0;
+  try {
+    const res = await database.collection(COLLECTIONS.userRecords).where({ id: key }).limit(1).get();
+    const row = res && res.data && res.data[0];
+    if (row && row._id) {
+      await database.collection(COLLECTIONS.userRecords).doc(row._id).remove();
+      removed = 1;
+    }
+  } catch (_) { /* ignore */ }
+  if (!removed && params._id) {
+    try { await database.collection(COLLECTIONS.userRecords).doc(String(params._id)).remove(); removed = 1; } catch (_) {}
+  }
+  return ok('deleteUserRecord', { removed: removed, id: key });
+}
+
+
 async function getRegisterRecords(params) {
   params = params || {};
   const database = getDb();
@@ -1098,6 +1216,11 @@ async function handle(action, params, context) {
     case 'reportPending': return await reportPending(params, context);
     case 'listSyncAudit': return await listSyncAudit(params, context);
     case 'ensureSyncAuditCollection': return await ensureSyncAuditCollection(params, context);
+    // 2026-07-17h 销售实时登记（免登录直写单一可信源）
+    case 'saveUserRecord': return await saveUserRecord(params, context);
+    case 'saveUserRecordsBatch': return await saveUserRecordsBatch(params, context);
+    case 'listUserRecords': return await listUserRecords(params);
+    case 'deleteUserRecord': return await deleteUserRecord(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);

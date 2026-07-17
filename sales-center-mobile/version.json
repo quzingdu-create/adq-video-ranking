@@ -1,1 +1,1 @@
-{"v": "20260717g", "date": "2026-07-17", "note": "hotfix 2026-07-17: auto self-audit + recover local-only tuoke records on boot, report to CloudBase sync_audit; add admin sync_audit.html"}
+{"v": "2026-07-17h", "date": "2026-07-17", "note": "2026-07-17h 重构: 销售登记免登录直写云端(tuoke_user_records,经云函数saveUserRecord);开机静默自愈本机遗留记录(selfHealLocalOnly);拉取改listUserRecords(免登录);彻底去掉requireLogin弹框与告警,销售无感。PC端同源镜像。"}
