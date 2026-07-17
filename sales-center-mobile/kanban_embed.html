@@ -4444,17 +4444,25 @@ document.addEventListener('click', e => {
 (function selfAuditAndRecover(){
   function run(){
     try {
-      if (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn()) {
-        console.info('[audit] not logged in, skip self-audit');
-        return;
-      }
-      var rtx = (localStorage.getItem('cloud_rtx_v2') || '').trim();
-      if (!rtx) { console.info('[audit] no rtx, skip'); return; }
       var userRecs = [];
       try { userRecs = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || '[]') || []; } catch(_){}
       var synced = {};
       try { synced = JSON.parse(localStorage.getItem(CLOUD_SYNCED_KEY) || '{}') || {}; } catch(_){}
       var pending = (userRecs || []).filter(function(r){ return r && r.id != null && !synced[r.id]; });
+      var rtx = (localStorage.getItem('cloud_rtx_v2') || '').trim();
+
+      // 有遗留但未登录 → 主动弹登录框，登录成功后自动补推（最大化自动挽回）
+      if (pending.length && (!window.cloud || !window.cloud.isLoggedIn || !window.cloud.isLoggedIn())) {
+        if (rtx && window.cloud && window.cloud.requireLogin) {
+          console.info('[audit] ' + pending.length + ' pending but not logged in, prompting login');
+          window.cloud.requireLogin(function(){ setTimeout(run, 800); });
+          return;
+        }
+        console.info('[audit] pending but no login context, skip');
+        return;
+      }
+      if (!rtx) { console.info('[audit] no rtx, skip'); return; }
+
       // 上报审计（始终上报，便于管理端掌握最后活跃）
       try {
         var names = pending.map(function(r){ return r.shortName || r.name || ('id:'+r.id); });
