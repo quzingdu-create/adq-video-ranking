@@ -1,1 +1,1 @@
-{"v":"20260717d","date":"2026-07-17","note":"hotfix 2026-07-17: force cloud sync warning/retry for local-only registrations and keep export views consistent"}
+{"v": "20260717e", "date": "2026-07-17", "note": "hotfix 2026-07-17: restore side-tab-nav in lifecycle tab (remove 1500px hide rule) and fix record table horizontal overflow"}
