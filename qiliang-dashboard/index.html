@@ -1405,61 +1405,6 @@ body{font-family:-apple-system,'PingFang SC','Hiragino Sans GB','Microsoft YaHei
   <span class="badge">交互版 v2.1</span>
 </div>
 
-<!-- 数据口径与评分公式说明（可折叠） -->
-<div style="max-width:1200px;margin:0 auto 12px">
-<div id="formulaInfo" style="border:1px solid #e2e8f0;border-radius:8px;background:#fafbfc;overflow:hidden">
-  <div style="padding:8px 14px;cursor:pointer;font-size:13px;color:#475569;display:flex;align-items:center;gap:6px" onclick="var b=document.getElementById('formulaBody');b.style.display=b.style.display==='block'?'none':'block';this.querySelector('.arrow').textContent=b.style.display==='block'?'▼':'▶'">
-    <span class="arrow">▶</span><b>📖 数据口径 & 评分公式说明</b>
-    <span style="font-size:10px;color:#94a3b8;margin-left:auto">点击展开/收起</span>
-  </div>
-  <div id="formulaBody" style="display:none;padding:12px 16px 14px;border-top:1px solid #e2e8f0;font-size:12.5px;line-height:1.7;color:#334155">
-
-    <div style="margin-bottom:10px"><b>一、数据源与时间范围</b></div>
-    <ul style="margin:0 0 10px 18px;padding:0">
-      <li>源文件：<code>单品直播间商品.csv</code>（飞瓜数据）</li>
-      <li>时间范围：<b>2025-07 至 2026-07</b>（共 13 个月完整周期）</li>
-      <li>商品去重口径：客户简称 + DPA商品名称 组合去重（977 个唯一商品，11 个客户）</li>
-      <li>季节判定：按该商品<b>峰值日耗所在月份</b> → 夏季(7-9月) / 秋冬(10月-次年6月)</li>
-    </ul>
-
-    <div style="margin-bottom:10px"><b>二、商品明细字段口径</b></div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
-      <tr style="background:#f1f5f9"><th style="text-align:left;padding:5px 8px;border:1px solid #e2e8f0">字段</th><th style="text-align:left;padding:5px 8px;border:1px solid #e2e8f0">含义</th><th style="text-align:left;padding:5px 8px;border:1px solid #e2e8f0">计算方式</th></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0"><b>累计消耗(万元)</b></td><td style="padding:4px 8px;border:1px solid #e2e8f0">该商品 13 个月的广告投放总消耗</td><td style="padding:4px 8px;border:1px solid #e2e8f0">所有日期行 消耗(万元) 之和</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0"><b>ROI</b></td><td style="padding:4px 8px;border:1px solid #e2e8f0">该商品下单 ROI 中位数</td><td style="padding:4px 8px;border:1px solid #e2e8f0">所有日期行 下单ROI 的中位数</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0"><b>AOV (元)</b></td><td style="padding:4px 8px;border:1px solid #e2e8f0">该商品下单客单价中位数</td><td style="padding:4px 8px;border:1px solid #e2e8f0">所有日期行 下单单价(元) 的中位数</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0"><b>活跃天数</b></td><td style="padding:4px 8px;border:1px solid #e2e8f0">有投放记录的自然日天数</td><td style="padding:4px 8px;border:1px solid #e2e8f0">该商品出现过的不同日期数（非连续天数）</td></tr>
-    </table>
-
-    <div style="margin-bottom:10px"><b>三、候选客户综合评分公式详解</b></div>
-    <p style="margin:4px 0">综合评分 = Σ(各维度标准化分 × 权重)，满分 100。5 个维度：</p>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
-      <tr style="background:#f1f5f9"><th style="text-align:left;padding:5px 8px;border:1px solid #e2e8f0">维度</th><th style="text-align:center;padding:5px 8px;border:1px solid #e2e8f0">权重</th><th style="text-align:left;padding:5px 8px;border:1px solid #e2e8f0">计算口径</th></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0">单品契合度</td><td style="text-align:center;padding:4px 8px;border:1px solid #e2e8f0">0.25</td><td style="padding:4px 8px;border:1px solid #e2e8f0">带货商品数归一化（少=聚焦单品→高分）</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0;background:#fff7ed"><b>直播强度 ⭐</b></td><td style="text-align:center;padding:4px 8px;border:1px solid #e2e8f0;background:#fff7ed"><b>0.30</b></td><td style="padding:4px 8px;border:1px solid #e2e8f0;background:#fff7ed">两因子合成（见下方拆解）</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0">水位匹配</td><td style="text-align:center;padding:4px 8px;border:1px solid #e2e8f0">0.20</td><td style="padding:4px 8px;border:1px solid #e2e8f0">销售额区间与目标水位(250w-500w)的匹配度</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0">直播销售档</td><td style="text-align:center;padding:4px 8px;border:1px solid #e2e8f0">0.15</td><td style="padding:4px 8px;border:1px solid #e2e8f0">直播销售额落在哪个档位（越高档→分越高但非线性）</td></tr>
-      <tr><td style="padding:4px 8px;border:1px solid #e2e8f0">价格契合</td><td style="text-align:center;padding:4px 8px;border:1px solid #e2e8f0">0.10</td><td style="padding:4px 8px;border:1px solid #e2e8f0">均价是否落在起量甜区(80-350元)</td></tr>
-    </table>
-
-    <div style="margin-bottom:6px"><b>直播强度（权重 0.30）内部拆解：</b></div>
-    <div style="background:#fefce8;border-left:3px solid #eab308;padding:8px 12px;margin-bottom:10px;border-radius:0 6px 6px 0">
-      <code style="font-size:12.5px;background:none">直播强度 = (直播占比 × 5, 封顶100) × 0.55 + (场均直播销售额 ÷ 3 × 60, 封顶100) × 0.45</code>
-      <ul style="margin:6px 0 0 16px;padding:0">
-        <li><b>因子① 直播占比 × 5 × 0.55</b>（占此维 55%）：衡量"直播在它生意里的分量"。直播占比 = 直播销售额÷总销售额。×5 表示 20% 占比即满分 100；每 1% ≈ 5 分。<b>占比高 → 契合单品直播间模型。</b></li>
-        <li><b>因子② 场均直播销售额 ÷ 3 × 60 × 0.45</b>（占此维 45%）：衡量"每场直播的产出效率（场效）"。场均 = 直播销售额÷直播场次（万元/场）。<br>÷3×60 等价于 ×20、封顶100：<b>3万/场 = 60 分（中等基准线），5万/场 = 100 分（封顶）</b>。专门衡量"它直播厉不厉害"，不看总规模。</li>
-        <li><b>为什么两个因子？</b>只看占比会漏掉"占比不高但每场巨能卖"的品牌；只看场均会漏掉"每场卖得少但全靠直播撑着"的。两者合起来才识别"既靠直播、又场场能打"的品牌。</li>
-        <li><b>兜底规则</b>：任一因子源数据缺失(NaN) → 给 30 分，避免直接 0 拉垮排名。</li>
-      </ul>
-    </div>
-
-    <div style="font-size:11.5px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:8px;margin-top:4px">
-      💡 <b>关键洞察「强度 vs 依赖」</b>：评分筛的是"直播能力猛不猛"（占比+场效），而 2.5 的聚类画像筛的是"直播姿态适不适中"。我们要的是<b>"会直播、但直播不是唯一命脉"</b>的品牌——评分筛能力，画像筛姿态。
-    </div>
-  </div>
-</div>
-</div>
-
 <div class="main">
 <!-- ===== 视图1：起量矩阵 ===== -->
 <div id="matrixView" style="display:flex;gap:16px;width:100%">
