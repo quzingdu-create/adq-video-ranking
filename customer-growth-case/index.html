@@ -134,6 +134,9 @@
 
   /* ARCH (architecture layers) */
   .arch{margin:16px 0}
+  .fig-wide{margin:24px auto;max-width:100%;text-align:center}
+  .fig-wide img{border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.06);max-width:100%;height:auto}
+  .fig-wide figcaption{margin-top:10px;font-size:14px;color:var(--muted)}
   .arch .layer{border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:8px;padding:12px 16px;margin:8px 0;background:var(--bg-tint)}
   .arch .layer .lh{font-weight:700;font-size:14.5px}
   .arch .layer .ld{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
@@ -298,6 +301,10 @@
     <p class="part-lead">解法不是再做一个更花哨的看板，而是把销售脑子里那些"凭经验做的判断"，一条条翻译成系统能自动跑的规则。整体是一个"底座 + 三条业务流 + 可复用能力图谱"的结构。</p>
 
     <h3 class="sec">系统架构 · 5 层 <span class="tag">ARCHITECTURE</span></h3>
+    <figure class="fig-wide">
+      <img src="architecture-red-dot-system.jpg" alt="小红点任务系统的产品设计架构" loading="lazy">
+      <figcaption>小红点任务系统的产品设计架构 —— 从数据来源到云端留痕的完整链路</figcaption>
+    </figure>
     <div class="arch">
       <div class="layer"><span class="ln">L5</span><div class="lh">云端数据留痕</div><div class="ld">任务、反馈、每日快照统一留痕，支持持续迭代与管理复盘</div></div>
       <div class="layer"><span class="ln">L4</span><div class="lh">AI 生成页面 + 小红点任务交互</div><div class="ld">把 AI 判断转成销售可直接处理的任务入口，而不是停留在分析报告</div></div>
