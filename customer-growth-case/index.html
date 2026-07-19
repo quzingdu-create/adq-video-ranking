@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>商品消费客户开拓及中长尾服务提效 · 实践案例分享</title>
+<style>
+  :root{
+    --ink:#1b2230;          /* 深石板navy */
+    --ink-soft:#4a5466;
+    --muted:#8a93a3;
+    --line:#e5e8ee;
+    --bg:#ffffff;
+    --bg-soft:#f5f7fa;
+    --bg-tint:#f7f9fc;
+    --navy:#16365c;         /* 商务主色 */
+    --navy-soft:#eaf0f7;
+    --red:#cf3a3a;          /* 小红点 accent（克制使用） */
+    --red-soft:#fbecec;
+    --blue:#16365c;         /* 兼容：蓝=商务navy */
+    --blue-soft:#eaf0f7;
+    --amber:#9a6b14;
+    --amber-soft:#faf4e6;
+    --green:#1f9d6b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --tencent:"腾讯体 W7","TencentSans W7","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--tencent);line-height:1.8;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* HERO */
+  .hero{padding:92px 0 60px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#ffffff 0%,#f7f9fc 100%)}
+  .kicker{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--navy);text-transform:uppercase;margin-bottom:18px}
+  .hero h1{font-size:40px;line-height:1.28;margin:0 0 18px;font-weight:800;letter-spacing:-.01em}
+  .hero .arrow{color:var(--red)}
+  .hero .sub{font-size:18px;color:var(--ink-soft);margin:0 0 26px}
+  .byline{font-family:var(--mono);font-size:13px;color:var(--muted);line-height:1.95}
+  .byline b{color:var(--ink)}
+  .cta{display:inline-flex;align-items:center;gap:8px;margin-top:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600}
+  .cta:hover{text-decoration:none;background:#000}
+  .cta .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--red-soft)}
+
+  /* NAV */
+  .nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
+  .nav ul{display:flex;gap:6px;list-style:none;margin:0 auto;padding:10px 24px;overflow-x:auto;max-width:960px;font-size:13px}
+  .nav a{color:var(--ink-soft);white-space:nowrap;padding:6px 10px;border-radius:7px}
+  .nav a:hover{background:var(--bg-soft);text-decoration:none;color:var(--ink)}
+
+  /* PART */
+  .part{padding:70px 0;border-bottom:1px solid var(--line)}
+  .part-head{display:flex;align-items:baseline;gap:18px;margin-bottom:8px;flex-wrap:wrap}
+  .part-no{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--navy);border:1px solid var(--navy);border-radius:6px;padding:3px 9px;white-space:nowrap}
+  .part-title{font-size:26px;font-weight:800;margin:0;letter-spacing:-.01em;flex:1;min-width:240px}
+  .part-lead{color:var(--ink-soft);font-size:17px;margin:14px 0 26px}
+  h3.sec{font-size:18px;margin:34px 0 12px;font-weight:700;display:flex;align-items:center;gap:10px}
+  h3.sec .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);font-weight:600}
+  h4.sub{font-size:15.5px;margin:22px 0 8px;font-weight:700;color:var(--ink)}
+  p{margin:12px 0}
+  ul.tight{margin:10px 0;padding-left:20px}
+  ul.tight li{margin:6px 0}
+
+  /* CALLOUT */
+  .callout{border:1px solid var(--line);border-left:4px solid var(--blue);background:var(--bg-soft);border-radius:10px;padding:16px 20px;margin:16px 0}
+  .callout.red{border-left-color:var(--red);background:var(--red-soft)}
+  .callout.deep{border-left-color:var(--ink);background:var(--bg-tint)}
+  .callout .label{font-family:var(--mono);font-size:12px;letter-spacing:.12em;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:8px}
+  .callout.red .label{color:var(--red)}
+  .callout.deep .label{color:var(--ink)}
+  .callout p{margin:0}
+  .callout p+p{margin-top:10px}
+
+  /* TWO COL */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .cols .card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#fff}
+  .cols .card h4{margin:0 0 10px;font-size:14.5px;font-family:var(--mono);letter-spacing:.03em;color:var(--ink-soft)}
+  .cols .card ul{margin:0;padding-left:18px}
+  .cols .card li{margin:6px 0}
+
+  /* BEFORE/AFTER TABLE */
+  .ba{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px}
+  .ba th,.ba td{border:1px solid var(--line);padding:10px 12px;vertical-align:top;text-align:left}
+  .ba thead th{background:var(--ink);color:#fff;font-size:12.5px;font-weight:600}
+  .ba tbody th{background:var(--bg-soft);font-weight:600;width:22%;color:var(--ink);font-size:13.5px}
+  .ba .before{color:var(--muted)}
+  .ba .after{color:var(--ink);font-weight:600}
+  .ba .after .hl{color:var(--red)}
+
+  /* INSIGHT */
+  .insight{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--bg-tint)}
+  .insight .ln{flex:0 0 auto;width:40px;height:40px;border-radius:9px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px}
+  .insight .txt b{display:block;margin-bottom:3px;font-size:15px}
+  .insight .txt span{color:var(--ink-soft);font-size:14px}
+
+  /* KANBAN */
+  .kanban-frame{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:16px 0;background:#0f1115}
+  .kanban-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#0f1115;color:#cfd3da;font-family:var(--mono);font-size:12px}
+  .kanban-bar a{color:#5b8fd6}
+  .kanban-frame iframe{display:block;width:100%;height:780px;border:0;background:#fff}
+  .frame-fallback{font-size:13px;color:var(--muted);margin-top:8px}
+  .frame-fallback a{font-weight:600}
+
+  /* METHODOLOGY FLOW */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
+  .flow .step{border:1px solid var(--line);border-radius:10px;padding:15px 13px;background:#fff;position:relative}
+  .flow .step .n{font-family:var(--mono);font-size:12px;color:var(--navy);font-weight:700}
+  .flow .step .t{font-weight:700;margin:6px 0 6px;font-size:14.5px}
+  .flow .step .d{font-size:12.5px;color:var(--ink-soft)}
+  .flow .step:not(:last-child)::after{content:"→";position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:18px;z-index:2}
+  .warn{font-family:var(--mono);font-size:13px;color:var(--red);background:var(--red-soft);border:1px solid #f6c9c9;border-radius:8px;padding:10px 14px;margin:14px 0}
+
+  /* AB */
+  .ab{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .ab .box{border:1px solid var(--line);border-radius:10px;padding:18px;background:#fff}
+  .ab .box.A{border-top:3px solid var(--red)}
+  .ab .box.B{border-top:3px solid var(--blue)}
+  .ab .box .h{font-weight:800;font-size:15.5px;margin-bottom:4px}
+  .ab .box .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px}
+  .ab .box p{margin:8px 0;font-size:14px;color:var(--ink-soft)}
+
+  /* PATH (judgment paths) */
+  .path{margin:14px 0;padding:0;list-style:none}
+  .path li{display:flex;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:9px;margin:8px 0;background:#fff;align-items:flex-start}
+  .path li .k{flex:0 0 auto;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-soft);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .path li .v{font-size:14px;color:var(--ink-soft)}
+  .path li .v b{color:var(--ink)}
+
+  /* ARCH (architecture layers) */
+  .arch{margin:16px 0}
+  .arch .layer{border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:8px;padding:12px 16px;margin:8px 0;background:var(--bg-tint)}
+  .arch .layer .lh{font-weight:700;font-size:14.5px}
+  .arch .layer .ld{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+  .arch .layer .ln{font-family:var(--mono);font-size:11px;color:var(--muted);float:right}
+
+  /* OUTCOME GRID */
+  .outcome{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  .outcome .o{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff}
+  .outcome .o .v{font-size:20px;font-weight:800;line-height:1.15;color:var(--navy)}
+  .outcome .o .k{font-size:12px;color:var(--muted);margin-top:5px}
+  .outcome .o .s{font-size:11.5px;color:var(--ink-soft);margin-top:4px}
+
+  /* TABS */
+  .tabs{margin:22px 0}
+  .tab-bar{display:flex;gap:6px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+  .tab-btn{flex:1 1 200px;min-width:180px;background:none;border:none;padding:14px 16px;font-family:var(--tencent);font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s;text-align:left;line-height:1.4}
+  .tab-btn .tn{font-family:var(--mono);font-size:12px;color:var(--red);display:block;margin-bottom:4px;letter-spacing:.05em}
+  .tab-btn:hover{color:var(--ink);background:var(--bg-soft)}
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--navy)}
+  .tab-panel{display:none;padding:26px 0 6px;animation:fade .25s ease}
+  .tab-panel.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .tab-intro{color:var(--ink-soft);font-size:15px;margin:0 0 8px}
+  .tab-pos{font-family:var(--mono);font-size:12.5px;color:var(--red);font-weight:700;margin:0 0 18px}
+  .mech{margin:16px 0}
+  .mech .m{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:9px;margin:8px 0;background:#fff}
+  .mech .m .mi{flex:0 0 auto;width:30px;height:30px;border-radius:8px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;font-size:13px}
+  .mech .m .mt{font-size:14px;color:var(--ink-soft)}
+  .mech .m .mt b{color:var(--ink);display:block;margin-bottom:2px;font-size:15px}
+
+  /* LESSON */
+  .lesson{border:1px solid #f0e2bf;border-left:4px solid var(--amber);background:var(--amber-soft);border-radius:10px;padding:14px 18px;margin:14px 0}
+  .lesson .lt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:6px}
+  .lesson p{margin:6px 0;font-size:14px;color:var(--ink-soft)}
+
+  .fig{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:12px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue);margin-right:6px;margin-bottom:4px}
+  .pill.r{background:var(--red-soft);color:var(--red)}
+  .pill.k{background:#eef1f4;color:var(--ink-soft)}
+
+  .closing{padding:78px 0 108px;text-align:center;background:var(--bg-soft)}
+  .closing .quote{font-size:22px;line-height:1.7;font-weight:700;max-width:740px;margin:0 auto;color:var(--ink)}
+  .closing .quote .em{color:var(--red)}
+  .closing .sig{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:24px}
+
+  @media (max-width:720px){
+    .hero h1{font-size:29px}.cols,.ab,.flow,.outcome{grid-template-columns:1fr}
+    .flow .step:not(:last-child)::after{content:""}.part-title{font-size:21px}
+    .kanban-frame iframe{height:560px}
+    .tab-btn{flex:1 1 100%}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">商品消费业务部 · 实践案例分享</div>
+    <h1>客户开拓及中长尾服务提效<br/>从 <span class="arrow">数据洞察</span> 到 <span class="arrow">业务动作</span></h1>
+    <p class="sub">以一套 AI 驱动的「客户拓展与服务作战系统」为例，讲述我们如何把中长尾客户经营，从"人肉判断、被动响应"升级为"AI 判断、任务驱动、闭环追踪"。系统由 4 个能力模块（Tab）构成，本篇逐一展开。</p>
+    <div class="byline">
+      <b>商品消费业务部 · 增长组（拓客销售 &amp; 行业经营团队）</b><br/>
+      CDG 企业发展事业群 / 广告营销服务线<br/>
+      申报方向：流程提效 · 成本优化　|　团队类型：非产研（部门级）<br/>
+      工具底座：Codebuddy · Workbuddy 等 AI 能力
+    </div>
+    <a class="cta" href="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260716b&t=labelfix3" target="_blank" rel="noopener">
+      <span class="dot"></span> 直达销售作战中心看板
+    </a>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav"><ul>
+  <li><a href="#p1">01 为什么</a></li>
+  <li><a href="#p2">02 两类卡点</a></li>
+  <li><a href="#p3">03 我们做了什么</a></li>
+  <li><a href="#p4">04 四个能力 Tab</a></li>
+  <li><a href="#p5">05 成果 · 受益</a></li>
+  <li><a href="#p6">06 共性方法</a></li>
+  <li><a href="#p7">07 潜力 · 资产</a></li>
+  <li><a href="#p8">08 下一步 · 反思</a></li>
+</ul></nav>
+
+<!-- PART 01 -->
+<section class="part" id="p1">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 01</span><h2 class="part-title">为什么中长尾客户经营特别需要从"数据洞察"走向"业务动作"</h2></div>
+    <p class="part-lead">腾讯广告商品消费团队正从传统广告平台向电商化广告平台转型。这一转型不是"多卖一类广告"，而是销售角色与工作量级的结构性变化——而原来的工作方法，还停留在"人肉盯盘"。</p>
+
+    <div class="cols">
+      <div class="card">
+        <h4>CONTENT · 客户侧的结构性变化</h4>
+        <ul>
+          <li><b>客户基数扩张</b>：商家数量显著增加，中长尾占比提升，销售人均服务客户从 200 → 400+ 家，新商/服务商问题尤其高频</li>
+          <li><b>商家类型多</b>：以服饰为例 8 个类目打法各不相同（珠宝微付费 vs 内衣重付费），生意诉求与投产预期差异大</li>
+          <li><b>阶段差异大</b>：3 个成长阶段诉求殊异——尾部靠广告基建、腰部靠产品策略、头部需要更多经营指导</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>SALES · 销售工作流的结构性变化</h4>
+        <ul>
+          <li><b>时间零碎分散</b>：外勤多，每天仅约 20% 时间用于解决具体客户问题，且碎片化难伏案分析</li>
+          <li><b>单客性价比低</b>：拓新组以腰尾部为主，单客 ARPU 低，点对点深入服务做功性价比低</li>
+          <li><b>信息同步高频</b>：每周至少 5–8 个扶持提报、政策活动、行业专项要关注，难快速筛别价值</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout red">
+      <div class="label">核心判断 · 真正的痛点不是"缺一个看板"</div>
+      <p>销售在中长尾客户经营里长期依赖<b>人工判断</b>：哪些客户优先打、哪些客户需要服务、客户到底缺什么、销售有没有处理、服务有没有效果——这些关键问题都靠人工经验、Excel、群同步和事后复盘。规模化后必然出现三个结果：<b>漏</b>（盯不过来）、<b>慢</b>（滞后才知道）、<b>不一致</b>（口径因人而异）。</p>
+    </div>
+
+    <div class="callout deep">
+      <div class="label">深度视角 · 判断债务（Judgment Debt）</div>
+      <p>客户数翻倍 → 需要做的"判断"数量不是线性增长，而是随客户数 × 阶段 × 类目组合<b>指数级上升</b>。我们把它称为销售的"<b>判断债务</b>"：每个客户每天要决定"要不要管、管什么、怎么管"，100 个客户就是 100 笔债务。当债务增速超过人力增速，人工判断必然<b>违约</b>——漏掉、慢半拍、标准漂移。所以问题本质不是"销售不够努力"，而是<b>判断债务没有可扩展的还款机制</b>。AI 的作用，正是把这笔债务从"人脑实时清算"改成"系统自动清算"。</p>
+    </div>
+
+    <h3 class="sec">三个核心转变 <span class="tag">FROM → TO</span></h3>
+    <div class="flow">
+      <div class="step"><div class="n">转变 ①</div><div class="t">服务模式</div><div class="d">被动服务 → 主动服务：从"客户找过来才动"到"系统提示该动就动"</div></div>
+      <div class="step"><div class="n">转变 ②</div><div class="t">响应方式</div><div class="d">低效伏案 → 工具化随手处理：出差路上也能处理客户问题</div></div>
+      <div class="step"><div class="n">转变 ③</div><div class="t">资源应用</div><div class="d">资源分散 → 整合集中高效：行业打法/案例/政策一站式到手</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 02 -->
+<section class="part" id="p2">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 02</span><h2 class="part-title">两类卡点：效率瓶颈与信息瓶颈</h2></div>
+    <p class="part-lead">把"漏、慢、不一致"拆开看，其实是两个独立的瓶颈。它们根因不同，解法也不同——这是后面设计系统架构时的底层分叉。</p>
+
+    <div class="ab">
+      <div class="box A">
+        <div class="h">瓶颈 A · 效率瓶颈（量大盯不过来）</div>
+        <div class="meta">ROOT CAUSE：人的注意力是稀缺资源</div>
+        <p>人均 400+ 客户，单客每天都需要"判断 + 动作"，但销售每天只有约 20% 时间能用。无论多努力，注意力都<b>物理上覆盖不了</b>。</p>
+        <p><b>真正的损失点不在头部</b>：头部客户销售自然会盯，掉量也能及时发现；真正被工具"放弃"的是<b>腰尾和中长尾</b>——它们量大、单客价值低、又最容易被漏掉。而中长尾恰恰是电商化转型后增量最大的部分。</p>
+      </div>
+      <div class="box B">
+        <div class="h">瓶颈 B · 信息瓶颈（有数据变不成信号）</div>
+        <div class="meta">ROOT CAUSE：信号的频率 ≪ 决策的频率</div>
+        <p>大盘每天产生海量数据，但销售需要的是"今天该处理谁"这种<b>可行动信号</b>。原始数据 ≠ 信号，中间差着"判断"。</p>
+        <p>当信号产生频率（每天）远低于决策频率（随时）时，人工只能<b>抽样看</b>，必然滞后、片面。数据躺着 ≠ 客户被服务。</p>
+      </div>
+    </div>
+
+    <div class="callout deep">
+      <div class="label">一个可量化的视角 · 数据的价值公式</div>
+      <p>我们认为数据对业务的价值不是"看了多少"，而是能不能转成动作：<b>价值 = f(转动作的速度)</b>。同样一份掉量信号，掉量当天提醒（24h 内介入）和掉了 60% 才知道，对客户留存的价值差一个数量级。系统的所有设计，最终都服务于"缩短从信号到动作的距离"。</p>
+    </div>
+  </div>
+</section>
+
+<!-- PART 03 -->
+<section class="part" id="p3">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 03</span><h2 class="part-title">我们做了什么：把"人工判断"翻译成"AI 判断路径"</h2></div>
+    <p class="part-lead">解法不是再做一个更花哨的看板，而是把销售脑子里那些"凭经验做的判断"，一条条翻译成系统能自动跑的规则。整体是一个"底座 + 三条业务流 + 可复用能力图谱"的结构。</p>
+
+    <h3 class="sec">系统架构 · 5 层 <span class="tag">ARCHITECTURE</span></h3>
+    <div class="arch">
+      <div class="layer"><span class="ln">L5</span><div class="lh">云端数据留痕</div><div class="ld">任务、反馈、每日快照统一留痕，支持持续迭代与管理复盘</div></div>
+      <div class="layer"><span class="ln">L4</span><div class="lh">AI 生成页面 + 小红点任务交互</div><div class="ld">把 AI 判断转成销售可直接处理的任务入口，而不是停留在分析报告</div></div>
+      <div class="layer"><span class="ln">L3</span><div class="lh">业务规则 + 子 Skills 能力图谱</div><div class="ld">将客户档案 / 广告诊断 / 投放复盘 / 成长周期 / Benchmark / 基建动作 / 反馈回流 封装为可复用能力</div></div>
+      <div class="layer"><span class="ln">L2</span><div class="lh">多源数据汇聚清洗</div><div class="ld">广告、名单、行业、人户等多源数据按客户主体归一，统一销售名 / 类目 / 日期 / 任务口径</div></div>
+      <div class="layer"><span class="ln">L1</span><div class="lh">AI 自动取数 + 人工投喂补充</div><div class="ld">自动拉取广告效果数据，同时补充靶向客户名单、行业案例材料、人户映射关系</div></div>
+    </div>
+
+    <h3 class="sec">三条业务流 <span class="tag">拓客端 / 服务端 / 管理端</span></h3>
+    <div class="cols">
+      <div class="card"><h4>拓客端 · 找谁打、为什么现在打</h4>
+        <ul><li>多源名单清洗、客户分层、类目机会识别</li><li>客户优先级判断与攻打过程追踪</li><li>销售可见：哪些值得打、处于什么阶段、是否已建联/开户/消耗</li></ul></div>
+      <div class="card"><h4>服务端 · 怎么服务、服务有没有效</h4>
+        <ul><li>识别异动与机会，生成小红点任务</li><li>生命周期判断、Benchmark 对标、诊断复盘、政策匹配</li><li>销售按系统提示处理风险/潜力/重点新客</li></ul></div>
+      <div class="card"><h4>管理端 · 过程可追溯、可纠偏</h4>
+        <ul><li>沉淀任务处理、客户进展、经营数据</li><li>每日查看销售覆盖进展、客户转化进度、任务结果</li><li>从"事后问进展"→"日粒度看卡点"</li></ul></div>
+    </div>
+
+    <h3 class="sec">AI 驱动了什么 · 六类关键动作 <span class="tag">CORE ACTIONS</span></h3>
+    <ul class="tight">
+      <li><b>① 底池清洗与分层</b>：约 <b>6000+ P 序列</b>潜在客户清洗、查重、主体归一、成熟度判断，自动分为 <span class="pill r">A 已投放</span><span class="pill r">B 已开店</span><span class="pill r">C 待孵化</span></li>
+      <li><b>② 拓客机会识别</b>：综合大盘新起品、人群变化、货品趋势、竞媒/第三方名单，反推高潜类目，与 P 序列底池匹配</li>
+      <li><b>③ 风险与机会预警</b>：每日巡检投放表现——掉量/效果波动 <b>20%</b> 即触发；消耗从百元跃迁到 <b>3000 元</b> 也被识别</li>
+      <li><b>④ 客户服务诊断</b>：自动判定生命周期阶段，对照 Benchmark 与标杆，输出短板/对标/建议（30min → 5min）</li>
+      <li><b>⑤ 任务生成与承接</b>：把风险/机会/政策窗口/建议转化为小红点任务，下发到对应销售</li>
+      <li><b>⑥ 过程留痕与纠偏</b>：记录分发/处理/反馈/建联/开户/沉淀/消耗全过程</li>
+    </ul>
+
+    <h3 class="sec">AI 判断路径 · 五条 <span class="tag">NOT 泛化问答</span></h3>
+    <p class="tab-intro">系统中的 AI 判断不是"聊天问答"，而是围绕销售经营流程设计的 5 条确定性路径，直接进入每日客户经营优先级：</p>
+    <ul class="path">
+      <li><span class="k">是否值得攻打</span><span class="v"><b>基于</b> P 序列、开店、投放、类目机会、竞媒趋势、客户状态综合判定</span></li>
+      <li><span class="k">处于什么阶段</span><span class="v"><b>尾部 / 腰部 / 头部</b>，不同阶段匹配不同服务策略</span></li>
+      <li><span class="k">是否有风险</span><span class="v">掉量、效果波动、基建不足、创意疲劳、素材供给不足</span></li>
+      <li><span class="k">是否有机会</span><span class="v">突然起量、昨日新客潜力、可对标客户、政策窗口</span></li>
+      <li><span class="k">该做什么</span><span class="v">补基建、看对标案例、匹配政策、拉起诊断、推动建联/开户/消耗</span></li>
+    </ul>
+
+    <div class="callout">
+      <div class="label">方法 · 业务规则翻译器（4 步闭环）</div>
+      <p>把一条人工经验变成系统能力的标准动作：<b>① 对象</b>（对哪些客户）→ <b>② 触发</b>（什么条件下算信号）→ <b>③ 输出</b>（给销售什么动作/物料）→ <b>④ 边界</b>（什么情况不算、谁来处理）。</p>
+      <p>实例：对象=头部客户 → 触发=掉量≥20% → 输出=小红点预警 + 24h 内销售介入 → 边界=自然波动≤20% 不触发、由对应销售认领。</p>
+    </div>
+  </div>
+</section>
+
+<!-- PART 04 · 四个能力 Tab -->
+<section class="part" id="p4">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 04</span><h2 class="part-title">四个能力模块（Tab）：逐一展开</h2></div>
+    <p class="part-lead">整套作战系统由 4 个能力模块构成。下面用可切换的 Tab 逐一展开——每个模块都给出"AI 介入前 → 后"的对比、关键机制与落地数据。</p>
+
+    <div class="tabs">
+      <div class="tab-bar">
+        <button class="tab-btn" onclick="showTab(0)"><span class="tn">子能力 ①</span>每日清除小红点</button>
+        <button class="tab-btn" onclick="showTab(1)"><span class="tn">子能力 ②</span>客户生命周期管理</button>
+        <button class="tab-btn active" onclick="showTab(2)"><span class="tn">子能力 ③</span>销售作战中心</button>
+        <button class="tab-btn" onclick="showTab(3)"><span class="tn">子能力 ④</span>销售拓客弹药</button>
+      </div>
+
+      <!-- TAB ① -->
+      <div class="tab-panel" id="tab0">
+        <p class="tab-intro">把"该盯的客户"转成一份小红点清单，让销售从"靠记忆盯客户"变成"按系统提示主动处理"。</p>
+        <p class="tab-pos">▍价值主张：从"靠记忆盯客户" → "按系统提示主动处理"</p>
+        <table class="ba">
+          <thead><tr><th>维度</th><th>使用 AI 前</th><th>使用 AI 后</th></tr></thead>
+          <tbody>
+            <tr><th>响应客户</th><td class="before">被动服务 + 人肉盯盘，靠销售自己盯</td><td class="after">AI 自动巡检，把该盯的客户转成<span class="hl">小红点清单</span>（掉量风险 / 潜在起量 / 重点新客）</td></tr>
+            <tr><th>覆盖客户范围</th><td class="before">精力有限，最多盯 10 家头部 + 3–5 家腰尾</td><td class="after">AI 按优先级分层，销售人均可触达 <span class="hl">100+ 客户</span>，服务半径从"少数重点"扩到"批量经营"</td></tr>
+            <tr><th>交付服务内容</th><td class="before">人工拉数 / 问运营 / 凭经验，口径不一；单客户诊断 10–30 分钟，一天最多 2–3 个</td><td class="after">自动聚合多维指标 + 联动 adataclaw 复盘；<span class="hl">一天诊断 10+ 客户</span></td></tr>
+            <tr><th>监控销售服务</th><td class="before">靠口头描述、群里同步</td><td class="after">处理动作全程留痕——销售做功从"模糊" → <span class="hl">可追踪、可复盘</span></td></tr>
+          </tbody>
+        </table>
+        <h4 class="sub">关键机制 · 三类触发 + 全程留痕</h4>
+        <div class="mech">
+          <div class="m"><div class="mi">1</div><div class="mt">掉量风险触发<b>头部客户掉量 / 效果波动 ≥20% 即生成小红点</b>，异动 24 小时内销售介入，从"掉了才知道"→"刚有苗头就提醒"</div></div>
+          <div class="m"><div class="mi">2</div><div class="mt">潜力起量触发<b>消耗从百元 → 3000 元跃迁</b>被识别，帮销售快速推动客户跃迁，潜力客户跃迁成功数 28 → 52</div></div>
+          <div class="m"><div class="mi">3</div><div class="mt">重点新客触发<b>每日自动扫描昨日进场新客</b>，T+1 跑出潜力起量即触发小红点 + 客户卡片，以部分切片看新客 ARPU 提升 43%</div></div>
+        </div>
+        <div class="callout"><div class="label">落地数据</div>
+          <p>销售日人均使用时长 <b>26min → 45min</b>（碎片化、移动端使用）；红点任务处理率每日 <b>95%+</b>；已沉到拓客销售日常工作，使用习惯逐步养成。</p></div>
+      </div>
+
+      <!-- TAB ② -->
+      <div class="tab-panel" id="tab1">
+        <p class="tab-intro">让每个客户都有清晰的成长路径，从"仰望一个遥不可及的大哥"变成"找到够一够就能跃迁的目标"。</p>
+        <p class="tab-pos">▍价值主张：从"客户自生自灭" → "成长有明确路径"</p>
+        <table class="ba">
+          <thead><tr><th>维度</th><th>使用 AI 前</th><th>使用 AI 后</th></tr></thead>
+          <tbody>
+            <tr><th>打造拓客模型</th><td class="before">靠手填 Excel，重复认领、漏填约 20%</td><td class="after">AI 搭建录入系统，自动查重和整合，<span class="hl">重复认领归零、漏填 10% → 0%</span></td></tr>
+            <tr><th>指引客户成长路径</th><td class="before">靠客户自身能力，无人牵引，季度最多跃迁 28 个客户</td><td class="after">AI 判定客户所属阶段，vs 行业 Benchmark、标杆指出短板，季度跃迁客户数 <span class="hl">28 → 52</span></td></tr>
+            <tr><th>匹配客户政策服务</th><td class="before">靠人盯人抢，腰尾客户拿不到匹配政策</td><td class="after">资源按阶段自动下发（教学包 / 对标包 / KA 方案），<span class="hl">腰尾客户也能拿到</span></td></tr>
+          </tbody>
+        </table>
+        <h4 class="sub">关键机制 · 阶段判定 → 短板诊断 → 资源自动下发</h4>
+        <div class="mech">
+          <div class="m"><div class="mi">1</div><div class="mt">阶段判定<b>自动识别客户处于尾部/腰部/头部</b>，不同阶段匹配不同服务策略，不再靠人工感觉</div></div>
+          <div class="m"><div class="mi">2</div><div class="mt">短板诊断<b>对照行业 Benchmark 与标杆客户</b>，点出"你差在哪、该补什么"，销售从数据分析改执行</div></div>
+          <div class="m"><div class="mi">3</div><div class="mt">资源下发<b>教学包 / 对标包 / KA 方案按阶段自动匹配</b>，腰尾不再被"抢不到政策"</div></div>
+        </div>
+        <div class="callout"><div class="label">落地数据</div>
+          <p>以服饰为例，带动 <b>52 家腰尾客户向头部跃迁</b>；每个销售有自己的拓客模型，精力始终投在最高效率处；应用形态=客户所处生命周期阶段 + 客户"身份卡"（人户：销售/运营/服务商）+ 对标 Benchmark 差距。</p></div>
+      </div>
+
+      <!-- TAB ③ · 含看板 -->
+      <div class="tab-panel active" id="tab2">
+        <p class="tab-intro">把"看结果"变成"看缺口、给动作"，把"事后复盘"变成"日粒度纠偏"。这是与一线销售每天粘得最紧的作战界面。</p>
+        <p class="tab-pos">▍价值主张：从"看结果" → "看缺口、给动作"</p>
+        <table class="ba">
+          <thead><tr><th>维度</th><th>使用 AI 前</th><th>使用 AI 后</th></tr></thead>
+          <tbody>
+            <tr><th>拆解目标</th><td class="before">人工算，需 0.5–2h/次</td><td class="after">AI 自动拆解团队 + 个人 KPI 差距，直接给补量节奏，<span class="hl">单次 5–10min 可出</span></td></tr>
+            <tr><th>挖掘名单</th><td class="before">名单分散、优先级不清</td><td class="after">AI 整合多端名单，综合投放现状 + 行业机会，自动推荐最该优先引入的客户，<span class="hl">靶向品牌建联率 19% → 28%</span></td></tr>
+            <tr><th>追踪进度</th><td class="before">人工算，复盘成本高、追不动，问题暴露滞后</td><td class="after">AI 跟踪名单进展，推荐最该优先引入的客户和产业带，<span class="hl">覆盖进展一目了然</span></td></tr>
+          </tbody>
+        </table>
+
+        <h4 class="sub">实战界面 · 销售作战中心看板（实时嵌入）</h4>
+        <p class="fig">下方为真实作战中心看板，数据与生产环境同步更新。</p>
+        <div class="kanban-frame">
+          <div class="kanban-bar">
+            <span>SALES CENTER · 销售作战中心</span>
+            <a href="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260716b&t=labelfix3" target="_blank" rel="noopener">在新标签打开 ↗</a>
+          </div>
+          <iframe src="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260716b&t=labelfix3" loading="lazy" title="销售作战中心看板" allow="fullscreen"></iframe>
+        </div>
+        <p class="frame-fallback">若内嵌看板因网络/浏览器策略未加载，请点击上方「在新标签打开」直达：<a href="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260716b&t=labelfix3" target="_blank" rel="noopener">sales-center 看板</a></p>
+
+        <h4 class="sub">看板的三层洞察</h4>
+        <div class="mech">
+          <div class="m"><div class="mi">L1</div><div class="mt">团队总览<b>KPI 完成进展 + 个人需追赶目标</b>，缺口与补量节奏直接可见</div></div>
+          <div class="m"><div class="mi">L2</div><div class="mt">名单作战<b>产业带及靶向名单拓客进展</b>，最该优先引入的客户自动排序</div></div>
+          <div class="m"><div class="mi">L3</div><div class="mt">机会趋势<b>行业机会与趋势信号</b>，把"看结果"升级为"看下一步动作"</div></div>
+        </div>
+        <div class="callout"><div class="label">落地数据</div>
+          <p>靶向品牌建联率 <b>19% → 28%</b>；KPI 差距拆解从 <b>0.5–2h → 5–10min/次</b>；管理可看销售清楚进度，红点任务处理率每日 95%+。</p></div>
+      </div>
+
+      <!-- TAB ④ · 销售拓客弹药（此前遗漏，本次补全） -->
+      <div class="tab-panel" id="tab3">
+        <p class="tab-intro">把销售的个人经验沉淀成团队可查、可调用的"弹药库"，让"知道赛道要做"变成"按打法执行"。</p>
+        <p class="tab-pos">▍价值主张：从"个人经验资产" → "团队可调用弹药"</p>
+        <table class="ba">
+          <thead><tr><th>维度</th><th>使用 AI 前</th><th>使用 AI 后</th></tr></thead>
+          <tbody>
+            <tr><th>获取弹药</th><td class="before">信息零散，靠个人记得，有信息差</td><td class="after">AI 沉淀成全员可查、可复用的销售弹药库（<span class="hl">60+ 案例、10+ 教程</span>），销售人均月调用 10+ 次</td></tr>
+            <tr><th>洞察大盘</th><td class="before">靠人工 + 会议同步，信息滞后</td><td class="after">持续追踪大盘消耗、赛道表现和趋势信号，<span class="hl">信息获取从滞后 5 天 → 1 天</span>，复杂数据 → 经营洞察</td></tr>
+            <tr><th>赛道打法</th><td class="before">销售只"知道赛道要做"，不清楚怎么打</td><td class="after">沉淀各赛道客户特征、起量路径、有效案例，<span class="hl">覆盖 8 个核心赛道 × 3 件核心事项</span></td></tr>
+            <tr><th>跟上行业专项</th><td class="before">抓不到重点信息</td><td class="after">汇总行业专项，<span class="hl">覆盖 12 个行业专项 / 4 个提收策略</span>，向客户匹配最刚需能力</td></tr>
+            <tr><th>匹配政策</th><td class="before">政策时效强，容易漏、容易晚，客户错过红利</td><td class="after">按时效窗口 × 适用客户，涵盖 <span class="hl">3 类关键政策</span>（小店新商 / 全域通 / K800 等）提示该找谁沟通</td></tr>
+          </tbody>
+        </table>
+        <h4 class="sub">关键机制 · 弹药库 + 洞察 + 打法 + 专项 + 政策窗口</h4>
+        <div class="mech">
+          <div class="m"><div class="mi">1</div><div class="mt">弹药沉淀<b>案例 / 教程写入全员可查弹药库</b>，经验从"个人脑内"变成"团队可调用的资产"</div></div>
+          <div class="m"><div class="mi">2</div><div class="mt">大盘翻译<b>把消耗、赛道、趋势翻译成销售能懂的经营洞察</b>，滞后 5 天 → 1 天</div></div>
+          <div class="m"><div class="mi">3</div><div class="mt">打法入库<b>8 赛道 × 3 核心事项</b>的起量路径与有效案例，推进从"凭经验理解"→"按打法执行"</div></div>
+          <div class="m"><div class="mi">4</div><div class="mt">政策卡点<b>按时效窗口 × 适用客户提示该找谁</b>，帮客户在窗口期吃到政策红利，从"一把抓"→"匹配客户最需要"</div></div>
+        </div>
+        <div class="callout"><div class="label">落地数据</div>
+          <p>弹药库沉淀 <b>60+ 案例、10+ 教程</b>，销售人均月调用 <b>10+ 次</b>；行业经营信息获取从滞后约 <b>5 天 → 1 天</b>；应用形态=专项进展、近期政策活动、行业概况及标杆案例同步。应用演示：销售拓客弹药库界面（实时同步行业概况与标杆案例）。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 05 · 成果 + 受益 -->
+<section class="part" id="p5">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 05</span><h2 class="part-title">成果数据总览与受益范围</h2></div>
+    <p class="part-lead">项目已在服饰、消电日百等场景落地并进入销售日常作战流程。下面按"拓客效率 / 服务能力 / 产品应用"三组汇总可量化成果，并说明四类角色如何受益。</p>
+
+    <h3 class="sec">一、成果数据 <span class="tag">QUANTIFIED</span></h3>
+    <div class="outcome">
+      <div class="o"><div class="v">6000+</div><div class="k">P 序列底池清洗</div><div class="s">按 A/B/C 自动分层</div></div>
+      <div class="o"><div class="v">19%→28%</div><div class="k">靶向品牌建联率</div><div class="s">名单优先级重构</div></div>
+      <div class="o"><div class="v">30→5min</div><div class="k">单客户诊断时长</div><div class="s">维度 1 → 6+</div></div>
+      <div class="o"><div class="v">28→52</div><div class="k">潜力客户跃迁</div><div class="s">腰尾向头部</div></div>
+      <div class="o"><div class="v">+43%</div><div class="k">新客 ARPU（切片）</div><div class="s">潜力新客及时接住</div></div>
+      <div class="o"><div class="v">0.5–2h→5–10min</div><div class="k">KPI 差距拆解</div><div class="s">单次耗时</div></div>
+      <div class="o"><div class="v">5天→1天</div><div class="k">行业信息滞后</div><div class="s">大盘洞察提速</div></div>
+      <div class="o"><div class="v">26→45min</div><div class="k">日人均使用时长</div><div class="s">处理率 95%+</div></div>
+    </div>
+    <ul class="tight">
+      <li><b>拓客效率</b>：6000+ P 序列底池清洗分层；录入升级系统，重复认领归零、漏填 10% → 0%；靶向品牌建联率 19% → 28%。</li>
+      <li><b>服务能力</b>：人均服务 200 → 400+，服务半径扩至 100+ 客户；单客户诊断 30min → 5min、维度 1 → 6+；跃迁 28 → 52；部分新客 ARPU +43%；KPI 拆解 0.5–2h → 5–10min；行业信息滞后 5 天 → 1 天。</li>
+      <li><b>产品应用</b>：日人均使用 26 → 45min；小红点任务处理率 95%+；弹药库 60+ 案例 / 10+ 教程，人均月调用 10+ 次。</li>
+    </ul>
+
+    <h3 class="sec">二、受益范围 · 四类角色 <span class="tag">WHO BENEFITS</span></h3>
+    <div class="cols">
+      <div class="card"><h4>一线销售</h4><ul><li>每日优先客户清单</li><li>小红点任务 + 客户卡片</li><li>诊断与处理建议</li></ul></div>
+      <div class="card"><h4>行业运营</h4><ul><li>沉淀行业打法</li><li>案例 / 政策包 / 专项资源</li></ul></div>
+      <div class="card"><h4>管理者</h4><ul><li>建联 / 开户 / 消耗全过程</li><li>任务处理 / 客户转化可见</li></ul></div>
+      <div class="card"><h4>客户侧</h4><ul><li>更及时的服务</li><li>更匹配成长阶段的内容</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 06 · 共性方法 + 创新性 -->
+<section class="part" id="p6">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 06</span><h2 class="part-title">共性方法与创新性</h2></div>
+    <p class="part-lead">4 个模块看起来各不相同，但底层是同一套方法论：把"业务规则"翻译成"AI 可执行的判断"。</p>
+
+    <h3 class="sec">业务规则翻译器 · 实例化到本项目 <span class="tag">4-STEP</span></h3>
+    <div class="flow">
+      <div class="step"><div class="n">① 对象</div><div class="t">对哪些客户</div><div class="d">头部 / 腰尾 / 新客 / 待孵化，按主体归一锁定</div></div>
+      <div class="step"><div class="n">② 触发</div><div class="t">什么算信号</div><div class="d">掉量≥20% / 跃迁百元→3000 / 昨日新客 T+1</div></div>
+      <div class="step"><div class="n">③ 输出</div><div class="t">给什么动作</div><div class="d">小红点 + 客户卡片 + 诊断建议 + 素材</div></div>
+      <div class="step"><div class="n">④ 边界</div><div class="t">什么不算</div><div class="d">自然波动不触发；谁认领、何时闭环</div></div>
+    </div>
+
+    <h3 class="sec">创新性 · 四个"从…到…" <span class="tag">INNOVATION</span></h3>
+    <ul class="path">
+      <li><span class="k">看板 → 任务</span><span class="v">原来销售看的是<b>分散数据</b>，现在 AI 把数据翻译成"<b>今天该处理谁</b>"</span></li>
+      <li><span class="k">经验 → 依据</span><span class="v">原来凭经验判断客户问题，现在 AI 给出<b>生命周期、Benchmark 差距、复盘建议</b></span></li>
+      <li><span class="k">周会 → 日粒度</span><span class="v">原来管理者靠周会追进度，现在系统<b>按日追踪</b>从分配、建联、沉淀、开户到消耗全过程</span></li>
+      <li><span class="k">个人 → 全员</span><span class="v">原来政策、案例、打法是个人经验，现在 AI 沉淀为<b>全员可查、可调用</b>的销售弹药</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- PART 07 · 潜力 + 资产 -->
+<section class="part" id="p7">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 07</span><h2 class="part-title">应用潜力与沉淀资产</h2></div>
+    <p class="part-lead">这套系统不只是一次提效，更沉淀了一批可复制、可迁移的资产。</p>
+
+    <h3 class="sec">可复用性 <span class="tag">REUSABLE</span></h3>
+    <div class="callout">
+      <p>只要团队具备<b>客户底池、广告投放数据、人户关系、行业策略、销售承接机制</b>，即可复用"<b>底池清洗 → 客户分层 → 机会识别 → 任务生成 → 销售承接 → 过程复盘</b>"框架。当前已在服饰、消电日百形成案例，可逐步推广到商品消费其他行业，以及其他面临中长尾客户经营压力的广告销售团队。</p>
+    </div>
+
+    <h3 class="sec">已沉淀资产 · 九项 <span class="tag">ASSETS</span></h3>
+    <ul class="tight">
+      <li>① P 序列客户底池清洗和 A/B/C 分层模型</li>
+      <li>② 小红点任务机制和客户服务 SOP</li>
+      <li>③ 客户生命周期判断方法</li>
+      <li>④ 行业 Benchmark 和标杆客户对标方法</li>
+      <li>⑤ 销售客户卡片和诊断模板</li>
+      <li>⑥ 销售作战中心和 KPI 差距拆解方法</li>
+      <li>⑦ 销售弹药库：60+ 案例、10+ 教程</li>
+      <li>⑧ 8 个核心赛道客户特征和起量路径</li>
+      <li>⑨ 12 个行业专项 / 4 个提收策略 / 3 类关键政策窗口的匹配方法</li>
+    </ul>
+
+    <h3 class="sec">用户体验 <span class="tag">ADOPTION</span></h3>
+    <div class="callout deep">
+      <p>系统以销售真实工作流为入口，把复杂数据、策略判断和政策信息转成小红点任务、客户卡片和处理建议。销售在外勤场景中也能快速知道：<b>今天该看谁、为什么要看、客户缺什么、应该给什么材料、处理后是否留痕</b>。这降低了 AI 使用门槛，让 AI 真正嵌入销售日常，而不是停留在后台分析。</p>
+    </div>
+  </div>
+</section>
+
+<!-- PART 08 · 下一步 + 反思 -->
+<section class="part" id="p8">
+  <div class="wrap">
+    <div class="part-head"><span class="part-no">PART 08</span><h2 class="part-title">下一步演进与踩坑反思</h2></div>
+
+    <h3 class="sec">下一步 · 往智能化系统演进 <span class="tag">NEXT</span></h3>
+    <div class="callout">
+      <p>从"规则驱动的任务系统"走向"智能化作战系统"：实现 <b>AI 任务生成、智能排序、分配状态</b>，达到<b>多任务、多角色的协同处理</b>。让系统不仅告诉销售"该处理谁"，还能自动编排优先级、跨角色流转，进一步压缩"信号 → 动作"的距离。</p>
+    </div>
+
+    <h3 class="sec">踩坑反思 · 四条 <span class="tag">LESSONS</span></h3>
+    <div class="lesson"><div class="lt">LESSON 01 · 先看板，后任务</div>
+      <p>早期我们以为"把数据做好看"就解决问题，但销售并不缺看板，缺的是"下一步动作"。看板是"看见"，任务是"动作"——顺序不能反，先有判断链路，再有展示。</p></div>
+    <div class="lesson"><div class="lt">LESSON 02 · 规则业务写，AI 跑</div>
+      <p>阈值和口径必须由业务定义（如掉量 20%、跃迁百元→3000），AI 只负责执行推理与生成，不替业务拍板。业务不写规则，AI 就会"自由发挥"出不可控的结果。</p></div>
+    <div class="lesson"><div class="lt">LESSON 03 · 口径归一是地基</div>
+      <p>主体归一、销售名、类目、日期、任务口径如果不统一，所有 AI 判断都会失真。多源数据汇聚清洗这一层看似枯燥，却是整个系统的地基，必须先打牢。</p></div>
+    <div class="lesson"><div class="lt">LESSON 04 · 中长尾的坑在"被放弃"</div>
+      <p>工具天然偏向头部（价值高、易见效），腰尾和中长尾会被无声放弃。系统的价值恰恰在于用自动化把服务半径从"少数重点"扩到"批量经营"，否则转型增量最大的部分反而流失。</p></div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <div class="wrap">
+    <p class="quote">我们做的不是"更好的看板"，<br/>而是把<span class="em">人工判断</span>翻译成<span class="em">AI 判断路径</span>——<br/>让销售从"靠记忆盯客户"，变成"按系统提示主动出击"。</p>
+    <p class="sig">商品消费业务部 · 增长组　|　AI 驱动的客户拓展与服务作战系统　|　Codebuddy · Workbuddy</p>
+  </div>
+</section>
+
+<script>
+  function showTab(n){
+    var btns=document.querySelectorAll('.tab-btn');
+    var pans=document.querySelectorAll('.tab-panel');
+    for(var i=0;i<btns.length;i++){
+      btns[i].classList.toggle('active', i===n);
+      pans[i].classList.toggle('active', i===n);
+    }
+    // 切到含看板的 Tab 时，让 iframe 重新获得焦点尺寸（部分浏览器隐藏后需重排）
+    if(n===2){ var f=document.querySelector('#tab2 iframe'); if(f){ f.style.height=f.style.height; } }
+    document.getElementById('p4').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+</script>
+</body>
+</html>
