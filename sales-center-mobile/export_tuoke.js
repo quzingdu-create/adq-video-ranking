@@ -264,7 +264,7 @@
   function exportXlsxNewView(rows, sheetName, filenamePrefix) {
     if (!rows.length) return Promise.reject(new Error('没有命中数据'));
     return ensureXlsxReady().then(function () {
-      var quarterOrder = { '2025Q3':1, '2025Q4':2, '2026Q1':3, '2026Q2':4 };
+      var quarterOrder = { '2025Q3':1, '2025Q4':2, '2026Q1':3, '2026Q2':4, '2026Q3':5 };
       var sorted = rows.slice().sort(function (a, b) {
         var qa = quarterOrder[normalizeQuarter(a['首投季度'])] || 9;
         var qb = quarterOrder[normalizeQuarter(b['首投季度'])] || 9;
@@ -290,7 +290,7 @@
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
       // 汇总分季度
-      var summary = { '2025Q3':[0,0,0], '2025Q4':[0,0,0], '2026Q1':[0,0,0], '2026Q2':[0,0,0] };
+      var summary = { '2025Q3':[0,0,0], '2025Q4':[0,0,0], '2026Q1':[0,0,0], '2026Q2':[0,0,0], '2026Q3':[0,0,0] };
       sorted.forEach(function (r) {
         var q = normalizeQuarter(r['首投季度']); if (!summary[q]) return;
         if (r['是否新客'] === '是') summary[q][0]++;
@@ -309,7 +309,8 @@
         ['2025Q3', summary['2025Q3'].join(' / ')],
         ['2025Q4', summary['2025Q4'].join(' / ')],
         ['2026Q1', summary['2026Q1'].join(' / ')],
-        ['2026Q2', summary['2026Q2'].join(' / ')]
+        ['2026Q2', summary['2026Q2'].join(' / ')],
+        ['2026Q3', summary['2026Q3'].join(' / ')]
       ];
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
       var ymd = new Date().toISOString().slice(0, 10);
