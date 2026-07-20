@@ -46,7 +46,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260720b')
+    return fetch('data/manual_attr_override.json?v=20260720d')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
