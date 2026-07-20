@@ -181,7 +181,7 @@
     return r.link || '';
   }
 
-  var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1 };
+  var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1,'2026Q3':1 };
   function normalizeQuarter(v) { return String(v || '').replace('/', ''); }
   function isNewByFq(r) { return !!NEW_QSET[normalizeQuarter(r.firstQuarter)]; }
   // 2026-07-13 修复：废除硬编码年份映射（原逻辑 7-12月→2025 / 1-6月→2026）。
