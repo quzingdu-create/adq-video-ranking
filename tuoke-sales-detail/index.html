@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>销售维度拓客详情看板</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:#F4F5F7; color:#1F2329; padding:28px 20px 48px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1240px; margin:0 auto; }
+  h1 { font-size:22px; font-weight:700; text-align:center; letter-spacing:.5px; }
+  .subtitle { font-size:12.5px; color:#6B7280; text-align:center; margin-top:8px; }
+  .sample { font-size:12px; color:#8A6D1F; background:#FFF7E0; border:1px solid #F5E3A8;
+    border-radius:8px; padding:8px 14px; text-align:center; margin:14px auto 0; max-width:900px; }
+  .sample b { color:#B4890F; }
+
+  /* KPI */
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:22px 0 8px; }
+  .kpi { background:#fff; border-radius:12px; padding:16px 18px; box-shadow:0 1px 3px rgba(0,0,0,.06);
+    border-top:3px solid var(--c); }
+  .kpi .lbl { font-size:12px; color:#6B7280; }
+  .kpi .val { font-size:26px; font-weight:700; margin-top:4px; color:var(--c); }
+  .kpi .sub { font-size:11.5px; color:#9AA0A6; margin-top:2px; }
+
+  /* tabs */
+  .tabs { display:flex; flex-wrap:wrap; gap:8px; margin:24px 0 20px; justify-content:center; }
+  .tab { padding:8px 16px; border-radius:20px; font-size:13px; cursor:pointer;
+    background:#fff; border:1px solid #E3E6EB; color:#4B5563; transition:all .15s; user-select:none; }
+  .tab:hover { border-color:#B9C0CC; }
+  .tab.active { background:#2B5CE6; border-color:#2B5CE6; color:#fff; font-weight:600; box-shadow:0 2px 8px rgba(43,92,230,.3); }
+  .tab .n { opacity:.7; font-size:11px; margin-left:5px; }
+  .tab.active .n { opacity:.9; }
+
+  /* overall hero funnel */
+  .hero { background:#fff; border-radius:14px; padding:22px 26px; box-shadow:0 1px 4px rgba(0,0,0,.07); margin-bottom:24px; }
+  .hero-head { display:flex; align-items:baseline; gap:12px; margin-bottom:18px; }
+  .hero-head .nm { font-size:19px; font-weight:700; }
+  .hero-head .tag { font-size:12px; color:#6B7280; }
+  .hero-grid { display:grid; grid-template-columns:1.4fr 1fr; gap:26px; align-items:center; }
+  @media(max-width:720px){ .hero-grid{ grid-template-columns:1fr; } .kpi-row{grid-template-columns:repeat(2,1fr);} }
+
+  /* funnel bars */
+  .funnel { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .fbar { color:#fff; border-radius:8px; padding:11px 0; text-align:center; font-weight:600;
+    display:flex; flex-direction:column; line-height:1.25; }
+  .fbar .t1 { font-size:12px; font-weight:500; opacity:.92; }
+  .fbar .t2 { font-size:19px; font-weight:700; }
+  .f1 { width:100%; }
+  .f2 { width:76%; }
+  .f3 { width:52%; }
+
+  .hero-stats { display:flex; flex-direction:column; gap:14px; }
+  .stat { display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px dashed #EAECEF; padding-bottom:10px; }
+  .stat:last-child{ border-bottom:none; }
+  .stat .k { font-size:13px; color:#6B7280; }
+  .stat .v { font-size:20px; font-weight:700; }
+  .rate-badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:13px; font-weight:700; }
+
+  /* section */
+  .sec-title { font-size:15px; font-weight:700; margin:6px 0 14px; display:flex; align-items:center; gap:8px; }
+  .sec-title::before { content:""; width:4px; height:15px; border-radius:2px; background:var(--c); }
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+  @media(max-width:980px){ .cards{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:520px){ .cards{grid-template-columns:1fr;} }
+  .card { background:#fff; border-radius:12px; padding:16px 15px 15px; box-shadow:0 1px 3px rgba(0,0,0,.06);
+    border-top:3px solid var(--cc); }
+  .card .ch { font-size:14px; font-weight:700; text-align:center; margin-bottom:12px; color:#1F2329; }
+  .mini { display:flex; flex-direction:column; gap:5px; align-items:center; margin-bottom:12px; }
+  .mbar { color:#fff; border-radius:6px; padding:6px 0; text-align:center; font-size:12px; font-weight:600; }
+  .mbar .mv { font-size:14px; font-weight:700; }
+  .m1{width:100%;} .m2{width:74%;} .m3{width:50%;}
+  .card-foot { border-top:1px dashed #EDEFF2; padding-top:10px; display:flex; flex-direction:column; gap:6px; }
+  .cf-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+  .cf-row .k { color:#8A9099; }
+  .cf-row .v { font-weight:700; font-size:13px; }
+
+  .foot-note { font-size:11.5px; color:#9AA0A6; text-align:center; margin-top:8px; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>26H1 销售维度拓客详情看板</h1>
+  <div class="subtitle">选择「全团队」或某位销售 → 查看其整体转化漏斗 + 拓客途径拆解 + 拓客来源拆解</div>
+  <div class="sample" id="sampleBar"></div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="hero" id="hero"></div>
+
+  <div class="sec-title" style="--c:#12B886">按拓客途径拆解</div>
+  <div class="cards" id="channelCards"></div>
+
+  <div class="sec-title" style="--c:#F76707">按拓客来源拆解</div>
+  <div class="cards" id="sourceCards"></div>
+
+  <div class="foot-note">
+    数据定义：新客=闭环链路首投季度在26H1 ｜ 有效新客=新客且首投季度累计消耗&gt;1k ｜ 新锐客户=有效新客且行业客群标签命中「新锐/经销商」<br>
+    转化率 = 新锐客户数 / 有效新客数 ｜ H1日耗占比 = 该项 H1日耗 / 全团队总 H1日耗（93.1万）｜ 数据源：26h1登记新客明细.xlsx
+  </div>
+</div>
+
+<script>
+const DATA = {
+ "total": {
+  "new": 2891,
+  "valid": 2015,
+  "sharp": 251,
+  "rate": 12.5,
+  "h1": 93.1,
+  "pct": 100.0
+ },
+ "sales": [
+  {
+   "name": "Jonzhu",
+   "overall": {
+    "new": 1014,
+    "valid": 738,
+    "sharp": 55,
+    "rate": 7.5,
+    "h1": 27.2,
+    "pct": 29.3
+   },
+   "channels": [
+    {
+     "name": "自拓",
+     "new": 420,
+     "valid": 290,
+     "sharp": 8,
+     "rate": 2.8,
+     "h1": 7.1,
+     "pct": 7.7
+    },
+    {
+     "name": "小店服务商",
+     "new": 313,
+     "valid": 234,
+     "sharp": 20,
+     "rate": 8.5,
+     "h1": 7.3,
+     "pct": 7.9
+    },
+    {
+     "name": "k6服务商",
+     "new": 279,
+     "valid": 214,
+     "sharp": 27,
+     "rate": 12.6,
+     "h1": 12.8,
+     "pct": 13.7
+    },
+    {
+     "name": "资源转介绍",
+     "new": 2,
+     "valid": 0,
+     "sharp": 0,
+     "rate": 0,
+     "h1": 0.0,
+     "pct": 0.0
+    }
+   ],
+   "sources": [
+    {
+     "name": "产业带拓客",
+     "new": 720,
+     "valid": 549,
+     "sharp": 40,
+     "rate": 7.3,
+     "h1": 15.5,
+     "pct": 16.7
+    },
+    {
+     "name": "靶向拓客",
+     "new": 192,
+     "valid": 130,
+     "sharp": 9,
+     "rate": 6.9,
+     "h1": 9.6,
+     "pct": 10.3
+    },
+    {
+     "name": "其他",
+     "new": 102,
+     "valid": 59,
+     "sharp": 6,
+     "rate": 10.2,
+     "h1": 2.2,
+     "pct": 2.3
+    }
+   ]
+  },
+  {
+   "name": "lijunwu",
+   "overall": {
+    "new": 543,
+    "valid": 294,
+    "sharp": 60,
+    "rate": 20.4,
+    "h1": 15.6,
+    "pct": 16.8
+   },
+   "channels": [
+    {
+     "name": "k6服务商",
+     "new": 210,
+     "valid": 146,
+     "sharp": 36,
+     "rate": 24.7,
+     "h1": 9.0,
+     "pct": 9.7
+    },
+    {
+     "name": "小店服务商",
+     "new": 174,
+     "valid": 91,
+     "sharp": 16,
+     "rate": 17.6,
+     "h1": 4.1,
+     "pct": 4.4
+    },
+    {
+     "name": "自拓",
+     "new": 149,
+     "valid": 51,
+     "sharp": 7,
+     "rate": 13.7,
+     "h1": 2.4,
+     "pct": 2.6
+    },
+    {
+     "name": "资源转介绍",
+     "new": 10,
+     "valid": 6,
+     "sharp": 1,
+     "rate": 16.7,
+     "h1": 0.1,
+     "pct": 0.1
+    }
+   ],
+   "sources": [
+    {
+     "name": "产业带拓客",
+     "new": 352,
+     "valid": 204,
+     "sharp": 48,
+     "rate": 23.5,
+     "h1": 10.9,
+     "pct": 11.7
+    },
+    {
+     "name": "靶向拓客",
+     "new": 117,
+     "valid": 76,
+     "sharp": 9,
+     "rate": 11.8,
+     "h1": 4.0,
+     "pct": 4.3
+    },
+    {
+     "name": "其他",
+     "new": 74,
+     "valid": 14,
+     "sharp": 3,
+     "rate": 21.4,
+     "h1": 0.7,
+     "pct": 0.7
+    }
+   ]
+  },
+  {
+   "name": "kaikaigenli",
+   "overall": {
+    "new": 536,
+    "valid": 386,
+    "sharp": 55,
+    "rate": 14.2,
+    "h1": 18.3,
+    "pct": 19.6
+   },
+   "channels": [
+    {
+     "name": "小店服务商",
+     "new": 175,
+     "valid": 133,
+     "sharp": 16,
+     "rate": 12.0,
+     "h1": 5.5,
+     "pct": 5.9
+    },
+    {
+     "name": "自拓",
+     "new": 163,
+     "valid": 101,
+     "sharp": 7,
+     "rate": 6.9,
+     "h1": 4.0,
+     "pct": 4.3
+    },
+    {
+     "name": "k6服务商",
+     "new": 154,
+     "valid": 126,
+     "sharp": 21,
+     "rate": 16.7,
+     "h1": 8.2,
+     "pct": 8.8
+    },
+    {
+     "name": "资源转介绍",
+     "new": 44,
+     "valid": 26,
+     "sharp": 11,
+     "rate": 42.3,
+     "h1": 0.6,
+     "pct": 0.6
+    }
+   ],
+   "sources": [
+    {
+     "name": "产业带拓客",
+     "new": 375,
+     "valid": 278,
+     "sharp": 40,
+     "rate": 14.4,
+     "h1": 12.1,
+     "pct": 13.0
+    },
+    {
+     "name": "靶向拓客",
+     "new": 130,
+     "valid": 81,
+     "sharp": 13,
+     "rate": 16.0,
+     "h1": 4.5,
+     "pct": 4.9
+    },
+    {
+     "name": "其他",
+     "new": 31,
+     "valid": 27,
+     "sharp": 2,
+     "rate": 7.4,
+     "h1": 1.6,
+     "pct": 1.7
+    }
+   ]
+  },
+  {
+   "name": "yvaineechen",
+   "overall": {
+    "new": 297,
+    "valid": 243,
+    "sharp": 36,
+    "rate": 14.8,
+    "h1": 11.0,
+    "pct": 11.8
+   },
+   "channels": [
+    {
+     "name": "k6服务商",
+     "new": 152,
+     "valid": 128,
+     "sharp": 20,
+     "rate": 15.6,
+     "h1": 7.5,
+     "pct": 8.1
+    },
+    {
+     "name": "小店服务商",
+     "new": 91,
+     "valid": 69,
+     "sharp": 11,
+     "rate": 15.9,
+     "h1": 2.0,
+     "pct": 2.1
+    },
+    {
+     "name": "自拓",
+     "new": 47,
+     "valid": 40,
+     "sharp": 4,
+     "rate": 10.0,
+     "h1": 0.9,
+     "pct": 1.0
+    },
+    {
+     "name": "资源转介绍",
+     "new": 7,
+     "valid": 6,
+     "sharp": 1,
+     "rate": 16.7,
+     "h1": 0.6,
+     "pct": 0.6
+    }
+   ],
+   "sources": [
+    {
+     "name": "产业带拓客",
+     "new": 191,
+     "valid": 157,
+     "sharp": 32,
+     "rate": 20.4,
+     "h1": 6.5,
+     "pct": 7.0
+    },
+    {
+     "name": "靶向拓客",
+     "new": 97,
+     "valid": 81,
+     "sharp": 3,
+     "rate": 3.7,
+     "h1": 4.4,
+     "pct": 4.7
+    },
+    {
+     "name": "其他",
+     "new": 9,
+     "valid": 5,
+     "sharp": 1,
+     "rate": 20.0,
+     "h1": 0.1,
+     "pct": 0.1
+    }
+   ]
+  },
+  {
+   "name": "brownfan",
+   "overall": {
+    "new": 296,
+    "valid": 239,
+    "sharp": 26,
+    "rate": 10.9,
+    "h1": 15.1,
+    "pct": 16.2
+   },
+   "channels": [
+    {
+     "name": "k6服务商",
+     "new": 178,
+     "valid": 143,
+     "sharp": 18,
+     "rate": 12.6,
+     "h1": 10.7,
+     "pct": 11.5
+    },
+    {
+     "name": "自拓",
+     "new": 62,
+     "valid": 52,
+     "sharp": 3,
+     "rate": 5.8,
+     "h1": 1.8,
+     "pct": 1.9
+    },
+    {
+     "name": "小店服务商",
+     "new": 55,
+     "valid": 43,
+     "sharp": 5,
+     "rate": 11.6,
+     "h1": 2.6,
+     "pct": 2.8
+    },
+    {
+     "name": "资源转介绍",
+     "new": 1,
+     "valid": 1,
+     "sharp": 0,
+     "rate": 0.0,
+     "h1": 0.0,
+     "pct": 0.0
+    }
+   ],
+   "sources": [
+    {
+     "name": "产业带拓客",
+     "new": 184,
+     "valid": 157,
+     "sharp": 22,
+     "rate": 14.0,
+     "h1": 10.0,
+     "pct": 10.7
+    },
+    {
+     "name": "靶向拓客",
+     "new": 63,
+     "valid": 47,
+     "sharp": 1,
+     "rate": 2.1,
+     "h1": 4.4,
+     "pct": 4.7
+    },
+    {
+     "name": "其他",
+     "new": 49,
+     "valid": 35,
+     "sharp": 3,
+     "rate": 8.6,
+     "h1": 0.8,
+     "pct": 0.8
+    }
+   ]
+  },
+  {
+   "name": "ruilingzhan",
+   "overall": {
+    "new": 159,
+    "valid": 86,
+    "sharp": 12,
+    "rate": 14.0,
+    "h1": 4.1,
+    "pct": 4.5
+   },
+   "channels": [
+    {
+     "name": "k6服务商",
+     "new": 116,
+     "valid": 58,
+     "sharp": 9,
+     "rate": 15.5,
+     "h1": 3.3,
+     "pct": 3.5
+    },
+    {
+     "name": "小店服务商",
+     "new": 28,
+     "valid": 17,
+     "sharp": 1,
+     "rate": 5.9,
+     "h1": 0.4,
+     "pct": 0.5
+    },
+    {
+     "name": "自拓",
+     "new": 15,
+     "valid": 11,
+     "sharp": 2,
+     "rate": 18.2,
+     "h1": 0.4,
+     "pct": 0.4
+    }
+   ],
+   "sources": [
+    {
+     "name": "其他",
+     "new": 86,
+     "valid": 31,
+     "sharp": 2,
+     "rate": 6.5,
+     "h1": 2.4,
+     "pct": 2.6
+    },
+    {
+     "name": "产业带拓客",
+     "new": 47,
+     "valid": 39,
+     "sharp": 5,
+     "rate": 12.8,
+     "h1": 1.1,
+     "pct": 1.2
+    },
+    {
+     "name": "靶向拓客",
+     "new": 26,
+     "valid": 16,
+     "sharp": 5,
+     "rate": 31.2,
+     "h1": 0.7,
+     "pct": 0.7
+    }
+   ]
+  },
+  {
+   "name": "kinsleyjin",
+   "overall": {
+    "new": 46,
+    "valid": 29,
+    "sharp": 7,
+    "rate": 24.1,
+    "h1": 1.7,
+    "pct": 1.8
+   },
+   "channels": [
+    {
+     "name": "k6服务商",
+     "new": 27,
+     "valid": 18,
+     "sharp": 5,
+     "rate": 27.8,
+     "h1": 0.9,
+     "pct": 1.0
+    },
+    {
+     "name": "自拓",
+     "new": 10,
+     "valid": 3,
+     "sharp": 1,
+     "rate": 33.3,
+     "h1": 0.2,
+     "pct": 0.2
+    },
+    {
+     "name": "小店服务商",
+     "new": 9,
+     "valid": 8,
+     "sharp": 1,
+     "rate": 12.5,
+     "h1": 0.6,
+     "pct": 0.7
+    }
+   ],
+   "sources": [
+    {
+     "name": "靶向拓客",
+     "new": 35,
+     "valid": 23,
+     "sharp": 6,
+     "rate": 26.1,
+     "h1": 1.2,
+     "pct": 1.3
+    },
+    {
+     "name": "产业带拓客",
+     "new": 10,
+     "valid": 5,
+     "sharp": 0,
+     "rate": 0.0,
+     "h1": 0.3,
+     "pct": 0.3
+    },
+    {
+     "name": "其他",
+     "new": 1,
+     "valid": 1,
+     "sharp": 1,
+     "rate": 100.0,
+     "h1": 0.2,
+     "pct": 0.2
+    }
+   ]
+  }
+ ]
+};
+
+// palette
+const CH_COLORS = { "k6服务商":"#2B5CE6", "自拓":"#7048E8", "小店服务商":"#F76707", "资源转介绍":"#12B886", "面状拓客":"#E64980", "产业带闭门会":"#40C057" };
+const SRC_COLORS = { "产业带拓客":"#F76707", "靶向拓客":"#2B5CE6", "其他":"#868E96" };
+const chColor = n => CH_COLORS[n] || "#495057";
+const srcColor = n => SRC_COLORS[n] || "#495057";
+
+function shade(hex, light){ // light 0..1 mix with white
+  const c = hex.replace('#',''); const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+  const m=x=>Math.round(x+(255-x)*light);
+  return `rgb(${m(r)},${m(g)},${m(b)})`;
+}
+function rateColor(r){ if(r>=20) return "#12B886"; if(r>=12) return "#2B5CE6"; if(r>=6) return "#F59F00"; return "#FA5252"; }
+
+// build team-aggregated channels/sources by summing across sales
+function aggregate(key){
+  const map={};
+  DATA.sales.forEach(s=>{
+    s[key].forEach(c=>{
+      if(!map[c.name]) map[c.name]={name:c.name,new:0,valid:0,sharp:0,h1:0};
+      map[c.name].new+=c.new; map[c.name].valid+=c.valid; map[c.name].sharp+=c.sharp; map[c.name].h1+=c.h1;
+    });
+  });
+  const tot=DATA.total.h1;
+  return Object.values(map).map(c=>({
+    ...c, h1:Math.round(c.h1*10)/10,
+    rate: c.valid? Math.round(c.sharp/c.valid*1000)/10 : 0,
+    pct: tot? Math.round(c.h1/tot*1000)/10 : 0
+  })).sort((a,b)=>b.new-a.new);
+}
+const TEAM = { name:"全团队", overall:DATA.total, channels:aggregate("channels"), sources:aggregate("sources") };
+const VIEWS = [TEAM, ...DATA.sales];
+
+// KPI (fixed global)
+function renderKpi(){
+  const t=DATA.total;
+  const items=[
+    {lbl:"闭环新客",val:t.new,sub:"登记新客总数",c:"#2B5CE6"},
+    {lbl:"有效新客",val:t.valid,sub:"首投消耗>1k",c:"#7048E8"},
+    {lbl:"新锐客户",val:t.sharp,sub:"转化率 "+t.rate+"%",c:"#12B886"},
+    {lbl:"H1新客日耗",val:t.h1+"万",sub:"占比 100%",c:"#F76707"},
+  ];
+  document.getElementById('kpiRow').innerHTML=items.map(i=>
+    `<div class="kpi" style="--c:${i.c}"><div class="lbl">${i.lbl}</div><div class="val">${i.val}</div><div class="sub">${i.sub}</div></div>`
+  ).join('');
+}
+
+function renderSample(){
+  const t=DATA.total;
+  document.getElementById('sampleBar').innerHTML=
+    `样本量仅为服饰增长组登记新客：新客 <b>${t.new}</b> 个，有效新客 <b>${t.valid}</b> 个，新锐客户 <b>${t.sharp}</b> 个，H1新客日耗 <b>${t.h1}万</b>`;
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=VIEWS.map((v,i)=>
+    `<div class="tab${i===0?' active':''}" data-i="${i}">${v.name}<span class="n">${v.overall.new}</span></div>`
+  ).join('');
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.onclick=()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      renderView(+el.dataset.i);
+    };
+  });
+}
+
+function renderView(i){
+  const v=VIEWS[i];
+  const o=v.overall;
+  const isTeam = i===0;
+  const mainC = isTeam ? "#2B5CE6" : "#2B5CE6";
+  // hero
+  document.getElementById('hero').innerHTML=`
+    <div class="hero-head">
+      <span class="nm">${v.name}</span>
+      <span class="tag">整体转化漏斗 · 新客 → 有效新客 → 新锐客户</span>
+    </div>
+    <div class="hero-grid">
+      <div class="funnel">
+        <div class="fbar f1" style="background:${mainC}"><span class="t1">闭环新客</span><span class="t2">${o.new}</span></div>
+        <div class="fbar f2" style="background:${shade(mainC,.32)}"><span class="t1">有效新客</span><span class="t2">${o.valid}</span></div>
+        <div class="fbar f3" style="background:${shade(mainC,.55)};color:#1F2329"><span class="t1">新锐客户</span><span class="t2">${o.sharp}</span></div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="k">转化率（新锐/有效）</span><span class="v"><span class="rate-badge" style="background:${shade(rateColor(o.rate),.82)};color:${rateColor(o.rate)}">${o.rate}%</span></span></div>
+        <div class="stat"><span class="k">H1 新客日耗</span><span class="v" style="color:#F76707">${o.h1} 万</span></div>
+        <div class="stat"><span class="k">占全团队日耗</span><span class="v" style="color:#495057">${o.pct}%</span></div>
+        <div class="stat"><span class="k">有效率（有效/新客）</span><span class="v" style="color:#7048E8">${o.new?Math.round(o.valid/o.new*1000)/10:0}%</span></div>
+      </div>
+    </div>`;
+  // channels
+  document.getElementById('channelCards').innerHTML=v.channels.map(c=>cardHtml(c,chColor(c.name))).join('');
+  // sources
+  document.getElementById('sourceCards').innerHTML=v.sources.map(c=>cardHtml(c,srcColor(c.name))).join('');
+}
+
+function cardHtml(c,color){
+  return `<div class="card" style="--cc:${color}">
+    <div class="ch">${c.name}</div>
+    <div class="mini">
+      <div class="mbar m1" style="background:${color}"><span>新客</span> <span class="mv">${c.new}</span></div>
+      <div class="mbar m2" style="background:${shade(color,.34)}"><span>有效</span> <span class="mv">${c.valid}</span></div>
+      <div class="mbar m3" style="background:${shade(color,.56)};color:#1F2329"><span>新锐</span> <span class="mv">${c.sharp}</span></div>
+    </div>
+    <div class="card-foot">
+      <div class="cf-row"><span class="k">转化率</span><span class="v" style="color:${rateColor(c.rate)}">${c.rate}%</span></div>
+      <div class="cf-row"><span class="k">H1日耗</span><span class="v" style="color:#F76707">${c.h1}万</span></div>
+      <div class="cf-row"><span class="k">占团队</span><span class="v" style="color:#868E96">${c.pct}%</span></div>
+    </div>
+  </div>`;
+}
+
+renderSample(); renderKpi(); renderTabs(); renderView(0);
+</script>
+</body>
+</html>
