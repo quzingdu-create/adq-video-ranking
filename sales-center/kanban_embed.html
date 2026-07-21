@@ -4,8 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- 2026-07-21 修复「卡住」：外部 CDN 改为 defer，避免 jsdelivr 慢/抖动时同步阻塞 HTML 解析导致整页白屏卡死。
+     echarts/xlsx 仅在渲染函数内使用，defer 后于 DOMContentLoaded 前就绪，renderAll() 已改到 DOMContentLoaded 执行。 -->
+<script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -103,10 +105,12 @@ window.__OVERRIDE_FETCH__ = (function(){
 <!-- <script src="data/customer_main_product.js?v=20260721a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script src="cloud_sync.js?v=20260721a"></script>
-<script src="dual_check.js?v=20260721a"></script>
-<script src="big_data_dual_check.js?v=20260721a"></script>
+<!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
+     云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
+<script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
+<script defer src="cloud_sync.js?v=20260721a"></script>
+<script defer src="dual_check.js?v=20260721a"></script>
+<script defer src="big_data_dual_check.js?v=20260721a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -4242,8 +4246,17 @@ function renderAll() {
   renderPortrait();
   renderRecords();
 }
-renderAll();
-applyEmbedMode();
+// 2026-07-21 修复「卡住」：echarts/xlsx 已改 defer，首屏渲染必须等它们就绪后再跑，
+// 否则会抛 "echarts is not defined" 导致图表区空白。包 try/catch 防止单图表失败拖垮整页。
+function _safeInitRender(){
+  try { renderAll(); applyEmbedMode(); }
+  catch(e){ console.warn('[init] 首屏渲染失败，3s 后重试:', e && e.message); setTimeout(_safeInitRender, 3000); }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _safeInitRender);
+} else {
+  _safeInitRender();
+}
 
 /* 历史快照切换（用户 2026-05-19 拍板）：
    历史快照文件已移出 Pages；前端不再动态加载快照目录，

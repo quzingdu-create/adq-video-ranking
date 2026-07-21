@@ -603,8 +603,6 @@ function measurePageHeight(){
 function postH(){if(window.parent!==window){parent.postMessage({type:'pageHeight',height:measurePageHeight()},'*');}}
 window.addEventListener('load',postH);
 if(window.ResizeObserver)new ResizeObserver(postH).observe(document.body);
-
-window.__BAND_RENDER2__ && window.__BAND_RENDER2__(D,{catColor:catColor,fmt:fmt,fmtW:fmtW,isOther:isOther})();
 })();
 </script>
 </body>
