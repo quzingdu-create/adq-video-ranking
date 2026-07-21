@@ -909,7 +909,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260721a
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260721a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -3069,15 +3069,21 @@ document.addEventListener('click', e => {
    七、交互绑定
    ========================= */
 
-document.getElementById('quarterSel').onchange = (e) => {
-  state.quarter = normalizeQuarter(e.target.value) || '2026Q2';
-  document.getElementById('quarterTag').textContent = quarterLabel(state.quarter);
-  renderAll();
-};
-document.getElementById('compareSel').onchange = (e) => {
-  state.compareMode = e.target.value || 'qoq';
-  renderAll();
-};
+(function(){
+  var qs = document.getElementById('quarterSel');
+  if (qs) qs.onchange = (e) => {
+    state.quarter = normalizeQuarter(e.target.value) || '2026Q2';
+    document.getElementById('quarterTag').textContent = quarterLabel(state.quarter);
+    renderAll();
+  };
+})();
+(function(){
+  var cs = document.getElementById('compareSel');
+  if (cs) cs.onchange = (e) => {
+    state.compareMode = e.target.value || 'qoq';
+    renderAll();
+  };
+})();
 
 document.querySelectorAll('[data-portrait]').forEach(b => {
   b.onclick = () => {
@@ -4171,7 +4177,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260721a
+  s.src = 'data/bulk_import_rows.js?v=20260721a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4213,13 +4219,18 @@ function handleBulkFile(file) {
   else reader.readAsArrayBuffer(file);
 }
 const exportBtn = document.getElementById('btnExportRecords'); if (exportBtn) exportBtn.onclick = exportRecordsCsv;
-document.getElementById('btnBulkImport').onclick = () => document.getElementById('bulkImportFile').click();
-document.getElementById('btnBulkImportPreset') && (document.getElementById('btnBulkImportPreset').onclick = importPresetBulkRows);
-document.getElementById('bulkImportFile').onchange = e => {
-  const f = e.target.files && e.target.files[0];
-  if (f) handleBulkFile(f);
-  e.target.value = '';
-};
+(function(){
+  var bi = document.getElementById('btnBulkImport');
+  if (bi) bi.onclick = () => { var f = document.getElementById('bulkImportFile'); if (f) f.click(); };
+  var bp = document.getElementById('btnBulkImportPreset');
+  if (bp) bp.onclick = importPresetBulkRows;
+  var bf = document.getElementById('bulkImportFile');
+  if (bf) bf.onchange = e => {
+    const file = e.target.files && e.target.files[0];
+    if (file) handleBulkFile(file);
+    e.target.value = '';
+  };
+})();
 
 /* =========================
    八、统一入口
