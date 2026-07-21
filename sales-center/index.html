@@ -760,7 +760,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&user=kinsleyjin&v=20260720b"
+      src="mobile.html?embed=1&user=kinsleyjin&v=20260721a"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1708,7 +1708,7 @@ function updateHomeMobileFrameUser(forceReload){
   const frame = document.getElementById('homeMobileFrame');
   if (!frame) return;
   const user = encodeURIComponent(syncCurrentUserFromCloud() || 'kinsleyjin');
-  const target = `mobile.html?embed=1&user=${user}&v=20260720b`;
+  const target = `mobile.html?embed=1&user=${user}&v=20260721a`;
   const src = frame.getAttribute('src') || '';
   if (forceReload || src === 'about:blank' || !src.includes(`user=${user}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   try { frame.contentWindow && frame.contentWindow.postMessage({type:'set-mobile-sale', sale: CURRENT_USER}, '*'); } catch(e){}
@@ -2138,7 +2138,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const minH = 760;
   bindKanbanFrameResize(frameId, minH);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260720b`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260721a`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2160,7 +2160,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260720b`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260721a`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -3591,7 +3591,7 @@ function renderAll() {
 renderAll();
 // 2026-06-15 子青：今日待办首屏 3 秒优先，主营商品标签后置加载，加载后补渲染。
 (function loadMainProductAfterFirstPaint(){
-  const run = () => fetch('data/customer_main_product.js?v=20260720b', {cache:'force-cache'})
+  const run = () => fetch('data/customer_main_product.js?v=20260721a', {cache:'force-cache'})
     .then(r => r.ok ? r.text() : '')
     .then(code => { if (code) (0, eval)(code); try { renderSummaryBoard(); } catch(e){} })
     .catch(e => console.warn('[lazy-product]', e));
