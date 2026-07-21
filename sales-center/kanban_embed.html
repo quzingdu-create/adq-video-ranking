@@ -5405,9 +5405,32 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   // 用 requestIdleCallback / 双 rAF 确保首屏 UI 先绘制完成，再启动大文件加载
   function kick(){
     if ('requestIdleCallback' in window){
-      requestIdleCallback(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }, { timeout: 800 });
+      requestIdleCallback(function(){ start(); /* life模式不再启动时预加载10MB的tuoke_real_records，改为滚动到登记明细时按需加载 */ }, { timeout: 800 });
     } else {
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){ start(); if (isLifeMode()) ensureTuokeRecordsLoaded('life-tab'); }); });
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ start(); /* 同上 */ }); });
+    }
+    // life模式：用 IntersectionObserver 按需加载拓客登记明细（10MB），滚动到登记明细区域才触发
+    if (isLifeMode() && 'IntersectionObserver' in window) {
+      (function(){
+        var triggered = false;
+        var obs = new IntersectionObserver(function(entries){
+          if (triggered) { obs.disconnect(); return; }
+          entries.forEach(function(e){
+            if (e.isIntersecting && e.target.id === 'recordDetailSection') {
+              triggered = true;
+              obs.disconnect();
+              console.info('[bigdata] life-tab 滚动到登记明细，按需加载 tuoke_real_records');
+              ensureTuokeRecordsLoaded('life-tab-lazy');
+            }
+          });
+        }, { rootMargin: '400px' });
+        var el = document.getElementById('recordDetailSection');
+        if (el) obs.observe(el);
+        else setTimeout(function(){ var el2 = document.getElementById('recordDetailSection'); if (el2) obs.observe(el2); else obs.disconnect(); }, 3000);
+      })();
+    } else if (isLifeMode()) {
+      // 降级：无 IntersectionObserver 时延迟3s后加载（比之前立即加载好）
+      setTimeout(function(){ ensureTuokeRecordsLoaded('life-tab-fallback'); }, 3000);
     }
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive'){
