@@ -1,5 +1,5 @@
 {
-  "v": "20260722a",
+  "v": "20260722b",
   "date": "2026-07-21",
-  "note": "2026-07-22 日更 dataDate=2026-07-21: 合并CloudBase tuoke_user_records(7/22导出)按shortName安全合并底表(13727→+12真新,避2413幽灵重复);rebuild KPI+打T-1快照;reconcile无待回扫;派生链4脚本+三镜像同步;cache-buster→20260722a。"
+  "note": "2026-07-22 日更 dataDate=2026-07-21: 合并CloudBase tuoke_user_records(7/22导出)按shortName安全合并底表(13727→+12真新,避2413幽灵重复);rebuild KPI+打T-1快照;reconcile无待回扫;派生链4脚本+三镜像同步;cache-buster→20260722b。"
 }
