@@ -3,25 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>商品消费客户开拓及中长尾服务提效 · 实践案例分享</title>
+<title>客户开拓及中长尾服务提效 · 实践案例分享</title>
 <style>
   :root{
-    --ink:#1b2230;          /* 深石板navy */
-    --ink-soft:#4a5466;
-    --muted:#8a93a3;
-    --line:#e5e8ee;
+    --ink:#211b35;          /* 深墨紫，比纯黑活泼 */
+    --ink-soft:#4d4669;
+    --muted:#918ba6;
+    --line:#ece8f6;
     --bg:#ffffff;
-    --bg-soft:#f5f7fa;
-    --bg-tint:#f7f9fc;
-    --navy:#16365c;         /* 商务主色 */
-    --navy-soft:#eaf0f7;
-    --red:#cf3a3a;          /* 小红点 accent（克制使用） */
-    --red-soft:#fbecec;
-    --blue:#16365c;         /* 兼容：蓝=商务navy */
-    --blue-soft:#eaf0f7;
-    --amber:#9a6b14;
-    --amber-soft:#faf4e6;
-    --green:#1f9d6b;
+    --bg-soft:#faf8fe;
+    --bg-tint:#fdf5f3;
+    --navy:#ff6a3d;         /* 主色 活泼珊瑚橙（呼应小红点） */
+    --navy-soft:#fff1ea;
+    --red:#ef4444;          /* 小红点 真红（鲜亮） */
+    --red-soft:#ffecec;
+    --blue:#7b61ff;         /* 辅助 活泼紫 */
+    --blue-soft:#efeaff;
+    --teal:#10b5a4;         /* 辅助 活泼青 */
+    --teal-soft:#e3f7f4;
+    --amber:#f59e0b;
+    --amber-soft:#fef5e3;
+    --green:#16a34a;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
     --tencent:"腾讯体 W7","TencentSans W7","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   }
@@ -37,16 +39,19 @@
   a:hover{text-decoration:underline}
 
   /* HERO */
-  .hero{padding:92px 0 60px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#ffffff 0%,#f7f9fc 100%)}
-  .kicker{font-family:var(--mono);font-size:13px;letter-spacing:.18em;color:var(--navy);text-transform:uppercase;margin-bottom:18px}
-  .hero h1{font-size:40px;line-height:1.28;margin:0 0 18px;font-weight:800;letter-spacing:-.01em}
-  .hero .arrow{color:var(--red)}
-  .hero .sub{font-size:18px;color:var(--ink-soft);margin:0 0 26px}
-  .byline{font-family:var(--mono);font-size:13px;color:var(--muted);line-height:1.95}
-  .byline b{color:var(--ink)}
-  .cta{display:inline-flex;align-items:center;gap:8px;margin-top:24px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600}
-  .cta:hover{text-decoration:none;background:#000}
-  .cta .dot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--red-soft)}
+  .hero{padding:84px 0 64px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#fff4ef 0%,#f4f0ff 52%,#eafaf6 100%)}
+  .kicker{display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;color:var(--navy);background:var(--navy-soft);border:1px solid #ffd9c9;border-radius:999px;padding:6px 15px;margin-bottom:20px;font-weight:700}
+  .hero h1{font-size:40px;line-height:1.3;margin:0 0 18px;font-weight:800;letter-spacing:-.01em}
+  .hero .arrow{position:relative;color:var(--red);white-space:nowrap}
+  .hero .arrow::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:8px;background:var(--red-soft);border-radius:3px;z-index:-1}
+  .hero .sub{font-size:18px;color:var(--ink-soft);margin:0 0 8px;max-width:760px}
+  .byline{display:grid;grid-template-columns:1fr 1fr;gap:11px 26px;margin:26px 0 4px;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:16px;padding:20px 22px;backdrop-filter:blur(8px);font-size:14px;color:var(--ink-soft);line-height:1.55}
+  .byline .bl{display:flex;align-items:baseline;gap:9px}
+  .byline .bl-k{display:inline-block;flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:700;color:#fff;background:var(--navy);border-radius:6px;padding:2px 9px}
+  .byline .bl b{color:var(--ink);font-weight:700}
+  .cta{display:inline-flex;align-items:center;gap:9px;margin-top:26px;background:linear-gradient(135deg,var(--navy),#ff8a5b);color:#fff;padding:13px 22px;border-radius:11px;font-size:14px;font-weight:700;box-shadow:0 6px 18px rgba(255,106,61,.28)}
+  .cta:hover{text-decoration:none;filter:brightness(1.05)}
+  .cta .dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(239,68,68,.22)}
 
   /* NAV */
   .nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.86);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
@@ -148,6 +153,14 @@
   .outcome .o .v{font-size:20px;font-weight:800;line-height:1.15;color:var(--navy)}
   .outcome .o .k{font-size:12px;color:var(--muted);margin-top:5px}
   .outcome .o .s{font-size:11.5px;color:var(--ink-soft);margin-top:4px}
+  .outcome .o{border-top:3px solid var(--line)}
+  .outcome .o:nth-child(1){border-top-color:var(--navy)}
+  .outcome .o:nth-child(2){border-top-color:var(--blue)}
+  .outcome .o:nth-child(3){border-top-color:var(--teal)}
+  .outcome .o:nth-child(4){border-top-color:var(--green)}
+  .cols .card{border-top:3px solid var(--blue)}
+  .flow .step{border-top:3px solid var(--navy)}
+  .path li{border-left:3px solid var(--blue)}
 
   /* TABS */
   .tabs{margin:22px 0}
@@ -184,6 +197,7 @@
 
   @media (max-width:720px){
     .hero h1{font-size:29px}.cols,.ab,.flow,.outcome{grid-template-columns:1fr}
+    .byline{grid-template-columns:1fr;gap:9px}
     .flow .step:not(:last-child)::after{content:""}.part-title{font-size:21px}
     .kanban-frame iframe{height:560px}
     .tab-btn{flex:1 1 100%}
@@ -195,14 +209,14 @@
 <!-- HERO -->
 <header class="hero">
   <div class="wrap">
-    <div class="kicker">商品消费业务部 · 实践案例分享</div>
+    <div class="kicker">4班2组杜子青 · CDG腾讯广告</div>
     <h1>客户开拓及中长尾服务提效<br/>从 <span class="arrow">数据洞察</span> 到 <span class="arrow">业务动作</span></h1>
     <p class="sub">以一套 AI 驱动的「客户拓展与服务作战系统」为例，讲述我们如何把中长尾客户经营，从"人肉判断、被动响应"升级为"AI 判断、任务驱动、闭环追踪"。系统由 4 个能力模块（Tab）构成，本篇逐一展开。</p>
     <div class="byline">
-      <b>商品消费业务部 · 增长组（拓客销售 &amp; 行业经营团队）</b><br/>
-      CDG 企业发展事业群 / 广告营销服务线<br/>
-      申报方向：流程提效 · 成本优化　|　团队类型：非产研（部门级）<br/>
-      工具底座：Codebuddy · Workbuddy 等 AI 能力
+      <div class="bl"><span class="bl-k">团队</span><b>商品消费业务部 · 增长组</b>（拓客销售 &amp; 行业经营团队）</div>
+      <div class="bl"><span class="bl-k">归属</span>CDG 企业发展事业群 / 广告营销服务线</div>
+      <div class="bl"><span class="bl-k">申报</span>流程提效 · 成本优化　|　非产研（部门级）</div>
+      <div class="bl"><span class="bl-k">底座</span>Codebuddy · Workbuddy 等 AI 能力</div>
     </div>
     <a class="cta" href="https://quzingdu-create.github.io/adq-video-ranking/sales-center/?v=20260716b&t=labelfix3" target="_blank" rel="noopener">
       <span class="dot"></span> 直达销售作战中心看板
@@ -586,7 +600,7 @@
 <section class="closing">
   <div class="wrap">
     <p class="quote">我们做的不是"更好的看板"，<br/>而是把<span class="em">人工判断</span>翻译成<span class="em">AI 判断路径</span>——<br/>让销售从"靠记忆盯客户"，变成"按系统提示主动出击"。</p>
-    <p class="sig">商品消费业务部 · 增长组　|　AI 驱动的客户拓展与服务作战系统　|　Codebuddy · Workbuddy</p>
+    <p class="sig">4班2组 · 杜子青　|　CDG 腾讯广告　|　AI 驱动的客户拓展与服务作战系统　|　Codebuddy · Workbuddy</p>
   </div>
 </section>
 
