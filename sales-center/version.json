@@ -1,5 +1,1 @@
-{
-  "v": "20260723a",
-  "date": "2026-07-23",
-  "note": "2026-07-23 日更 dataDate=2026-07-23: 合并CloudBase tuoke_user_records(7/23导出2504条)安全合并底表(12825→+107真新云新客,update2396,归属变更1条,override锁拒9条);rebuild KPI+派生链6脚本+打T-1快照;107云新客经rebuild后107/107全部存活(真实记录12932);数据缺口守门PASS(7.21→7.23 full_quarter 38433→38525净+92,0家消失);三镜像同步;cache-buster→20260723a。Q3合计新客1495/有效362/新锐4,日Δ+77(7.23vs7.21两天累计)。"
-}
+{"v": "20260723b", "date": "2026-07-23", "note": "2026-07-23b hotfix: 修复「待网络恢复后自动补传」提示名不副实——原代码无online事件监听，网络恢复不会自动补传。现加window.addEventListener('online')在selfHealLocalOnly IIFE内，网络恢复后800ms自动扫描localStorage遗留记录并pushRecordsToCloud补推云端。PC+mobile双端同步。cache-buster→20260723b。"}

@@ -48,7 +48,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260723a')
+    return fetch('data/manual_attr_override.json?v=20260723b')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -4490,6 +4490,11 @@ document.addEventListener('click', e => {
   }
   if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(run, 2500);
   else document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 2500); });
+  /* 🦞 网络恢复即时补传（2026-07-23 修复：原"待网络恢复后自动补传"提示无实际监听） */
+  window.addEventListener('online', function(){
+    console.info('[selfheal] 网络已恢复，立即补推本机遗留记录');
+    setTimeout(run, 800);
+  });
 })();
 
 /* 🦞 云端开机自动拉取（2026-05-26 14:58 子青拍板）
