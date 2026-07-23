@@ -1,5 +1,5 @@
 {
-  "v": "20260722b",
-  "date": "2026-07-21",
-  "note": "2026-07-22 日更 dataDate=2026-07-21: 合并CloudBase tuoke_user_records(7/22导出)按shortName安全合并底表(13727→+12真新,避2413幽灵重复);rebuild KPI+打T-1快照;reconcile无待回扫;派生链4脚本+三镜像同步;cache-buster→20260722b。"
+  "v": "20260723a",
+  "date": "2026-07-23",
+  "note": "2026-07-23 日更 dataDate=2026-07-23: 合并CloudBase tuoke_user_records(7/23导出2504条)安全合并底表(12825→+107真新云新客,update2396,归属变更1条,override锁拒9条);rebuild KPI+派生链6脚本+打T-1快照;107云新客经rebuild后107/107全部存活(真实记录12932);数据缺口守门PASS(7.21→7.23 full_quarter 38433→38525净+92,0家消失);三镜像同步;cache-buster→20260723a。Q3合计新客1495/有效362/新锐4,日Δ+77(7.23vs7.21两天累计)。"
 }
