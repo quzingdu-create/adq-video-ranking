@@ -4,7 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>拓客作战看板 v3.2 · ADQ服饰拓新组销售中心</title>
-<!-- 2026-07-21 修复「卡住」：外部 CDN 改 defer，避免 jsdelivr 慢时同步阻塞整页白屏 -->
+<!-- 2026-07-21 修复「卡住」：外部 CDN 改为 defer，避免 jsdelivr 慢/抖动时同步阻塞 HTML 解析导致整页白屏卡死。
+     echarts/xlsx 仅在渲染函数内使用，defer 后于 DOMContentLoaded 前就绪，renderAll() 已改到 DOMContentLoaded 执行。 -->
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- =========================================================================
@@ -47,7 +48,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260723b')
+    return fetch('data/manual_attr_override.json?v=20260724a')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -83,32 +84,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260723a"></script>
-<script defer src="api_client.js?v=20260723a"></script>
-<script defer src="data_adapter.js?v=20260723a"></script>
+<script defer src="cloud_gray_switch.js?v=20260724a"></script>
+<script defer src="api_client.js?v=20260724a"></script>
+<script defer src="data_adapter.js?v=20260724a"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260723a"></script> -->
-<script src="data/center_sales_summary.js?v=20260723a"></script>
-<script src="data/center_quarter_summary.js?v=20260723a"></script>
-<script src="data/center_daily_kpi.js?v=20260723a"></script>
-<script src="data/top80_effective_metrics.js?v=20260723a"></script>
-<script src="data/top_status_data.js?v=20260723a"></script>
-<script src="data/enough_candidates.js?v=20260723a"></script>
-<script src="data/handover_customers_519.js?v=20260723a"></script>
-<script src="data/target_brand_pool.js?v=20260723a"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260724a"></script> -->
+<script src="data/center_sales_summary.js?v=20260724a"></script>
+<script src="data/center_quarter_summary.js?v=20260724a"></script>
+<script src="data/center_daily_kpi.js?v=20260724a"></script>
+<script src="data/top80_effective_metrics.js?v=20260724a"></script>
+<script src="data/top_status_data.js?v=20260724a"></script>
+<script src="data/enough_candidates.js?v=20260724a"></script>
+<script src="data/handover_customers_519.js?v=20260724a"></script>
+<script src="data/target_brand_pool.js?v=20260724a"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260723a" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260724a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
-<!-- 2026-07-21 修复「卡住」：cloudbase 等云端同步层改 defer，避免 static.cloudbase.net 慢时阻塞整页 -->
+<!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
+     云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260723a"></script>
-<script defer src="dual_check.js?v=20260723a"></script>
-<script defer src="big_data_dual_check.js?v=20260723a"></script>
+<script defer src="cloud_sync.js?v=20260724a"></script>
+<script defer src="dual_check.js?v=20260724a"></script>
+<script defer src="big_data_dual_check.js?v=20260724a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -911,7 +913,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260723a`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260724a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1110,7 +1112,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260723a" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260724a" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1126,7 +1128,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260723a" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260724a" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1211,7 +1213,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260723a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260724a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -4179,7 +4181,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260723a';
+  s.src = 'data/bulk_import_rows.js?v=20260724a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4244,7 +4246,8 @@ function renderAll() {
   renderPortrait();
   renderRecords();
 }
-// 2026-07-21 修复「卡住」：echarts/xlsx 已 defer，首屏渲染等到 DOMContentLoaded 再跑，包 try/catch 防单图表失败拖垮整页
+// 2026-07-21 修复「卡住」：echarts/xlsx 已改 defer，首屏渲染必须等它们就绪后再跑，
+// 否则会抛 "echarts is not defined" 导致图表区空白。包 try/catch 防止单图表失败拖垮整页。
 function _safeInitRender(){
   try { renderAll(); applyEmbedMode(); }
   catch(e){ console.warn('[init] 首屏渲染失败，3s 后重试:', e && e.message); setTimeout(_safeInitRender, 3000); }
@@ -5405,7 +5408,6 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   window.__bigDataLoadOne = loadOne;
 
   // 用 requestIdleCallback / 双 rAF 确保首屏 UI 先绘制完成，再启动大文件加载
-  // 用 requestIdleCallback / 双 rAF 确保首屏 UI 先绘制完成，再启动大文件加载
   function kick(){
     if ('requestIdleCallback' in window){
       requestIdleCallback(function(){ start(); /* life模式不再启动时预加载10MB的tuoke_real_records，改为滚动到登记明细时按需加载 */ }, { timeout: 800 });
@@ -5432,6 +5434,7 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
         else setTimeout(function(){ var el2 = document.getElementById('recordDetailSection'); if (el2) obs.observe(el2); else obs.disconnect(); }, 3000);
       })();
     } else if (isLifeMode()) {
+      // 降级：无 IntersectionObserver 时延迟3s后加载（比之前立即加载好）
       setTimeout(function(){ ensureTuokeRecordsLoaded('life-tab-fallback'); }, 3000);
     }
   }
