@@ -45,7 +45,7 @@
     { rtx: 'kinsleyjin',   name: 'Kinsleyjin',    is_admin: true },
     { rtx: 'edcchen',      name: 'Edcchen',       is_admin: true },
     { rtx: 'jonzhu',       name: 'Jonzhu' },
-    { rtx: 'brownfan',     name: 'Brownfan' },
+    { rtx: 'grettazhao', name: '赵雪晴' },
     { rtx: 'kaikaigenli',  name: 'Kaikaigenli' },
     { rtx: 'yvaineechen',  name: 'Yvaineechen' },
     { rtx: 'lijunwu',      name: 'Lijunwu' },

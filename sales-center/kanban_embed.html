@@ -48,7 +48,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260724a')
+    return fetch('data/manual_attr_override.json?v=20260727a')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -84,33 +84,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260724a"></script>
-<script defer src="api_client.js?v=20260724a"></script>
-<script defer src="data_adapter.js?v=20260724a"></script>
+<script defer src="cloud_gray_switch.js?v=20260727a"></script>
+<script defer src="api_client.js?v=20260727a"></script>
+<script defer src="data_adapter.js?v=20260727a"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260724a"></script> -->
-<script src="data/center_sales_summary.js?v=20260724a"></script>
-<script src="data/center_quarter_summary.js?v=20260724a"></script>
-<script src="data/center_daily_kpi.js?v=20260724a"></script>
-<script src="data/top80_effective_metrics.js?v=20260724a"></script>
-<script src="data/top_status_data.js?v=20260724a"></script>
-<script src="data/enough_candidates.js?v=20260724a"></script>
-<script src="data/handover_customers_519.js?v=20260724a"></script>
-<script src="data/target_brand_pool.js?v=20260724a"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260727a"></script> -->
+<script src="data/center_sales_summary.js?v=20260727a"></script>
+<script src="data/center_quarter_summary.js?v=20260727a"></script>
+<script src="data/center_daily_kpi.js?v=20260727a"></script>
+<script src="data/top80_effective_metrics.js?v=20260727a"></script>
+<script src="data/top_status_data.js?v=20260727a"></script>
+<script src="data/enough_candidates.js?v=20260727a"></script>
+<script src="data/handover_customers_519.js?v=20260727a"></script>
+<script src="data/target_brand_pool.js?v=20260727a"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260724a" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260727a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260724a"></script>
-<script defer src="dual_check.js?v=20260724a"></script>
-<script defer src="big_data_dual_check.js?v=20260724a"></script>
+<script defer src="cloud_sync.js?v=20260727a"></script>
+<script defer src="dual_check.js?v=20260727a"></script>
+<script defer src="big_data_dual_check.js?v=20260727a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -913,7 +913,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260724a`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260727a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1112,7 +1112,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260724a" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260727a" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1128,7 +1128,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260724a" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260727a" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1213,7 +1213,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260724a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260727a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1324,7 +1324,7 @@ window.applyManualSaleOverride = function(r) {
 /* =========================
    共享虚拟数据 · v3 原型
    ========================= */
-const SALES = ["brownfan","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+const SALES = ["grettazhao","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
 let CURRENT_USER = new URLSearchParams(window.location.search).get("user") || "kinsleyjin";
 const CATEGORIES = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
 const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店直购","视频号橱窗"];
@@ -1742,7 +1742,7 @@ if (window.__OVERRIDE_FETCH__ && typeof window.__OVERRIDE_FETCH__.then === 'func
      首投季度 == 当前 KPI 季度（26Q2）→ 计入
      首投季度 != 当前 KPI 季度 → 仅展示 tag，不入 KPI
    ============================================================ */
-const TUOXIN_7_SET = new Set(["brownfan","Jonzhu","kaikaigenli","yvaineechen","lijunwu","ruilingzhan","kinsleyjin"]);
+const TUOXIN_7_SET = new Set(["grettazhao","Jonzhu","kaikaigenli","yvaineechen","lijunwu","ruilingzhan","kinsleyjin"]);
 const HANDOVER_LIST_217 = Array.isArray(window.__HANDOVER_CUSTOMERS_519__) ? window.__HANDOVER_CUSTOMERS_519__ : [];
 const HANDOVER_MAP_217 = {};
 HANDOVER_LIST_217.forEach(x => { if (x && x.name) HANDOVER_MAP_217[String(x.name).trim()] = x; });
@@ -1764,7 +1764,7 @@ function isHandoverCustomer217(r) {
   if (OLD24_SET_217.has(name)) return false;          // 24 老客优先剔
   const rec = HANDOVER_MAP_217[name];
   if (!rec) return false;
-  return TUOXIN_7_SET.has(rec.sale);                  // 必须原销售 ∈ 拓新 7
+  return TUOXIN_7_SET.has(rec.sale) || rec.sale === 'brownfan'; // 必须原销售 ∈ 拓新 7（brownfan 2026-07-27换组，但217交接名单为历史事实，保留其交接判定）
 }
 /** 交接客户的首投季度（normalized 如 2026Q2） */
 function handoverFirstQuarter(r) {
@@ -2069,7 +2069,7 @@ function renderSalesProgress() {
   // KPI（默认显示）：销售 / 新锐客户数 / 新客季度日耗 / 累计日均（季耗÷已过天数） / 更多 ›
   // 参考列（点更多向右展开）：新客数 / 新客昨耗(环比) / 交接客户数 / 交接昨耗(环比) / 交接季耗(环比)
   // ============================================================
-  const CORE_SALES = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+  const CORE_SALES = ["grettazhao","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
   const coreRows = rows.filter(r => CORE_SALES.includes(r.sale));
   const otherRow = rows.find(r => r.sale === '其他');
   const totalRow = rows.find(r => r.sale === '合计');
@@ -2093,7 +2093,7 @@ function renderSalesProgress() {
   const remainDays = Math.max(1, qTotalDays - days + 1);
   const QTD_TARGETS = {
     total: { rising: 207, costDaily: 120, rising80: 207, costDaily80: 96 }, // 80%冲刺: 新锐不变, 日耗 120×0.8=96
-    brownfan: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
+    grettazhao: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
     lijunwu: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
     Jonzhu: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
     kaikaigenli: { rising: 40, costDaily: 30, rising80: 40, costDaily80: 24 },
@@ -2495,7 +2495,7 @@ function renderLinkDeep() { return; /* eslint-disable-line */
   const bySaleEl = document.getElementById('chartLinkBySale');
   if (bySaleEl) {
     if (!charts['chartLinkBySale']) charts['chartLinkBySale'] = echarts.init(bySaleEl);
-    const SALES_LIST = ["brownfan","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
+    const SALES_LIST = ["grettazhao","Jonzhu","kaikaigenli","kinsleyjin","lijunwu","ruilingzhan","yvaineechen"];
     // sale → {link → cost}
     const matrix = {};
     SALES_LIST.forEach(s => matrix[s] = {});
@@ -3232,7 +3232,7 @@ function lookupDuplicates(name) {
     const sl = String(s).trim().toLowerCase();
     if (!sl) return false;
     // 命中 7 销售集合（大小写不敏感）
-    const SALE7 = ["brownfan","lijunwu","jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
+    const SALE7 = ["grettazhao","lijunwu","jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
     return SALE7.includes(sl);
   };
   // 1. 拓新组底表（最新，每天重建）—— 只算真销售归属
@@ -4181,7 +4181,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260724a';
+  s.src = 'data/bulk_import_rows.js?v=20260727a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');

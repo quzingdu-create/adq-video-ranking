@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>访问监控 · 销售作战中心</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script src="data/monitor_session_data.js?v=20260717b"></script>
+<script src="data/monitor_session_data.js?v=20260727a"></script>
 <style>
   :root {
     --bg: #f4f6fb; --panel: #ffffff; --panel-2: #f8fafc; --line: #e8edf5;
@@ -241,8 +241,8 @@
 </div>
 
 <script>
-const SALES_NAMES = ["brownfan", "lijunwu", "jonzhu", "kaikaigenli", "kinsleyjin", "ruilingzhan", "yvaineechen", "edcchen"];
-const COLORS = { brownfan: "#2563eb", lijunwu: "#10b981", jonzhu: "#f59e0b", kaikaigenli: "#ef4444", kinsleyjin: "#8b5cf6", ruilingzhan: "#06b6d4", yvaineechen: "#ec4899", edcchen: "#64748b" };
+const SALES_NAMES = ["grettazhao", "lijunwu", "jonzhu", "kaikaigenli", "kinsleyjin", "ruilingzhan", "yvaineechen", "edcchen"];
+const COLORS = { grettazhao: "#f97316", lijunwu: "#10b981", jonzhu: "#f59e0b", kaikaigenli: "#ef4444", kinsleyjin: "#8b5cf6", ruilingzhan: "#06b6d4", yvaineechen: "#ec4899", edcchen: "#64748b" };
 const ADMINS = ["kinsleyjin", "edcchen"]; // 管理员
 function isAdmin(rtx) { return ADMINS.includes(rtx); }
 function nameLabel(rtx) { return isAdmin(rtx) ? rtx + "（管理员）" : rtx; }

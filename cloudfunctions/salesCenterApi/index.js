@@ -36,7 +36,7 @@ const COLLECTIONS = {
   // 2026-07-17h 销售实时登记集合（免登录直写，单一可信源 for 销售侧 live 登记）
   userRecords: 'tuoke_user_records'
 };
-const SALES = ['brownfan', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
+const SALES = ['grettazhao', 'Jonzhu', 'kaikaigenli', 'kinsleyjin', 'lijunwu', 'ruilingzhan', 'yvaineechen'];
 
 let cloudbase = null;
 try { cloudbase = require('@cloudbase/node-sdk'); } catch (err) { cloudbase = null; }
