@@ -77,7 +77,7 @@
     // 拉云端全量 tuoke_records (与 exportAllRecords 云函数对齐), 无 cursor 从头拉
     var acc = [];
     function pullPage(cursor) {
-      var params = { pageSize: 1000 };
+      var params = { pageSize: 2000 };
       if (cursor) params.cursor = cursor;
       return window.cloud.callFunction('salesCenterApi', {
         action: 'exportAllRecords',
@@ -88,7 +88,8 @@
         var data = body.data || {};
         var rows = data.rows || [];
         acc = acc.concat(rows);
-        if (data.hasMore && data.nextCursor && acc.length < 50000) {
+        // 🦞 2026-07-27 Bug3 修复：pageSize 1000→2000 已在 params；上限 50000→200000 防截断
+        if (data.hasMore && data.nextCursor && acc.length < 200000) {
           return pullPage(data.nextCursor);
         }
         return acc;
@@ -98,6 +99,57 @@
       console.warn('[export_tuoke] 拉云端 tuoke 失败, 用静态兜底:', err);
       return [];
     });
+  }
+
+  // 🦞 2026-07-27 Bug3 新增：主页面加载 override JSON（复用 kanban_embed 里的 __MANUAL_ATTR_OVERRIDE__）
+  var _overridePromise = null;
+  function _ensureOverrideMap() {
+    if (_overridePromise) return _overridePromise;
+    // 若 iframe 已经把它挂到 parent（同源），先复用
+    try {
+      if (window.__MANUAL_ATTR_OVERRIDE__ && window.__MANUAL_ATTR_OVERRIDE__.overrides) {
+        return Promise.resolve(_buildOverrideMap(window.__MANUAL_ATTR_OVERRIDE__));
+      }
+    } catch(_){}
+    var url = 'data/manual_attr_override.json?v=' + currentVersion();
+    _overridePromise = fetch(url).then(function(r){ return r.json(); }).then(function(j){
+      window.__MANUAL_ATTR_OVERRIDE__ = j;
+      return _buildOverrideMap(j);
+    }).catch(function(e){
+      console.warn('[export_tuoke] 加载 override 失败，sale 走静态优先:', e);
+      return {};
+    });
+    return _overridePromise;
+  }
+  function _buildOverrideMap(j) {
+    var m = Object.create(null);
+    try {
+      var ov = (j && j.overrides) || {};
+      Object.keys(ov).forEach(function(k){
+        var rec = ov[k];
+        if (rec && rec.sale) m[String(k).replace(/\s+/g,'')] = { sale: rec.sale, date: rec.date || '' };
+      });
+    } catch(_){}
+    return m;
+  }
+  // R8.4 优先级链：override 锁 → 若销售 saleHistory 更新则解锁 → 静态首登记 → 云端兜底
+  function _resolveSaleWithR84(staticR, cloudR, overrideMap) {
+    var name1 = String((staticR && staticR.name) || (cloudR && cloudR.name) || '').replace(/\s+/g,'');
+    var name2 = String((staticR && staticR.shortName) || (cloudR && cloudR.shortName) || '').replace(/\s+/g,'');
+    var name3 = String((staticR && staticR.brand) || (cloudR && cloudR.brand) || '').replace(/\s+/g,'');
+    var lockedRec = overrideMap[name1] || overrideMap[name2] || overrideMap[name3];
+    var hist = (cloudR && Array.isArray(cloudR.saleHistory)) ? cloudR.saleHistory
+             : ((staticR && Array.isArray(staticR.saleHistory)) ? staticR.saleHistory : []);
+    var lastWhen = hist.length ? String(hist[hist.length-1].when || '').slice(0,10) : '';
+    if (lockedRec) {
+      // R8.4: saleHistory 最新 > override.date → 销售最新优先
+      if (lastWhen && lockedRec.date && lastWhen > lockedRec.date) {
+        return (hist[hist.length-1] && hist[hist.length-1].who) || (cloudR && cloudR.sale) || (staticR && staticR.sale) || lockedRec.sale;
+      }
+      return lockedRec.sale;
+    }
+    // 无 override → 静态优先（保护首登记），云端兜底
+    return (staticR && staticR.sale) || (cloudR && cloudR.sale) || '';
   }
 
   function ensureTuokeRecords() {
@@ -111,37 +163,62 @@
           if (!Array.isArray(rows) || !rows.length) throw new Error('登记底表为空，请刷新页面后重试');
           return rows;
         });
-    _tuokePromise = Promise.all([staticP, fetchCloudRecentTuoke()]).then(function (arr) {
+    _tuokePromise = Promise.all([staticP, fetchCloudRecentTuoke(), _ensureOverrideMap()]).then(function (arr) {
       var staticRows = arr[0] || [];
       var cloudRows = arr[1] || [];
+      var overrideMap = arr[2] || {};
       if (!cloudRows.length) return staticRows;
-      // 用 _id 建索引; 云端 _id 已存在则跳过 (静态口径已是最终), 不存在则 append
-      var ids = {};
-      staticRows.forEach(function (r) {
-        var k = r && (r._id || r.id);
-        if (k) ids[String(k)] = true;
-      });
-      // 同 (name, date) 也算已合并 (避免云端同客户多 _id 造成重复)
+      // 🦞 2026-07-27 Bug3 修复：字段级并集 + sale 走 R8.4 优先级链
+      // 原逻辑：_id 已存在或 (name,date) 撞 → 云端 skip → 销售今天新登记/最新修改丢失
+      // 新逻辑：
+      //   1) _id 已存在 → 云端字段"补充"进静态（非空覆盖），sale 单独走 R8.4 判定
+      //   2) _id 不存在 → 直接 append
+      //   3) 极端保守：即使 (name,date) 撞了但 _id 不同 → 云端也 append（宁可重复不遗漏）
       function nk(r) {
         var nm = (r && (r.name || r.shortName) || '').replace(/\s+/g, '');
         var dt = String((r && r.date) || '').slice(0, 10);
         return nm + '|' + dt;
       }
-      var nks = {};
-      staticRows.forEach(function (r) { nks[nk(r)] = true; });
-      var merged = staticRows.slice();
-      var appendedCnt = 0;
-      cloudRows.forEach(function (r) {
-        if (!r || !r.name) return;
-        var k = String(r._id || r.id || '');
-        if (k && ids[k]) return;
-        if (nks[nk(r)]) return;
-        merged.push(r);
-        appendedCnt++;
+      // 建 _id 索引
+      var byId = {};
+      staticRows.forEach(function (r, idx) {
+        var k = r && (r._id || r.id);
+        if (k) byId[String(k)] = idx;
       });
-      if (appendedCnt > 0) {
-        toast('已合并云端 ' + appendedCnt + ' 条最新登记');
-        console.info('[export_tuoke] 云端补集 append: ' + appendedCnt + ' 条 (static=' + staticRows.length + ' cloud=' + cloudRows.length + ')');
+      var merged = staticRows.slice();
+      var mergedFieldCnt = 0, appendedCnt = 0;
+      cloudRows.forEach(function (cr) {
+        if (!cr || !cr.name) return;
+        var k = String(cr._id || cr.id || '');
+        if (k && byId[k] != null) {
+          // 字段级并集：云端非空字段覆盖静态（sale 单独判定）
+          var sr = merged[byId[k]];
+          var out = {};
+          Object.keys(sr).forEach(function(f){ out[f] = sr[f]; });
+          Object.keys(cr).forEach(function(f){
+            if (f === 'sale' || f === '_rtx' || f === '_recorded_by') return;
+            var v = cr[f];
+            if (v !== undefined && v !== null && v !== '') out[f] = v;
+          });
+          out.sale = _resolveSaleWithR84(sr, cr, overrideMap);
+          out._rtx = out.sale;
+          out._recorded_by = out.sale;
+          merged[byId[k]] = out;
+          mergedFieldCnt++;
+        } else {
+          // 云端新记录 → 直接 append，sale 也套 override
+          var out = {};
+          Object.keys(cr).forEach(function(f){ out[f] = cr[f]; });
+          out.sale = _resolveSaleWithR84(null, cr, overrideMap);
+          out._rtx = out.sale;
+          out._recorded_by = out.sale;
+          merged.push(out);
+          appendedCnt++;
+        }
+      });
+      if (mergedFieldCnt > 0 || appendedCnt > 0) {
+        toast('云端合并：字段更新 ' + mergedFieldCnt + ' 条，新增 ' + appendedCnt + ' 条');
+        console.info('[export_tuoke] R8.4 字段级并集: fieldMerged=' + mergedFieldCnt + ' appended=' + appendedCnt + ' (static=' + staticRows.length + ' cloud=' + cloudRows.length + ')');
       }
       return merged;
     });
