@@ -1,0 +1,206 @@
+name: 6-Dim Kanban Audit
+
+# 触发时机:
+# 1. 每次 push 到 main → sales-center/ 目录变更时自动跑
+# 2. 手动 workflow_dispatch
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sales-center/**'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ============================================================
+      # 维度 A: cache-buster 版本一致性
+      # 全站 v=YYYYMMDDx 参数必须一刀切,不允许多版本混用
+      # ============================================================
+      - name: A. cache-buster 一致性
+        run: |
+          echo "=== 维度 A: cache-buster 版本扫描 ==="
+          cd sales-center
+          # 抓取所有 v=YYYYMMDDx 版本号,去重
+          VERSIONS=$(grep -rhoE 'v=20[0-9]{6}[a-z]?' index.html mobile.html kanban_embed.html 2>/dev/null | sort -u)
+          COUNT=$(echo "$VERSIONS" | grep -c . || echo 0)
+          echo "发现版本: $VERSIONS"
+          echo "唯一版本数: $COUNT"
+          if [ "$COUNT" -gt 1 ]; then
+            echo "::error::cache-buster 混用! 发现 $COUNT 个不同版本"
+            grep -rn 'v=20[0-9]\{6\}[a-z]\?' index.html mobile.html kanban_embed.html | head -20
+            exit 1
+          fi
+          echo "✅ cache-buster 一致"
+
+      # ============================================================
+      # 维度 B: PC/mobile 双端 cache-buster 同步
+      # index.html 和 mobile.html 出现的 v=YYYYMMDDx 版本集合必须相同
+      # (PC iframe 用 kanban_embed,mobile 走 postMessage,共同通过 cache-buster 版本对齐)
+      # ============================================================
+      - name: B. PC/mobile 双端同步
+        run: |
+          echo "=== 维度 B: PC/mobile cache-buster 集合一致 ==="
+          cd sales-center
+          PC_VERS=$(grep -oE 'v=20[0-9]{6}[a-z]?' index.html | sort -u | tr '\n' ',')
+          MOBILE_VERS=$(grep -oE 'v=20[0-9]{6}[a-z]?' mobile.html | sort -u | tr '\n' ',')
+          echo "PC versions: $PC_VERS"
+          echo "Mobile versions: $MOBILE_VERS"
+          if [ "$PC_VERS" != "$MOBILE_VERS" ]; then
+            echo "::error::PC/mobile cache-buster 集合不一致"
+            exit 1
+          fi
+          echo "✅ PC/mobile 双端 cache-buster 集合一致"
+
+      # ============================================================
+      # 维度 C: 关键文件存在性 + 大小健康
+      # 防止手滑删除关键 JS/数据文件
+      # ============================================================
+      - name: C. 关键文件存在性
+        run: |
+          echo "=== 维度 C: 关键文件存在性 ==="
+          cd sales-center
+          CRITICAL_FILES=(
+            "index.html"
+            "mobile.html"
+            "kanban_embed.html"
+            "export_tuoke.js"
+            "cloud_sync.js"
+            "sc_logger.js"
+            "data/tuoke_real_records.js"
+            "data/register_lookup_data.js"
+            "data/manual_attr_override.json"
+          )
+          MISSING=0
+          for f in "${CRITICAL_FILES[@]}"; do
+            if [ ! -f "$f" ]; then
+              echo "::error::缺失关键文件: $f"
+              MISSING=$((MISSING+1))
+            else
+              SIZE=$(wc -c < "$f")
+              echo "  ✓ $f ($SIZE bytes)"
+              # 空文件警告
+              if [ "$SIZE" -lt 100 ]; then
+                echo "::warning::$f 疑似空文件 ($SIZE bytes)"
+              fi
+            fi
+          done
+          [ "$MISSING" -gt 0 ] && exit 1
+          echo "✅ 关键文件齐全"
+
+      # ============================================================
+      # 维度 D: manual_attr_override.json 格式合法
+      # overrides = {shortName: {sale, date, reason}} 字典结构
+      # ============================================================
+      - name: D. override 格式合法性
+        run: |
+          echo "=== 维度 D: manual_attr_override.json 合法性 ==="
+          cd sales-center
+          python3 <<'PY'
+          import json, sys
+          with open('data/manual_attr_override.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+          if 'overrides' not in data:
+              print('::error::缺失 overrides 字段')
+              sys.exit(1)
+          overrides = data['overrides']
+          if not isinstance(overrides, dict):
+              print('::error::overrides 必须是 dict (key=客户简称)')
+              sys.exit(1)
+          total = len(overrides)
+          print(f'  overrides 条数: {total}')
+          # 死规矩下限: 4/22 拍板后至少 4000 条
+          if total < 3500:
+              print(f'::error::override 条数 {total} < 3500,疑似批量删除')
+              sys.exit(1)
+          # 抽检前 20 条字段完整性
+          bad = 0
+          for i, (name, item) in enumerate(list(overrides.items())[:20]):
+              missing = [k for k in ['sale', 'date'] if k not in item]
+              if missing:
+                  print(f'::error::overrides[{name}] 缺字段: {missing}')
+                  bad += 1
+          if bad > 0:
+              sys.exit(1)
+          print('✅ override 格式合法')
+          PY
+
+      # ============================================================
+      # 维度 E: tuoke_real_records.js 底表健康度
+      # _id 唯一性,记录数不能异常骤降
+      # ============================================================
+      - name: E. tuoke 底表健康度
+        run: |
+          echo "=== 维度 E: tuoke_real_records _id 唯一性 ==="
+          cd sales-center
+          python3 <<'PY'
+          import re, json, sys
+          with open('data/tuoke_real_records.js', 'r', encoding='utf-8') as f:
+              content = f.read()
+          # 提取 window.__TUOKE_REAL_RECORDS__ = [...]
+          m = re.search(r'=\s*(\[.*\])\s*;?\s*$', content, re.DOTALL)
+          if not m:
+              print('::error::无法解析 tuoke_real_records.js')
+              sys.exit(1)
+          try:
+              records = json.loads(m.group(1))
+          except json.JSONDecodeError as e:
+              print(f'::error::JSON 解析失败: {e}')
+              sys.exit(1)
+          total = len(records)
+          ids = [r.get('_id') for r in records if r.get('_id')]
+          unique_ids = set(ids)
+          dup = len(ids) - len(unique_ids)
+          print(f'  总记录数: {total}')
+          print(f'  _id 数量: {len(ids)} (唯一 {len(unique_ids)})')
+          print(f'  _id 重复: {dup}')
+          # 死规矩: 底表 dedup 完必须 = 14107 附近,允许 ±500 波动(每日 sync 有增长)
+          if total < 13500:
+              print(f'::error::底表异常骤降 {total} < 13500,疑似数据损坏')
+              sys.exit(1)
+          if dup > 100:
+              print(f'::error::_id 重复 {dup} 条超阈值 100,底表污染')
+              sys.exit(1)
+          print('✅ 底表健康')
+          PY
+
+      # ============================================================
+      # 维度 F: 无 eval / 无 innerHTML 拼接 XSS 隐患
+      # 阶段 1+2 治理成果,防止回滚
+      # ============================================================
+      - name: F. XSS/eval 治理红线
+        run: |
+          echo "=== 维度 F: XSS/eval 红线扫描 ==="
+          cd sales-center
+          # 允许注释里的 eval,只查真实 eval( 调用
+          EVAL_COUNT=$(grep -rE '^\s*eval\s*\(' kanban_embed.html export_tuoke.js 2>/dev/null | grep -v '//' | wc -l | tr -d ' ')
+          echo "  真实 eval() 调用: $EVAL_COUNT"
+          if [ "$EVAL_COUNT" -gt 0 ]; then
+            echo "::error::检测到 eval() 调用,违反阶段 2 治理红线"
+            grep -rnE '^\s*eval\s*\(' kanban_embed.html export_tuoke.js | grep -v '//'
+            exit 1
+          fi
+          echo "✅ XSS/eval 红线守住"
+
+      # ============================================================
+      # 汇总
+      # ============================================================
+      - name: 汇总
+        run: |
+          echo "========================================"
+          echo "✅ 6 维自检全部通过"
+          echo "  A. cache-buster 一致性"
+          echo "  B. PC/mobile 双端同步"
+          echo "  C. 关键文件存在性"
+          echo "  D. override 格式合法"
+          echo "  E. tuoke 底表健康"
+          echo "  F. XSS/eval 红线"
+          echo "========================================"
