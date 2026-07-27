@@ -41,11 +41,11 @@
   // CloudBase token 持久化到 localStorage，之后免登录直到 token 过期（默认 30 天）
   function buildEmail(rtx) { return rtx; }  // 直接用 rtx 当 username 登录
   var SALES_LIST = [
-    { rtx: 'ziqingdu',     name: '子青',          is_admin: true },
+    { rtx: 'ziqingdu',     name: 'Ziqingdu',       is_admin: true },
     { rtx: 'kinsleyjin',   name: 'Kinsleyjin',    is_admin: true },
     { rtx: 'edcchen',      name: 'Edcchen',       is_admin: true },
     { rtx: 'jonzhu',       name: 'Jonzhu' },
-    { rtx: 'grettazhao', name: '赵雪晴' },
+    { rtx: 'grettazhao', name: 'Grettazhao' },
     { rtx: 'kaikaigenli',  name: 'Kaikaigenli' },
     { rtx: 'yvaineechen',  name: 'Yvaineechen' },
     { rtx: 'lijunwu',      name: 'Lijunwu' },
