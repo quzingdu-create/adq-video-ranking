@@ -88,7 +88,7 @@
         var data = body.data || {};
         var rows = data.rows || [];
         acc = acc.concat(rows);
-        if (data.hasMore && data.nextCursor && acc.length < 5000) {
+        if (data.hasMore && data.nextCursor && acc.length < 50000) {
           return pullPage(data.nextCursor);
         }
         return acc;
