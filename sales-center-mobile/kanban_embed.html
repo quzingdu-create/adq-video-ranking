@@ -8,6 +8,8 @@
      echarts/xlsx 仅在渲染函数内使用，defer 后于 DOMContentLoaded 前就绪，renderAll() 已改到 DOMContentLoaded 执行。 -->
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
+<script src="sc_logger.js?v=20260727e"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -4414,18 +4416,21 @@ function openEditRecord(rid) {
     }
     const saleHint = $('m-sales-hint');
     if (saleHint) {
+      // XSS 防护：rec.sale/name 可能来自销售自填字段，走 SC.esc 转义
+      const _esc = (window.__SC && window.__SC.esc) || function(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); };
+      const _saleEsc = _esc(rec.sale || '未分配');
       if (__isAdmin) {
-        saleHint.innerHTML = '🔓 <b style="color:#7c3aed;">管理员模式</b> · 可任意改归属（原归属：' + (rec.sale || '未分配') + '）';
+        saleHint.innerHTML = '🔓 <b style="color:#7c3aed;">管理员模式</b> · 可任意改归属（原归属：' + _saleEsc + '）';
         saleHint.style.cssText = 'font-size:11px;color:#7c3aed;margin-top:4px;';
       } else if (__isOwner) {
-        saleHint.innerHTML = '✏️ <b style="color:#0369a1;">修改模式</b> · 这是你名下的客户，可重新分配给其他销售（系统会记录变更：原 ' + rec.sale + ' → 新归属）';
+        saleHint.innerHTML = '✏️ <b style="color:#0369a1;">修改模式</b> · 这是你名下的客户，可重新分配给其他销售（系统会记录变更：原 ' + _esc(rec.sale) + ' → 新归属）';
         saleHint.style.cssText = 'font-size:11px;color:#0369a1;margin-top:4px;';
       } else {
-        saleHint.innerHTML = '🔒 该客户归属 <b>' + (rec.sale || '未分配') + '</b>，你只能修改类目/资源/链路等字段。<br>想把客户改到自己名下，请联系 <b>' + (rec.sale || '管理员') + '</b> 在 ta 自己的账号下修改归属。';
+        saleHint.innerHTML = '🔒 该客户归属 <b>' + _saleEsc + '</b>，你只能修改类目/资源/链路等字段。<br>想把客户改到自己名下，请联系 <b>' + _esc(rec.sale || '管理员') + '</b> 在 ta 自己的账号下修改归属。';
         saleHint.style.cssText = 'font-size:11px;color:#b45309;margin-top:4px;line-height:1.5;';
       }
     }
-    // 改弹窗标题
+    // 改弹窗标题（textContent 安全，无 XSS 风险）
     const titleEl = document.querySelector('#modalRecord [style*="font-size:15px"]');
     if (titleEl) titleEl.textContent = '修改/补充：' + (rec.shortName || rec.name);
     // 提交按钮文案
