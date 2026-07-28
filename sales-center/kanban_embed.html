@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260728b"></script>
+<script src="sc_logger.js?v=20260728c"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -50,7 +50,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260728b')
+    return fetch('data/manual_attr_override.json?v=20260728c')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -86,33 +86,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260728b"></script>
-<script defer src="api_client.js?v=20260728b"></script>
-<script defer src="data_adapter.js?v=20260728b"></script>
+<script defer src="cloud_gray_switch.js?v=20260728c"></script>
+<script defer src="api_client.js?v=20260728c"></script>
+<script defer src="data_adapter.js?v=20260728c"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260728b"></script> -->
-<script src="data/center_sales_summary.js?v=20260728b"></script>
-<script src="data/center_quarter_summary.js?v=20260728b"></script>
-<script src="data/center_daily_kpi.js?v=20260728b"></script>
-<script src="data/top80_effective_metrics.js?v=20260728b"></script>
-<script src="data/top_status_data.js?v=20260728b"></script>
-<script src="data/enough_candidates.js?v=20260728b"></script>
-<script src="data/handover_customers_519.js?v=20260728b"></script>
-<script src="data/target_brand_pool.js?v=20260728b"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260728c"></script> -->
+<script src="data/center_sales_summary.js?v=20260728c"></script>
+<script src="data/center_quarter_summary.js?v=20260728c"></script>
+<script src="data/center_daily_kpi.js?v=20260728c"></script>
+<script src="data/top80_effective_metrics.js?v=20260728c"></script>
+<script src="data/top_status_data.js?v=20260728c"></script>
+<script src="data/enough_candidates.js?v=20260728c"></script>
+<script src="data/handover_customers_519.js?v=20260728c"></script>
+<script src="data/target_brand_pool.js?v=20260728c"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260728b" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260728c" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260728b"></script>
-<script defer src="dual_check.js?v=20260728b"></script>
-<script defer src="big_data_dual_check.js?v=20260728b"></script>
+<script defer src="cloud_sync.js?v=20260728c"></script>
+<script defer src="dual_check.js?v=20260728c"></script>
+<script defer src="big_data_dual_check.js?v=20260728c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -915,7 +915,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728c`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1114,7 +1114,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728c" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1130,7 +1130,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728c" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1215,7 +1215,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1837,11 +1837,62 @@ function _ensurePushBannerEl(){
   document.body.appendChild(el);
   return el;
 }
-function _showPushFailBanner(text){
+/* 🦞 2026-07-28c 强化 banner：加"立即重试"+"放弃"按钮 + 显示重试次数 + 失败原因
+   Bug 修复：
+   - "我知道了" 按钮只 hide 不停定时器，30s 后会再弹 → 加"放弃"按钮一键清理队列
+   - 加"立即重试"按钮，销售可主动触发，不等 30s
+   - 失败原因显示在 banner 上，销售/管理员一眼判断是网络/SDK/参数问题
+   - 同一 record 的 banner 累计重试次数显示，让管理员能远程判断
+*/
+function _showPushFailBanner(text, errMsg){
   try {
     var el = _ensurePushBannerEl();
-    el.innerHTML = '⚠️ ' + text + ' <button onclick="this.parentNode.style.display=\'none\'" style="margin-left:12px;background:#fff;color:#dc2626;border:0;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">我知道了</button>';
+    var errStr = '';
+    try {
+      if (errMsg) {
+        var msgStr = (typeof errMsg === 'string') ? errMsg : (errMsg && errMsg.message) ? errMsg.message : String(errMsg);
+        if (msgStr && msgStr.length > 100) msgStr = msgStr.substring(0, 100) + '…';
+        errStr = ' <span style="opacity:.85;font-weight:400;font-size:12px;margin-left:4px;">[' + msgStr + ']</span>';
+      }
+    } catch(_){}
+    var retryInfo = '';
+    try {
+      var q = window.__PENDING_PUSH_QUEUE__ || {};
+      var keys = Object.keys(q);
+      var totalRetry = 0;
+      keys.forEach(function(k){ var r = q[k]; if (r) totalRetry += (r._retryCount || 0); });
+      if (totalRetry > 0) retryInfo = ' <span style="opacity:.85;font-weight:400;font-size:12px;margin-left:4px;">(已自动重试 ' + totalRetry + ' 次)</span>';
+    } catch(_){}
+    el.innerHTML =
+      '⚠️ ' + text + errStr + retryInfo +
+      ' <button id="__cloudRetryNowBtn" style="margin-left:12px;background:#fff;color:#dc2626;border:0;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">立即重试</button>' +
+      ' <button id="__cloudDropBtn" style="margin-left:6px;background:transparent;color:#fff;border:1px solid #fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">放弃（已存本地）</button>' +
+      ' <button id="__cloudHideBtn" style="margin-left:6px;background:transparent;color:#fff;border:1px solid #fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">我知道了</button>';
     el.style.display = 'block';
+    // 绑定按钮（onclick 不要写在 inline，避免引用被 HTML 解析时未定义）
+    var rb = document.getElementById('__cloudRetryNowBtn');
+    if (rb) rb.onclick = function(){
+      try {
+        var q = window.__PENDING_PUSH_QUEUE__ || {};
+        var keys = Object.keys(q);
+        if (!keys.length) { _hidePushFailBanner(); return; }
+        setCloudStatus('☁️ 立即重试 ' + keys.length + ' 条…', true);
+        keys.forEach(function(k){ var rec = q[k]; if (rec) pushRecordToCloud(rec, 0, true); });
+      } catch(_){}
+    };
+    var db = document.getElementById('__cloudDropBtn');
+    if (db) db.onclick = function(){
+      try {
+        if (!confirm('放弃云端同步？\n\n登记已存到本机（localStorage），不会丢。\n云函数恢复后下次打开看板会自动补推。\n\n确认放弃？')) return;
+        window.__PENDING_PUSH_QUEUE__ = {};
+        if (window.__PENDING_RETRY_TIMER__) { clearInterval(window.__PENDING_RETRY_TIMER__); window.__PENDING_RETRY_TIMER__ = null; }
+        _hidePushFailBanner();
+        setCloudStatus('⏸️ 已放弃云端同步（数据存本地）', false);
+        console.info('[cloud] user dropped pending queue, all local-only now');
+      } catch(_){}
+    };
+    var hb = document.getElementById('__cloudHideBtn');
+    if (hb) hb.onclick = function(){ _hidePushFailBanner(); };
   } catch(_){}
 }
 function _hidePushFailBanner(){
@@ -1891,8 +1942,18 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
       console.warn('[cloud] saveUserRecord rejected', (r && r.error && r.error.message) || r);
       // Bug1: 云函数明确拒绝 → 立即强通知，不再静默
       var msg = (r && r.error && r.error.message) || '未知原因';
-      _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」被服务端拒绝：' + msg + '，30秒后自动重试');
-      setCloudStatus('⚠️ 同步被拒，30s后重试', false);
+      // Bug3: 30s 定时器重试被拒 → 不重弹 banner（避免反复弹），仅更新状态；首次拒绝才弹
+      if (!isRetryFromQueue) {
+        _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」被服务端拒绝：' + msg + '，30秒后自动重试', msg);
+        setCloudStatus('⚠️ 同步被拒，30s后重试', false);
+      } else {
+        rec._retryCount = (rec._retryCount || 0) + 1;
+        setCloudStatus('⚠️ 重试 ' + rec._retryCount + ' 次仍被拒（' + msg.substring(0, 30) + '）', false);
+        // 重试被拒 ≥ 5 次才再次弹 banner 提醒
+        if (rec._retryCount === 5 || rec._retryCount === 20 || rec._retryCount === 60) {
+          _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」云端持续被拒（已自动重试 ' + rec._retryCount + ' 次）：' + msg, msg);
+        }
+      }
       window.__PENDING_PUSH_QUEUE__[rec.id] = rec;
       _startPendingRetryTimer();
     }
@@ -1900,8 +1961,19 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
     console.warn('[cloud] push fail id=' + rec.id, e && e.message);
     if (attempt < 3) { setTimeout(function(){ pushRecordToCloud(rec, attempt + 1, isRetryFromQueue); }, 1500 * (attempt + 1)); return; }
     // Bug1: 3 次重试完 → 强通知 + 加入 30s 定时重试队列（不再依赖 online 事件）
-    _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」提交云端失败，已加入自动重试队列（30秒/次）');
-    setCloudStatus('⚠️ 已加入自动重试队列', false);
+    // Bug3: 30s 定时器重试失败 → 不重弹 banner（避免反复弹），仅更新状态；首次失败才弹
+    if (!isRetryFromQueue) {
+      _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」提交云端失败，已加入自动重试队列（30秒/次）', e && e.message);
+      setCloudStatus('⚠️ 已加入自动重试队列', false);
+    } else {
+      rec._retryCount = (rec._retryCount || 0) + 1;
+      var em = (e && e.message) ? e.message.substring(0, 40) : '网络异常';
+      setCloudStatus('⚠️ 重试 ' + rec._retryCount + ' 次仍失败（' + em + '）', false);
+      // 重试失败 ≥ 5 次才再次弹 banner 提醒
+      if (rec._retryCount === 5 || rec._retryCount === 20 || rec._retryCount === 60) {
+        _showPushFailBanner('登记「' + (rec.shortName || rec.name || '') + '」云端持续失败（已自动重试 ' + rec._retryCount + ' 次）：' + em, e && e.message);
+      }
+    }
     window.__PENDING_PUSH_QUEUE__[rec.id] = rec;
     _startPendingRetryTimer();
   });
@@ -4242,7 +4314,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260728b';
+  s.src = 'data/bulk_import_rows.js?v=20260728c';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
