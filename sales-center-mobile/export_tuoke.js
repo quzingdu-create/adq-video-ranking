@@ -151,6 +151,10 @@
           }
         }
       }
+      // Round 12 (2026-07-28): "子青指令登记" 是内部审计字段，销售看到会困惑 → 兜底为空
+      if (r.source === '子青指令登记' || (r.source && String(r.source).indexOf('子青指令') === 0)) {
+        r = Object.assign({}, r, { source: '' });
+      }
       return r;
     });
     console.info('[export_tuoke] Round 11 白名单+日期兜底: ' + before + ' → ' + out.length);
