@@ -1,5 +1,10 @@
 {
-  "v": "20260728e",
-  "date": "2026-07-28",
-  "note": "2026-07-28 Round 6 修复: 销售零门槛云端诊断 - banner 加『🔍 一键诊断』按钮, 点击后自动跑云函数测试、抓完整登录态/SDK/错误 stack, 父窗口弹可复制诊断报告文本框, 一键『复制并发子青』直接粘贴到企微. 销售不用再学 F12/testCloudSave/命令行. cache-buster 20260728d→20260728e."
+  "v": "20260728f",
+  "built": "2026-07-28T08:00:00Z",
+  "note": "Round 7 P0 根因修复: CloudBase SDK 返回结构双兼容 (res.result / res 直读), 修复销售端『未知原因』误报; banner 改右上角浮层不遮挡登记入口",
+  "critical_fixes": [
+    "saveUserRecord 响应解析: 兼容 SDK 直接返回 {ok,...} 而非 {result:{ok,...}} 的情况",
+    "listUserRecords / checkCustomer / getAuditLog 同款双兼容",
+    "banner 从顶部横条改为右上角胶囊浮层"
+  ]
 }
