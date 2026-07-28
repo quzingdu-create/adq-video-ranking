@@ -1,11 +1,10 @@
 {
-  "v": "20260728i",
-  "built": "2026-07-28T17:30:00Z",
-  "note": "Round 9-i 4合1 根治收敛 (mobile 同源): 屏蔽诊断测试/白名单过滤/SDK双兼容/正确路径",
+  "v": "20260728j",
+  "built": "2026-07-28T18:58:00Z",
+  "note": "Round 10 P0 根治: cloud.callFunction 走匿名快路径 - 跳过 ensureReady 的鉴权，直接 SDK init 后调云函数(listUserRecords/saveUserRecord 后台已配免登录)",
   "critical_fixes": [
-    "cloudList.filter/USER_RECORDS 加载时双重过滤 __诊断测试__",
-    "export_tuoke.js TUOKE_WHITELIST 只保留 6 位拓新组销售",
-    "export_tuoke.js 修 SDK 双兼容",
-    "PUT 到 sales-center-mobile/ 根路径"
+    "cloud_sync.js callFunction: 不再 ensureReady().then, 改为只 SDK init 直接调 → 解决点刷新弹'NEED_PASSWORD' + 云端拉不到今天登记 双 P0",
+    "kanban_embed.html catch: NEED_PASSWORD 静默(防御性) - 双保险不再吓到销售",
+    "callApi 也走 callFunction, 自动受益 - 义乌等新登记也会推上云并被其他人看到"
   ]
 }
