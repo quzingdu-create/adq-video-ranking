@@ -1,11 +1,10 @@
 {
-  "v": "20260728i",
-  "built": "2026-07-28T17:30:00Z",
-  "note": "Round 9-i 4合1 根治收敛: (1)前后端双端永久屏蔽__诊断测试__残留 (2)登记明细下载走拓新组白名单(排除 sale=其他 2434条) (3)export_tuoke.js修 CloudBase SDK 双兼容 (4)PUT 到正确的根路径 sales-center/",
+  "v": "20260728j",
+  "built": "2026-07-28T18:58:00Z",
+  "note": "Round 10 P0 根治: cloud.callFunction 走匿名快路径 - 跳过 ensureReady 的鉴权，直接 SDK init 后调云函数(listUserRecords/saveUserRecord 后台已配免登录)",
   "critical_fixes": [
-    "cloudList.filter/USER_RECORDS 加载时双重过滤 __诊断测试__ - 云端删没删干净都不显示",
-    "export_tuoke.js: TUOKE_WHITELIST 只保留 6 位拓新组销售 (kaikaigenli/Jonzhu/lijunwu/yvaineechen/ruilingzhan/kinsleyjin), 排除历史 excel 导入的 sale=其他 2434 条",
-    "export_tuoke.js L86: 修 CloudBase SDK 1.8.0 返回结构双兼容 (r.result 可能缺失导致云端合并静默失败, 下载明细只有 T-1 静态快照)",
-    "PUT 6 文件到仓库根 sales-center/ 正确路径 (h 版误 PUT 到 github_pages_adq_publish/ 目录, 销售访问的根路径没更新)"
+    "cloud_sync.js callFunction: 不再 ensureReady().then, 改为只 SDK init 直接调 → 解决点刷新弹'NEED_PASSWORD' + 云端拉不到今天登记 双 P0",
+    "kanban_embed.html catch: NEED_PASSWORD 静默(防御性) - 双保险不再吓到销售",
+    "callApi 也走 callFunction, 自动受益 - 义乌等新登记也会推上云并被其他人看到"
   ]
 }
