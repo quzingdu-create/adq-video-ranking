@@ -7,32 +7,32 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 分级日志（生产 info+，本地 debug；必须最先，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260728d"></script>
+<script src="sc_logger.js?v=20260728e"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260728d"></script>
+<script src="auth-guard.js?v=20260728e"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260728d"></script>
-<script defer src="api_client.js?v=20260728d"></script>
-<script defer src="data_adapter.js?v=20260728d"></script>
+<script defer src="cloud_gray_switch.js?v=20260728e"></script>
+<script defer src="api_client.js?v=20260728e"></script>
+<script defer src="data_adapter.js?v=20260728e"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script defer src="lib_loader.js?v=20260728d"></script>
-<script src="data/current_rising_data.js?v=20260728d"></script>
+<script defer src="lib_loader.js?v=20260728e"></script>
+<script src="data/current_rising_data.js?v=20260728e"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260728d"></script>
-<script src="data/center_quarter_summary.js?v=20260728d"></script>
-<script src="data/center_daily_kpi.js?v=20260728d"></script>
-<script src="data/top80_effective_metrics.js?v=20260728d"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260728e"></script>
+<script src="data/center_quarter_summary.js?v=20260728e"></script>
+<script src="data/center_daily_kpi.js?v=20260728e"></script>
+<script src="data/top80_effective_metrics.js?v=20260728e"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260728d"></script>
-<script src="data/redblack_data.js?v=20260728d"></script>
+<script src="data/top_rising_data.js?v=20260728e"></script>
+<script src="data/redblack_data.js?v=20260728e"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260728d"></script>
-<script defer src="dual_check.js?v=20260728d"></script>
-<script defer src="big_data_dual_check.js?v=20260728d"></script>
-<script defer src="login_guard_banner.js?v=20260728d"></script>
+<script defer src="cloud_sync.js?v=20260728e"></script>
+<script defer src="dual_check.js?v=20260728e"></script>
+<script defer src="big_data_dual_check.js?v=20260728e"></script>
+<script defer src="login_guard_banner.js?v=20260728e"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script defer src="export_tuoke.js?v=20260728d"></script>
+<script defer src="export_tuoke.js?v=20260728e"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -762,7 +762,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&user=kinsleyjin&v=20260728d"
+      src="mobile.html?embed=1&user=kinsleyjin&v=20260728e"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1336,7 +1336,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="battleFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260728d" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260728e" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1352,7 +1352,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="lifeFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260728d" scrolling="auto" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:auto;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260728e" scrolling="auto" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:auto;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -1710,7 +1710,7 @@ function updateHomeMobileFrameUser(forceReload){
   const frame = document.getElementById('homeMobileFrame');
   if (!frame) return;
   const user = encodeURIComponent(syncCurrentUserFromCloud() || 'kinsleyjin');
-  const target = `mobile.html?embed=1&user=${user}&v=20260728d`;
+  const target = `mobile.html?embed=1&user=${user}&v=20260728e`;
   const src = frame.getAttribute('src') || '';
   if (forceReload || src === 'about:blank' || !src.includes(`user=${user}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   try { frame.contentWindow && frame.contentWindow.postMessage({type:'set-mobile-sale', sale: CURRENT_USER}, '*'); } catch(e){}
@@ -2140,7 +2140,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const minH = 760;
   bindKanbanFrameResize(frameId, minH);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260728d`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260728e`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2162,7 +2162,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260728d`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260728e`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2246,12 +2246,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260728d`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260728e`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260728d`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260728e`);
   }
 }
 function updateViewToggle() {
@@ -2556,6 +2556,63 @@ window.addEventListener('message', function(ev){
   }
   // 2026-05-26 21:08 拍板「纯 parent 单一真源」：删掉 cleanup-progress 分支
   // mobile.html 继续 postMessage 也没人接收（无害），cleanup-card 永远走 parent 算法
+  // 2026-07-28 Round 6: iframe 传来云端诊断报告 → parent 弹可复制文本框
+  if (ev && ev.data && ev.data.type === 'cloud-diag-report') {
+    try {
+      var report = ev.data.payload || '(空报告)';
+      // 创建全屏遮罩 + 可复制文本框（销售一眼看懂，一键复制）
+      var mask = document.createElement('div');
+      mask.id = '__cloudDiagMask';
+      mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;';
+      mask.innerHTML =
+        '<div style="background:#fff;max-width:720px;width:100%;max-height:85vh;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.4);">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+            '<h3 style="margin:0;color:#dc2626;font-size:18px;">🔍 云端诊断报告</h3>' +
+            '<button id="__diagClose" style="background:#e5e7eb;border:0;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;">关闭</button>' +
+          '</div>' +
+          '<div style="color:#374151;font-size:13px;line-height:1.6;">' +
+            '👉 <b>点「复制全部」→ 粘贴到企微发给管理员</b>（含子青@ziqingdu）。管理员从下面这段文本能定位到具体失败原因（登录态/网络/云函数错误）。' +
+          '</div>' +
+          '<textarea id="__diagText" readonly style="flex:1;min-height:280px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;padding:12px;border:1px solid #d1d5db;border-radius:8px;resize:vertical;background:#f9fafb;color:#111827;"></textarea>' +
+          '<div style="display:flex;gap:8px;justify-content:flex-end;">' +
+            '<button id="__diagCopy" style="background:#2563eb;color:#fff;border:0;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;">📋 复制全部</button>' +
+            '<button id="__diagWecom" style="background:#10b981;color:#fff;border:0;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;">💬 复制并发子青</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(mask);
+      var ta = document.getElementById('__diagText');
+      if (ta) ta.value = report;
+      document.getElementById('__diagClose').onclick = function(){ mask.remove(); };
+      document.getElementById('__diagCopy').onclick = function(){
+        try {
+          ta.select(); ta.setSelectionRange(0, 999999);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(report).then(function(){
+              var btn = document.getElementById('__diagCopy');
+              btn.textContent = '✅ 已复制'; btn.style.background = '#059669';
+              setTimeout(function(){ btn.textContent = '📋 复制全部'; btn.style.background = '#2563eb'; }, 2000);
+            });
+          } else {
+            document.execCommand('copy');
+            alert('已复制，粘贴到企微即可');
+          }
+        } catch(e){ alert('复制失败，请手动 Cmd+A 全选后 Cmd+C 复制'); }
+      };
+      document.getElementById('__diagWecom').onclick = function(){
+        try {
+          var text = '@ziqingdu 云端登记失败 求排查\n\n' + report;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function(){
+              alert('✅ 诊断报告已复制到剪贴板（含 @ziqingdu 前缀）\n\n下一步：打开企微对话，直接 Cmd+V 粘贴发送即可');
+            });
+          } else {
+            ta.value = text; ta.select(); document.execCommand('copy');
+            alert('✅ 已复制，请打开企微对话粘贴发送');
+          }
+        } catch(e){ alert('复制失败：' + (e && e.message)); }
+      };
+    } catch(err) { console.error('[parent] diag report render fail:', err); }
+  }
 });
 
 // 2026-05-27 页面生命周期：页面关闭/刷新时结束 session，切回页面时心跳
@@ -3593,7 +3650,7 @@ function renderAll() {
 renderAll();
 // 2026-06-15 子青：今日待办首屏 3 秒优先，主营商品标签后置加载，加载后补渲染。
 (function loadMainProductAfterFirstPaint(){
-  const run = () => fetch('data/customer_main_product.js?v=20260728d', {cache:'force-cache'})
+  const run = () => fetch('data/customer_main_product.js?v=20260728e', {cache:'force-cache'})
     .then(r => r.ok ? r.text() : '')
     .then(code => { if (code) (0, eval)(code); try { renderSummaryBoard(); } catch(e){} })
     .catch(e => console.warn('[lazy-product]', e));
