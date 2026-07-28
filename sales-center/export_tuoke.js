@@ -69,7 +69,10 @@
 
   // R11.9 (2026-07-01): 下载前合并云端 T-0 新登记 (含今天销售登记的)
   // 之前: 只读 tuoke_real_records.js 静态 T-1 快照 → 同事下载看不到今天登记 → 打脸
-  // 现在: 静态 + 云端最近 3 天增量, 按 _id 去重合并
+  // 现在: 静态 + 云端 tuoke_records 全量 + 云端 tuoke_user_records 增量（销售新登记）三合一, 按 _id 去重合并
+  // 2026-07-28 Round 11 P0 根治: 销售登记走 saveUserRecord 写到 tuoke_user_records 集合，
+  //   老 exportAllRecords 只拉 tuoke_records → 义乌市伊谨等今天登记的客户永远不在下载 excel 里
+  //   → 新增 fetchCloudUserRecords 拉 tuoke_user_records 并合并
   function fetchCloudRecentTuoke() {
     if (!window.cloud || typeof window.cloud.callFunction !== 'function') {
       return Promise.resolve([]);
@@ -97,9 +100,61 @@
       });
     }
     return pullPage(null).catch(function (err) {
-      console.warn('[export_tuoke] 拉云端 tuoke 失败, 用静态兜底:', err);
+      console.warn('[export_tuoke] 拉云端 tuoke_records 失败, 用静态兜底:', err);
       return [];
     });
+  }
+
+  // 2026-07-28 Round 11 P0 根治: 拉 tuoke_user_records (销售登记直写的集合)
+  function fetchCloudUserRecords() {
+    if (!window.cloud || typeof window.cloud.callFunction !== 'function') {
+      return Promise.resolve([]);
+    }
+    return window.cloud.callFunction('salesCenterApi', {
+      action: 'listUserRecords',
+      params: { limit: 5000 }
+    }).then(function (r) {
+      var body = (r && r.result && typeof r.result === 'object') ? r.result : (r || {});
+      if (!body.ok) return [];
+      var data = body.data || {};
+      var rows = data.records || [];
+      console.info('[export_tuoke] Round 11: 拉 tuoke_user_records = ' + rows.length + ' 条');
+      return rows;
+    }).catch(function (err) {
+      console.warn('[export_tuoke] 拉云端 tuoke_user_records 失败:', err);
+      return [];
+    });
+  }
+
+  // 2026-07-28 Round 11: 拓新组销售白名单 - 全局共享给静态兜底路径
+  var TUOKE_WHITELIST_R11 = { 'kaikaigenli':1, 'Jonzhu':1, 'lijunwu':1, 'yvaineechen':1, 'ruilingzhan':1, 'kinsleyjin':1 };
+  function applyTuokeWhitelistAndDateFill(rows) {
+    var before = rows.length;
+    var out = rows.filter(function(r){
+      if (!r) return false;
+      var _nm = (r.name || '') + '', _sn = (r.shortName || '') + '';
+      if (_nm.indexOf('__诊断测试__') >= 0 || _sn.indexOf('__诊断测试__') >= 0) return false;
+      if (r.source === 'diag' || (r.id && String(r.id).indexOf('diag_') === 0)) return false;
+      var _sale = (r.sale || r._rtx || r._recorded_by || '') + '';
+      return TUOKE_WHITELIST_R11[_sale] === 1;
+    }).map(function(r){
+      // 登记日期兜底: date 空 → 用 _createdAt / _updatedAt 格式化
+      if (!r.date || String(r.date).length < 8) {
+        var ts = r._createdAt || r._updatedAt || 0;
+        if (ts) {
+          var d = new Date(Number(ts));
+          if (!isNaN(d.getTime())) {
+            var yy = d.getFullYear();
+            var mm = String(d.getMonth()+1).padStart(2,'0');
+            var dd = String(d.getDate()).padStart(2,'0');
+            r = Object.assign({}, r, { date: yy + '-' + mm + '-' + dd });
+          }
+        }
+      }
+      return r;
+    });
+    console.info('[export_tuoke] Round 11 白名单+日期兜底: ' + before + ' → ' + out.length);
+    return out;
   }
 
   // 🦞 2026-07-27 Bug3 新增：主页面加载 override JSON（复用 kanban_embed 里的 __MANUAL_ATTR_OVERRIDE__）
@@ -164,11 +219,20 @@
           if (!Array.isArray(rows) || !rows.length) throw new Error('登记底表为空，请刷新页面后重试');
           return rows;
         });
-    _tuokePromise = Promise.all([staticP, fetchCloudRecentTuoke(), _ensureOverrideMap()]).then(function (arr) {
+    _tuokePromise = Promise.all([staticP, fetchCloudRecentTuoke(), _ensureOverrideMap(), fetchCloudUserRecords()]).then(function (arr) {
       var staticRows = arr[0] || [];
       var cloudRows = arr[1] || [];
       var overrideMap = arr[2] || {};
-      if (!cloudRows.length) return staticRows;
+      var userRecords = arr[3] || [];
+      // 2026-07-28 Round 11: 把 tuoke_user_records (销售新登记) 追加到 cloudRows, 让下面字段级并集统一处理
+      if (userRecords.length) {
+        cloudRows = cloudRows.concat(userRecords);
+        console.info('[export_tuoke] Round 11 合并 tuoke_user_records: cloudRows=' + cloudRows.length + ' (含 ' + userRecords.length + ' 条销售直写)');
+      }
+      if (!cloudRows.length) {
+        // 2026-07-28 Round 11: 静态兜底路径也必须过白名单 + 日期兜底
+        return applyTuokeWhitelistAndDateFill(staticRows);
+      }
       // 🦞 2026-07-27 Bug3 修复：字段级并集 + sale 走 R8.4 优先级链
       // 原逻辑：_id 已存在或 (name,date) 撞 → 云端 skip → 销售今天新登记/最新修改丢失
       // 新逻辑：
@@ -221,20 +285,8 @@
         toast('云端合并：字段更新 ' + mergedFieldCnt + ' 条，新增 ' + appendedCnt + ' 条');
         console.info('[export_tuoke] R8.4 字段级并集: fieldMerged=' + mergedFieldCnt + ' appended=' + appendedCnt + ' (static=' + staticRows.length + ' cloud=' + cloudRows.length + ')');
       }
-      // 2026-07-28 Round 9-i: 拓新组销售白名单过滤 - 只保留 6 位拓新组销售的登记（子青反馈"其他"不该出现在拓新组明细）
-      //   历史 excel 批量导入时字段为空的记录 sale="其他"（2434 条）→ 屏蔽; 同时屏蔽 __诊断测试__ 残留
-      var TUOKE_WHITELIST = { 'kaikaigenli':1, 'Jonzhu':1, 'lijunwu':1, 'yvaineechen':1, 'ruilingzhan':1, 'kinsleyjin':1 };
-      var beforeFilter = merged.length;
-      merged = merged.filter(function(r){
-        if (!r) return false;
-        var _nm = (r.name || '') + '', _sn = (r.shortName || '') + '';
-        if (_nm.indexOf('__诊断测试__') >= 0 || _sn.indexOf('__诊断测试__') >= 0) return false;
-        if (r.source === 'diag' || (r.id && String(r.id).indexOf('diag_') === 0)) return false;
-        var _sale = (r.sale || r._rtx || r._recorded_by || '') + '';
-        return TUOKE_WHITELIST[_sale] === 1;
-      });
-      console.info('[export_tuoke] 拓新组白名单过滤: ' + beforeFilter + ' → ' + merged.length + ' (排除 sale=其他/__诊断测试__/非拓新组销售 ' + (beforeFilter - merged.length) + ' 条)');
-      return merged;
+      // 2026-07-28 Round 11: 复用 applyTuokeWhitelistAndDateFill (白名单 + 日期兜底)
+      return applyTuokeWhitelistAndDateFill(merged);
     });
     return _tuokePromise;
   }
