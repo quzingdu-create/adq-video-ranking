@@ -1,12 +1,11 @@
 {
-  "v": "20260728h",
-  "built": "2026-07-28T15:15:00Z",
-  "note": "Round 9 根治收敛: 删除左下浮标+归属字典 tab（花活回退）, 修复本地持久化静默失败(3轮降级+校验+红条真报错), pull完立即重推pending队列(不等30s), 一次性清理云端诊断测试残留",
+  "v": "20260728i",
+  "built": "2026-07-28T17:30:00Z",
+  "note": "Round 9-i 4合1 根治收敛: (1)前后端双端永久屏蔽__诊断测试__残留 (2)登记明细下载走拓新组白名单(排除 sale=其他 2434条) (3)export_tuoke.js修 CloudBase SDK 双兼容 (4)PUT 到正确的根路径 sales-center/",
   "critical_fixes": [
-    "删除左下角 🔍 诊断浮标（销售视线不再被打扰）",
-    "删除明细列表『归属字典』tab（销售看不到系统字典）",
-    "persistUserRecordsBestEffort 从静默改为验证持久化: 2000→500→100 三轮降级 + getItem 校验 + 全部失败时用红条明确报错",
-    "cloud pull 完成后立即遍历 pending 队列触发重推（原来只依赖 30s 定时器, Round 7 前累积的 pending 用户刷新后会永久卡在本地）",
-    "一次性清理云端 __诊断测试__ 残留(docId=5edc4948...), localStorage 打标记防重"
+    "cloudList.filter/USER_RECORDS 加载时双重过滤 __诊断测试__ - 云端删没删干净都不显示",
+    "export_tuoke.js: TUOKE_WHITELIST 只保留 6 位拓新组销售 (kaikaigenli/Jonzhu/lijunwu/yvaineechen/ruilingzhan/kinsleyjin), 排除历史 excel 导入的 sale=其他 2434 条",
+    "export_tuoke.js L86: 修 CloudBase SDK 1.8.0 返回结构双兼容 (r.result 可能缺失导致云端合并静默失败, 下载明细只有 T-1 静态快照)",
+    "PUT 6 文件到仓库根 sales-center/ 正确路径 (h 版误 PUT 到 github_pages_adq_publish/ 目录, 销售访问的根路径没更新)"
   ]
 }
