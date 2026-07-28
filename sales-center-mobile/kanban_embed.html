@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260728e"></script>
+<script src="sc_logger.js?v=20260728f"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -50,7 +50,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260728e')
+    return fetch('data/manual_attr_override.json?v=20260728f')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -86,33 +86,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260728e"></script>
-<script defer src="api_client.js?v=20260728e"></script>
-<script defer src="data_adapter.js?v=20260728e"></script>
+<script defer src="cloud_gray_switch.js?v=20260728f"></script>
+<script defer src="api_client.js?v=20260728f"></script>
+<script defer src="data_adapter.js?v=20260728f"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260728e"></script> -->
-<script src="data/center_sales_summary.js?v=20260728e"></script>
-<script src="data/center_quarter_summary.js?v=20260728e"></script>
-<script src="data/center_daily_kpi.js?v=20260728e"></script>
-<script src="data/top80_effective_metrics.js?v=20260728e"></script>
-<script src="data/top_status_data.js?v=20260728e"></script>
-<script src="data/enough_candidates.js?v=20260728e"></script>
-<script src="data/handover_customers_519.js?v=20260728e"></script>
-<script src="data/target_brand_pool.js?v=20260728e"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260728f"></script> -->
+<script src="data/center_sales_summary.js?v=20260728f"></script>
+<script src="data/center_quarter_summary.js?v=20260728f"></script>
+<script src="data/center_daily_kpi.js?v=20260728f"></script>
+<script src="data/top80_effective_metrics.js?v=20260728f"></script>
+<script src="data/top_status_data.js?v=20260728f"></script>
+<script src="data/enough_candidates.js?v=20260728f"></script>
+<script src="data/handover_customers_519.js?v=20260728f"></script>
+<script src="data/target_brand_pool.js?v=20260728f"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260728e" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260728f" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260728e"></script>
-<script defer src="dual_check.js?v=20260728e"></script>
-<script defer src="big_data_dual_check.js?v=20260728e"></script>
+<script defer src="cloud_sync.js?v=20260728f"></script>
+<script defer src="dual_check.js?v=20260728f"></script>
+<script defer src="big_data_dual_check.js?v=20260728f"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -915,7 +915,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728e`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728f`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1114,7 +1114,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728e" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728f" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1130,7 +1130,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728e" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728f" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1215,7 +1215,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728e" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1833,7 +1833,8 @@ function _ensurePushBannerEl(){
   if (el) return el;
   el = document.createElement('div');
   el.id = 'cloudPushFailBanner';
-  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.25);display:none;';
+  // 2026-07-28 Round 7: 移动端也改右上角浮层，减少遮挡
+  el.style.cssText = 'position:fixed;top:8px;right:8px;left:auto;z-index:99999;background:#dc2626;color:#fff;padding:10px 12px;font-size:13px;font-weight:600;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.28);border-radius:10px;display:none;max-width:calc(100vw - 16px);line-height:1.5;';
   document.body.appendChild(el);
   return el;
 }
@@ -1932,7 +1933,9 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
   }
   if (!isRetryFromQueue) setCloudStatus('☁️ 同步中…', true);
   window.cloud.callFunction('salesCenterApi', { action: 'saveUserRecord', params: rec }).then(function(res){
-    var r = res && res.result;
+    // 2026-07-28 Round 7 Fix (P0 根因): CloudBase SDK 有时返回 {result:{ok,...}}, 有时直接返回 {ok,...}
+    // 双兼容: 优先 res.result.ok, 回退到 res.ok
+    var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
     if (r && r.ok) {
       rec._cloudPushed = true;
       try {
@@ -3551,7 +3554,9 @@ window.__prefetchAttrLog = function(name){
       action: 'getAuditLog',
       params: { primaryName: name, limit: 5 }
     }).then(function(r){
-      const rows = r && r.result && r.result.data && r.result.data.rows;
+      // 2026-07-28 Round 7: SDK 返回结构双兼容
+      var _r = (r && r.result && typeof r.result === 'object') ? r.result : r;
+      const rows = _r && _r.data && _r.data.rows;
       if (rows && rows.length) {
         // 取 ts 最大的 toSale
         rows.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
@@ -4174,10 +4179,12 @@ function cloudEnhanceNameHint(raw, nameId, hintId, submitId){
     Promise.race([
       cloudCall,
       new Promise(r => setTimeout(() => r(null), 1500))
-    ]).then(res => {
+    ]).then(rawRes => {
       if (seq !== window.__nameCheckSeq__) return;                 // 已有更新输入
       const el = document.getElementById(nameId);
       if (!el || (el.value || '').trim().replace(/\s+/g,'') !== qn.replace(/\s+/g,'')) return;
+      // 2026-07-28 Round 7: SDK 返回结构双兼容 (res.result / res 直读)
+      const res = (rawRes && rawRes.result && typeof rawRes.result === 'object') ? rawRes.result : rawRes;
       if (!res || res.ok === false || !res.data) return;           // 云端失败→保留本地兜底
       if (!res.data.exists) return;                                // 全新客户→保留本地字典识别
       renderCloudNameHint(res.data, qn, hintId, submitId);
@@ -4429,7 +4436,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260728e';
+  s.src = 'data/bulk_import_rows.js?v=20260728f';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4784,7 +4791,9 @@ document.addEventListener('click', e => {
       return;
     }
     window.cloud.callFunction('salesCenterApi', { action: 'listUserRecords', params: { limit: 1000 } }).then(function(res){
-      var cloudList = (res && res.result && res.result.data && res.result.data.records) || [];
+      // 2026-07-28 Round 7: SDK 返回结构双兼容 (res.result / res 直读)
+      var _r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+      var cloudList = (_r && _r.data && _r.data.records) || [];
       if (!cloudList.length) return;
       // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
       cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); if (window.applyManualSaleOverride) window.applyManualSaleOverride(r); });
