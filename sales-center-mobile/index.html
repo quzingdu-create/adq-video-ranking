@@ -40,19 +40,19 @@
 <title>服饰增长组作战系统 · 移动端</title>
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260728d"></script>
+<script src="auth-guard.js?v=20260728e"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260728d"></script>
-<script defer src="api_client.js?v=20260728d"></script>
-<script defer src="data_adapter.js?v=20260728d"></script>
-<script src="data/center_quarter_summary.js?v=20260728d"></script>
-<script src="data/center_daily_kpi.js?v=20260728d"></script>
-<script src="data/top80_effective_metrics.js?v=20260728d"></script>
-<script src="data/top80_effective_metrics.js?v=20260728d"></script>
+<script defer src="cloud_gray_switch.js?v=20260728e"></script>
+<script defer src="api_client.js?v=20260728e"></script>
+<script defer src="data_adapter.js?v=20260728e"></script>
+<script src="data/center_quarter_summary.js?v=20260728e"></script>
+<script src="data/center_daily_kpi.js?v=20260728e"></script>
+<script src="data/top80_effective_metrics.js?v=20260728e"></script>
+<script src="data/top80_effective_metrics.js?v=20260728e"></script>
 <script>window.__TUOKE_REAL_RECORDS__ = window.__TUOKE_REAL_RECORDS__ || []; window.__MOBILE_TUOKE_READY__ = false;</script>
-<script src="data/redblack_data.js?v=20260728d"></script>
-<script src="data/top_rising_data.js?v=20260728d"></script>
-<script src="data/yest_new_customer_tasks.js?v=20260728d"></script>
+<script src="data/redblack_data.js?v=20260728e"></script>
+<script src="data/top_rising_data.js?v=20260728e"></script>
+<script src="data/yest_new_customer_tasks.js?v=20260728e"></script>
 <style>
   :root {
     --bg: #f4f7fb;
@@ -436,13 +436,13 @@
 </style>
   <!-- ☁️ 云端同步 + 拓新组双导出按钮（v3.2 死规矩三件套） -->
   <!-- 2026-06-13 性能优化：xlsx 改按需加载（见 lib_loader.js），删除首屏同步脚本 -->
-  <script defer src="lib_loader.js?v=20260728d"></script>
+  <script defer src="lib_loader.js?v=20260728e"></script>
   <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script defer src="cloud_sync.js?v=20260728d"></script>
-  <script defer src="dual_check.js?v=20260728d"></script>
-  <script defer src="big_data_dual_check.js?v=20260728d"></script>
-  <script defer src="login_guard_banner.js?v=20260728d"></script>
-  <script defer src="export_tuoke.js?v=20260728d"></script>
+  <script defer src="cloud_sync.js?v=20260728e"></script>
+  <script defer src="dual_check.js?v=20260728e"></script>
+  <script defer src="big_data_dual_check.js?v=20260728e"></script>
+  <script defer src="login_guard_banner.js?v=20260728e"></script>
+  <script defer src="export_tuoke.js?v=20260728e"></script>
 </head>
 <body>
   <header class="hero">
@@ -691,6 +691,46 @@
   window.addEventListener('message', function(ev){
     const d = ev.data || {};
     if (d.type === 'set-mobile-sale') applyExternalSale(d.sale);
+    // 2026-07-28 Round 6: iframe 传来云端诊断报告 → 移动端弹可复制文本框
+    if (d.type === 'cloud-diag-report') {
+      try {
+        var report = d.payload || '(空报告)';
+        var mask = document.createElement('div');
+        mask.id = '__cloudDiagMask';
+        mask.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+        mask.innerHTML =
+          '<div style="background:#fff;max-width:100%;width:100%;max-height:90vh;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.4);">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+              '<h3 style="margin:0;color:#dc2626;font-size:16px;">🔍 云端诊断报告</h3>' +
+              '<button id="__diagClose" style="background:#e5e7eb;border:0;padding:6px 12px;border-radius:6px;font-weight:600;">关闭</button>' +
+            '</div>' +
+            '<div style="color:#374151;font-size:12px;line-height:1.5;">👉 <b>点「复制并发子青」→ 打开企微粘贴</b></div>' +
+            '<textarea id="__diagText" readonly style="flex:1;min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:11px;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#111827;"></textarea>' +
+            '<div style="display:flex;gap:8px;">' +
+              '<button id="__diagCopy" style="flex:1;background:#2563eb;color:#fff;border:0;padding:12px;border-radius:8px;font-weight:600;font-size:14px;">📋 复制全部</button>' +
+              '<button id="__diagWecom" style="flex:1;background:#10b981;color:#fff;border:0;padding:12px;border-radius:8px;font-weight:600;font-size:14px;">💬 复制并发子青</button>' +
+            '</div>' +
+          '</div>';
+        document.body.appendChild(mask);
+        var ta = document.getElementById('__diagText');
+        if (ta) ta.value = report;
+        document.getElementById('__diagClose').onclick = function(){ mask.remove(); };
+        document.getElementById('__diagCopy').onclick = function(){
+          try {
+            ta.select(); ta.setSelectionRange(0, 999999);
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(report).then(function(){ alert('✅ 已复制'); });
+            else { document.execCommand('copy'); alert('已复制'); }
+          } catch(e){ alert('复制失败，请长按全选'); }
+        };
+        document.getElementById('__diagWecom').onclick = function(){
+          try {
+            var text = '@ziqingdu 云端登记失败 求排查\n\n' + report;
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ alert('✅ 已复制（含 @ziqingdu），打开企微粘贴即可'); });
+            else { ta.value = text; ta.select(); document.execCommand('copy'); alert('✅ 已复制'); }
+          } catch(e){ alert('复制失败：' + (e && e.message)); }
+        };
+      } catch(err) { console.error('[mobile-parent] diag render fail:', err); }
+    }
   });
   const $ = id => document.getElementById(id);
   const moneyWan = yuan => {
@@ -1400,10 +1440,10 @@
           if (window.parent && window.parent !== window) {
             window.parent.postMessage({type:'open-lifecycle-customer', name: customerName}, '*');
           } else {
-            location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260728d`;
+            location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260728e`;
           }
         } catch(e) {
-          location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260728d`;
+          location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260728e`;
         }
       })
     );
@@ -1554,9 +1594,9 @@
     if (records && records.length) return Promise.resolve(records);
     const box = document.getElementById('yestTopList');
     if (box) box.innerHTML = '<div class="empty">昨日消耗Top客户加载中…</div>';
-    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260728d', '__MOBILE_TUOKE_READY__').then(() => {
+    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260728e', '__MOBILE_TUOKE_READY__').then(() => {
       // R3.3 (2026-06-29): 加载 manual_attr_override 锁
-      return fetch('data/manual_attr_override.json?v=20260728d').then(r=>r.json()).then(j=>{ window.__MANUAL_ATTR_OVERRIDE__ = j; }).catch(()=>{}).then(()=>{
+      return fetch('data/manual_attr_override.json?v=20260728e').then(r=>r.json()).then(j=>{ window.__MANUAL_ATTR_OVERRIDE__ = j; }).catch(()=>{}).then(()=>{
         var raw = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
         // 套 override(只改展示,改副本不改原数组)
         var _ov = (window.__MANUAL_ATTR_OVERRIDE__ && window.__MANUAL_ATTR_OVERRIDE__.overrides) || {};
@@ -1578,7 +1618,7 @@
     if (data && Array.isArray(data.list)) return Promise.resolve(data);
     const box = document.getElementById('yestNewList');
     if (box) box.innerHTML = '<div class="empty">新增投放客户加载中…</div>';
-    return loadMobileScriptOnce('data/yest_new_customer_tasks.js?v=20260728d', '__MOBILE_YEST_NEW_READY__').then(() => window.__YEST_NEW_CUSTOMER_TASKS__ || { list: [] });
+    return loadMobileScriptOnce('data/yest_new_customer_tasks.js?v=20260728e', '__MOBILE_YEST_NEW_READY__').then(() => window.__YEST_NEW_CUSTOMER_TASKS__ || { list: [] });
   }
   function refreshYestNewNow(){
     const data = window.__YEST_NEW_CUSTOMER_TASKS__;
@@ -1587,8 +1627,8 @@
   }
   function loadDiagAndProductAfterFirstPaint(){
     const run = () => Promise.all([
-      loadMobileScriptOnce('data/customer_main_product.js?v=20260728d', '__MOBILE_PRODUCT_READY__'),
-      loadMobileScriptOnce('data/customer_diag_metrics.js?v=20260728d', '__MOBILE_DIAG_READY__')
+      loadMobileScriptOnce('data/customer_main_product.js?v=20260728e', '__MOBILE_PRODUCT_READY__'),
+      loadMobileScriptOnce('data/customer_diag_metrics.js?v=20260728e', '__MOBILE_DIAG_READY__')
     ]).then(() => { try { renderTop(); renderStable(); renderRedblack(); renderRising(); refreshYestNewNow(); } catch(e){} });
     if ('requestIdleCallback' in window) requestIdleCallback(run, {timeout: 2500});
     else setTimeout(run, 1200);
