@@ -1,5 +1,5 @@
 {
-  "v": "20260728k",
-  "built": "2026-07-28T19:30:00Z",
-  "note": "Round 11 P0 根治: export xlsx 补拉 tuoke_user_records 集合(义乌等销售直写记录) + 静态兜底也过白名单 + 登记日期空值 _createdAt 兜底 + 明细表'资源方'空值 → '-'; index.html cache-buster 全量升级 i→k"
+  "v": "20260728l",
+  "built": "2026-07-28T19:38:00Z",
+  "note": "R12: display 兜底屏蔽 '子青指令登记'; export_tuoke source 字段清洗; 21 客户批量补登脚本已交付。"
 }
