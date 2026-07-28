@@ -1,12 +1,11 @@
 {
-  "v": "20260728h",
-  "built": "2026-07-28T15:15:00Z",
-  "note": "Round 9 根治收敛(mobile 同源): 删除右下浮标+归属字典 tab, 修复本地持久化静默失败, pull完立即重推pending, 清理云端诊断残留",
+  "v": "20260728i",
+  "built": "2026-07-28T17:30:00Z",
+  "note": "Round 9-i 4合1 根治收敛 (mobile 同源): 屏蔽诊断测试/白名单过滤/SDK双兼容/正确路径",
   "critical_fixes": [
-    "删除右下角 🔍 诊断浮标",
-    "删除明细列表『归属字典』tab",
-    "persistUserRecordsBestEffort 改为验证持久化",
-    "pull 完立即重推 pending 队列",
-    "一次性清理云端诊断残留"
+    "cloudList.filter/USER_RECORDS 加载时双重过滤 __诊断测试__",
+    "export_tuoke.js TUOKE_WHITELIST 只保留 6 位拓新组销售",
+    "export_tuoke.js 修 SDK 双兼容",
+    "PUT 到 sales-center-mobile/ 根路径"
   ]
 }
