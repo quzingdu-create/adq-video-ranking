@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260728f"></script>
+<script src="sc_logger.js?v=20260728g"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -50,7 +50,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260728f')
+    return fetch('data/manual_attr_override.json?v=20260728g')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -86,33 +86,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260728f"></script>
-<script defer src="api_client.js?v=20260728f"></script>
-<script defer src="data_adapter.js?v=20260728f"></script>
+<script defer src="cloud_gray_switch.js?v=20260728g"></script>
+<script defer src="api_client.js?v=20260728g"></script>
+<script defer src="data_adapter.js?v=20260728g"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260728f"></script> -->
-<script src="data/center_sales_summary.js?v=20260728f"></script>
-<script src="data/center_quarter_summary.js?v=20260728f"></script>
-<script src="data/center_daily_kpi.js?v=20260728f"></script>
-<script src="data/top80_effective_metrics.js?v=20260728f"></script>
-<script src="data/top_status_data.js?v=20260728f"></script>
-<script src="data/enough_candidates.js?v=20260728f"></script>
-<script src="data/handover_customers_519.js?v=20260728f"></script>
-<script src="data/target_brand_pool.js?v=20260728f"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260728g"></script> -->
+<script src="data/center_sales_summary.js?v=20260728g"></script>
+<script src="data/center_quarter_summary.js?v=20260728g"></script>
+<script src="data/center_daily_kpi.js?v=20260728g"></script>
+<script src="data/top80_effective_metrics.js?v=20260728g"></script>
+<script src="data/top_status_data.js?v=20260728g"></script>
+<script src="data/enough_candidates.js?v=20260728g"></script>
+<script src="data/handover_customers_519.js?v=20260728g"></script>
+<script src="data/target_brand_pool.js?v=20260728g"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260728f" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260728g" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260728f"></script>
-<script defer src="dual_check.js?v=20260728f"></script>
-<script defer src="big_data_dual_check.js?v=20260728f"></script>
+<script defer src="cloud_sync.js?v=20260728g"></script>
+<script defer src="dual_check.js?v=20260728g"></script>
+<script defer src="big_data_dual_check.js?v=20260728g"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -915,7 +915,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728f`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260728g`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1114,7 +1114,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728f" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260728g" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1130,7 +1130,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728f" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260728g" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1215,7 +1215,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260728g" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1237,6 +1237,7 @@ window.applyManualSaleOverride = function(r) {
         <button id="recordToday" class="active">今日</button>
         <button id="record7d">近7天</button>
         <button id="recordAll">全部</button>
+        <button id="recordDict" title="展示系统底表已归属给当前销售的客户">📚 归属字典</button>
         <span id="recordLatestDate" style="margin-left:8px;font-size:12px;color:#9ca3af;align-self:center;"></span>
       </div>
       <table class="tbl" id="recordTable">
@@ -1251,6 +1252,9 @@ window.applyManualSaleOverride = function(r) {
 </div>
 
 <!-- 2026-06-11 子青：客户详情弹窗（生命周期）已删 -->
+
+<!-- 2026-07-28 Round 8: 永久诊断浮标（移动端放右下角，避开底部登记大按钮） -->
+<div id="__diagFab" title="点击自检云端状态" style="position:fixed;right:12px;bottom:80px;z-index:99998;width:42px;height:42px;border-radius:50%;background:#10b981;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);user-select:none;">🔍</div>
 
 <!-- 目标管理弹窗 -->
 <div class="modal-mask" id="modalTarget">
@@ -2002,8 +2006,9 @@ function saveUserRecord(rec) {
   RECORDS.unshift(rec);
   pushRecordToCloud(rec, 0);   // 直写云端（免登录、静默、自动重试）
 }
-// 2026-07-28 Round 6: 销售零门槛诊断 — 点 banner「🔍 一键诊断」按钮触发
-window.diagCloud = function() {
+// 2026-07-28 Round 8: 增强 diagCloud - 5 项全量诊断（移动端同步）
+window.diagCloud = function(opts) {
+  opts = opts || {};
   var report = [];
   var push = function(k, v) { report.push('[' + k + '] ' + (v == null ? '(空)' : (typeof v === 'object' ? JSON.stringify(v) : String(v)))); };
   var now = new Date();
@@ -2060,26 +2065,153 @@ window.diagCloud = function() {
     finish();
     return;
   }
+  // 4. saveUserRecord 干跑
   var t0 = Date.now();
-  window.cloud.callFunction('salesCenterApi', { action: 'saveUserRecord', params: testRec }).then(function(res) {
-    push('调用耗时ms', Date.now() - t0);
-    push('调用结果', 'RESOLVED');
-    push('完整返回JSON', res);
-    var r = res && res.result;
-    push('result.ok', r && r.ok);
-    push('result.error', r && r.error);
-    push('顶层error', res && res.error);
-    finish();
+  var stepSave = window.cloud.callFunction('salesCenterApi', { action: 'saveUserRecord', params: testRec }).then(function(res) {
+    push('[Step1-saveUserRecord] 耗时ms', Date.now() - t0);
+    push('[Step1-saveUserRecord] 结果', 'RESOLVED');
+    var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+    push('[Step1-saveUserRecord] r.ok', r && r.ok);
+    push('[Step1-saveUserRecord] r.data.docId', r && r.data && r.data.docId);
+    push('[Step1-saveUserRecord] 完整res', res);
   }).catch(function(e) {
-    push('调用耗时ms', Date.now() - t0);
-    push('调用结果', 'REJECTED');
-    push('错误类型', e && e.name);
-    push('错误消息', e && e.message);
-    push('错误stack', e && e.stack ? String(e.stack).substring(0, 500) : '(无)');
-    push('完整错误对象', e);
-    finish();
+    push('[Step1-saveUserRecord] 结果', 'REJECTED');
+    push('[Step1-saveUserRecord] err.name', e && e.name);
+    push('[Step1-saveUserRecord] err.message', e && e.message);
+    push('[Step1-saveUserRecord] err.stack', e && e.stack ? String(e.stack).substring(0, 400) : '(无)');
+  });
+  // 5. listUserRecords 抓云端真实存量
+  var t1 = Date.now();
+  var stepList = window.cloud.callFunction('salesCenterApi', { action: 'listUserRecords', params: { limit: 500 } }).then(function(res) {
+    push('[Step2-listUserRecords] 耗时ms', Date.now() - t1);
+    var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+    var recs = (r && r.data && r.data.records) || [];
+    push('[Step2-listUserRecords] 云端总数', recs.length);
+    var mine = recs.filter(function(x){ return x.sale === (window.CURRENT_USER || '') || x._rtx === (window.CURRENT_USER || ''); });
+    push('[Step2-listUserRecords] 我的登记数', mine.length);
+    var diagCount = recs.filter(function(x){ return x.name === '__诊断测试__' || (x.source === 'diag'); }).length;
+    push('[Step2-listUserRecords] 诊断测试残留', diagCount);
+    var sorted = recs.slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+    var top = sorted.slice(0, 10).map(function(x){
+      return (x.date||'?') + ' | ' + (x.sale||'?') + ' | ' + (x.shortName||x.name||'?').substring(0,20) + ' | src=' + (x.source||'?');
+    });
+    push('[Step2-listUserRecords] 云端Top10', '\n  ' + top.join('\n  '));
+  }).catch(function(e) {
+    push('[Step2-listUserRecords] 结果', 'REJECTED');
+    push('[Step2-listUserRecords] err.message', e && e.message);
+  });
+  // 6. 字典归属查询
+  var targetName = opts.customerName || '';
+  if (!targetName) {
+    try {
+      var q = window.__PENDING_PUSH_QUEUE__ || {};
+      var kk = Object.keys(q);
+      if (kk.length) targetName = q[kk[0]].shortName || q[kk[0]].name || '';
+    } catch(_){}
+  }
+  if (targetName) {
+    try {
+      var look = (typeof lookupEntity === 'function') ? lookupEntity(targetName) : null;
+      push('[Step3-字典查询] 目标客户', targetName);
+      push('[Step3-字典查询] 命中', look && look.matched);
+      push('[Step3-字典查询] 简称', look && look.short);
+      push('[Step3-字典查询] 是否老客', look && look.isLaoke);
+      var owner = '(未找到)';
+      try {
+        var qn = targetName.trim().replace(/\s+/g,'');
+        var found = (window.RECORDS || []).find(function(r){
+          var rn = (r.name||'').trim().replace(/\s+/g,'');
+          var rs = (r.shortName||'').trim().replace(/\s+/g,'');
+          return rn === qn || rs === qn;
+        });
+        if (found) owner = found.sale || found._rtx || '(有记录但无销售)';
+      } catch(_){}
+      push('[Step3-字典查询] 现归属', owner);
+    } catch(e){ push('[Step3-字典查询] 异常', e && e.message); }
+  } else {
+    push('[Step3-字典查询]', '(无目标客户，跳过)');
+  }
+  Promise.all([stepSave, stepList]).then(finish);
+};
+
+// 2026-07-28 Round 8: 强制重推 pending 队列
+window.diagForceRepushAll = function() {
+  var q = window.__PENDING_PUSH_QUEUE__ || {};
+  var keys = Object.keys(q);
+  var report = ['[强制重推] pending 队列长度=' + keys.length];
+  if (!keys.length) {
+    report.push('[强制重推] 队列为空，无需重推');
+    try { window.parent && window.parent.postMessage({type:'cloud-diag-report', payload: report.join('\n')}, '*'); } catch(_){}
+    return;
+  }
+  var pending = keys.length;
+  var done = 0;
+  keys.forEach(function(k){
+    var rec = q[k];
+    if (!rec) { done++; return; }
+    var t0 = Date.now();
+    window.cloud.callFunction('salesCenterApi', { action:'saveUserRecord', params: rec }).then(function(res){
+      var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+      var line = '[重推-' + (rec.shortName || rec.name || k) + '] '
+        + (Date.now()-t0) + 'ms | ok=' + (r && r.ok) + ' | docId=' + (r && r.data && r.data.docId)
+        + ' | updated=' + (r && r.data && r.data.updated);
+      report.push(line);
+    }).catch(function(e){
+      report.push('[重推-' + (rec.shortName||rec.name||k) + '] 失败: ' + (e && e.message));
+    }).then(function(){
+      done++;
+      if (done === pending) {
+        try { window.parent && window.parent.postMessage({type:'cloud-diag-report', payload: report.join('\n')}, '*'); } catch(_){}
+      }
+    });
   });
 };
+
+// 2026-07-28 Round 8: 移动端永久诊断浮标
+document.addEventListener('DOMContentLoaded', function(){
+  var fab = document.getElementById('__diagFab');
+  if (!fab) return;
+  function refreshFabColor(){
+    try {
+      var q = window.__PENDING_PUSH_QUEUE__ || {};
+      var pendingCount = Object.keys(q).length;
+      var loggedIn = !!(window.cloud && window.cloud.isLoggedIn && window.cloud.isLoggedIn());
+      if (!loggedIn) { fab.style.background = '#ef4444'; }
+      else if (pendingCount > 0) { fab.style.background = '#f59e0b'; }
+      else { fab.style.background = '#10b981'; }
+    } catch(_){}
+  }
+  setInterval(refreshFabColor, 3000);
+  refreshFabColor();
+  fab.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    var existing = document.getElementById('__diagMenu');
+    if (existing) { existing.remove(); return; }
+    var menu = document.createElement('div');
+    menu.id = '__diagMenu';
+    menu.style.cssText = 'position:fixed;right:12px;bottom:130px;z-index:99999;background:#fff;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:8px;min-width:220px;font-size:13px;';
+    menu.innerHTML =
+      '<div style="padding:6px 10px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;margin-bottom:4px;">🔍 云端自检</div>' +
+      '<div id="__diagRun" style="padding:10px 10px;cursor:pointer;border-radius:4px;">📊 完整诊断（3 步）</div>' +
+      '<div id="__diagRepush" style="padding:10px 10px;cursor:pointer;border-radius:4px;">🔄 强制重推待推队列</div>' +
+      '<div id="__diagLookup" style="padding:10px 10px;cursor:pointer;border-radius:4px;">🔎 查询客户归属</div>' +
+      '<div id="__diagClose" style="padding:6px 10px;text-align:center;color:#9ca3af;cursor:pointer;border-top:1px solid #e5e7eb;margin-top:4px;">关闭</div>';
+    document.body.appendChild(menu);
+    document.getElementById('__diagRun').onclick = function(){ menu.remove(); window.diagCloud(); };
+    document.getElementById('__diagRepush').onclick = function(){ menu.remove(); window.diagForceRepushAll(); };
+    document.getElementById('__diagLookup').onclick = function(){
+      menu.remove();
+      var name = window.prompt('输入客户主体全名或简称：', '');
+      if (name && name.trim()) window.diagCloud({ customerName: name.trim() });
+    };
+    document.getElementById('__diagClose').onclick = function(){ menu.remove(); };
+    setTimeout(function(){
+      document.addEventListener('click', function _h(e){
+        if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', _h); }
+      });
+    }, 100);
+  });
+});
 window.testCloudSave = function(name) {
   if (!window.cloud || !window.cloud.callFunction) {
     console.error('[testCloudSave] 云端组件未就绪，请先登录');
@@ -3000,6 +3132,8 @@ function currentRecordList() {
     const d = new Date(todayStr); d.setDate(d.getDate()-6);
     const start = d.toISOString().slice(0,10);
     list = list.filter(r => r.date >= start && r.date <= todayStr);
+  } else if (state.recordRange === 'dict') {
+    // 2026-07-28 Round 8: 「归属字典」= 系统底表已归属客户全量视图，不过滤日期
   }
   if (state.recordSearch) {
     const q = state.recordSearch.toLowerCase();
@@ -3367,9 +3501,11 @@ document.querySelectorAll('[data-metric]').forEach(b => {
   if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; resetFold(); renderRecords(); };
   if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; resetFold(); renderRecords(); };
   if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; resetFold(); renderRecords(); };
-  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
-  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
-  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+  var _tabIds = ['recordToday','record7d','recordAll','recordDict'];
+  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
+  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
+  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+  if ($('recordDict')) $('recordDict').onclick = () => { state.recordRange = 'dict'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordDict')); renderRecords(); };
 })();
 
 
@@ -4436,7 +4572,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260728f';
+  s.src = 'data/bulk_import_rows.js?v=20260728g';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
