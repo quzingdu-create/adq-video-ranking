@@ -1,5 +1,5 @@
 {
-  "v": "20260728l",
-  "built": "2026-07-28T19:38:00Z",
-  "note": "R12: display 兜底屏蔽 '子青指令登记'; export_tuoke source 字段清洗; 21 客户批量补登脚本已交付。"
+  "v": "20260729m",
+  "built": "2026-07-29T10:25:00Z",
+  "note": "R14 根治：submit 双写守卫（await 云端 ok:true 才提示成功，失败明确告知暂存本地）；kanban dedupe 语义从最早→最新胜出，今日登记不再被历史遮掉；两个下载按钮加 tooltip 明确差异；tuoke_user_records 后端已清 96 条脏数据（sale='其他'/'__诊断测试__'/白名单外）。"
 }
