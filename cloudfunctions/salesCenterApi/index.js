@@ -916,6 +916,28 @@ async function listUserRecords(params) {
   const rows = (res && res.data) || [];
   return ok('listUserRecords', { count: rows.length, records: rows }, { collection: COLLECTIONS.userRecords });
 }
+// R14 (2026-07-29): 死规矩 -8 修复 · tuoke_user_records 分页全量导出
+// 与 exportAllRecords 完全对齐 (按 _id asc 游标翻页, 1000/页)
+// 用途: agent 端 daily_run 合并 tuoke_records ∪ tuoke_user_records → tuoke_real_records.js
+async function exportAllUserRecords(params) {
+  params = params || {};
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  const _ = database.command;
+  const pageSize = Math.min(Math.max(1, Number(params.pageSize) || 1000), 1000);
+  const cursor = params.cursor;
+  const q = database.collection(COLLECTIONS.userRecords);
+  const query = cursor ? q.where({ _id: _.gt(String(cursor)) }) : q;
+  const res = await query.orderBy('_id', 'asc').limit(pageSize).get();
+  const rows = (res && res.data) || [];
+  const lastId = rows.length ? rows[rows.length - 1]._id : null;
+  return ok('exportAllUserRecords', {
+    rows: rows,
+    count: rows.length,
+    hasMore: rows.length === pageSize,
+    nextCursor: lastId
+  }, { collection: COLLECTIONS.userRecords });
+}
 // 删除单条销售登记（按 id 或 _id）。用于清理测试数据/纠错。
 async function deleteUserRecord(params, context) {
   params = params || {};
@@ -1220,6 +1242,7 @@ async function handle(action, params, context) {
     case 'saveUserRecord': return await saveUserRecord(params, context);
     case 'saveUserRecordsBatch': return await saveUserRecordsBatch(params, context);
     case 'listUserRecords': return await listUserRecords(params);
+    case 'exportAllUserRecords': return await exportAllUserRecords(params);
     case 'deleteUserRecord': return await deleteUserRecord(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);

@@ -83,7 +83,8 @@
         action: 'exportAllRecords',
         params: params
       }).then(function (r) {
-        var body = (r && r.result) || {};
+        // 2026-07-28 Round 9-i: CloudBase SDK 1.8.0 返回结构双兼容 (r.result 可能缺失)
+        var body = (r && r.result && typeof r.result === 'object') ? r.result : (r || {});
         if (!body.ok) return acc;
         var data = body.data || {};
         var rows = data.rows || [];
@@ -220,6 +221,19 @@
         toast('云端合并：字段更新 ' + mergedFieldCnt + ' 条，新增 ' + appendedCnt + ' 条');
         console.info('[export_tuoke] R8.4 字段级并集: fieldMerged=' + mergedFieldCnt + ' appended=' + appendedCnt + ' (static=' + staticRows.length + ' cloud=' + cloudRows.length + ')');
       }
+      // 2026-07-28 Round 9-i: 拓新组销售白名单过滤 - 只保留 6 位拓新组销售的登记（子青反馈"其他"不该出现在拓新组明细）
+      //   历史 excel 批量导入时字段为空的记录 sale="其他"（2434 条）→ 屏蔽; 同时屏蔽 __诊断测试__ 残留
+      var TUOKE_WHITELIST = { 'kaikaigenli':1, 'Jonzhu':1, 'lijunwu':1, 'yvaineechen':1, 'ruilingzhan':1, 'kinsleyjin':1 };
+      var beforeFilter = merged.length;
+      merged = merged.filter(function(r){
+        if (!r) return false;
+        var _nm = (r.name || '') + '', _sn = (r.shortName || '') + '';
+        if (_nm.indexOf('__诊断测试__') >= 0 || _sn.indexOf('__诊断测试__') >= 0) return false;
+        if (r.source === 'diag' || (r.id && String(r.id).indexOf('diag_') === 0)) return false;
+        var _sale = (r.sale || r._rtx || r._recorded_by || '') + '';
+        return TUOKE_WHITELIST[_sale] === 1;
+      });
+      console.info('[export_tuoke] 拓新组白名单过滤: ' + beforeFilter + ' → ' + merged.length + ' (排除 sale=其他/__诊断测试__/非拓新组销售 ' + (beforeFilter - merged.length) + ' 条)');
       return merged;
     });
     return _tuokePromise;
