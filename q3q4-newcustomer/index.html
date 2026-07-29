@@ -242,11 +242,34 @@ function renderIndTop(){
   const tbody = document.querySelector('#tblIndTop tbody');
   if (!s || s.count===0){ tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:#6e7781;">该季度无数据</td></tr>'; return; }
   const totalCost = s.cost || 1;
-  tbody.innerHTML = s.top_agents.map(a=>{
+  const rowsHtml = s.top_agents.map(a=>{
     const pct = (a.cost/totalCost*100).toFixed(1);
     const hot = pct>=15?'cell-hot':'';
     return `<tr><td class="name">${a.agent}</td><td>${a.count}</td><td>${fmt(a.cost)}</td><td class="${hot}">${pct}%</td></tr>`;
   }).join('');
+  // TOP 汇总行
+  const topCount = s.top_agents.reduce((a,b)=>a+b.count,0);
+  const topCost  = s.top_agents.reduce((a,b)=>a+b.cost,0);
+  const topPct   = (topCost/totalCost*100).toFixed(1);
+  const topRow = `<tr style="background:#f6f8fa;font-weight:600;border-top:2px solid #d0d7de;">
+    <td class="name">TOP${s.top_agents.length} 合计</td>
+    <td>${topCount}</td><td>${fmt(topCost)}</td><td class="cell-hot">${topPct}%</td></tr>`;
+  // 该类目总盘
+  const totalRow = `<tr style="background:#eaeef2;font-weight:600;">
+    <td class="name">该类目全部 (${Object.keys(getIndAgentAll(ind)).length} 家代理商)</td>
+    <td>${s.count}</td><td>${fmt(s.cost)}</td><td>100.0%</td></tr>`;
+  tbody.innerHTML = rowsHtml + topRow + totalRow;
+}
+
+// 计算某类目在当前季度下所有代理商分布(用于汇总行显示代理商总家数)
+function getIndAgentAll(ind){
+  const agtSum = D.agt_summary[CURR_Q];
+  const agents = {};
+  for (const a in agtSum){
+    const cell = agtSum[a].inds[ind];
+    if (cell && cell.count>0) agents[a] = cell;
+  }
+  return agents;
 }
 
 // 图4: 代理商 → 类目 饼图
@@ -273,6 +296,13 @@ function renderAgtInd(){
     backgroundColor:'transparent',
     tooltip:{trigger:'item', formatter:p=>p.name+'<br/>消耗: '+fmt(p.value)+' 万<br/>新客数: '+p.data.count+'<br/>占比: '+p.percent+'%'},
     legend:{orient:'vertical',left:0,top:'middle',textStyle:{color:'#1f2328'}},
+    title:{
+      text:'合计',
+      subtext:s.count+' 客户\n'+fmt(s.cost)+' 万',
+      left:'62%', top:'42%', textAlign:'center',
+      textStyle:{color:'#57606a',fontSize:11,fontWeight:400},
+      subtextStyle:{color:'#0d1117',fontSize:13,fontWeight:600,lineHeight:18}
+    },
     series:[{type:'pie', radius:['40%','65%'], center:['62%','50%'], data, label:{color:'#1f2328',formatter:'{b}\n{d}%'},
       itemStyle:{borderColor:'#ffffff',borderWidth:2}, color:COLORS_IND}]
   });
