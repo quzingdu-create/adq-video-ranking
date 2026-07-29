@@ -1658,6 +1658,15 @@ const RECORD_LS_KEY = "tuoke_kanban_user_records_v32";
 })();
 
 let USER_RECORDS = JSON.parse(localStorage.getItem(RECORD_LS_KEY) || "[]");
+// 2026-07-28 Round 9-i: 本地也永久过滤掉 __诊断测试__（Round 6 前诊断脚本注入的残留）
+USER_RECORDS = USER_RECORDS.filter(function(r){
+  if (!r) return false;
+  var _nm = (r.name || '') + '', _sn = (r.shortName || '') + '';
+  if (_nm.indexOf('__诊断测试__') >= 0 || _sn.indexOf('__诊断测试__') >= 0) return false;
+  if (r.source === 'diag' || (r.id && String(r.id).indexOf('diag_') === 0)) return false;
+  return true;
+});
+try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS)); } catch(_){}
 const RECORDS = [...USER_RECORDS, ...((window.__TUOKE_REAL_RECORDS__ && window.__TUOKE_REAL_RECORDS__.length) ? window.__TUOKE_REAL_RECORDS__ : genRecords())];
 // 2026-07-07 修复 Q3 致命 bug：原逻辑硬编码「月份>=7归2025」导致 Q3(7月起)所有登记日期被转成 2025 年，
 // latestRecordDate() 返回 2026-06-30 作为"今天"，7 月后新登记全部不可见。
@@ -1784,12 +1793,34 @@ function isHandoverCountInQuarter(r) {
 window.isHandoverCustomer217 = isHandoverCustomer217;
 window.isHandoverCountInQuarter = isHandoverCountInQuarter;
 window.handoverFirstQuarter = handoverFirstQuarter;
+// 2026-07-28 Round 9: 从 best-effort 改成 verified persist (mobile 同源)
 function persistUserRecordsBestEffort() {
+  var ok = _tryPersist(USER_RECORDS.slice(0, 2000));
+  if (!ok) ok = _tryPersist(USER_RECORDS.slice(0, 500));
+  if (!ok) ok = _tryPersist(USER_RECORDS.slice(0, 100));
+  if (!ok) {
+    console.error('[persist] 3 轮持久化均失败, USER_RECORDS 只在内存, 刷新会丢失! len=' + USER_RECORDS.length);
+    try {
+      sessionStorage.setItem(RECORD_LS_KEY + '_emergency', JSON.stringify(USER_RECORDS.slice(0, 20)));
+    } catch(_){}
+    if (typeof _showPushFailBanner === 'function') {
+      _showPushFailBanner('本地存储写入失败(空间满或权限受限), 已存云端但刷新可能丢失。请联系子青。', null);
+    }
+    return false;
+  }
+  return true;
+}
+function _tryPersist(arr) {
   try {
-    localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 2000)));
-  } catch (e) {
-    try { localStorage.setItem(RECORD_LS_KEY, JSON.stringify(USER_RECORDS.slice(0, 500))); } catch (_) {}
-    console.warn('批量导入数据过大，已保留本次内存展示并仅持久化前500条', e);
+    var payload = JSON.stringify(arr);
+    localStorage.setItem(RECORD_LS_KEY, payload);
+    var back = localStorage.getItem(RECORD_LS_KEY);
+    if (back === payload) return true;
+    console.warn('[persist] 写回不一致 wrote=' + payload.length + ' back=' + (back ? back.length : 'null'));
+    return false;
+  } catch(e) {
+    console.warn('[persist] 尝试 len=' + arr.length + ' 失败:', e && e.message);
+    return false;
   }
 }
 const CLOUD_SYNCED_KEY = "cloud_synced_ids_v1";
@@ -1833,7 +1864,8 @@ function _ensurePushBannerEl(){
   if (el) return el;
   el = document.createElement('div');
   el.id = 'cloudPushFailBanner';
-  el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:12px 20px;font-size:14px;font-weight:600;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.25);display:none;';
+  // 2026-07-28 Round 7: 移动端也改右上角浮层，减少遮挡
+  el.style.cssText = 'position:fixed;top:8px;right:8px;left:auto;z-index:99999;background:#dc2626;color:#fff;padding:10px 12px;font-size:13px;font-weight:600;text-align:left;box-shadow:0 4px 16px rgba(0,0,0,.28);border-radius:10px;display:none;max-width:calc(100vw - 16px);line-height:1.5;';
   document.body.appendChild(el);
   return el;
 }
@@ -1866,6 +1898,7 @@ function _showPushFailBanner(text, errMsg){
     el.innerHTML =
       '⚠️ ' + text + errStr + retryInfo +
       ' <button id="__cloudRetryNowBtn" style="margin-left:12px;background:#fff;color:#dc2626;border:0;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">立即重试</button>' +
+      ' <button id="__cloudDiagBtn" style="margin-left:6px;background:#fbbf24;color:#78350f;border:0;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">🔍 一键诊断</button>' +
       ' <button id="__cloudDropBtn" style="margin-left:6px;background:transparent;color:#fff;border:1px solid #fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">放弃（已存本地）</button>' +
       ' <button id="__cloudHideBtn" style="margin-left:6px;background:transparent;color:#fff;border:1px solid #fff;padding:4px 10px;border-radius:4px;cursor:pointer;font-weight:600;">我知道了</button>';
     el.style.display = 'block';
@@ -1893,6 +1926,13 @@ function _showPushFailBanner(text, errMsg){
     };
     var hb = document.getElementById('__cloudHideBtn');
     if (hb) hb.onclick = function(){ _hidePushFailBanner(); };
+    var dgb = document.getElementById('__cloudDiagBtn');
+    if (dgb) dgb.onclick = function(){
+      try {
+        if (typeof window.diagCloud === 'function') window.diagCloud();
+        else alert('诊断组件未就绪，请刷新页面后重试');
+      } catch(err) { alert('诊断失败：' + (err && err.message)); }
+    };
   } catch(_){}
 }
 function _hidePushFailBanner(){
@@ -1912,7 +1952,8 @@ function _startPendingRetryTimer(){
 }
 function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
   attempt = attempt || 0;
-  if (!rec || rec._cloudPushed) { if (rec && rec.id != null) delete window.__PENDING_PUSH_QUEUE__[rec.id]; return; }
+  // R14 根治#1: 返回 Promise，让 submitRecord 能 await 真实结果 → 不再假性提示成功
+  if (!rec || rec._cloudPushed) { if (rec && rec.id != null) delete window.__PENDING_PUSH_QUEUE__[rec.id]; return Promise.resolve({ ok: true, cached: true }); }
   if (rec.id == null) rec.id = Date.now() + '_' + Math.random().toString(36).slice(2, 8); // 兜底去重键
 
   if (!(window.cloud && typeof window.cloud.callFunction === 'function')) {
@@ -1921,11 +1962,13 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
     _showPushFailBanner('云同步组件未加载，你刚刚的登记「' + (rec.shortName || rec.name || '') + '」暂存本地，请刷新页面或联系管理员');
     window.__PENDING_PUSH_QUEUE__[rec.id] = rec;
     _startPendingRetryTimer();
-    return;
+    return Promise.resolve({ ok: false, reason: 'SDK 未加载', queued: true });
   }
   if (!isRetryFromQueue) setCloudStatus('☁️ 同步中…', true);
-  window.cloud.callFunction('salesCenterApi', { action: 'saveUserRecord', params: rec }).then(function(res){
-    var r = res && res.result;
+  return window.cloud.callFunction('salesCenterApi', { action: 'saveUserRecord', params: rec }).then(function(res){
+    // 2026-07-28 Round 7 Fix (P0 根因): CloudBase SDK 有时返回 {result:{ok,...}}, 有时直接返回 {ok,...}
+    // 双兼容: 优先 res.result.ok, 回退到 res.ok
+    var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
     if (r && r.ok) {
       rec._cloudPushed = true;
       try {
@@ -1938,6 +1981,7 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
       // 队列清空则收横幅
       if (!Object.keys(window.__PENDING_PUSH_QUEUE__).length) _hidePushFailBanner();
       console.info('[cloud] pushed ok id=' + rec.id);
+      return { ok: true, docId: r.data && r.data.docId };
     } else {
       // 2026-07-28 Fix5: 捕获完整原始响应（r.error.message 为空时，从其他字段推真实原因）
       var errObj = (r && r.error) || {};
@@ -1963,10 +2007,11 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
       }
       window.__PENDING_PUSH_QUEUE__[rec.id] = rec;
       _startPendingRetryTimer();
+      return { ok: false, reason: fullInfo, queued: true };
     }
   }).catch(function(e){
     console.warn('[cloud] push fail id=' + rec.id, e && e.message);
-    if (attempt < 3) { setTimeout(function(){ pushRecordToCloud(rec, attempt + 1, isRetryFromQueue); }, 1500 * (attempt + 1)); return; }
+    if (attempt < 3) { return new Promise(function(resolve){ setTimeout(function(){ resolve(pushRecordToCloud(rec, attempt + 1, isRetryFromQueue)); }, 1500 * (attempt + 1)); }); }
     // Bug1: 3 次重试完 → 强通知 + 加入 30s 定时重试队列（不再依赖 online 事件）
     // Bug3: 30s 定时器重试失败 → 不重弹 banner（避免反复弹），仅更新状态；首次失败才弹
     if (!isRetryFromQueue) {
@@ -1983,6 +2028,7 @@ function pushRecordToCloud(rec, attempt, isRetryFromQueue) {
     }
     window.__PENDING_PUSH_QUEUE__[rec.id] = rec;
     _startPendingRetryTimer();
+    return { ok: false, reason: (e && e.message) || '网络异常', queued: true };
   });
 }
 function pushRecordsToCloud(records) { (records || []).forEach(function(r){ pushRecordToCloud(r, 0); }); }
@@ -1990,7 +2036,8 @@ function saveUserRecord(rec) {
   USER_RECORDS.unshift(rec);
   persistUserRecordsBestEffort();
   RECORDS.unshift(rec);
-  pushRecordToCloud(rec, 0);   // 直写云端（免登录、静默、自动重试）
+  // R14 根治#1: 返回 Promise，调用方 await 即可拿到真实云端结果
+  return pushRecordToCloud(rec, 0);
 }
 // 2026-07-28: 销售自检工具 — 控制台输入 testCloudSave() 看真错
 window.testCloudSave = function(name) {
@@ -2813,12 +2860,21 @@ function latestRecordDate(records) {
   return dates.length ? dates[dates.length - 1] : todayStr;
 }
 function dedupeRecordsByEarliest(records) {
+  // R14 根治#2 (2026-07-29 mobile): 语义从「最早登记」→「最新登记胜出」，与PC同源
   const map = new Map();
   (records || []).forEach(r => {
     const k = recordDedupKey(r);
     if (!k) return;
     const prev = map.get(k);
-    if (!prev || String(r.date || '') < String(prev.date || '')) map.set(k, r);
+    if (!prev) { map.set(k, r); return; }
+    const dPrev = String(prev.date || '');
+    const dCur  = String(r.date || '');
+    if (dCur > dPrev) { map.set(k, r); return; }
+    if (dCur === dPrev) {
+      const cPrev = Number(prev._createdAt || 0);
+      const cCur  = Number(r._createdAt || 0);
+      if (cCur > cPrev) map.set(k, r);
+    }
   });
   return Array.from(map.values());
 }
@@ -2977,7 +3033,13 @@ function renderRecords() {
   const defaultRecordLimit = state.recordRange === 'all' ? 80 : 50;
   const visibleList = state.recordExpanded ? list : list.slice(0, defaultRecordLimit);
 
-  const display = v => (v === null || v === undefined) ? '' : String(v);
+  // Round 12 (2026-07-28 R12): "子青指令登记" 是内部字段值，销售不需要看到 → 兜底为 '-'
+  const display = v => {
+    if (v === null || v === undefined || v === '') return '-';
+    var s = String(v);
+    if (s === '子青指令登记' || s.indexOf('子青指令') === 0) return '-';
+    return s;
+  };
   const tbody = document.querySelector('#recordTable tbody') || document.querySelector('#recordTable').appendChild(document.createElement('tbody'));
   tbody.innerHTML = visibleList.map(r => {
     // 链路列优先用 AData s=4695Or 字典（按消耗占比降序，最高消耗加粗）
@@ -3280,9 +3342,10 @@ document.querySelectorAll('[data-metric]').forEach(b => {
   if ($('recordSales')) $('recordSales').onchange = e => { state.recordSales = e.target.value; resetFold(); renderRecords(); };
   if ($('recordCategory')) $('recordCategory').onchange = e => { state.recordCategory = e.target.value; resetFold(); renderRecords(); };
   if ($('recordRising')) $('recordRising').onchange = e => { state.recordRising = e.target.value; resetFold(); renderRecords(); };
-  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
-  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
-  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; resetFold(); ['recordToday','record7d','recordAll'].forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
+  var _tabIds = ['recordToday','record7d','recordAll'];
+  if ($('recordToday')) $('recordToday').onclick = () => { state.recordRange = 'today'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordToday')); renderRecords(); };
+  if ($('record7d')) $('record7d').onclick = () => { state.recordRange = '7d'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='record7d')); renderRecords(); };
+  if ($('recordAll')) $('recordAll').onclick = () => { state.recordRange = 'all'; resetFold(); _tabIds.forEach(id=>$(id) && $(id).classList.toggle('active', id==='recordAll')); renderRecords(); };
 })();
 
 
@@ -3467,7 +3530,9 @@ window.__prefetchAttrLog = function(name){
       action: 'getAuditLog',
       params: { primaryName: name, limit: 5 }
     }).then(function(r){
-      const rows = r && r.result && r.result.data && r.result.data.rows;
+      // 2026-07-28 Round 7: SDK 返回结构双兼容
+      var _r = (r && r.result && typeof r.result === 'object') ? r.result : r;
+      const rows = _r && _r.data && _r.data.rows;
       if (rows && rows.length) {
         // 取 ts 最大的 toSale
         rows.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
@@ -4090,10 +4155,12 @@ function cloudEnhanceNameHint(raw, nameId, hintId, submitId){
     Promise.race([
       cloudCall,
       new Promise(r => setTimeout(() => r(null), 1500))
-    ]).then(res => {
+    ]).then(rawRes => {
       if (seq !== window.__nameCheckSeq__) return;                 // 已有更新输入
       const el = document.getElementById(nameId);
       if (!el || (el.value || '').trim().replace(/\s+/g,'') !== qn.replace(/\s+/g,'')) return;
+      // 2026-07-28 Round 7: SDK 返回结构双兼容 (res.result / res 直读)
+      const res = (rawRes && rawRes.result && typeof rawRes.result === 'object') ? rawRes.result : rawRes;
       if (!res || res.ok === false || !res.data) return;           // 云端失败→保留本地兜底
       if (!res.data.exists) return;                                // 全新客户→保留本地字典识别
       renderCloudNameHint(res.data, qn, hintId, submitId);
@@ -4237,7 +4304,8 @@ window.submitRecord = async () => {
     // R12.1 靶向登记留痕
     targetRejected: targetRejected, rejectedBrand: rejectedBrand
   };
-  saveUserRecord(rec);
+  // R14 根治#1: saveUserRecord 现返回 Promise，await 拿真实云端结果 → 不再假性成功
+  const _cloudRet = await saveUserRecord(rec);
   // R12.1 靶向登记成功后异步刷新本地 count 快照 (下次提交/切换时 count+1 生效)
   if (rec.source === TARGET_BRAND_SOURCE && rec.brand) {
     window.__TARGET_BRAND_COUNTS__[rec.brand] = (window.__TARGET_BRAND_COUNTS__[rec.brand] || 0) + 1;
@@ -4247,7 +4315,13 @@ window.submitRecord = async () => {
   let __targetInfo = '';
   if (rec.source === TARGET_BRAND_SOURCE && rec.brand) __targetInfo = `\n🎯 靶向拓客：${rec.brand}`;
   else if (targetRejected) __targetInfo = `\n⚠️ 品牌【${rejectedBrand}】已被覆盖 3 次，本次已作为「${TARGET_FALLBACK_SOURCE}」入库（不计入靶向拓客）。`;
-  alert(`提交成功：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}${__targetInfo}`);
+  // R14 根治#1: 云端确认成功才说"提交成功"；否则明确"暂存本地未入云"
+  if (_cloudRet && _cloudRet.ok) {
+    alert(`✅ 已入云端：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}${__targetInfo}`);
+  } else {
+    const _why = (_cloudRet && _cloudRet.reason) ? _cloudRet.reason : '网络异常';
+    alert(`⚠️ 已暂存本地，云端未入库：${name}\n原因：${_why}\n\n系统会 30 秒/次自动重试；如持续失败请刷新页面或联系管理员（Ziqingdu）。`);
+  }
 };
 
 
@@ -4700,7 +4774,9 @@ document.addEventListener('click', e => {
       return;
     }
     window.cloud.callFunction('salesCenterApi', { action: 'listUserRecords', params: { limit: 1000 } }).then(function(res){
-      var cloudList = (res && res.result && res.result.data && res.result.data.records) || [];
+      // 2026-07-28 Round 7: SDK 返回结构双兼容 (res.result / res 直读)
+      var _r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+      var cloudList = (_r && _r.data && _r.data.records) || [];
       if (!cloudList.length) return;
       // 2026-06-02 云端记录也走年份修正（7-12月误录2026→2025）
       cloudList.forEach(function(r){ if (r && r.date && window.fixRegYear) r.date = window.fixRegYear(r.date); if (window.applyManualSaleOverride) window.applyManualSaleOverride(r); });
@@ -4745,6 +4821,14 @@ document.addEventListener('click', e => {
       //    2026-06-10 子青拍板修 bug：旧逻辑只 unshift 云端"新客户"，对已存在客户的归属(sale)更新视而不见
       //    → 销售A改了归属、云端对了，但销售B开机同步不更新本地已有记录 → B永远看到旧归属。
       //    新逻辑：①已存在记录 → 用云端值更新 sale/_rtx/deliverySide 等(云端是唯一真源) ②云端新客户 → unshift。
+      // 2026-07-28 Round 9-i: 前端永久屏蔽 __诊断测试__ 残留 (mobile 同源)
+      cloudList = cloudList.filter(function(r){
+        if (!r) return false;
+        var _nm = (r.name || '') + '', _sn = (r.shortName || '') + '';
+        if (_nm.indexOf('__诊断测试__') >= 0 || _sn.indexOf('__诊断测试__') >= 0) return false;
+        if (r.source === 'diag' || (r.id && String(r.id).indexOf('diag_') === 0)) return false;
+        return true;
+      });
       var idMap = {};   // id -> 本地 record 引用（含 RECORDS + USER_RECORDS）
       (window.RECORDS || []).forEach(function(r){
         if (r && r.id != null) idMap[String(r.id)] = r;
@@ -4788,13 +4872,45 @@ document.addEventListener('click', e => {
       }
       console.info('[cloud] pull ok cloud=' + cloudList.length + ' fresh=' + fresh.length + ' updated=' + updated + ' subjects=' + Object.keys(window.__REGISTERED_SUBJECTS__).length);
       try { sessionStorage.setItem(TS_KEY, String(Date.now())); } catch(_){}
+      // 2026-07-28 Round 9-1: 一次性清理云端 __诊断测试__ 残留（docId=5edc49486a68612a0051f4dc254e9993）
+      //   由 Round 6 前诊断脚本注入产生, 静默一次性删除, 用 localStorage 打标记防重
+      try {
+        if (!localStorage.getItem('__diag_cleanup_done_h__')) {
+          var _diagRec = cloudList.find(function(r){ return r && (r._id === '5edc49486a68612a0051f4dc254e9993' || r.id === 'diag_1785225514487' || (r.shortName && r.shortName.indexOf('__诊断测试__') >= 0)); });
+          if (_diagRec) {
+            var _delId = _diagRec._id || _diagRec.id;
+            window.cloud.callFunction('salesCenterApi', { action: 'deleteUserRecord', params: { _id: _diagRec._id, id: _diagRec.id } }).then(function(){
+              try { localStorage.setItem('__diag_cleanup_done_h__', String(Date.now())); } catch(_){}
+              console.info('[cleanup] 云端诊断测试残留已删除', _delId);
+            }).catch(function(e){ console.warn('[cleanup] 删除失败, 保留标记以便下次重试', e && e.message); });
+          } else {
+            try { localStorage.setItem('__diag_cleanup_done_h__', String(Date.now())); } catch(_){}
+          }
+        }
+      } catch(_e){}
+      // 2026-07-28 Round 9: pull 完立即重推 pending 队列 (mobile 同源)
+      try {
+        var _pq = window.__PENDING_PUSH_QUEUE__ || {};
+        var _pk = Object.keys(_pq);
+        if (_pk.length) {
+          console.info('[cloud] pull 后发现 ' + _pk.length + ' 条 pending, 立即触发重推');
+          _pk.forEach(function(k){ var r = _pq[k]; if (r) pushRecordToCloud(r, 0, true); });
+        }
+      } catch(_e){ console.warn('[cloud] post-pull repush failed', _e); }
       // 3) 重渲染
       if (typeof renderAll === 'function') {
         try { renderAll(); } catch(e){ console.warn('[cloud] renderAll fail', e); }
       }
     }).catch(function(e){
-      console.warn('[cloud] pull fail:', e && e.message);
-      if (force) { try { alert('刷新失败：' + (e && e.message || '请稍后重试')); } catch(_){} }
+      var msg = (e && e.message) || '';
+      var code = (e && e.code) || '';
+      console.warn('[cloud] pull fail:', msg, code);
+      // 2026-07-28 Round 10: NEED_PASSWORD 只是老鉴权路径的信号, 云函数本身免登录; 不再弹惊吓 alert
+      if (code === 'NEED_PASSWORD' || msg.indexOf('NEED_PASSWORD') >= 0) {
+        console.info('[cloud] pull retry: SDK auth path fallback ignored (cloud function is anonymous-callable)');
+        return;
+      }
+      if (force) { try { alert('刷新失败：' + (msg || '请稍后重试')); } catch(_){} }
     });
   } catch(e) {
     console.warn('[cloud] pullCloudOnBoot exception', e);

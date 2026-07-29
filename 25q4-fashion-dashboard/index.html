@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>25Q4 女装赛道广告投放数据看板</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --panel2:#f8fafc; --border:#e4e9f2;
+    --text:#1a2340; --sub:#5a6683; --mute:#9aa3ba;
+    --accent:#3b82f6; --accent2:#6366f1;
+    --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
+    --gold:#eab308; --purple:#8b5cf6; --teal:#14b8a6; --pink:#ec4899;
+    --shadow: 0 1px 3px 0 rgba(30,41,59,0.04), 0 1px 2px 0 rgba(30,41,59,0.06);
+    --shadow-lg: 0 4px 6px -1px rgba(30,41,59,0.08), 0 2px 4px -1px rgba(30,41,59,0.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:13px;line-height:1.55}
+  .wrap{max-width:1480px;margin:0 auto;padding:22px}
+
+  /* 头 */
+  .header{background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:18px;box-shadow:var(--shadow-lg);
+          display:flex;justify-content:space-between;align-items:flex-end}
+  .header h1{font-size:24px;font-weight:600;letter-spacing:0.5px;margin-bottom:6px}
+  .header .sub{color:rgba(255,255,255,0.85);font-size:12px}
+  .header .meta{color:rgba(255,255,255,0.85);font-size:12px;text-align:right;font-family:"SF Mono",Menlo,monospace}
+  .header .meta strong{color:#fff;font-size:14px}
+
+  /* KPI: 5 张 (删掉总下单量估) */
+  .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .kpi .lbl{font-size:11.5px;color:var(--sub);margin-bottom:6px;font-weight:500}
+  .kpi .val{font-size:24px;font-weight:700;color:var(--text);font-family:"SF Mono",Menlo,monospace;letter-spacing:-0.5px}
+  .kpi .sub{font-size:11px;color:var(--mute);margin-top:3px}
+  .kpi::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent)}
+  .kpi.good::before{background:var(--good)} .kpi.warn::before{background:var(--warn)}
+  .kpi.bad::before{background:var(--bad)}   .kpi.gold::before{background:var(--gold)}
+  .kpi.purple::before{background:var(--purple)}
+
+  /* 布局 */
+  .row{display:grid;gap:14px;margin-bottom:14px}
+  .row-2{grid-template-columns:1fr 1fr}
+  .row-2-3{grid-template-columns:2fr 1fr}
+  .row-3{grid-template-columns:1fr 1fr 1fr}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;box-shadow:var(--shadow)}
+  .panel h2{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;color:var(--text);gap:12px;flex-wrap:wrap}
+  .panel h2 .tag{font-size:11.5px;color:var(--sub);font-weight:400}
+  .panel h2 .desc{font-size:11.5px;color:var(--mute);font-weight:400;background:#f1f5f9;padding:2px 8px;border-radius:4px}
+  .panel h2 .btn-grp{display:flex;gap:6px}
+  .panel h2 .btn{background:var(--panel2);border:1px solid var(--border);color:var(--sub);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11.5px;transition:all 0.15s}
+  .panel h2 .btn:hover{color:var(--accent);border-color:var(--accent);background:#eef4ff}
+  .panel h2 .btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chart{width:100%;height:340px}
+  .chart-tall{height:460px}
+  .chart-xl{height:520px}
+  .chart-scatter{height:440px}
+  .chart-short{height:280px}
+
+  /* L3 表 */
+  .l3-list{display:flex;flex-direction:column;gap:6px}
+  .l3-row{background:var(--panel2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:box-shadow 0.15s}
+  .l3-row:hover{box-shadow:var(--shadow-lg)}
+  .l3-head{display:grid;grid-template-columns:22px 140px 1fr 100px 70px 60px 60px 70px 60px 70px;
+           gap:8px;padding:12px 14px;align-items:center;cursor:pointer;transition:background 0.15s}
+  .l3-head:hover{background:#eef4ff}
+  .l3-head .caret{color:var(--sub);transition:transform 0.2s;font-size:10px}
+  .l3-head.open{background:#eef4ff}
+  .l3-head.open .caret{transform:rotate(90deg);color:var(--accent)}
+  .l3-head .name{font-weight:600;color:var(--text)}
+  .l3-head .bar-wrap{background:#e4e9f2;border-radius:4px;height:10px;position:relative;overflow:hidden}
+  .l3-head .bar{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));border-radius:4px}
+  .l3-head .num{text-align:right;font-family:"SF Mono",Menlo,monospace;font-size:12px;color:var(--text);font-weight:500}
+  .l3-head .num.good{color:var(--good)} .l3-head .num.warn{color:var(--warn)} .l3-head .num.bad{color:var(--bad)}
+  .l3-body{display:none;background:#fff;border-top:1px solid var(--border);padding:0}
+  .l3-body.open{display:block}
+
+  /* L4 表 */
+  .l4-row{border-bottom:1px solid var(--border)}
+  .l4-row:last-child{border-bottom:none}
+  .l4-head{display:grid;grid-template-columns:38px 140px 1fr 100px 70px 60px 60px 70px 60px 70px;
+           gap:8px;padding:10px 14px;align-items:center;cursor:pointer;font-size:12px;transition:background 0.12s}
+  .l4-head:hover{background:#fafbff}
+  .l4-head .caret{color:var(--sub);transition:transform 0.2s;font-size:9px;margin-left:16px}
+  .l4-head.open{background:#fef9e7}
+  .l4-head.open .caret{transform:rotate(90deg);color:var(--gold)}
+  .l4-head .name{color:var(--text)}
+  .l4-head .bar-wrap{background:#e4e9f2;border-radius:3px;height:6px;position:relative}
+  .l4-head .bar{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--teal),var(--good));border-radius:3px}
+  .l4-head .num{text-align:right;font-family:"SF Mono",Menlo,monospace;color:var(--sub)}
+  .l4-body{display:none;padding:10px 14px 16px 46px;background:#fafbff}
+  .l4-body.open{display:block}
+
+  /* SKU 表 (商品品类概括) */
+  table.sku{width:100%;border-collapse:collapse;font-size:11.5px}
+  table.sku th,table.sku td{padding:8px 8px;text-align:right;border-bottom:1px solid #e4e9f2;vertical-align:middle}
+  table.sku th{color:var(--sub);font-weight:500;background:#eef4ff;position:sticky;top:0;text-align:right}
+  table.sku th:nth-child(1),table.sku th:nth-child(2){text-align:left}
+  table.sku td.name{text-align:left;color:var(--text);font-weight:600;font-size:12.5px}
+  table.sku td.name .badge{display:inline-block;background:#ede9fe;color:var(--purple);font-size:10.5px;padding:1px 7px;border-radius:10px;margin-left:6px;font-family:monospace;font-weight:600;vertical-align:middle}
+  table.sku td.name .samples{color:var(--mute);font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px;font-weight:400}
+  table.sku tr:hover td{background:#eef4ff}
+  table.sku td.num{font-family:"SF Mono",Menlo,monospace;color:var(--text)}
+  table.sku td.num.good{color:var(--good);font-weight:600} table.sku td.num.warn{color:var(--warn);font-weight:600} table.sku td.num.bad{color:var(--bad);font-weight:600}
+  table.sku td.num .range{color:var(--mute);font-size:10px;font-weight:400;display:block;margin-top:1px}
+  .sku-empty{color:var(--mute);padding:10px;text-align:center}
+
+  .header-legend{display:grid;grid-template-columns:22px 140px 1fr 100px 70px 60px 60px 70px 60px 70px;
+           gap:8px;padding:10px 14px;color:var(--mute);font-size:11px;background:#eef4ff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-weight:500}
+  .header-legend div{text-align:right}
+  .header-legend div:nth-child(1),.header-legend div:nth-child(2){text-align:left}
+  .header-legend div:nth-child(3){text-align:center}
+
+  /* 散点图图例 */
+  .quad-legend{display:flex;gap:16px;font-size:11.5px;color:var(--sub);margin-top:10px;flex-wrap:wrap;padding:8px 12px;background:#f8fafc;border-radius:6px}
+  .quad-legend .lg-item{display:flex;align-items:center;gap:5px}
+  .quad-legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+  .quad-legend .note{color:var(--mute);font-size:11px;margin-top:4px;padding-left:2px}
+
+  /* 红榜 */
+  .redlist{max-height:340px;overflow-y:auto}
+  .redlist .item{display:flex;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);font-size:12px;transition:background 0.1s}
+  .redlist .item:hover{background:#fef2f2}
+  .redlist .item:last-child{border-bottom:none}
+  .redlist .item .left{color:var(--text);font-weight:500}
+  .redlist .item .left .parent{color:var(--mute);font-size:10.5px;font-weight:400;margin-top:2px}
+  .redlist .item .right{font-family:"SF Mono",Menlo,monospace;color:var(--bad);font-weight:600;font-size:14px}
+
+  /* 词云区: 大幅拉高 */
+  .wc-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .wc-tab{padding:7px 14px;background:#eef4ff;border:1px solid var(--border);border-radius:16px;cursor:pointer;font-size:12px;color:var(--sub);transition:all 0.15s;font-weight:500}
+  .wc-tab:hover{color:var(--accent);border-color:var(--accent)}
+  .wc-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .wc-chart{height:640px;background:linear-gradient(180deg,#fbfcfe 0%,#f1f5f9 100%);border-radius:10px}
+  .wc-table{max-height:640px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+  .wc-table table{width:100%;font-size:12px;border-collapse:collapse}
+  .wc-table th,.wc-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:right}
+  .wc-table th{color:var(--sub);font-weight:500;background:#f1f5f9;position:sticky;top:0}
+  .wc-table td.w{text-align:left;font-weight:600;color:var(--text);font-size:12.5px}
+  .wc-table td.num{font-family:"SF Mono",Menlo,monospace;color:var(--sub)}
+  .wc-table td.num.good{color:var(--good);font-weight:600}
+  .wc-table td.num.warn{color:var(--warn);font-weight:600}
+  .wc-table td.num.bad{color:var(--bad);font-weight:600}
+
+  /* 价格带 */
+  .band-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+  .band-card{background:linear-gradient(135deg,#fff 0%,#f8fafc 100%);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+  .band-card .name{font-size:12px;color:var(--sub);margin-bottom:8px;font-weight:600}
+  .band-card .cost{font-size:20px;font-weight:700;color:var(--text);font-family:"SF Mono",Menlo,monospace}
+  .band-card .pct{font-size:11px;color:var(--mute);margin-top:2px}
+  .band-card .metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px}
+  .band-card .metrics div{color:var(--sub);text-align:left}
+  .band-card .metrics div b{font-family:"SF Mono",Menlo,monospace;color:var(--text);float:right;font-weight:600}
+  .band-card.hot{border-color:var(--good);box-shadow:0 0 0 2px rgba(16,185,129,0.15)}
+  .band-card.hot .cost{color:var(--good)}
+
+  .footer{text-align:center;color:var(--mute);font-size:11px;padding:16px 0}
+
+  /* Tab 头 */
+  .main-tabs{display:flex;gap:0;background:#fff;border-radius:12px;padding:6px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--border)}
+  .main-tab{flex:1;padding:12px 20px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;color:var(--sub);border-radius:8px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .main-tab:hover{color:var(--accent);background:#f8fafc}
+  .main-tab.active{background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);color:#fff;box-shadow:0 3px 10px rgba(59,130,246,0.3)}
+  .main-tab .badge{font-size:11px;background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:10px;font-weight:500}
+  .main-tab:not(.active) .badge{background:#eef4ff;color:var(--accent)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  /* 分类排行表 */
+  .cat-list{display:flex;flex-direction:column;gap:5px}
+  .cat-row{display:grid;grid-template-columns:34px 130px 1fr 100px 70px 70px 60px 70px;gap:8px;padding:10px 14px;
+           background:#fff;border:1px solid var(--border);border-radius:8px;align-items:center;font-size:12.5px;transition:all 0.15s}
+  .cat-row:hover{border-color:var(--accent);background:#f8fbff;transform:translateX(2px)}
+  .cat-row .rank{color:var(--mute);font-family:"SF Mono",monospace;font-weight:600}
+  .cat-row .rank.top3{color:var(--gold);font-size:14px}
+  .cat-row .name{font-weight:600;color:var(--text)}
+  .cat-row .bar-wrap{background:#e4e9f2;border-radius:3px;height:8px;position:relative;overflow:hidden}
+  .cat-row .bar{position:absolute;top:0;height:100%;border-radius:3px}
+  .cat-row .num{text-align:right;font-family:"SF Mono",monospace;color:var(--text);font-weight:500}
+  .cat-row .num.pos{color:var(--bad);font-weight:600}  /* 中股风格: 涨=红 */
+  .cat-row .num.neg{color:var(--good);font-weight:600} /* 跌=绿 */
+
+  /* 属性维度 */
+  .attr-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .attr-tab{padding:8px 16px;background:#f1f5f9;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;color:var(--sub);font-weight:500;transition:all 0.15s}
+  .attr-tab:hover{color:var(--accent);border-color:var(--accent)}
+  .attr-tab.active{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border-color:transparent}
+
+  /* 属性表 */
+  .attr-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .attr-item{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;transition:all 0.15s}
+  .attr-item:hover{border-color:var(--accent);box-shadow:var(--shadow-lg)}
+  .attr-item .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .attr-item .head .name{font-size:14px;font-weight:600;color:var(--text)}
+  .attr-item .head .rk{font-family:"SF Mono",monospace;color:var(--mute);font-size:11px}
+  .attr-item .stats{display:flex;gap:12px;font-size:11.5px;color:var(--sub);margin-bottom:8px}
+  .attr-item .stats span b{font-family:"SF Mono",monospace;color:var(--text);font-weight:600}
+  .attr-item .yoy.pos{color:var(--bad)} .attr-item .yoy.neg{color:var(--good)}
+  .attr-item .kws{display:flex;flex-wrap:wrap;gap:5px}
+  .attr-item .kw{background:#eef4ff;color:var(--accent);font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+
+  /* 大促标记 */
+  .promo-legend{display:inline-flex;gap:12px;font-size:11px;color:var(--sub);margin-left:12px}
+  .promo-legend .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pink);vertical-align:middle;margin-right:4px}
+
+  @media (max-width:960px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr)}
+    .band-grid{grid-template-columns:repeat(2,1fr)}
+    .row-2,.row-3,.row-2-3{grid-template-columns:1fr}
+    .l3-head,.l4-head,.header-legend{grid-template-columns:22px 100px 1fr 70px 50px 45px 45px 50px 45px 50px;font-size:11px}
+    .attr-list{grid-template-columns:1fr}
+    .cat-row{grid-template-columns:26px 90px 1fr 70px 50px 50px 50px 50px;font-size:11px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div>
+      <h1>25Q4 女装品类 · 多平台广告投放交叉洞察</h1>
+    </div>
+    <div class="meta">
+      <div>数据周期 <strong>2025 Q4</strong></div>
+      <div style="margin-top:4px">生成时间 <span id="genTime"></span></div>
+    </div>
+  </div>
+
+  <!-- 主 Tab -->
+  <div class="main-tabs">
+    <div class="main-tab active" data-tab="adq">📊 AMS广告投放 <span class="badge">消耗 ¥8213 万</span></div>
+    <div class="main-tab" data-tab="wechat">🛒 微信小店GMV <span class="badge">销售 ¥148 亿</span></div>
+    <div class="main-tab" data-tab="douyin">🎵 抖音女装GMV <span class="badge">39 品类 · 92 天</span></div>
+  </div>
+
+  <!-- ============ Tab 1: ADQ 广告 ============ -->
+  <div class="tab-panel active" id="tab-adq">
+
+  <!-- KPI 5 卡 -->
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- 分周趋势 -->
+  <div class="panel" style="margin-bottom:14px">
+    <h2>
+      <span>📈 分周趋势 <span class="tag">14 周 · 双 Y 轴</span></span>
+      <div class="btn-grp" id="trendCtrl">
+        <button class="btn active" data-metric="cost,roi">消耗 × ROI</button>
+        <button class="btn" data-metric="ctr,cvr">CTR × CVR</button>
+        <button class="btn" data-metric="aov,refund7">客单价 × 退款率</button>
+      </div>
+    </h2>
+    <div id="trendChart" class="chart chart-tall"></div>
+  </div>
+
+  <!-- 价格带 -->
+  <div class="panel" style="margin-bottom:14px">
+    <h2>
+      💰 价格带洞察 <span class="tag">按客单价 5 档划分 · 消耗加权</span>
+      <span class="desc">500 元以上档 ROI 遥遥领先，头部客单价段承接了低烧钱高回报的核心投放</span>
+    </h2>
+    <div class="band-grid" id="bandGrid"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px">
+      <h3 style="font-size:13px;color:var(--text);font-weight:600">📊 各价格带核心指标趋势（多指标折线对比）</h3>
+      <div class="btn-grp" id="bandMetricCtrl">
+        <button class="btn active" data-set="核心">核心 3 指标</button>
+        <button class="btn" data-set="全部">全部 6 指标</button>
+      </div>
+    </div>
+    <div id="bandLines" class="chart" style="height:400px"></div>
+  </div>
+
+  <!-- 三张散点矩阵：优化排版 -->
+  <div class="row row-2">
+    <div class="panel">
+      <h2>
+        散点矩阵 A：消耗 × ROI × 退款率
+        <span class="desc">气泡大小=消耗，颜色=退款率</span>
+      </h2>
+      <div id="matA" class="chart chart-scatter"></div>
+      <div class="quad-legend">
+        <div class="lg-item"><span class="dot" style="background:var(--good)"></span>低退款 &lt;35%</div>
+        <div class="lg-item"><span class="dot" style="background:var(--warn)"></span>中 35~50%</div>
+        <div class="lg-item"><span class="dot" style="background:var(--bad)"></span>高退款 ≥50%</div>
+        <div class="note">▎虚线=中位线，四象限已用浅色背景标出：<b style="color:var(--good)">右上=核心赛道</b>｜<b style="color:var(--bad)">右下=烧钱低效</b>。标签仅显示消耗 Top 8。</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>
+        散点矩阵 B：CTR × CVR × 消耗
+        <span class="desc">气泡大小=消耗，颜色=分区</span>
+      </h2>
+      <div id="matB" class="chart chart-scatter"></div>
+      <div class="quad-legend">
+        <div class="note">▎四象限背景已按类型标色，图例见图内 legend。标签仅显示消耗 Top 8，其余悬停查看。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:14px">
+    <h2>
+      散点矩阵 C：客单价 × ROI × 退款率
+      <span class="desc">气泡大小=消耗，颜色=退款率（红=风险）</span>
+    </h2>
+    <div id="matC" class="chart chart-scatter"></div>
+    <div class="quad-legend">
+      <div class="lg-item"><span class="dot" style="background:var(--good)"></span>低退款</div>
+      <div class="lg-item"><span class="dot" style="background:var(--warn)"></span>中退款</div>
+      <div class="lg-item"><span class="dot" style="background:var(--bad)"></span>高退款</div>
+      <div class="note">▎重点看 <b style="color:var(--good)">右上</b>（高客单价 + 高 ROI，头部盈利品类）与 <b style="color:var(--bad)">右下</b>（高价低 ROI，烧钱陷阱）。红色气泡代表退款风险高，即使 ROI 尚可也需警惕。</div>
+    </div>
+  </div>
+
+  <!-- Top10 三列 -->
+  <div class="row row-3">
+    <div class="panel">
+      <h2>Top10 三级类目消耗 <span class="tag">降序</span></h2>
+      <div id="barCost" class="chart"></div>
+    </div>
+    <div class="panel">
+      <h2>Top10 三级类目 ROI <span class="tag">消耗 &gt; 50 万</span></h2>
+      <div id="barRoi" class="chart"></div>
+    </div>
+    <div class="panel">
+      <h2>⚠️ 退款率红榜 <span class="tag">L4 · 消耗 ≥ 10 万</span></h2>
+      <div class="redlist" id="redlist"></div>
+    </div>
+  </div>
+
+  <!-- 词云: 大幅拉宽 -->
+  <div class="panel" style="margin-bottom:14px">
+    <h2>
+      🎨 商品名关键词洞察 <span class="tag">按消耗聚合，识别真正吃预算的关键词</span>
+    </h2>
+    <div class="wc-tabs" id="wcTabs"></div>
+    <div class="row row-2-3">
+      <div id="wcChart" class="wc-chart"></div>
+      <div class="wc-table">
+        <table id="wcTable">
+          <thead><tr><th style="text-align:left">关键词</th><th>消耗</th><th>ROI</th><th>SKU 数</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 钻取表 -->
+  <div class="panel">
+    <h2>
+      🔍 三级 → 四级 → 商品品类钻取表
+      <div class="btn-grp">
+        <button class="btn" onclick="expandAll(true)">全部展开</button>
+        <button class="btn" onclick="expandAll(false)">全部收起</button>
+      </div>
+    </h2>
+    <div class="header-legend">
+      <div></div><div>三级 / 四级类目</div><div>消耗占比</div>
+      <div>消耗(元)</div><div>ROI</div><div>CTR%</div><div>CVR%</div><div>单价¥</div><div>退款%</div><div>SKU 数</div>
+    </div>
+    <div class="l3-list" id="l3List"></div>
+  </div>
+
+  </div><!-- /tab-adq -->
+
+  <!-- ============ Tab 2: 微信小店 ============ -->
+  <div class="tab-panel" id="tab-wechat">
+
+    <!-- KPI -->
+    <div class="kpi-grid" id="wcKpiGrid" style="grid-template-columns:repeat(5,1fr)"></div>
+
+    <!-- 大盘周度趋势 (全类目) -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>📈 全类目大盘周度趋势 <span class="tag">14 周 · 销售额 + 销量</span></span>
+        <span class="desc">友望数据全平台带货口径</span>
+      </h2>
+      <div id="wcWeekChart" class="chart chart-tall"></div>
+    </div>
+
+    <!-- 女装赛道日度趋势 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>👗 女装赛道日度趋势 <span class="tag">92 天 · 大促节点已标注</span></span>
+        <span class="promo-legend"><span class="dot"></span>大促日: 双11 / 双12 / 元旦</span>
+      </h2>
+      <div id="wcDayChart" class="chart chart-tall"></div>
+    </div>
+
+    <!-- 女装品类 TOP 40 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>🏆 女装品类 TOP 排行 <span class="tag">按销售额降序 · <b>红涨绿跌</b></span></span>
+        <div class="btn-grp" id="catSortCtrl">
+          <button class="btn active" data-sort="amt">按销售额</button>
+          <button class="btn" data-sort="vol">按销量</button>
+          <button class="btn" data-sort="aov">按客单价</button>
+          <button class="btn" data-sort="amt_yoy">按环比</button>
+        </div>
+      </h2>
+      <div class="header-legend" style="grid-template-columns:34px 130px 1fr 100px 70px 70px 60px 70px;">
+        <div>#</div><div>品类</div><div>销售额占比</div>
+        <div>销售额</div><div>销量占比</div><div>销售额环比</div><div>客单价</div><div>销量</div>
+      </div>
+      <div class="cat-list" id="catList"></div>
+    </div>
+
+    <!-- 品类增长质量矩阵 (在 TOP 排行基础上增加的战略视角) -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>🎯 品类增长质量矩阵 <span class="tag">量价拆解 · <b>红涨绿跌</b></span></span>
+        <span class="desc">X=销量环比 · Y=销售额环比 · 气泡=销售额占比 — 右上「量价齐升」是明星，右下「以价换量」需警惕，左上「提价增长」，左下「量价齐跌」在萎缩</span>
+      </h2>
+      <div class="row" style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
+        <div id="catQuadrant" class="chart" style="height:420px"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto">
+          <div id="catStarList"></div>
+          <div id="catDeclineList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 维属性分析 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>🎯 6 维属性洞察 <span class="tag">占比 × 增速 × 热度 三维联动</span></span>
+        <span class="desc">找"占比高 + 仍在增长"的黄金属性</span>
+      </h2>
+      <div class="attr-tabs" id="attrTabs"></div>
+      <div class="row row-2-3">
+        <div id="attrMatrix" class="chart" style="height:480px"></div>
+        <div style="max-height:480px;overflow-y:auto;padding-right:4px">
+          <div class="attr-list" id="attrList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 洞察小结 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>💡 关键洞察</h2>
+      <div id="wcInsight" style="font-size:13px;color:var(--text);line-height:1.85"></div>
+    </div>
+
+  </div><!-- /tab-wechat -->
+
+  <!-- ============ Tab 3: 抖音 ============ -->
+  <div class="tab-panel" id="tab-douyin">
+
+    <!-- KPI -->
+    <div class="kpi-grid" id="dyKpiGrid" style="grid-template-columns:repeat(5,1fr)"></div>
+
+    <!-- 说明 -->
+    <div class="panel" style="margin-bottom:14px;padding:12px 18px;background:linear-gradient(135deg,#fff7ed 0%,#fef3c7 100%);border-left:3px solid var(--warn)">
+      <div style="font-size:12.5px;color:var(--text)"><b>ℹ️ 数据脱敏说明：</b>抖音大盘销售额/销量以"1000w+"、"100w-500w"等分段脱敏返回，精确指标为 <b>浏览量 / 商品数 / 各种占比</b>。以下分析以 <b>占比</b> 为核心，区间数据仅做定性对比。</div>
+    </div>
+
+    <!-- 92 天大盘日度 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>📅 大盘日度趋势 <span class="tag">92 天 · 浏览量 + 带货商品数</span></span>
+        <span class="desc">销售额/销量按脱敏区间中位数估算，仅供趋势对比</span>
+      </h2>
+      <div id="dyOverviewChart" class="chart chart-tall"></div>
+    </div>
+
+    <!-- Top 10 销售额品类 & 直播/视频/商品卡渠道结构 -->
+    <div class="row row-2">
+      <div class="panel">
+        <h2>🏆 销售额 Top 10 品类 <span class="tag">销售额占比降序</span></h2>
+        <div id="dyTopAmt" class="chart chart-tall"></div>
+      </div>
+      <div class="panel">
+        <h2>📺 销售渠道结构 <span class="tag">Top 10 品类 · 直播/视频/商品卡</span></h2>
+        <div id="dyChannel" class="chart chart-tall"></div>
+      </div>
+    </div>
+
+    <!-- 品牌自营 vs 达人推广 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>👥 品牌自营 vs 达人推广 <span class="tag">Top 15 品类 · 达人主导现象</span></span>
+        <span class="desc">整体女装赛道达人推广占 60%+，品牌自营话语权弱</span>
+      </h2>
+      <div id="dyBrandKol" class="chart chart-tall"></div>
+    </div>
+
+    <!-- Top 10 品类销售额占比走势 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>📈 Top 10 品类销售额占比走势 <span class="tag">92 天</span></span>
+        <div class="btn-grp" id="dyTrendCtrl">
+          <button class="btn active" data-mode="amt">销售额占比</button>
+          <button class="btn" data-mode="vol">销量占比</button>
+          <button class="btn" data-mode="goods">商品数占比</button>
+        </div>
+      </h2>
+      <div id="dyTrendChart" class="chart chart-tall"></div>
+    </div>
+
+    <!-- 品类分布对比表 (销售额维度已有上方柱状图, 此处仅补销量/商品数, 避免重复) -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>📊 品类排行对比 <span class="tag">销量 / 商品数 各 Top 10 · 销售额见上方柱状图</span></h2>
+      <div class="row row-2">
+        <div>
+          <h3 style="font-size:12.5px;color:var(--text);margin-bottom:8px;font-weight:600">📦 销量占比 Top 10</h3>
+          <div id="dyRankVol" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+        <div>
+          <h3 style="font-size:12.5px;color:var(--text);margin-bottom:8px;font-weight:600">🛍️ 商品数占比 Top 10</h3>
+          <div id="dyRankGoods" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 竞争详情表 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>🥊 39 品类完整竞争详情 <span class="tag">销售额降序</span></span>
+        <div class="btn-grp">
+          <button class="btn" onclick="toggleDyTable()">展开/收起</button>
+        </div>
+      </h2>
+      <div id="dyCompeteTable" style="max-height:480px;overflow-y:auto"></div>
+    </div>
+
+    <!-- ===== 品洞察: 卖点词云 + 类型构成 ===== -->
+    <div class="row" style="margin-bottom:14px;display:grid;grid-template-columns:2.4fr 1fr;gap:12px">
+      <div class="panel" style="margin:0">
+        <h2>
+          <span>🏷️ 抖音卖点词云 <span class="tag">Top 100 · 多维切换</span></span>
+          <span class="desc">热销关键词洞察消费者在意什么</span>
+          <div class="btn-grp" id="dySpCtrl" style="margin-left:auto">
+            <button class="btn active" data-dim="share">销售额占比</button>
+            <button class="btn" data-dim="growth">增长指数</button>
+            <button class="btn" data-dim="goods">商品数</button>
+            <button class="btn" data-dim="cr5">品牌CR5</button>
+          </div>
+        </h2>
+        <div id="dySellingPoints" style="height:560px"></div>
+      </div>
+      <div class="panel" style="margin:0">
+        <h2>
+          <span>🎯 卖点类型构成 <span class="tag">销售额占比</span></span>
+          <span class="desc">材质/风格/功效/版型</span>
+        </h2>
+        <div id="dySpTypeChart" style="height:560px"></div>
+      </div>
+    </div>
+
+    <!-- ===== 品洞察: 爆品 + 飙升（带图片） ===== -->
+    <div class="row row-2" style="margin-bottom:14px">
+      <div class="panel">
+        <h2>
+          <span>🔥 爆品增长榜 <span class="tag">Top 15 · 复合增长率</span></span>
+          <span class="desc">Q4 期间增速最快 — 鼠标悬停查看完整商品名</span>
+        </h2>
+        <div id="dyGrowthProducts" style="max-height:560px;overflow-y:auto"></div>
+      </div>
+      <div class="panel">
+        <h2>
+          <span>⚡ 商品飙升榜 <span class="tag">Top 15 · 25Q4</span></span>
+          <span class="desc">热度上升最快 — 适合追风口</span>
+        </h2>
+        <div id="dySurgeProducts" style="max-height:560px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- ===== 品洞察: 品类渠道策略 ===== -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>
+        <span>📡 品类渠道策略全景 <span class="tag">品牌自营 vs 达人 vs 商品卡</span></span>
+        <span class="desc">按达人推广占比降序，仅含商品数≥3的品类 — 达人占比高 = 内容驱动，品牌占比高 = 品牌力强</span>
+      </h2>
+      <div id="dyChannelStrategy" class="chart chart-xl"></div>
+    </div>
+
+    <!-- 关键洞察 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h2>💡 抖音关键洞察</h2>
+      <div id="dyInsight" style="font-size:13px;color:var(--text);line-height:1.85"></div>
+    </div>
+
+  </div><!-- /tab-douyin -->
+
+  <div class="footer">
+    25Q4 女装赛道数据看板 · ADQ 消耗加权 + 友望平台销售<br>
+    商品归并规则：同 L4 + 价格带差 ≤ 1 档 + 商品名 Jaccard ≥ 0.4；平台数据展示涨=红 跌=绿（中国股市惯例）
+  </div>
+</div>
+
+<script src="dataset.js"></script>
+<script src="wechat_dataset.js"></script>
+<script src="douyin_dataset.js"></script>
+<script src="douyin_market.js"></script>
+<script>
+// ============ 工具 ============
+const fmtMoney = v => v==null?'—':(v>=1e8?(v/1e8).toFixed(2)+'亿':v>=1e4?(v/1e4).toFixed(1)+'万':v.toFixed(0));
+const fmtMoneyInt = v => v==null?'—':(v>=1e8?Math.round(v/1e8)+'亿':v>=1e4?Math.round(v/1e4)+'万':Math.round(v));
+const fmtInt   = v => v==null?'—':Math.round(v).toLocaleString('en-US');
+const fmtPct   = v => v==null?'—':v.toFixed(2);
+const fmtF     = (v,d=2) => v==null?'—':v.toFixed(d);
+const cls = (v,thr,inv=false) => {
+  if(v==null) return '';
+  if(inv){ if(v>=thr[1]) return 'bad'; if(v>=thr[0]) return 'warn'; return 'good'; }
+  else{   if(v>=thr[1]) return 'good'; if(v>=thr[0]) return 'warn'; return 'bad'; }
+};
+const D = window.__DATA__;
+document.getElementById('genTime').textContent = new Date().toLocaleString('zh-CN');
+
+const commonAxis = {
+  axisLabel:{color:'#5a6683'},
+  nameTextStyle:{color:'#5a6683',fontSize:12},
+  splitLine:{lineStyle:{color:'#e4e9f2'}},
+  axisLine:{lineStyle:{color:'#c9d1e0'}},
+};
+const commonTip = {
+  backgroundColor:'#ffffff',borderColor:'#e4e9f2',borderWidth:1,
+  textStyle:{color:'#1a2340'},
+  extraCssText:'box-shadow:0 4px 12px rgba(30,41,59,0.12);border-radius:8px;padding:8px 12px;'
+};
+
+// ============ KPI (删除下单量估算 → 5 张) ============
+const ov = D.overview;
+const kpiData = [
+  {lbl:'总消耗',       val:'¥'+fmtMoney(ov.total_cost), sub:`${ov.l3_count} 个三级 · ${ov.l4_count} 个四级`, cls:''},
+  {lbl:'加权 ROI',     val:fmtF(ov.roi,2),              sub:'下单金额 / 消耗', cls:'good'},
+  {lbl:'加权 CTR',     val:fmtPct(ov.ctr)+'%',          sub:'点击率', cls:'gold'},
+  {lbl:'加权 CVR',     val:fmtPct(ov.cvr)+'%',          sub:'点击→下单转化率', cls:'warn'},
+  {lbl:'加权退款率',   val:fmtPct(ov.refund)+'%',       sub:'7 日发起退款', cls:'bad'},
+];
+document.getElementById('kpiGrid').innerHTML = kpiData.map(k=>`
+  <div class="kpi ${k.cls}">
+    <div class="lbl">${k.lbl}</div>
+    <div class="val">${k.val}</div>
+    <div class="sub">${k.sub}</div>
+  </div>`).join('');
+
+// ============ 分周趋势 (删掉双退款按钮) ============
+const trendChart = echarts.init(document.getElementById('trendChart'));
+const metricMeta = {
+  cost:{name:'消耗',color:'#3b82f6',fmt:v=>'¥'+fmtMoney(v),axis:'money',type:'bar'},
+  roi:{name:'ROI',color:'#10b981',fmt:v=>fmtF(v,2),axis:'left',type:'line'},
+  ctr:{name:'CTR',color:'#f59e0b',fmt:v=>fmtPct(v)+'%',axis:'left',type:'line'},
+  cvr:{name:'CVR',color:'#8b5cf6',fmt:v=>fmtPct(v)+'%',axis:'left',type:'line'},
+  aov:{name:'客单价',color:'#ec4899',fmt:v=>'¥'+fmtF(v,0),axis:'money',type:'bar'},
+  refund7:{name:'7日退款率',color:'#ef4444',fmt:v=>fmtPct(v)+'%',axis:'left',type:'line'},
+};
+function drawTrend(m1, m2){
+  const dates = D.week_trend.map(w=>w.date.replace('2025/','').replace(/^0/,''));
+  const s1 = D.week_trend.map(w=>w[m1]);
+  const s2 = D.week_trend.map(w=>w[m2]);
+  const meta1 = metricMeta[m1], meta2 = metricMeta[m2];
+  const useDoubleAxis = meta1.axis !== meta2.axis;
+  trendChart.setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+      let html = `<b>${params[0].name}</b>`;
+      params.forEach(p=>{
+        const meta = p.seriesName===meta1.name?meta1:meta2;
+        html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${meta.fmt(p.value)}</b>`;
+      });
+      return html;
+    }},
+    legend:{data:[meta1.name,meta2.name],textStyle:{color:'#1a2340',fontSize:12},top:8},
+    grid:{left:80,right:useDoubleAxis?80:30,top:50,bottom:40},
+    xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:11.5}},
+    yAxis: useDoubleAxis ? [
+      {type:'value',name:meta1.name,...commonAxis,position:'left',axisLabel:{color:'#5a6683',formatter:v=>meta1.axis==='money'?fmtMoney(v):v}},
+      {type:'value',name:meta2.name,...commonAxis,position:'right',axisLabel:{color:'#5a6683',formatter:v=>meta2.axis==='money'?fmtMoney(v):v}},
+    ] : [{type:'value',...commonAxis,axisLabel:{color:'#5a6683'}}],
+    series:[
+      {name:meta1.name,type:meta1.type,yAxisIndex:0,data:s1,
+        itemStyle:{color:meta1.color,borderRadius:[6,6,0,0]},
+        lineStyle:{width:3},smooth:true,symbol:'circle',symbolSize:8,
+        areaStyle:meta1.type==='line'?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:meta1.color+'40'},{offset:1,color:meta1.color+'05'}]}}:undefined,
+        label:{show:true,position:'top',color:meta1.color,fontSize:10.5,fontWeight:500,formatter:p=>meta1.fmt(p.value)}
+      },
+      {name:meta2.name,type:meta2.type,yAxisIndex:useDoubleAxis?1:0,data:s2,
+        itemStyle:{color:meta2.color,borderRadius:[6,6,0,0]},
+        lineStyle:{width:3},smooth:true,symbol:'circle',symbolSize:8,
+        areaStyle:meta2.type==='line'?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:meta2.color+'40'},{offset:1,color:meta2.color+'05'}]}}:undefined,
+        label:{show:true,position:'top',color:meta2.color,fontSize:10.5,fontWeight:500,formatter:p=>meta2.fmt(p.value)}
+      },
+    ]
+  }, true);
+}
+drawTrend('cost','roi');
+document.getElementById('trendCtrl').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#trendCtrl .btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  const [a,b] = e.target.dataset.metric.split(',');
+  drawTrend(a,b);
+});
+window.addEventListener('resize',()=>trendChart.resize());
+
+// ============ 价格带 ============
+(function(){
+  const totalCost = D.price_bands.reduce((a,b)=>a+b.cost,0);
+  const bestRoi = Math.max(...D.price_bands.filter(x=>x.cost>0).map(x=>x.roi||0));
+  document.getElementById('bandGrid').innerHTML = D.price_bands.map(b=>{
+    const isHot = (b.roi||0)===bestRoi && b.cost>0;
+    return `
+    <div class="band-card ${isHot?'hot':''}">
+      <div class="name">${b.name}${isHot?' 🏆':''}</div>
+      <div class="cost">¥${fmtMoney(b.cost)}</div>
+      <div class="pct">占比 ${((b.cost/totalCost)*100).toFixed(1)}% · ${fmtInt(b.sku)} SKU</div>
+      <div class="metrics">
+        <div>ROI <b>${fmtF(b.roi,2)}</b></div>
+        <div>CTR <b>${fmtPct(b.ctr)}%</b></div>
+        <div>CVR <b>${fmtPct(b.cvr)}%</b></div>
+        <div>退款 <b>${fmtPct(b.refund)}%</b></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 多指标折线图
+  const bands = D.price_bands.map(x=>x.name);
+  const bandLineChart = echarts.init(document.getElementById('bandLines'));
+  const metricDefs = [
+    {key:'roi',    name:'ROI',       color:'#10b981', fmt:v=>fmtF(v,2),      axis:0, core:true},
+    {key:'refund', name:'退款率(%)',  color:'#ef4444', fmt:v=>fmtPct(v)+'%',   axis:1, core:true},
+    {key:'cvr',    name:'CVR(%)',    color:'#8b5cf6', fmt:v=>fmtPct(v)+'%',   axis:1, core:true},
+    {key:'ctr',    name:'CTR(%)',    color:'#f59e0b', fmt:v=>fmtPct(v)+'%',   axis:1, core:false},
+    {key:'aov_est',name:'客单价(元)', color:'#3b82f6', fmt:v=>'¥'+fmtF(v,0),   axis:2, core:false},
+    {key:'sku',    name:'SKU 数',    color:'#14b8a6', fmt:v=>fmtInt(v),       axis:3, core:false},
+  ];
+  function drawBandLines(mode){
+    const active = metricDefs.filter(m => mode==='全部' ? true : m.core);
+    // 每个指标独立 Y 轴 (单位差异过大)
+    const yAxes = active.map((m,i)=>({
+      type:'value', name:m.name, ...commonAxis,
+      position: i%2===0 ? 'left' : 'right',
+      offset: Math.floor(i/2)*55,
+      nameTextStyle:{color:m.color,fontSize:11,fontWeight:600},
+      axisLine:{show:true,lineStyle:{color:m.color}},
+      axisLabel:{color:m.color,formatter:v=>{
+        if(m.key==='roi') return fmtF(v,1);
+        if(m.key==='aov_est') return '¥'+Math.round(v);
+        if(m.key==='sku') return fmtInt(v);
+        return fmtF(v,0)+'%';
+      }},
+      splitLine:{show:i===0,lineStyle:{color:'#e4e9f2'}},
+    }));
+    const leftCount = Math.ceil(active.length/2);
+    const rightCount = Math.floor(active.length/2);
+    bandLineChart.setOption({
+      tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+        let html = `<b>${params[0].name}</b>`;
+        params.forEach(p=>{
+          const m = active.find(x=>x.name===p.seriesName);
+          if(m) html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${m.fmt(p.value)}</b>`;
+        });
+        return html;
+      }},
+      legend:{data:active.map(m=>m.name),textStyle:{color:'#1a2340',fontSize:12},top:5,itemGap:20},
+      grid:{left:leftCount*55+15,right:rightCount*55+15,top:45,bottom:35},
+      xAxis:{type:'category',data:bands,...commonAxis,axisLabel:{color:'#1a2340',fontSize:12,fontWeight:500}},
+      yAxis:yAxes,
+      series:active.map((m,i)=>({
+        name:m.name,type:'line',yAxisIndex:i,
+        data:D.price_bands.map(x=>x[m.key]),
+        itemStyle:{color:m.color},
+        lineStyle:{width:2.5,color:m.color},
+        symbol:'circle',symbolSize:9,
+        emphasis:{focus:'series',lineStyle:{width:4}},
+        label:{show:true,position:'top',color:m.color,fontSize:10.5,fontWeight:600,formatter:p=>m.fmt(p.value)}
+      }))
+    }, true);
+  }
+  drawBandLines('核心');
+  document.getElementById('bandMetricCtrl').addEventListener('click',e=>{
+    if(e.target.tagName!=='BUTTON') return;
+    document.querySelectorAll('#bandMetricCtrl .btn').forEach(b=>b.classList.remove('active'));
+    e.target.classList.add('active');
+    drawBandLines(e.target.dataset.set);
+  });
+  window.addEventListener('resize',()=>bandLineChart.resize());
+})();
+
+// ============ 3 张散点矩阵 (v5: 象限底色 + Top 标签 + 缩放 + 引导线) ============
+function median(arr){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function pctile(arr,p){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); return s[Math.min(s.length-1,Math.floor(s.length*p))]; }
+
+// 象限背景色块 (markArea) - 淡色象限提示
+function quadrantAreas(xMed, yMed, colors){
+  // colors: [Q1右上, Q2右下, Q3左上, Q4左下]
+  return {
+    silent:true, itemStyle:{opacity:0.06},
+    data:[
+      [{xAxis:xMed,yAxis:yMed,itemStyle:{color:colors[0]}},{xAxis:'max',yAxis:'max'}],  // 右上
+      [{xAxis:xMed,yAxis:'min',itemStyle:{color:colors[1]}},{xAxis:'max',yAxis:yMed}],  // 右下
+      [{xAxis:'min',yAxis:yMed,itemStyle:{color:colors[2]}},{xAxis:xMed,yAxis:'max'}],  // 左上
+      [{xAxis:'min',yAxis:'min',itemStyle:{color:colors[3]}},{xAxis:xMed,yAxis:yMed}],  // 左下
+    ]
+  };
+}
+
+// 象限文字标注
+function quadrantLabels(xMed,yMed,texts){
+  return {
+    silent:true, symbol:'none', label:{show:false},
+    data:[
+      // 用 markPoint 挑角落写标签, 但这里用 graphic 更方便? 简化: 用 markLine 顶点标签
+    ]
+  };
+}
+
+// 拆分 Top N 强标签 + 其余弱标签的 series 通用工具
+function splitSeriesByCost(arr, valueFn, topN, baseColorFn){
+  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
+  const topSet = new Set(sorted.slice(0,topN).map(x=>x.l3));
+  const maxCost = Math.max(...arr.map(x=>x.cost));
+  const buildData = (filter,strong) => arr.filter(filter).map(x=>({
+    name:x.l3, value:valueFn(x), refund:x.refund,ctr:x.ctr,cvr:x.cvr,roi:x.roi,cost:x.cost,
+    itemStyle:{color:baseColorFn(x),opacity:strong?0.85:0.55,borderColor:'#fff',borderWidth:strong?1.5:1}
+  }));
+  return {topSet, maxCost, buildData};
+}
+
+// ---------- A: 消耗 × ROI × 退款率 ----------
+(function(){
+  const arr = D.l3_list.filter(x=>x.roi!=null && x.cost>0);
+  const maxCost = Math.max(...arr.map(x=>x.cost));
+  const maxRoi  = Math.max(...arr.map(x=>x.roi));
+  const roiMed = median(arr.map(x=>x.roi));
+  const costMed = median(arr.map(x=>x.cost));
+  const refundColor = r => r==null?'#94a3b8':r>=50?'#ef4444':r>=35?'#f59e0b':'#10b981';
+  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
+  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
+  const symSize = v=>Math.max(12,Math.min(55,Math.sqrt(v[0]/maxCost)*55));
+  echarts.init(document.getElementById('matA')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const v=p.data;
+      return `<b style="font-size:13px">${v.name}</b><br>
+        消耗: <b>¥${fmtMoney(v.value[0])}</b><br>
+        ROI: <b style="color:#10b981">${fmtF(v.value[1])}</b><br>
+        退款率: <b style="color:${refundColor(v.refund)}">${fmtPct(v.refund)}%</b><br>
+        <span style="color:#5a6683">CTR ${fmtPct(v.ctr)}%｜CVR ${fmtPct(v.cvr)}%</span>`;
+    }},
+    grid:{left:70,right:30,top:35,bottom:60},
+    xAxis:{name:'消耗',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11,padding:[8,0,0,0]},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>fmtMoneyInt(v)},
+      min:0, max:Math.ceil(maxCost/1e7)*1e7,
+      splitLine:{lineStyle:{color:'#eef2f7',type:'solid'}}},
+    yAxis:{name:'ROI',nameTextStyle:{color:'#5a6683',fontSize:11},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)},
+      min:0, max:Math.ceil(maxRoi*1.1),
+      splitLine:{lineStyle:{color:'#eef2f7',type:'solid'}}},
+    series:[{
+      type:'scatter',
+      symbolSize:symSize,
+      data:arr.map(x=>({name:x.l3,value:[x.cost,x.roi],refund:x.refund,ctr:x.ctr,cvr:x.cvr,cost:x.cost,
+        itemStyle:{color:refundColor(x.refund),opacity:0.82,borderColor:'#fff',borderWidth:1.5,
+          shadowColor:refundColor(x.refund)+'44',shadowBlur:8}})),
+      label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
+        backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
+      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
+      emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}},
+      markArea: quadrantAreas(costMed,roiMed,['#10b981','#ef4444','#f59e0b','#94a3b8']),
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
+        label:{show:false},
+        data:[{xAxis:costMed,label:{show:true,formatter:'消耗中位',color:'#94a3b8',fontSize:10,position:'insideEndTop'}},
+              {yAxis:roiMed,label:{show:true,formatter:'ROI 中位',color:'#94a3b8',fontSize:10,position:'insideStartTop'}}]}
+    }],
+    graphic:[
+      {type:'text',right:20,top:38,style:{text:'🏆 核心赛道',fill:'#10b981',fontSize:11,fontWeight:600}},
+      {type:'text',right:20,bottom:78,style:{text:'⚠️ 烧钱低效',fill:'#ef4444',fontSize:11,fontWeight:600}},
+      {type:'text',left:85,top:38,style:{text:'💎 高效小类',fill:'#f59e0b',fontSize:11,fontWeight:600}},
+      {type:'text',left:85,bottom:78,style:{text:'长尾区',fill:'#94a3b8',fontSize:11,fontWeight:500}},
+    ]
+  });
+})();
+
+// ---------- B: CTR × CVR × 消耗 ----------
+(function(){
+  const arr = D.l3_list.filter(x=>x.ctr!=null && x.cvr!=null && x.cost>0);
+  const maxCost = Math.max(...arr.map(x=>x.cost));
+  const ctrMed = median(arr.map(x=>x.ctr));
+  const cvrMed = median(arr.map(x=>x.cvr));
+  const ctrMax = pctile(arr.map(x=>x.ctr),0.95)*1.15;
+  const cvrMax = pctile(arr.map(x=>x.cvr),0.95)*1.15;
+  const cat = (ctr,cvr) => {
+    if(ctr>=ctrMed && cvr>=cvrMed) return 0;
+    if(ctr>=ctrMed && cvr<cvrMed)  return 1;
+    if(ctr<ctrMed  && cvr>=cvrMed) return 2;
+    return 3;
+  };
+  const colors=['#10b981','#3b82f6','#f59e0b','#94a3b8'];
+  const names=['金牌','流量型','转化型','双低'];
+  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
+  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
+  const symSize = v=>Math.max(12,Math.min(55,Math.sqrt(v[2]/maxCost)*55));
+  const series = [0,1,2,3].map(k=>({
+    name:names[k],type:'scatter',
+    itemStyle:{color:colors[k],opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:colors[k]+'44',shadowBlur:8},
+    symbolSize:symSize,
+    data:arr.filter(x=>cat(x.ctr,x.cvr)===k).map(x=>({name:x.l3,value:[x.ctr,x.cvr,x.cost],roi:x.roi,refund:x.refund})),
+    label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
+      backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
+    labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
+    emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}}
+  }));
+  // 只在第一个 series 上挂 markArea/markLine, 避免重复渲染
+  series[0].markArea = quadrantAreas(ctrMed,cvrMed,['#10b981','#3b82f6','#f59e0b','#94a3b8']);
+  series[0].markLine = {silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
+    data:[{xAxis:ctrMed},{yAxis:cvrMed}]};
+  echarts.init(document.getElementById('matB')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const v=p.data;
+      return `<b style="font-size:13px">${v.name}</b> <span style="color:#94a3b8;font-size:11px">${p.seriesName}</span><br>
+        CTR: <b>${fmtPct(v.value[0])}%</b><br>
+        CVR: <b>${fmtPct(v.value[1])}%</b><br>
+        消耗: <b>¥${fmtMoney(v.value[2])}</b><br>
+        <span style="color:#5a6683">ROI ${fmtF(v.roi)}｜退款 ${fmtPct(v.refund)}%</span>`;
+    }},
+    legend:{data:names,textStyle:{color:'#1a2340',fontSize:11.5},top:5,itemGap:16,
+      icon:'circle',itemWidth:10,itemHeight:10},
+    grid:{left:60,right:30,top:35,bottom:50},
+    xAxis:{name:'CTR (%)',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'},
+      min:0,max:Math.max(4,Math.ceil(ctrMax)),
+      splitLine:{lineStyle:{color:'#eef2f7'}}},
+    yAxis:{name:'CVR (%)',nameTextStyle:{color:'#5a6683',fontSize:11},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'},
+      min:0,max:Math.max(10,Math.ceil(cvrMax)),
+      splitLine:{lineStyle:{color:'#eef2f7'}}},
+    series
+  });
+})();
+
+// ---------- C: 客单价 × ROI × 退款率 ----------
+(function(){
+  const arr = D.l3_list.filter(x=>x.aov!=null && x.roi!=null && x.cost>0);
+  const maxCost = Math.max(...arr.map(x=>x.cost));
+  const aovMed = median(arr.map(x=>x.aov));
+  const roiMed = median(arr.map(x=>x.roi));
+  const aovMax = pctile(arr.map(x=>x.aov),0.95)*1.15;
+  const roiMax = pctile(arr.map(x=>x.roi),0.95)*1.15;
+  const refundColor = r => r==null?'#94a3b8':r>=50?'#ef4444':r>=35?'#f59e0b':'#10b981';
+  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
+  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
+  const symSize = v=>Math.max(12,Math.min(58,Math.sqrt(v[2]/maxCost)*58));
+  echarts.init(document.getElementById('matC')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const v=p.data;
+      return `<b style="font-size:13px">${v.name}</b><br>
+        客单价: <b>¥${fmtF(v.value[0],0)}</b><br>
+        ROI: <b>${fmtF(v.value[1])}</b><br>
+        退款率: <b style="color:${refundColor(v.refund)}">${fmtPct(v.refund)}%</b><br>
+        消耗: <b>¥${fmtMoney(v.value[2])}</b><br>
+        <span style="color:#5a6683">CTR ${fmtPct(v.ctr)}%｜CVR ${fmtPct(v.cvr)}%</span>`;
+    }},
+    grid:{left:60,right:30,top:35,bottom:50},
+    xAxis:{name:'客单价 (元)',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>'¥'+Math.round(v)},
+      min:0,max:Math.ceil(aovMax/50)*50,
+      splitLine:{lineStyle:{color:'#eef2f7'}}},
+    yAxis:{name:'ROI',nameTextStyle:{color:'#5a6683',fontSize:11},
+      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)},
+      min:0,max:Math.ceil(roiMax),
+      splitLine:{lineStyle:{color:'#eef2f7'}}},
+    series:[{
+      type:'scatter',
+      symbolSize:symSize,
+      data:arr.map(x=>({name:x.l3,value:[x.aov,x.roi,x.cost],refund:x.refund,ctr:x.ctr,cvr:x.cvr,
+        itemStyle:{color:refundColor(x.refund),opacity:0.82,borderColor:'#fff',borderWidth:1.5,
+          shadowColor:refundColor(x.refund)+'44',shadowBlur:8}})),
+      label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
+        backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
+      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
+      emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}},
+      markArea: quadrantAreas(aovMed,roiMed,['#10b981','#ef4444','#f59e0b','#94a3b8']),
+      markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},data:[{xAxis:aovMed},{yAxis:roiMed}]}
+    }]
+  });
+})();
+
+// ============ Top10 & 红榜 ============
+(function(){
+  const top = [...D.l3_list].sort((a,b)=>b.cost-a.cost).slice(0,10).reverse();
+  echarts.init(document.getElementById('barCost')).setOption({
+    tooltip:{...commonTip,formatter:p=>`<b>${p.name}</b><br>消耗: ¥${fmtMoney(p.value)}`},
+    grid:{left:90,right:65,top:15,bottom:30},
+    xAxis:{type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>fmtMoneyInt(v)}},
+    yAxis:{type:'category',data:top.map(x=>x.l3),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
+    series:[{type:'bar',data:top.map(x=>x.cost),
+      itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#3b82f6'},{offset:1,color:'#8b5cf6'}]},borderRadius:[0,6,6,0]},
+      label:{show:true,position:'right',color:'#1a2340',fontSize:11,fontWeight:500,formatter:p=>'¥'+fmtMoney(p.value)}
+    }]
+  });
+})();
+(function(){
+  const top = D.l3_list.filter(x=>x.cost>=5e5 && x.roi!=null).sort((a,b)=>b.roi-a.roi).slice(0,10).reverse();
+  echarts.init(document.getElementById('barRoi')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const item = top.find(x=>x.l3===p.name);
+      return `<b>${p.name}</b><br>ROI: <b>${fmtF(p.value)}</b><br>消耗: ¥${fmtMoney(item.cost)}`;
+    }},
+    grid:{left:90,right:65,top:15,bottom:30},
+    xAxis:{type:'value',...commonAxis,axisLabel:{color:'#5a6683'}},
+    yAxis:{type:'category',data:top.map(x=>x.l3),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
+    series:[{type:'bar',data:top.map(x=>x.roi),
+      itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#fbbf24'},{offset:1,color:'#10b981'}]},borderRadius:[0,6,6,0]},
+      label:{show:true,position:'right',color:'#1a2340',fontSize:11,fontWeight:600,formatter:p=>fmtF(p.value,2)}
+    }]
+  });
+})();
+(function(){
+  const l4Flat = [];
+  D.l3_list.forEach(l3=>l3.l4_list.forEach(l4=>l4Flat.push({...l4,l3:l3.l3})));
+  const red = l4Flat.filter(x=>x.refund!=null && x.cost>=1e5).sort((a,b)=>b.refund-a.refund).slice(0,15);
+  document.getElementById('redlist').innerHTML = red.map(x=>`
+    <div class="item">
+      <div class="left">
+        ${x.l4}
+        <div class="parent">${x.l3} · 消耗 ¥${fmtMoney(x.cost)}</div>
+      </div>
+      <div class="right">${fmtPct(x.refund)}%</div>
+    </div>`).join('') || '<div class="sku-empty">无异常</div>';
+})();
+
+// ============ 词云 (放大) ============
+const wcCats = Object.keys(D.wordcloud);
+const catIconMap = {'功效':'💊','版型':'✂️','材质':'🧵','明星背书':'⭐','细节':'✨','风格':'🎨','场景':'🎬'};
+document.getElementById('wcTabs').innerHTML = wcCats.map((c,i)=>
+  `<div class="wc-tab ${i===0?'active':''}" data-cat="${c}">${catIconMap[c]||''} ${c} (${D.wordcloud[c].length})</div>`
+).join('');
+const wcChart = echarts.init(document.getElementById('wcChart'));
+function drawWC(cat){
+  const arr = D.wordcloud[cat] || [];
+  const palette = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6','#eab308','#6366f1'];
+  wcChart.setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      return `<b>${p.name}</b><br>消耗: ¥${fmtMoney(p.value)}<br>SKU 数: ${p.data.count}<br>ROI: ${p.data.roi==null?'—':fmtF(p.data.roi)}`;
+    }},
+    series:[{
+      type:'wordCloud', shape:'square', gridSize:2,
+      sizeRange:[20,110], rotationRange:[0,0], rotationStep:0,
+      drawOutOfBound:false, layoutAnimation:true,
+      width:'98%',height:'98%',left:'1%',top:'1%',
+      textStyle:{fontWeight:'bold',fontFamily:'-apple-system,PingFang SC',
+        color:()=>palette[Math.floor(Math.random()*palette.length)]},
+      emphasis:{focus:'self',textStyle:{textShadowBlur:10,textShadowColor:'#3b82f680'}},
+      data: arr.map(x=>({name:x.word,value:x.cost,count:x.count,roi:x.roi}))
+    }]
+  }, true);
+  // 表
+  const tbody = document.querySelector('#wcTable tbody');
+  tbody.innerHTML = arr.map(x=>`
+    <tr>
+      <td class="w">${x.word}</td>
+      <td class="num">¥${fmtMoney(x.cost)}</td>
+      <td class="num ${cls(x.roi,[3,5])}">${x.roi==null?'—':fmtF(x.roi)}</td>
+      <td class="num">${x.count}</td>
+    </tr>`).join('');
+}
+drawWC(wcCats[0]);
+document.getElementById('wcTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('wc-tab')) return;
+  document.querySelectorAll('.wc-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  drawWC(e.target.dataset.cat);
+});
+window.addEventListener('resize',()=>wcChart.resize());
+
+// ============ 钻取表 ============
+const l3List = D.l3_list;
+const maxL3Cost = Math.max(...l3List.map(x=>x.cost));
+
+function renderL3(){
+  document.getElementById('l3List').innerHTML = l3List.map((l3,idx)=>{
+    const barW = (l3.cost/maxL3Cost*100).toFixed(1);
+    return `
+    <div class="l3-row">
+      <div class="l3-head" data-idx="${idx}" onclick="toggleL3(${idx})">
+        <span class="caret">▶</span>
+        <span class="name">${l3.l3}</span>
+        <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div></div>
+        <span class="num">¥${fmtMoney(l3.cost)}</span>
+        <span class="num ${cls(l3.roi,[3,5])}">${fmtF(l3.roi,2)}</span>
+        <span class="num ${cls(l3.ctr,[2,3])}">${fmtPct(l3.ctr)}</span>
+        <span class="num ${cls(l3.cvr,[3,6])}">${fmtPct(l3.cvr)}</span>
+        <span class="num">¥${fmtF(l3.aov,0)}</span>
+        <span class="num ${cls(l3.refund,[30,50],true)}">${fmtPct(l3.refund)}</span>
+        <span class="num">${fmtInt(l3.sku_count_raw)}</span>
+      </div>
+      <div class="l3-body" id="l3body-${idx}"></div>
+    </div>`;
+  }).join('');
+}
+renderL3();
+
+function toggleL3(idx){
+  const head = document.querySelector(`.l3-head[data-idx="${idx}"]`);
+  const body = document.getElementById(`l3body-${idx}`);
+  const isOpen = body.classList.contains('open');
+  if(isOpen){ body.classList.remove('open'); head.classList.remove('open'); }
+  else{
+    if(!body.dataset.rendered){ renderL4(idx); body.dataset.rendered='1'; }
+    body.classList.add('open'); head.classList.add('open');
+  }
+}
+
+function renderL4(l3idx){
+  const l3 = l3List[l3idx];
+  const body = document.getElementById(`l3body-${l3idx}`);
+  const maxL4 = Math.max(...l3.l4_list.map(x=>x.cost));
+  body.innerHTML = l3.l4_list.map((l4,l4idx)=>{
+    const barW = (l4.cost/maxL4*100).toFixed(1);
+    return `
+    <div class="l4-row">
+      <div class="l4-head" data-l3="${l3idx}" data-l4="${l4idx}" onclick="toggleL4(${l3idx},${l4idx})">
+        <span class="caret">▶</span>
+        <span class="name">└ ${l4.l4}</span>
+        <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div></div>
+        <span class="num">¥${fmtMoney(l4.cost)}</span>
+        <span class="num ${cls(l4.roi,[3,5])}">${fmtF(l4.roi,2)}</span>
+        <span class="num ${cls(l4.ctr,[2,3])}">${fmtPct(l4.ctr)}</span>
+        <span class="num ${cls(l4.cvr,[3,6])}">${fmtPct(l4.cvr)}</span>
+        <span class="num">¥${fmtF(l4.aov,0)}</span>
+        <span class="num ${cls(l4.refund,[30,50],true)}">${fmtPct(l4.refund)}</span>
+        <span class="num">${fmtInt(l4.sku_count_merged)}<span style="color:var(--mute);font-size:10px">/${fmtInt(l4.sku_count_raw)}</span></span>
+      </div>
+      <div class="l4-body" id="l4body-${l3idx}-${l4idx}"></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleL4(l3idx,l4idx){
+  const head = document.querySelector(`.l4-head[data-l3="${l3idx}"][data-l4="${l4idx}"]`);
+  const body = document.getElementById(`l4body-${l3idx}-${l4idx}`);
+  const isOpen = body.classList.contains('open');
+  if(isOpen){ body.classList.remove('open'); head.classList.remove('open'); }
+  else{
+    if(!body.dataset.rendered){ renderSku(l3idx,l4idx); body.dataset.rendered='1'; }
+    body.classList.add('open'); head.classList.add('open');
+  }
+}
+
+function rngTxt(r,prefix='',suffix=''){
+  if(!r || r[0]==null) return '';
+  if(Math.abs(r[1]-r[0])/Math.max(Math.abs(r[0]),0.01) < 0.02) return '';
+  return `<span class="range">${prefix}${fmtF(r[0],r[0]>=100?0:2)}~${fmtF(r[1],r[1]>=100?0:2)}${suffix}</span>`;
+}
+
+function renderSku(l3idx,l4idx){
+  const l4 = l3List[l3idx].l4_list[l4idx];
+  const body = document.getElementById(`l4body-${l3idx}-${l4idx}`);
+  if(!l4.top_skus || !l4.top_skus.length){ body.innerHTML = `<div class="sku-empty">无 SKU 数据</div>`; return; }
+  body.innerHTML = `
+    <div style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
+      Top ${l4.top_skus.length} 商品品类 · 归并规则: 同 L4 + 同价格带 + 商品名 Jaccard ≥ 0.5 · <span style="color:var(--purple);font-weight:600">×N</span> = 合并的原始 SKU 数
+    </div>
+    <table class="sku">
+      <thead><tr>
+        <th style="text-align:left">#</th>
+        <th style="text-align:left">商品品类（概括）</th>
+        <th>消耗</th><th>ROI</th><th>CTR%</th><th>CVR%</th>
+        <th>单价¥</th><th>CPM¥</th><th>退款%</th>
+      </tr></thead>
+      <tbody>
+      ${l4.top_skus.map((s,i)=>`
+        <tr>
+          <td class="num" style="text-align:left;color:var(--mute)">${i+1}</td>
+          <td class="name" title="${escapeHtml((s.sample_names||[]).join(' | '))}">
+            ${escapeHtml(s.display_name)}<span class="badge">×${s.sku_count}</span>
+            <div class="samples">${escapeHtml((s.sample_names||[])[0]||'')}</div>
+          </td>
+          <td class="num">¥${fmtMoney(s.cost)}</td>
+          <td class="num ${cls(s.roi,[3,5])}">${fmtF(s.roi,2)}${rngTxt(s.roi_range)}</td>
+          <td class="num ${cls(s.ctr,[2,3])}">${fmtPct(s.ctr)}</td>
+          <td class="num ${cls(s.cvr,[3,6])}">${fmtPct(s.cvr)}${rngTxt(s.cvr_range,'',' %')}</td>
+          <td class="num">¥${fmtF(s.aov,0)}${rngTxt(s.aov_range,'¥','')}</td>
+          <td class="num">¥${fmtF(s.cpm,1)}</td>
+          <td class="num ${cls(s.refund,[30,50],true)}">${fmtPct(s.refund)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function expandAll(open){
+  l3List.forEach((_,idx)=>{
+    const head = document.querySelector(`.l3-head[data-idx="${idx}"]`);
+    const body = document.getElementById(`l3body-${idx}`);
+    if(open){
+      if(!body.dataset.rendered){ renderL4(idx); body.dataset.rendered='1'; }
+      body.classList.add('open'); head.classList.add('open');
+    }else{ body.classList.remove('open'); head.classList.remove('open'); }
+  });
+}
+
+// ============ 主 Tab 切换 ============
+document.querySelectorAll('.main-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+target).classList.add('active');
+    // 切换后 resize 所有 chart (panel 重排后 width 变化)
+    setTimeout(()=>{
+      // 全局 resize
+      window.dispatchEvent(new Event('resize'));
+      // 主动 resize 当前 tab 内的所有 echarts 实例
+      const tabEl = document.getElementById('tab-'+target);
+      tabEl.querySelectorAll('div[id]').forEach(el => {
+        try {
+          const inst = echarts.getInstanceByDom(el);
+          if (inst) inst.resize();
+        } catch(e){}
+      });
+    }, 80);
+  });
+});
+
+// ============ 微信小店 Tab ============
+const WC = window.__WECHAT__;
+const wcFmtY = v => v==null?'—':(v>=1e8?(v/1e8).toFixed(2)+'亿':v>=1e4?(v/1e4).toFixed(1)+'万':Math.round(v));
+const wcFmtInt = v => v==null?'—':Math.round(v).toLocaleString('en-US');
+
+// ---- KPI ----
+(function(){
+  const ov = WC.overview;
+  const cards = [
+    {lbl:'全类目 14 周销售额',val:'¥'+wcFmtY(ov.total_amt_all),      sub:`${wcFmtInt(ov.total_vol_all/1e4)} 万件 · 客单¥${Math.round(ov.aov_all)}`,cls:''},
+    {lbl:'女装 92 天销售额',  val:'¥'+wcFmtY(ov.total_amt_female),   sub:`占大盘 ${(ov.total_amt_female/ov.total_amt_all*100).toFixed(1)}% · 客单¥${Math.round(ov.aov_female)}`,cls:'purple'},
+    {lbl:'品类数量',          val:ov.category_count+' 个',           sub:'女装 Top 类目',cls:'good'},
+    {lbl:'日均带货直播',      val:wcFmtInt(ov.avg_lives),            sub:'全类目均值',cls:'gold'},
+    {lbl:'日均带货小店',      val:wcFmtInt(ov.avg_shops),            sub:`达人 ${wcFmtInt(ov.avg_kols)} 人`,cls:'warn'},
+  ];
+  document.getElementById('wcKpiGrid').innerHTML = cards.map(k=>`
+    <div class="kpi ${k.cls}">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val">${k.val}</div>
+      <div class="sub">${k.sub}</div>
+    </div>`).join('');
+})();
+
+// ---- 全类目周度趋势 ----
+(function(){
+  const dates = WC.week_all.map(w=>w.date);
+  echarts.init(document.getElementById('wcWeekChart')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+      let html = `<b>${params[0].name}</b>`;
+      params.forEach(p=>{
+        const isAmt = p.seriesName==='销售额';
+        html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${isAmt?'¥'+wcFmtY(p.value):wcFmtInt(p.value)}</b>`;
+      });
+      return html;
+    }},
+    legend:{data:['销售额','销量'],textStyle:{color:'#1a2340',fontSize:12},top:8},
+    grid:{left:80,right:80,top:50,bottom:40},
+    xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:11}},
+    yAxis:[
+      {type:'value',name:'销售额',...commonAxis,axisLabel:{formatter:v=>wcFmtY(v)}},
+      {type:'value',name:'销量',position:'right',...commonAxis,axisLabel:{formatter:v=>wcFmtY(v)+'件'}},
+    ],
+    series:[
+      {name:'销售额',type:'bar',data:WC.week_all.map(w=>w.sales_amt),
+        itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#a78bfa'},{offset:1,color:'#7c3aed'}]},borderRadius:[6,6,0,0]},
+        label:{show:true,position:'top',color:'#7c3aed',fontSize:10,fontWeight:500,formatter:p=>'¥'+wcFmtY(p.value)}
+      },
+      {name:'销量',type:'line',yAxisIndex:1,data:WC.week_all.map(w=>w.sales_vol),
+        itemStyle:{color:'#10b981'},lineStyle:{width:3},symbol:'circle',symbolSize:8,smooth:true,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#10b98130'},{offset:1,color:'#10b98105'}]}},
+      }
+    ]
+  });
+})();
+
+// ---- 女装日度趋势 ----
+(function(){
+  const dates = WC.day_female.map(d=>d.date);
+  const promoDates = new Set(WC.promo_dates);
+  const markPoints = WC.day_female.filter(d=>promoDates.has(d.date)).map(d=>({
+    name:d.date,value:d.sales_amt,xAxis:d.date,yAxis:d.sales_amt,
+    itemStyle:{color:'#ec4899'},label:{show:true,formatter:d.date,color:'#ec4899',fontSize:11,fontWeight:600}
+  }));
+  echarts.init(document.getElementById('wcDayChart')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+      let html = `<b>${params[0].name}</b>`;
+      params.forEach(p=>{
+        const isAmt = p.seriesName==='销售额';
+        html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${isAmt?'¥'+wcFmtY(p.value):wcFmtInt(p.value)}</b>`;
+      });
+      return html;
+    }},
+    legend:{data:['销售额','销量'],textStyle:{color:'#1a2340'},top:8},
+    grid:{left:80,right:80,top:50,bottom:60},
+    dataZoom:[{type:'inside',start:0,end:100},{type:'slider',height:20,bottom:12,textStyle:{color:'#5a6683',fontSize:10}}],
+    xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:10,interval:6}},
+    yAxis:[
+      {type:'value',name:'销售额',...commonAxis,axisLabel:{formatter:v=>wcFmtY(v)}},
+      {type:'value',name:'销量',position:'right',...commonAxis,axisLabel:{formatter:v=>wcFmtY(v)+'件'}},
+    ],
+    series:[
+      {name:'销售额',type:'line',data:WC.day_female.map(d=>d.sales_amt),
+        itemStyle:{color:'#3b82f6'},lineStyle:{width:2.5},symbol:'circle',symbolSize:5,smooth:true,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#3b82f640'},{offset:1,color:'#3b82f605'}]}},
+        markPoint:{data:markPoints,symbolSize:18,symbol:'pin'}
+      },
+      {name:'销量',type:'line',yAxisIndex:1,data:WC.day_female.map(d=>d.sales_vol),
+        itemStyle:{color:'#f59e0b'},lineStyle:{width:2,type:'dashed'},symbol:'none',
+      }
+    ]
+  });
+})();
+
+// ---- 女装品类 TOP 排行 (可切换排序) ----
+let catSortKey = 'amt';
+function renderCatList(){
+  const arr = [...WC.categories];
+  if(catSortKey==='amt')     arr.sort((a,b)=>b.sales_amt-a.sales_amt);
+  if(catSortKey==='vol')     arr.sort((a,b)=>b.sales_vol-a.sales_vol);
+  if(catSortKey==='aov')     arr.sort((a,b)=>(b.aov||0)-(a.aov||0));
+  if(catSortKey==='amt_yoy') arr.sort((a,b)=>(b.amt_yoy||-999)-(a.amt_yoy||-999));
+  const maxAmt = Math.max(...arr.map(x=>x.sales_amt||0));
+  document.getElementById('catList').innerHTML = arr.slice(0,30).map((c,i)=>{
+    const barW = ((c.sales_amt||0)/maxAmt*100).toFixed(1);
+    const yoyCls = c.amt_yoy==null?'':c.amt_yoy>=0?'pos':'neg';
+    const yoyTxt = c.amt_yoy==null?'—':(c.amt_yoy>=0?'+':'')+c.amt_yoy.toFixed(1)+'%';
+    return `
+    <div class="cat-row">
+      <span class="rank ${i<3?'top3':''}">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</span>
+      <span class="name">${c.name}</span>
+      <div class="bar-wrap"><div class="bar" style="width:${barW}%;background:linear-gradient(90deg,#3b82f6,#8b5cf6)"></div></div>
+      <span class="num">¥${wcFmtY(c.sales_amt)}<span style="color:var(--mute);font-size:10px"> (${c.amt_share?.toFixed(1)}%)</span></span>
+      <span class="num">${c.vol_share?.toFixed(1)}%</span>
+      <span class="num ${yoyCls}">${yoyTxt}</span>
+      <span class="num">¥${c.aov?Math.round(c.aov):'—'}</span>
+      <span class="num">${wcFmtY(c.sales_vol)}</span>
+    </div>`;
+  }).join('');
+}
+renderCatList();
+document.getElementById('catSortCtrl').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#catSortCtrl .btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  catSortKey = e.target.dataset.sort;
+  renderCatList();
+});
+
+// ---- 品类增长质量矩阵: X=销量环比 Y=销售额环比 气泡=销售额占比 ----
+(function(){
+  const cats = WC.categories.filter(c => c.vol_yoy!=null && c.amt_yoy!=null && (c.amt_share||0) >= 0.3);
+  const maxShare = Math.max(...cats.map(c=>c.amt_share||0)) || 1;
+  const pt = c => ({name:c.name, value:[c.vol_yoy, c.amt_yoy, c.amt_share], data:c});
+  // 四象限分组: 红涨(销售额环比≥0) / 绿跌
+  const rise = cats.filter(c=>c.amt_yoy>=0).map(pt);
+  const fall = cats.filter(c=>c.amt_yoy<0).map(pt);
+  const symSize = v => Math.max(12, Math.sqrt((v[2]||0)/maxShare)*46);
+  const mkLabel = {show:true,formatter:p=>p.data.data.amt_share>=2?p.name:'',color:'#1a2340',fontSize:10.5,fontWeight:600,position:'top',
+    backgroundColor:'rgba(255,255,255,0.88)',padding:[1,4],borderRadius:3,labelLayout:{hideOverlap:true}};
+  echarts.init(document.getElementById('catQuadrant')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const c=p.data.data;
+      const q = c.vol_yoy>=0&&c.amt_yoy>=0?'⭐ 量价齐升(明星)':c.vol_yoy>=0&&c.amt_yoy<0?'⚠️ 以价换量':c.vol_yoy<0&&c.amt_yoy>=0?'💰 提价增长':'📉 量价齐跌(萎缩)';
+      return `<b style="font-size:14px">${c.name}</b>　<span style="color:#8b5cf6">${q}</span><br>
+        销售额: <b>¥${wcFmtY(c.sales_amt)}</b> (占比 ${c.amt_share.toFixed(1)}%)<br>
+        销售额环比: <b style="color:${c.amt_yoy>=0?'#ef4444':'#10b981'}">${(c.amt_yoy>=0?'+':'')+c.amt_yoy.toFixed(1)}%</b><br>
+        销量环比: <b style="color:${c.vol_yoy>=0?'#ef4444':'#10b981'}">${(c.vol_yoy>=0?'+':'')+c.vol_yoy.toFixed(1)}%</b><br>
+        客单价: <b>¥${c.aov?Math.round(c.aov):'—'}</b>`;
+    }},
+    legend:{data:['📈 销售额增长','📉 销售额下滑'],textStyle:{color:'#1a2340',fontSize:12},top:5},
+    grid:{left:62,right:30,top:42,bottom:48},
+    xAxis:{name:'销量环比 (%)',nameLocation:'center',nameGap:30,type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'}},
+    yAxis:{name:'销售额环比 (%)',type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'}},
+    series:[
+      {name:'📈 销售额增长',type:'scatter',data:rise,symbolSize:symSize,label:mkLabel,
+        itemStyle:{color:'#ef4444',opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:'#ef444444',shadowBlur:8},
+        markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
+          data:[{yAxis:0},{xAxis:0}]}},
+      {name:'📉 销售额下滑',type:'scatter',data:fall,symbolSize:symSize,label:mkLabel,
+        itemStyle:{color:'#10b981',opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:'#10b98144',shadowBlur:8}},
+    ],
+  }, true);
+
+  // 右侧: 明星品类 Top(量价齐升按销售额环比) + 萎缩预警(量价齐跌)
+  const star = cats.filter(c=>c.vol_yoy>=0&&c.amt_yoy>=0).sort((a,b)=>b.amt_yoy-a.amt_yoy).slice(0,6);
+  const decline = cats.filter(c=>c.vol_yoy<0&&c.amt_yoy<0).sort((a,b)=>a.amt_yoy-b.amt_yoy).slice(0,6);
+  const mkList = (title, icon, arr, color) => `
+    <div style="background:#f8fafc;border:1px solid #e4e9f2;border-radius:8px;padding:10px 12px">
+      <div style="font-size:12.5px;font-weight:700;color:#1a2340;margin-bottom:8px">${icon} ${title} <span style="color:#94a3b8;font-weight:400;font-size:10.5px">Top ${arr.length}</span></div>
+      ${arr.length? arr.map(c=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:11.5px;padding:3px 0;line-height:1.6">
+          <span style="color:#1a2340">${c.name}</span>
+          <span style="display:flex;gap:8px;align-items:center">
+            <span style="color:#94a3b8">占${c.amt_share.toFixed(1)}%</span>
+            <b style="color:${color};min-width:52px;text-align:right">${(c.amt_yoy>=0?'+':'')+c.amt_yoy.toFixed(1)}%</b>
+          </span>
+        </div>`).join('') : '<div style="color:#94a3b8;font-size:11px">无</div>'}
+    </div>`;
+  document.getElementById('catStarList').innerHTML = mkList('明星品类（量价齐升）','⭐',star,'#ef4444');
+  document.getElementById('catDeclineList').innerHTML = mkList('萎缩预警（量价齐跌）','📉',decline,'#10b981');
+})();
+
+// ---- 6 维属性 ----
+const attrDims = Object.keys(WC.attributes);
+document.getElementById('attrTabs').innerHTML = attrDims.map((d,i)=>
+  `<div class="attr-tab ${i===0?'active':''}" data-dim="${d}">${WC.attributes[d].icon} ${d}</div>`).join('');
+const attrMatrixChart = echarts.init(document.getElementById('attrMatrix'));
+
+function renderAttrDim(dim){
+  const {items} = WC.attributes[dim];
+  const maxHeat = Math.max(...items.map(x=>x.heat||0));
+
+  // 散点矩阵: X=占比 Y=增速(yoy) 大小=热度指数
+  const dataPos = items.filter(x=>x.yoy!=null && x.yoy>=0).map(x=>({name:x.attr,value:[x.share,x.yoy,x.heat],data:x}));
+  const dataNeg = items.filter(x=>x.yoy!=null && x.yoy<0).map(x=>({name:x.attr,value:[x.share,x.yoy,x.heat],data:x}));
+  const dataNul = items.filter(x=>x.yoy==null).map(x=>({name:x.attr,value:[x.share,0,x.heat],data:x}));
+  attrMatrixChart.setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const d=p.data.data;
+      return `<b style="font-size:14px">${d.attr}</b><br>
+        占比: <b>${d.share.toFixed(2)}%</b><br>
+        增速: <b style="color:${d.yoy==null?'#94a3b8':d.yoy>=0?'#ef4444':'#10b981'}">${d.yoy==null?'—':(d.yoy>=0?'+':'')+d.yoy.toFixed(1)+'%'}</b><br>
+        热度指数: <b>${d.heat}</b><br>
+        <span style="color:#5a6683">关联品类: ${d.keywords.slice(0,3).join(', ')}</span>`;
+    }},
+    legend:{data:['📈 增长','📉 下滑','— 未知'],textStyle:{color:'#1a2340',fontSize:12},top:5},
+    grid:{left:60,right:25,top:45,bottom:50},
+    xAxis:{name:'占比 (%)',type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'},min:0},
+    yAxis:{name:'环比增速 (%)',type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'}},
+    series:[
+      {name:'📈 增长',type:'scatter',data:dataPos,
+        itemStyle:{color:'#ef4444',opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:'#ef444444',shadowBlur:8},
+        symbolSize:v=>Math.max(14,Math.sqrt(v[2]/maxHeat)*55),
+        label:{show:true,formatter:p=>p.name,color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
+          backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
+        labelLayout:{hideOverlap:true,moveOverlap:'shiftY'}},
+      {name:'📉 下滑',type:'scatter',data:dataNeg,
+        itemStyle:{color:'#10b981',opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:'#10b98144',shadowBlur:8},
+        symbolSize:v=>Math.max(14,Math.sqrt(v[2]/maxHeat)*55),
+        label:{show:true,formatter:p=>p.name,color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
+          backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
+        labelLayout:{hideOverlap:true,moveOverlap:'shiftY'}},
+      {name:'— 未知',type:'scatter',data:dataNul,
+        itemStyle:{color:'#94a3b8',opacity:0.7,borderColor:'#fff',borderWidth:1.5},
+        symbolSize:v=>Math.max(14,Math.sqrt(v[2]/maxHeat)*55),
+        label:{show:true,formatter:p=>p.name,color:'#1a2340',fontSize:11.5,fontWeight:500,position:'top',
+          backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1}},
+    ],
+    markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
+      data:[{yAxis:0,label:{show:true,formatter:'0%',color:'#94a3b8',fontSize:10}}]}
+  }, true);
+
+  // 属性表
+  document.getElementById('attrList').innerHTML = items.map((x,i)=>{
+    const yoyCls = x.yoy==null?'':x.yoy>=0?'pos':'neg';
+    const yoyTxt = x.yoy==null?'—':(x.yoy>=0?'+':'')+x.yoy.toFixed(1)+'%';
+    return `
+    <div class="attr-item">
+      <div class="head">
+        <span class="name">${x.attr}</span>
+        <span class="rk">#${i+1}</span>
+      </div>
+      <div class="stats">
+        <span>占比 <b>${x.share.toFixed(2)}%</b></span>
+        <span>热度 <b>${Math.round(x.heat)}</b></span>
+        <span>环比 <b class="yoy ${yoyCls}">${yoyTxt}</b></span>
+      </div>
+      <div class="kws">${x.keywords.slice(0,5).map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+renderAttrDim(attrDims[0]);
+document.getElementById('attrTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('attr-tab')) return;
+  document.querySelectorAll('.attr-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  renderAttrDim(e.target.dataset.dim);
+});
+
+// ---- 关键洞察 ----
+(function(){
+  const cats = WC.categories;
+  const topCat = [...cats].sort((a,b)=>b.sales_amt-a.sales_amt).slice(0,3);
+  const bestGrow = [...cats].filter(x=>x.amt_yoy!=null).sort((a,b)=>b.amt_yoy-a.amt_yoy).slice(0,3);
+  const worstDrop = [...cats].filter(x=>x.amt_yoy!=null).sort((a,b)=>a.amt_yoy-b.amt_yoy).slice(0,3);
+  const material = WC.attributes['材质'].items[0];  // 羊毛
+  const style = WC.attributes['风格'].items[0];    // 时尚
+  const tier = WC.attributes['档次'].items[0];     // 轻奢
+  document.getElementById('wcInsight').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+      <div style="background:#eef4ff;padding:12px;border-radius:8px;border-left:3px solid var(--accent)">
+        <div style="font-weight:600;color:var(--accent);margin-bottom:6px">🏆 销售额 Top 3 品类</div>
+        ${topCat.map(c=>`<div style="margin-top:4px">${c.name}: <b>¥${wcFmtY(c.sales_amt)}</b> <span style="color:var(--mute);font-size:11px">(${c.amt_share.toFixed(1)}%)</span></div>`).join('')}
+      </div>
+      <div style="background:#fef2f2;padding:12px;border-radius:8px;border-left:3px solid var(--bad)">
+        <div style="font-weight:600;color:var(--bad);margin-bottom:6px">📈 环比高增 Top 3</div>
+        ${bestGrow.map(c=>`<div style="margin-top:4px">${c.name}: <b>+${c.amt_yoy.toFixed(1)}%</b> <span style="color:var(--mute);font-size:11px">(¥${wcFmtY(c.sales_amt)})</span></div>`).join('')}
+      </div>
+      <div style="background:#ecfdf5;padding:12px;border-radius:8px;border-left:3px solid var(--good)">
+        <div style="font-weight:600;color:var(--good);margin-bottom:6px">📉 环比下滑 Top 3</div>
+        ${worstDrop.map(c=>`<div style="margin-top:4px">${c.name}: <b>${c.amt_yoy.toFixed(1)}%</b> <span style="color:var(--mute);font-size:11px">(¥${wcFmtY(c.sales_amt)})</span></div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:14px;background:#faf5ff;border-radius:8px;border-left:3px solid var(--purple)">
+      <div style="font-weight:600;color:var(--purple);margin-bottom:6px">🎯 属性亮点</div>
+      <div>• <b>材质 · 羊毛</b> 占比 ${material.share.toFixed(1)}%，环比 <b style="color:var(--bad)">+${material.yoy.toFixed(1)}%</b>（Q4 主要增长材质，关联针织衫/外套/羊毛衫）</div>
+      <div>• <b>风格 · ${style.attr}</b> 占比 ${style.share.toFixed(1)}%（大盘第一风格但环比 ${style.yoy.toFixed(1)}%，需警惕风格过于同质化）</div>
+      <div>• <b>档次 · ${tier.attr}</b> 占比 ${tier.share.toFixed(1)}%（女装消费主力档次，与 ADQ 广告 200-500 元价格带 (¥2974 万消耗) 高度吻合）</div>
+    </div>`;
+})();
+
+window.addEventListener('resize',()=>{
+  document.querySelectorAll('.chart, .wc-chart').forEach(el=>{
+    const chart = echarts.getInstanceByDom(el);
+    if(chart) chart.resize();
+  });
+});
+
+// ============ 抖音 Tab ============
+const DY = window.__DOUYIN__;
+const dyFmt = v => v==null?'—':(v>=1e8?(v/1e8).toFixed(1)+'亿':v>=1e4?(v/1e4).toFixed(1)+'万':Math.round(v).toLocaleString());
+
+// ---- KPI ----
+(function(){
+  const ov = DY.overview;
+  const cards = [
+    {lbl:'品类数量',        val: ov.category_count+' 个',            sub:'女装 39 个子类目', cls:''},
+    {lbl:'92 天总浏览量',   val: dyFmt(ov.total_views),               sub:`日均 ${dyFmt(ov.total_views/ov.days)}`, cls:'gold'},
+    {lbl:'日均带货商品',    val: dyFmt(ov.avg_daily_goods),           sub:`共 ${ov.days} 天`, cls:'purple'},
+    {lbl:'销售额估算',      val:'¥' + dyFmt(ov.est_total_amt),         sub:'区间中位数估值 · 定性', cls:'warn'},
+    {lbl:'销量估算',        val: dyFmt(ov.est_total_vol)+'件',         sub:'区间中位数估值 · 定性', cls:'bad'},
+  ];
+  document.getElementById('dyKpiGrid').innerHTML = cards.map(k=>`
+    <div class="kpi ${k.cls}">
+      <div class="lbl">${k.lbl}</div>
+      <div class="val">${k.val}</div>
+      <div class="sub">${k.sub}</div>
+    </div>`).join('');
+})();
+
+// ---- 大盘日度趋势 ----
+(function(){
+  const arr = DY.overview_daily;
+  const dates = arr.map(x=>x.date);
+  echarts.init(document.getElementById('dyOverviewChart')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+      let d = arr.find(x=>x.date===params[0].name);
+      let html = `<b>${params[0].name}</b>`;
+      params.forEach(p=>{
+        html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${dyFmt(p.value)}</b>`;
+      });
+      if(d){
+        html += `<br><span style="color:#94a3b8;font-size:11px">脱敏区间: 销售额 ${d.amt_band}｜销量 ${d.vol_band}｜转化 ${d.cvr_band}｜均价 ${d.aov_band}</span>`;
+      }
+      return html;
+    }},
+    legend:{data:['浏览量','带货商品'],textStyle:{color:'#1a2340'},top:8},
+    grid:{left:70,right:70,top:50,bottom:55},
+    dataZoom:[{type:'inside',start:0,end:100},{type:'slider',height:20,bottom:14,textStyle:{color:'#5a6683',fontSize:10}}],
+    xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:10,interval:6}},
+    yAxis:[
+      {type:'value',name:'浏览量',...commonAxis,axisLabel:{formatter:v=>dyFmt(v)}},
+      {type:'value',name:'商品数',position:'right',...commonAxis,axisLabel:{formatter:v=>dyFmt(v)}},
+    ],
+    series:[
+      {name:'浏览量',type:'line',data:arr.map(x=>x.views),
+        itemStyle:{color:'#ec4899'},lineStyle:{width:2.5},symbol:'circle',symbolSize:4,smooth:true,
+        areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#ec489940'},{offset:1,color:'#ec489905'}]}}},
+      {name:'带货商品',type:'line',yAxisIndex:1,data:arr.map(x=>x.goods),
+        itemStyle:{color:'#3b82f6'},lineStyle:{width:2,type:'dashed'},symbol:'none',smooth:true},
+    ]
+  });
+})();
+
+// ---- Top 10 销售额占比 ----
+(function(){
+  const top = DY.compete.slice(0,10).reverse();
+  echarts.init(document.getElementById('dyTopAmt')).setOption({
+    tooltip:{...commonTip,formatter:p=>{
+      const c = top.find(x=>x.cat===p.name);
+      return `<b>${p.name}</b><br>销售额占比: <b>${p.value.toFixed(2)}%</b><br>销售额区间: ${c.amt_band}<br>销量区间: ${c.vol_band}<br>均价区间: ${c.aov_band}`;
+    }},
+    grid:{left:100,right:65,top:15,bottom:30},
+    xAxis:{type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>v+'%'}},
+    yAxis:{type:'category',data:top.map(x=>x.cat),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
+    series:[{type:'bar',data:top.map(x=>x.amt_share),
+      itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#ec4899'},{offset:1,color:'#8b5cf6'}]},borderRadius:[0,6,6,0]},
+      label:{show:true,position:'right',color:'#1a2340',fontSize:11,fontWeight:600,formatter:p=>p.value.toFixed(2)+'%'}
+    }]
+  });
+})();
+
+// ---- 渠道结构 (堆叠 100%) ----
+(function(){
+  const top = DY.compete.slice(0,10);
+  const cats = top.map(x=>x.cat);
+  echarts.init(document.getElementById('dyChannel')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'shadow'},
+      formatter:params=>{
+        let html = `<b>${params[0].name}</b>`;
+        params.forEach(p=>html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value.toFixed(1)}%</b>`);
+        return html;
+      }
+    },
+    legend:{data:['直播','视频','商品卡'],textStyle:{color:'#1a2340'},top:5,icon:'circle'},
+    grid:{left:100,right:30,top:40,bottom:30},
+    xAxis:{type:'value',...commonAxis,max:100,axisLabel:{formatter:v=>v+'%'}},
+    yAxis:{type:'category',data:cats.slice().reverse(),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
+    series:[
+      {name:'直播',type:'bar',stack:'ch',data:top.slice().reverse().map(x=>x.live_share),
+        itemStyle:{color:'#ef4444'},label:{show:true,position:'inside',color:'#fff',fontSize:10.5,fontWeight:600,formatter:p=>p.value>8?p.value.toFixed(0)+'%':''}},
+      {name:'视频',type:'bar',stack:'ch',data:top.slice().reverse().map(x=>x.video_share),
+        itemStyle:{color:'#f59e0b'},label:{show:true,position:'inside',color:'#fff',fontSize:10.5,fontWeight:600,formatter:p=>p.value>4?p.value.toFixed(0)+'%':''}},
+      {name:'商品卡',type:'bar',stack:'ch',data:top.slice().reverse().map(x=>x.card_share),
+        itemStyle:{color:'#8b5cf6'},label:{show:true,position:'inside',color:'#fff',fontSize:10.5,fontWeight:600,formatter:p=>p.value>4?p.value.toFixed(0)+'%':''}},
+    ]
+  });
+})();
+
+// ---- 品牌自营 vs 达人推广 ----
+(function(){
+  const top = DY.compete.slice(0,15).reverse();
+  echarts.init(document.getElementById('dyBrandKol')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{
+      let html = `<b>${params[0].name}</b>`;
+      params.forEach(p=>html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value.toFixed(1)}%</b>`);
+      return html;
+    }},
+    legend:{data:['品牌自营','达人推广'],textStyle:{color:'#1a2340'},top:5,icon:'circle'},
+    grid:{left:110,right:30,top:40,bottom:30},
+    xAxis:{type:'value',...commonAxis,max:100,axisLabel:{formatter:v=>v+'%'}},
+    yAxis:{type:'category',data:top.map(x=>x.cat),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11}},
+    series:[
+      {name:'品牌自营',type:'bar',stack:'x',data:top.map(x=>x.brand_share),
+        itemStyle:{color:'#3b82f6'},label:{show:true,position:'inside',color:'#fff',fontSize:10.5,fontWeight:600,formatter:p=>p.value>5?p.value.toFixed(0)+'%':''}},
+      {name:'达人推广',type:'bar',stack:'x',data:top.map(x=>x.kol_share),
+        itemStyle:{color:'#ec4899'},label:{show:true,position:'inside',color:'#fff',fontSize:10.5,fontWeight:600,formatter:p=>p.value>5?p.value.toFixed(0)+'%':''}},
+    ]
+  });
+})();
+
+// ---- Top 10 品类占比走势 ----
+const dyTrendChart = echarts.init(document.getElementById('dyTrendChart'));
+function drawDyTrend(mode){
+  let dates, series;
+  if(mode==='amt'){ dates = DY.trend_amt_dates; series = DY.trend_amt_series; }
+  else if(mode==='vol'){ dates = DY.trend_vol_dates; series = DY.trend_vol_series; }
+  else { dates = DY.trend_goods_dates; series = DY.trend_goods_series; }
+  const palette = ['#ec4899','#8b5cf6','#3b82f6','#10b981','#f59e0b','#ef4444','#14b8a6','#eab308','#6366f1','#f97316'];
+  dyTrendChart.setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'cross'},formatter:params=>{
+      let html = `<b>${params[0].name}</b>`;
+      params.sort((a,b)=>b.value-a.value);
+      params.forEach(p=>html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value==null?'—':p.value.toFixed(2)+'%'}</b>`);
+      return html;
+    }},
+    legend:{data:series.map(s=>s.cat),textStyle:{color:'#1a2340',fontSize:11},top:5,icon:'circle',type:'scroll'},
+    grid:{left:60,right:25,top:50,bottom:55},
+    dataZoom:[{type:'inside',start:0,end:100},{type:'slider',height:20,bottom:14}],
+    xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:10,interval:6}},
+    yAxis:{type:'value',...commonAxis,axisLabel:{formatter:v=>v+'%'}},
+    series: series.map((s,i)=>({
+      name:s.cat,type:'line',data:s.series,
+      itemStyle:{color:palette[i%palette.length]},lineStyle:{width:2},symbol:'none',smooth:true,
+      emphasis:{focus:'series',lineStyle:{width:3.5}},
+    }))
+  }, true);
+}
+drawDyTrend('amt');
+document.getElementById('dyTrendCtrl').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#dyTrendCtrl .btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  drawDyTrend(e.target.dataset.mode);
+});
+
+// ---- 3 张排行 ----
+function renderRank(elId, arr, valKey, bandKey, palette){
+  const top = arr.slice(0,10);
+  const maxShare = Math.max(...top.map(x=>x.share||0));
+  document.getElementById(elId).innerHTML = top.map((x,i)=>{
+    const w = ((x.share||0)/maxShare*100).toFixed(1);
+    return `
+    <div class="cat-row" style="grid-template-columns:28px 100px 1fr 60px 70px;padding:8px 10px">
+      <span class="rank ${i<3?'top3':''}">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</span>
+      <span class="name" style="font-size:11.5px">${x.cat}</span>
+      <div class="bar-wrap"><div class="bar" style="width:${w}%;background:${palette}"></div></div>
+      <span class="num" style="font-size:11px">${(x.share||0).toFixed(2)}%</span>
+      <span class="num" style="color:var(--mute);font-size:10.5px">${x[bandKey] || dyFmt(x[valKey])}</span>
+    </div>`;
+  }).join('');
+}
+// dyRankAmt 已删除 (销售额维度与上方 dyTopAmt 柱状图重复)
+renderRank('dyRankVol', DY.dist_vol, 'val_mid', 'val_band', 'linear-gradient(90deg,#f59e0b,#ef4444)');
+// 商品数没有 band, 直接展示数值
+(function(){
+  const top = DY.dist_goods.slice(0,10);
+  const maxShare = Math.max(...top.map(x=>x.share||0));
+  document.getElementById('dyRankGoods').innerHTML = top.map((x,i)=>{
+    const w = ((x.share||0)/maxShare*100).toFixed(1);
+    return `
+    <div class="cat-row" style="grid-template-columns:28px 100px 1fr 60px 70px;padding:8px 10px">
+      <span class="rank ${i<3?'top3':''}">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</span>
+      <span class="name" style="font-size:11.5px">${x.cat}</span>
+      <div class="bar-wrap"><div class="bar" style="width:${w}%;background:linear-gradient(90deg,#3b82f6,#14b8a6)"></div></div>
+      <span class="num" style="font-size:11px">${(x.share||0).toFixed(2)}%</span>
+      <span class="num" style="color:var(--mute);font-size:10.5px">${dyFmt(x.goods)}</span>
+    </div>`;
+  }).join('');
+})();
+
+// ---- 39 品类完整表 ----
+let dyTableOpen = false;
+function renderDyTable(showAll){
+  const arr = showAll ? DY.compete : DY.compete.slice(0,10);
+  const html = `
+    <table class="sku" style="font-size:11.5px">
+      <thead><tr>
+        <th style="text-align:left">#</th>
+        <th style="text-align:left">品类</th>
+        <th>销售额占比</th>
+        <th>销售额区间</th>
+        <th>销量区间</th>
+        <th>均价区间</th>
+        <th>直播%</th>
+        <th>视频%</th>
+        <th>商品卡%</th>
+        <th>品牌自营%</th>
+        <th>达人推广%</th>
+      </tr></thead>
+      <tbody>
+      ${arr.map((c,i)=>`
+        <tr>
+          <td class="num" style="text-align:left;color:var(--mute)">${i+1}</td>
+          <td class="name" style="font-weight:600">${c.cat}</td>
+          <td class="num" style="font-weight:600;color:var(--accent)">${(c.amt_share||0).toFixed(2)}%</td>
+          <td class="num" style="color:var(--mute)">${c.amt_band||'—'}</td>
+          <td class="num" style="color:var(--mute)">${c.vol_band||'—'}</td>
+          <td class="num" style="color:var(--mute)">${c.aov_band||'—'}</td>
+          <td class="num ${c.live_share>=60?'good':''}">${(c.live_share||0).toFixed(1)}</td>
+          <td class="num">${(c.video_share||0).toFixed(1)}</td>
+          <td class="num">${(c.card_share||0).toFixed(1)}</td>
+          <td class="num ${c.brand_share>=15?'warn':''}">${(c.brand_share||0).toFixed(1)}</td>
+          <td class="num ${c.kol_share>=60?'bad':''}">${(c.kol_share||0).toFixed(1)}</td>
+        </tr>
+      `).join('')}
+      </tbody>
+    </table>`;
+  document.getElementById('dyCompeteTable').innerHTML = html;
+}
+renderDyTable(false);
+function toggleDyTable(){ dyTableOpen = !dyTableOpen; renderDyTable(dyTableOpen); }
+
+// ---- 洞察 ----
+(function(){
+  const top3 = DY.compete.slice(0,3);
+  const avgLive = DY.compete.reduce((a,b)=>a+b.live_share,0) / DY.compete.length;
+  const avgKol  = DY.compete.reduce((a,b)=>a+b.kol_share,0) / DY.compete.length;
+  const avgBrand = DY.compete.reduce((a,b)=>a+b.brand_share,0) / DY.compete.length;
+  // 找品牌自营占比最高的品类
+  const brandTop = [...DY.compete].sort((a,b)=>b.brand_share-a.brand_share).slice(0,3);
+  // 找商品卡最高
+  const cardTop = [...DY.compete].sort((a,b)=>b.card_share-a.card_share).slice(0,3);
+  document.getElementById('dyInsight').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:#fef2f2;padding:14px;border-radius:8px;border-left:3px solid var(--bad)">
+        <div style="font-weight:600;color:var(--bad);margin-bottom:8px">🎬 直播主导型市场</div>
+        <div>抖音女装 39 品类 <b>直播销售额占比均值 ${avgLive.toFixed(1)}%</b>（视频占 ~6%，商品卡 ~26%）— 相较传统货架电商，抖音是 <b>典型的直播驱动市场</b>。</div>
+        <div style="margin-top:6px">品牌方进入需重投入达播矩阵，纯商品卡的转化率不到 1/3。</div>
+      </div>
+      <div style="background:#fdf2f8;padding:14px;border-radius:8px;border-left:3px solid var(--pink)">
+        <div style="font-weight:600;color:var(--pink);margin-bottom:8px">👥 达人推广统治渠道</div>
+        <div><b>达人推广销售额占比均值 ${avgKol.toFixed(1)}%</b>，品牌自营仅 <b>${avgBrand.toFixed(1)}%</b>。</div>
+        <div style="margin-top:6px">品牌自营占比 Top: ${brandTop.map(x=>`${x.cat} (${x.brand_share.toFixed(1)}%)`).join('、')} — 少数品类如羽绒服/皮草仍有品牌店铺竞争力。</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:14px;background:#eef4ff;border-radius:8px;border-left:3px solid var(--accent)">
+      <div style="font-weight:600;color:var(--accent);margin-bottom:6px">🏆 头部 3 大赛道</div>
+      ${top3.map(c=>`<div style="margin-top:4px">• <b>${c.cat}</b>：销售额占比 <b>${c.amt_share.toFixed(2)}%</b>｜均价 ${c.aov_band}｜直播 ${c.live_share.toFixed(1)}% + 达人 ${c.kol_share.toFixed(1)}%</div>`).join('')}
+      <div style="margin-top:8px;color:var(--sub);font-size:12px">▎羽绒服一家独大 20.76%，与冬季强季节属性、单价高（400-500）关联，是达播和品牌自营双高的少数赛道。</div>
+    </div>
+    <div style="margin-top:14px;padding:14px;background:#faf5ff;border-radius:8px;border-left:3px solid var(--purple)">
+      <div style="font-weight:600;color:var(--purple);margin-bottom:6px">🔗 三平台交叉对照</div>
+      <div>• <b>抖音</b>：直播驱动（60-70%）+ 达人主导（60%+），头部品类=羽绒服/针织衫/大衣</div>
+      <div>• <b>微信小店</b>：品类分布上针织衫和休闲裤双雄，环比多下滑，"打底衫"逆势 +15.6%</div>
+      <div>• <b>ADQ 广告</b>：消耗集中在裤子/上衣，500 元以上档 ROI 15.03 遥遥领先</div>
+      <div style="margin-top:6px;color:var(--sub);font-size:12px">▎<b>选品建议</b>：抖音重投羽绒服/大衣（借势直播+达人），微信小店抓打底衫增长窗口，ADQ 广告加码 500+ 元高端赛道。</div>
+    </div>`;
+})();
+
+// ============ 品洞察模块 ============
+const DM = window.__DOUYIN_MARKET__;
+if (DM) {
+
+// 工具: 全局可用
+function median(arr){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function range_to_mid_inline(s){
+  if(!s) return 0;
+  s=String(s).trim();
+  if(/w/i.test(s)){let parts=s.match(/([\d.]+)/g);if(!parts)return 0;let nums=parts.map(p=>parseFloat(p)*10000);return s.includes('+')?nums[0]*1.2:nums.reduce((a,b)=>a+b,0)/nums.length;}
+  if(s.includes('-')){let parts=s.match(/([\d.]+)/g);return parts&&parts.length>=2?(parseFloat(parts[0])+parseFloat(parts[1]))/2:0;}
+  let m=s.match(/([\d.]+)/);return m?parseFloat(m[1]):0;
+}
+
+// 商品主渠道: 根据销售额区间中位数选最大值
+function pickChannel(p){
+  const b = range_to_mid_inline(p.brand_amt)||0;
+  const k = range_to_mid_inline(p.kol_amt)||0;
+  const c = range_to_mid_inline(p.card_amt)||0;
+  const total = b+k+c;
+  if (total<=0) return {name:'--', pct:0};
+  const mx = Math.max(b,k,c);
+  return {name: mx===b?'品牌自营':mx===k?'达人推广':'商品卡', pct: mx/total*100};
+}
+
+// 卖点维度颜色映射
+const spTypeColor = {
+  '材质':'#3b82f6','风格':'#ec4899','功效':'#10b981','版型':'#f59e0b',
+  '图案':'#8b5cf6','功能':'#ef4444','人群':'#14b8a6','元素':'#6366f1',
+  '细节':'#f97316','领型':'#06b6d4','袖型':'#84cc16','裙型':'#a855f7',
+  '裤型':'#dc2626','适用':'#0891b2','全部':'#94a3b8',
+};
+
+// 渲染商品表格（含图片）— 通用函数
+function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!items || !items.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mute)">无数据</div>'; return; }
+  const maxV = Math.max(...items.map(p=>p[valueKey]||0));
+  el.innerHTML = `
+    <table class="sku" style="font-size:11px">
+      <thead><tr>
+        <th style="text-align:left;width:24px">#</th>
+        <th style="text-align:left;width:60px">图片</th>
+        <th style="text-align:left">商品</th>
+        <th style="width:78px">品类</th>
+        <th style="width:78px">${valueLabel}</th>
+        <th style="width:84px">主渠道</th>
+        <th style="width:72px">品牌</th>
+        <th style="width:60px">销售额</th>
+      </tr></thead>
+      <tbody>
+      ${items.slice(0,15).map((p,i)=>{
+        const v = p[valueKey]||0;
+        const w = (v/maxV*100).toFixed(0);
+        const ch = pickChannel(p);
+        const img = p.image
+          ? `<img src="${p.image}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'" style="width:46px;height:46px;border-radius:6px;object-fit:cover;background:#f1f5f9">`
+          : '<div style="width:46px;height:46px;border-radius:6px;background:#f1f5f9"></div>';
+        const chColor = ch.name==='品牌自营'?'#3b82f6':ch.name==='达人推广'?'#ec4899':ch.name==='商品卡'?'#8b5cf6':'#94a3b8';
+        const br = (p.brand||'--')==='--'?'白牌':(p.brand.length>8?p.brand.slice(0,8)+'…':p.brand);
+        return `
+        <tr>
+          <td class="num" style="color:var(--mute)">${i+1}</td>
+          <td>${img}</td>
+          <td class="name" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</td>
+          <td class="num" style="font-size:10.5px">${p.cat||'--'}</td>
+          <td class="num" style="font-weight:600;color:var(--accent)">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="bar-wrap" style="flex:1;min-width:36px"><div class="bar" style="width:${w}%;background:linear-gradient(90deg,#ef4444,#ec4899)"></div></div>
+              <span style="white-space:nowrap">${valueFormat(v)}</span>
+            </div>
+          </td>
+          <td class="num"><span class="badge" style="background:${chColor};color:#fff;font-size:10px;padding:2px 4px;border-radius:4px;white-space:nowrap;display:inline-block;min-width:60px;text-align:center">${ch.name}</span></td>
+          <td class="num" style="color:var(--mute);font-size:10.5px" title="${p.brand||'白牌'}">${br}</td>
+          <td class="num" style="color:var(--sub);font-size:10.5px">${p.amt_band||'--'}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ---- 1. 卖点词云（4 维切换 — 纯 DOM tag cloud，隐藏 tab / canvas 尺寸 0 也绝不塌） ----
+(function(){
+  const all = DM.selling_points.filter(s => s.keyword && s.type==='全部');
+  const dimMap = {
+    share:  {label: '销售额占比 (%)', val: s => s.share || 0,            fmt: v => v.toFixed(2)+'%'},
+    growth: {label: '销售额增长指数',   val: s => Math.max(0, s.growth_idx||0), fmt: v => v.toFixed(2)},
+    goods:  {label: '带货商品数',     val: s => s.goods_cnt || 0,        fmt: v => v>=1e4?(v/1e4).toFixed(0)+'万':Math.round(v).toLocaleString()},
+    cr5:    {label: '品牌CR5 (%)',   val: s => s.cr5 || 0,               fmt: v => v.toFixed(1)+'%'},
+  };
+  const el = document.getElementById('dySellingPoints');
+  if (!el) return;
+  // 5 档色阶: value 越高字越大颜色越深 (蓝紫渐深, 视觉分层)
+  const palette = ['#c4b5fd','#a78bfa','#818cf8','#6366f1','#4338ca'];
+  function render(dim){
+    const d = dimMap[dim];
+    const arr = all.map(s => ({kw:s.keyword, v:d.val(s), type:s.type,
+        amt:s.amt_band, share:s.share, cr5:s.cr5, growth:s.growth_idx, goods:s.goods_cnt}))
+      .filter(s => s.v > 0)
+      .sort((a,b)=>b.v-a.v)
+      .slice(0, 100);
+    if (!arr.length){
+      el.innerHTML = '<div style="display:flex;height:100%;align-items:center;justify-content:center;color:#94a3b8">该维度暂无数据</div>';
+      return;
+    }
+    const maxV = arr[0].v, minV = arr[arr.length-1].v;
+    const minSize = 13, maxSize = 40;
+    const html = arr.map(s => {
+      const norm = maxV>minV ? (s.v-minV)/(maxV-minV) : 0.5;
+      const size = minSize + Math.pow(norm, 0.6)*(maxSize-minSize);
+      const color = palette[Math.min(4, Math.floor(norm*5))];
+      const tip = `${s.kw} · ${d.label} ${d.fmt(s.v)} · 占比${(s.share||0).toFixed(2)}% · 增长${(s.growth||0).toFixed(1)} · 商品${(s.goods||0).toLocaleString()}`;
+      return `<span style="font-size:${size.toFixed(1)}px;color:${color};font-weight:${norm>0.45?700:500};line-height:1.05;cursor:default;transition:transform .12s;white-space:nowrap;padding:1px 0" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1)'" title="${tip}">${s.kw}</span>`;
+    }).join('');
+    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;align-content:center;align-items:baseline;justify-content:center;gap:5px 13px;height:100%;overflow:hidden;padding:14px;box-sizing:border-box">${html}</div>`;
+  }
+  render('share');
+  document.querySelectorAll('#dySpCtrl .btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#dySpCtrl .btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      render(b.dataset.dim);
+    });
+  });
+})();
+
+// ---- 2. 卖点类型构成 (饼图) — 基于关键词分类 ----
+(function(){
+  // 25Q4 女装常用 100 卖点词 → 类别映射 (raw 数据的 type 列全是"全部", 必须前端分类)
+  // 长词优先匹配: 避免短词抢占 (例: "修身" 不被 "修" 抢)
+  const SP_TYPE_RAW = {
+    '材质': [
+      // 羽绒/绒
+      '白鹅绒','白鸭绒','灰鸭绒','90白鸭绒','90白鹅绒','90绒','鹅绒','鸭绒','羽绒',
+      // 毛皮
+      '绵羊毛','羊毛','羊绒','山羊绒','兔毛','狐狸毛','狐狸','水貂毛','水貂','貉子毛','貂皮','皮草','皮毛','羊剪绒','毛领','毛毛',
+      // 天然纤维
+      '桑蚕丝','真丝','丝光','纯棉','棉麻','棉','麻','冰丝','莫代尔','氨纶','锦纶','醋酸',
+      // 化纤
+      '涤纶','皮革','PU',
+      // 呢料/绒类
+      '双面呢','毛呢','呢子','颗粒绒','摇粒绒','珊瑚绒','法兰绒','灯芯绒','天鹅绒','丝绒',
+      '磨毛','拉绒','毛绒','针织',
+      // 蕾丝/雪纺
+      '蕾丝边','蕾丝','雪纺','欧根纱','网纱','绸缎','缎面',
+      // 牛仔
+      '牛仔布','牛仔',
+    ],
+    '风格': [
+      '小香风','慵懒风','运动风','bf风','学院风','原宿','ins','国风','新中式','中式','美式',
+      '韩版','韩系','欧美','日系','港风','法式','学院','名媛','辣妹','御姐','森系','工装',
+      '时尚','甜美','优雅','通勤','休闲','街头','极简','简约','文艺','气质',
+      '新款','新品','复古','菱格','拼接','撞色','不规则','慵懒','设计感','小众','洋气','高端','轻奢',
+      '定制','爆款','高奢','高级感','温柔',
+    ],
+    '功效': [
+      '显瘦显高','修身显瘦','保暖修身','加厚保暖','锁温保暖',
+      '显瘦','显高','显气质','显白','保暖','修身','收腹','透气','吸湿','速干','抗皱','抗菌','塑形',
+      '提臀','束腰','收胯','打底','抗寒','御寒','锁温','聚热','发热','百搭',
+      '不掉毛','不起球','不起静电','弹力','垂感','舒适','软糯',
+      '遮肉','柔软','亲肤',
+    ],
+    '版型': [
+      '宽松','紧身','收腰','直筒','阔腿','包臀','大码','加长','加长款','高腰','低腰',
+      '短款','中长款','长款','均码','微喇','开叉','开衫','套头',
+      '吊带','抹胸','挂脖','一字肩','斜肩','蝙蝠','落肩','垫肩','正肩',
+      '松紧腰','半身','连衣','套装',
+      '廓形','拖地','面包','过膝','窄版','九分','A字',
+    ],
+    '图案': [
+      '千鸟格','格纹','条纹','格子','碎花','豹纹','斑马纹','波点','几何',
+      '纯色','印花','卡通','字母','印染','提花','绣花','刺绣','LOGO','logo',
+      '黑色','拼色',
+    ],
+    '功能': [
+      '两件套','三件套','可拆卸','可拆帽','可拆袖','可脱卸帽','可脱卸','可调节',
+      '加厚','加绒','防水','防风','连帽','免烫','机洗','假两件',
+      '厚款','薄款','轻薄',
+      '双面穿','两面穿','双面','三防','水洗',
+    ],
+    '元素': [
+      '蝴蝶结','荷叶边','木耳边','蕾丝边','花边','荷叶','蝴蝶',
+      '流苏','铆钉','绑带','抽绳','系带','腰带','毛边','毛球',
+      '拉链','纽扣','口袋','一体','镂空','云朵',
+      '单排扣','双排扣',
+    ],
+    '领型': [
+      'POLO领','娃娃领','西装领','海军领','小立领','半高领','堆堆领','大翻领','翻领',
+      'V领','方领','高领','立领','圆领',
+    ],
+    '袖型': [
+      '泡泡袖','灯笼袖','喇叭袖','喇叭','羊腿袖','插肩袖','落肩袖','蓬蓬袖','蝴蝶袖','飞飞袖','飞袖',
+      '长袖','短袖','七分袖','五分袖','九分袖','无袖',
+    ],
+    '裙型': [
+      'A字裙','包臀裙','百褶裙','伞裙','蓬蓬裙','蛋糕裙','鱼尾裙','一步裙','衬衫裙','T恤裙','半裙','连衣裙',
+    ],
+    '裤型': [
+      '直筒裤','阔腿裤','紧身裤','喇叭裤','打底裤','铅笔裤','牛仔裤','运动裤','卫裤','哈伦裤','萝卜裤','工装裤','背带裤','烟管裤','小脚裤','毛呢裤','羽绒裤',
+    ],
+    '适用': [
+      '秋冬季','秋冬','冬季','夏季','春季','秋季','春秋','春夏','早秋',
+      '冬款','冬',
+      '上班','约会','度假','居家','正装','晚礼服','宴会','日常','出游',
+      '瑜伽','健身房','面试','家居服','睡衣',
+      '户外','内搭','外穿','通勤','运动','进口',
+    ],
+    '人群': ['女士','女款','女','孕妇','胖mm','小个子','中老年','妈妈','情侣'],
+  };
+  // 按词长降序排好, 长词优先匹配
+  const SP_TYPE_PAIRS = [];
+  for (const [t, ws] of Object.entries(SP_TYPE_RAW)){
+    for (const w of ws) SP_TYPE_PAIRS.push([w, t]);
+  }
+  SP_TYPE_PAIRS.sort((a,b) => b[0].length - a[0].length);
+  function classifySpType(kw){
+    for (const [w, t] of SP_TYPE_PAIRS){
+      if (kw.includes(w)) return t;
+    }
+    return '其他';
+  }
+  // 聚合 100 个卖点按类别
+  const buckets = {};
+  for (const sp of DM.selling_points){
+    const t = classifySpType(sp.keyword);
+    if (!buckets[t]) buckets[t] = {cnt:0, share:0};
+    buckets[t].cnt += 1;
+    buckets[t].share += (sp.share || 0);
+  }
+  const data = Object.entries(buckets)
+    .map(([name, v]) => ({name, value: +v.share.toFixed(2), cnt: v.cnt}))
+    .sort((a,b) => b.value - a.value);
+  if (!data.length) return;
+  const grandTotal = data.reduce((s,x)=>s+x.value, 0) || 1;
+  const el = document.getElementById('dySpTypeChart');
+  if (!el) return;
+  // 纯 DOM 甜甜圈 (conic-gradient) + 图例 — 隐藏 tab 里也绝不塌
+  let acc = 0;
+  const stops = data.map(d => {
+    const start = acc/grandTotal*100;
+    acc += d.value;
+    const end = acc/grandTotal*100;
+    const c = spTypeColor[d.name] || '#94a3b8';
+    return `${c} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+  }).join(', ');
+  const legend = data.map(d => {
+    const pct = (d.value/grandTotal*100).toFixed(1);
+    const c = spTypeColor[d.name] || '#94a3b8';
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#1a2340;line-height:1.9" title="${d.name} 加权占比 ${pct}% · ${d.cnt} 个卖点词">
+      <span style="width:11px;height:11px;border-radius:3px;background:${c};flex-shrink:0"></span>
+      <span style="flex:1">${d.name}</span>
+      <b style="color:#4338ca">${pct}%</b>
+      <span style="color:#94a3b8;font-size:10px">·${d.cnt}词</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;height:100%;box-sizing:border-box;padding:6px 4px">
+      <div style="display:flex;justify-content:center;padding:8px 0 12px">
+        <div style="position:relative;width:180px;height:180px;border-radius:50%;background:conic-gradient(${stops})">
+          <div style="position:absolute;inset:30px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:20px;font-weight:700;color:#4338ca">${data.length}</div>
+            <div style="font-size:10.5px;color:#94a3b8">卖点类别</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:0 8px">${legend}</div>
+    </div>`;
+})();
+
+// ---- 3. 爆品增长榜（带图片） ----
+(function(){
+  renderProductTable('dyGrowthProducts', DM.products_growth, 'cagr', 'CAGR', v => v>=1000?(v/100).toFixed(1)+'x':v.toFixed(0)+'%');
+})();
+
+// ---- 4. 商品飙升榜（带图片） ----
+(function(){
+  const sorted = [...DM.products_surge].sort((a,b) => range_to_mid_inline(b.amt_band) - range_to_mid_inline(a.amt_band));
+  const withScore = sorted.map(p => ({...p, score: range_to_mid_inline(p.amt_band)}));
+  renderProductTable('dySurgeProducts', withScore, 'score', '销售额(估)', v => v>=1e4?(v/1e4).toFixed(0)+'万':v>=100?(v/100).toFixed(0)+'百':Math.round(v));
+})();
+
+// ---- 5. 品类渠道策略全景 ----
+(function(){
+  const top = DM.cat_channel_avg.slice(0,18).reverse();
+  echarts.init(document.getElementById('dyChannelStrategy')).setOption({
+    tooltip:{...commonTip,trigger:'axis',axisPointer:{type:'shadow'},formatter:params=>{
+      let html = `<b>${params[0].name}</b> <span style="color:#94a3b8">(${top.find(x=>x.cat===params[0].name)?.cnt||0} 件商品)</span>`;
+      params.forEach(p=>html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${p.value.toFixed(0)}%</b>`);
+      return html;
+    }},
+    legend:{data:['品牌自营','达人推广','商品卡'],textStyle:{color:'#1a2340'},top:5,icon:'circle'},
+    grid:{left:110,right:30,top:40,bottom:30},
+    xAxis:{type:'value',...commonAxis,max:100,axisLabel:{formatter:v=>v+'%'}},
+    yAxis:{type:'category',data:top.map(x=>x.cat),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11}},
+    series:[
+      {name:'品牌自营',type:'bar',stack:'cs',data:top.map(x=>x.brand_pct),
+        itemStyle:{color:'#3b82f6'},label:{show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:600,formatter:p=>p.value>6?p.value.toFixed(0)+'%':''}},
+      {name:'达人推广',type:'bar',stack:'cs',data:top.map(x=>x.kol_pct),
+        itemStyle:{color:'#ec4899'},label:{show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:600,formatter:p=>p.value>10?p.value.toFixed(0)+'%':''}},
+      {name:'商品卡',type:'bar',stack:'cs',data:top.map(x=>x.card_pct),
+        itemStyle:{color:'#8b5cf6'},label:{show:true,position:'inside',color:'#fff',fontSize:10,fontWeight:600,formatter:p=>p.value>8?p.value.toFixed(0)+'%':''}},
+    ]
+  });
+})();
+
+} // end if(DM)
+</script>
+</body>
+</html>

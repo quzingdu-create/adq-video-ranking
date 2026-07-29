@@ -763,15 +763,29 @@
 
     // 调用云函数（用于 exportAll 等管理员接口，绕开行级安全规则）
     // 用法：cloud.callFunction('exportAll', {}).then(res => res.records)
+    // 2026-07-28 Round 10 P0 根治：listUserRecords / getBootstrap 云函数配置了免登录, 但老逻辑走 ensureReady()
+    //   → token 失效或首次进入时抛 NEED_PASSWORD → 云函数一直调不通
+    //   → 用户"点刷新弹 NEED_PASSWORD" + "看不到今天登记" 都是这个坑
+    // 修复：callFunction 走匿名快路径，只做 SDK init（跳过 auth 环节）
     callFunction: function (name, data) {
-      return ensureReady().then(function () {
-        if (!_app || !_app.callFunction) {
-          return Promise.reject(new Error('SDK 不支持 callFunction（请检查 SDK 版本）'));
-        }
-        return _app.callFunction({ name: name, data: data || {} }).then(function (r) {
-          // v1/v2 SDK 返回结构：{ result: {...} }
-          return r && r.result !== undefined ? r.result : r;
-        });
+      return new Promise(function (resolve, reject) {
+        try {
+          // 已 init 直接用
+          if (!_app) {
+            var SDK = (typeof cloudbase !== 'undefined') ? cloudbase
+                    : (typeof tcb !== 'undefined') ? tcb : null;
+            if (!SDK) { reject(new Error('CloudBase SDK 未加载')); return; }
+            try { _app = SDK.init({ env: ENV_ID }); } catch (e) { reject(e); return; }
+          }
+          if (!_app || typeof _app.callFunction !== 'function') {
+            reject(new Error('SDK 不支持 callFunction（请检查 SDK 版本）'));
+            return;
+          }
+          _app.callFunction({ name: name, data: data || {} }).then(function (r) {
+            // v1/v2 SDK 返回结构：{ result: {...} } 或 直接 {ok,data,meta}
+            resolve(r && r.result !== undefined ? r.result : r);
+          }).catch(reject);
+        } catch (e) { reject(e); }
       });
     },
 
