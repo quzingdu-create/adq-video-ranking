@@ -890,7 +890,12 @@ function _mergeTinyL3(list){
   };
   return [...kept, merged];
 }
-const l3List = _mergeTinyL3(_splitBigL3(D.l3_list)).sort((a,b)=>(b.cost||0)-(a.cost||0));
+// R18: _tinyMerged 一级项固定排最末，其他按 cost 降序
+const l3List = _mergeTinyL3(_splitBigL3(D.l3_list)).sort((a,b)=>{
+  if(a._tinyMerged && !b._tinyMerged) return 1;
+  if(!a._tinyMerged && b._tinyMerged) return -1;
+  return (b.cost||0)-(a.cost||0);
+});
 // 预处理：每个 l3 生成 l4_display（合并小项）
 l3List.forEach(l3=>{ if(!l3._tinyMerged) l3.l4_display = _buildL4Display(l3.l4_list); });
 const totalCost = l3List.reduce((s,x)=>s+(x.cost||0),0) || 1;
