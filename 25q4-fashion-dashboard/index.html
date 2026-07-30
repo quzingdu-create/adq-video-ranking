@@ -245,7 +245,8 @@
     <h2>
       <span>📈 分周趋势 <span class="tag">14 周 · 双 Y 轴</span></span>
       <div class="btn-grp" id="trendCtrl">
-        <button class="btn active" data-metric="ctr,cvr">CTR × CVR</button>
+        <button class="btn active" data-metric="cost,roi">消耗趋势 × ROI</button>
+        <button class="btn" data-metric="ctr,cvr">CTR × CVR</button>
         <button class="btn" data-metric="aov,refund7">客单价 × 退款率</button>
       </div>
     </h2>
@@ -582,7 +583,8 @@ document.getElementById('kpiGrid').innerHTML = kpiData.map(k=>`
 // ============ 分周趋势 (删掉双退款按钮) ============
 const trendChart = echarts.init(document.getElementById('trendChart'));
 const metricMeta = {
-  cost:{name:'消耗',color:'#3b82f6',fmt:v=>'¥'+fmtMoney(v),axis:'money',type:'bar'},
+  // cost 特殊：只保留柱形高度做视觉对比，不显示金额（对外不出大盘消耗绝对值）
+  cost:{name:'消耗趋势',color:'#3b82f6',fmt:v=>'—',axis:'money',type:'bar',hideValue:true},
   roi:{name:'ROI',color:'#10b981',fmt:v=>fmtF(v,2),axis:'left',type:'line'},
   ctr:{name:'CTR',color:'#f59e0b',fmt:v=>fmtPct(v)+'%',axis:'left',type:'line'},
   cvr:{name:'CVR',color:'#8b5cf6',fmt:v=>fmtPct(v)+'%',axis:'left',type:'line'},
@@ -600,34 +602,37 @@ function drawTrend(m1, m2){
       let html = `<b>${params[0].name}</b>`;
       params.forEach(p=>{
         const meta = p.seriesName===meta1.name?meta1:meta2;
+        if(meta.hideValue) return;  // 隐藏 cost 具体数字
         html += `<br><span style="color:${p.color}">●</span> ${p.seriesName}: <b>${meta.fmt(p.value)}</b>`;
       });
       return html;
     }},
     legend:{data:[meta1.name,meta2.name],textStyle:{color:'#1a2340',fontSize:12},top:8},
-    grid:{left:80,right:useDoubleAxis?80:30,top:50,bottom:40},
+    grid:{left:meta1.hideValue?40:80,right:useDoubleAxis?(meta2.hideValue?40:80):30,top:50,bottom:40},
     xAxis:{type:'category',data:dates,...commonAxis,axisLabel:{color:'#5a6683',fontSize:11.5}},
     yAxis: useDoubleAxis ? [
-      {type:'value',name:meta1.name,...commonAxis,position:'left',axisLabel:{color:'#5a6683',formatter:v=>meta1.axis==='money'?fmtMoney(v):v}},
-      {type:'value',name:meta2.name,...commonAxis,position:'right',axisLabel:{color:'#5a6683',formatter:v=>meta2.axis==='money'?fmtMoney(v):v}},
+      {type:'value',name:meta1.hideValue?'':meta1.name,...commonAxis,position:'left',
+        axisLabel:{show:!meta1.hideValue,color:'#5a6683',formatter:v=>meta1.axis==='money'?fmtMoney(v):v}},
+      {type:'value',name:meta2.hideValue?'':meta2.name,...commonAxis,position:'right',
+        axisLabel:{show:!meta2.hideValue,color:'#5a6683',formatter:v=>meta2.axis==='money'?fmtMoney(v):v}},
     ] : [{type:'value',...commonAxis,axisLabel:{color:'#5a6683'}}],
     series:[
       {name:meta1.name,type:meta1.type,yAxisIndex:0,data:s1,
         itemStyle:{color:meta1.color,borderRadius:[6,6,0,0]},
         lineStyle:{width:3},smooth:true,symbol:'circle',symbolSize:8,
         areaStyle:meta1.type==='line'?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:meta1.color+'40'},{offset:1,color:meta1.color+'05'}]}}:undefined,
-        label:{show:true,position:'top',color:meta1.color,fontSize:10.5,fontWeight:500,formatter:p=>meta1.fmt(p.value)}
+        label:{show:!meta1.hideValue,position:'top',color:meta1.color,fontSize:10.5,fontWeight:500,formatter:p=>meta1.fmt(p.value)}
       },
       {name:meta2.name,type:meta2.type,yAxisIndex:useDoubleAxis?1:0,data:s2,
         itemStyle:{color:meta2.color,borderRadius:[6,6,0,0]},
         lineStyle:{width:3},smooth:true,symbol:'circle',symbolSize:8,
         areaStyle:meta2.type==='line'?{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:meta2.color+'40'},{offset:1,color:meta2.color+'05'}]}}:undefined,
-        label:{show:true,position:'top',color:meta2.color,fontSize:10.5,fontWeight:500,formatter:p=>meta2.fmt(p.value)}
+        label:{show:!meta2.hideValue,position:'top',color:meta2.color,fontSize:10.5,fontWeight:500,formatter:p=>meta2.fmt(p.value)}
       },
     ]
   }, true);
 }
-drawTrend('ctr','cvr');
+drawTrend('cost','roi');
 document.getElementById('trendCtrl').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
   document.querySelectorAll('#trendCtrl .btn').forEach(b=>b.classList.remove('active'));
