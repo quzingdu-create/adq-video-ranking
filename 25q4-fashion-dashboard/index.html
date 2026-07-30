@@ -229,7 +229,7 @@
 
   <!-- 主 Tab -->
   <div class="main-tabs">
-    <div class="main-tab active" data-tab="adq">📊 AMS广告投放 <span class="badge">消耗 ¥8213 万</span></div>
+    <div class="main-tab active" data-tab="adq">📊 AMS广告投放 <span class="badge">类目 · 关键词</span></div>
     <div class="main-tab" data-tab="wechat">🛒 微信小店GMV <span class="badge">销售 ¥148 亿</span></div>
     <div class="main-tab" data-tab="douyin">🎵 抖音女装GMV <span class="badge">39 品类 · 92 天</span></div>
   </div>
@@ -245,8 +245,7 @@
     <h2>
       <span>📈 分周趋势 <span class="tag">14 周 · 双 Y 轴</span></span>
       <div class="btn-grp" id="trendCtrl">
-        <button class="btn active" data-metric="cost,roi">消耗 × ROI</button>
-        <button class="btn" data-metric="ctr,cvr">CTR × CVR</button>
+        <button class="btn active" data-metric="ctr,cvr">CTR × CVR</button>
         <button class="btn" data-metric="aov,refund7">客单价 × 退款率</button>
       </div>
     </h2>
@@ -270,62 +269,8 @@
     <div id="bandLines" class="chart" style="height:400px"></div>
   </div>
 
-  <!-- 三张散点矩阵：优化排版 -->
-  <div class="row row-2">
-    <div class="panel">
-      <h2>
-        散点矩阵 A：消耗 × ROI × 退款率
-        <span class="desc">气泡大小=消耗，颜色=退款率</span>
-      </h2>
-      <div id="matA" class="chart chart-scatter"></div>
-      <div class="quad-legend">
-        <div class="lg-item"><span class="dot" style="background:var(--good)"></span>低退款 &lt;35%</div>
-        <div class="lg-item"><span class="dot" style="background:var(--warn)"></span>中 35~50%</div>
-        <div class="lg-item"><span class="dot" style="background:var(--bad)"></span>高退款 ≥50%</div>
-        <div class="note">▎虚线=中位线，四象限已用浅色背景标出：<b style="color:var(--good)">右上=核心赛道</b>｜<b style="color:var(--bad)">右下=烧钱低效</b>。标签仅显示消耗 Top 8。</div>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>
-        散点矩阵 B：CTR × CVR × 消耗
-        <span class="desc">气泡大小=消耗，颜色=分区</span>
-      </h2>
-      <div id="matB" class="chart chart-scatter"></div>
-      <div class="quad-legend">
-        <div class="note">▎四象限背景已按类型标色，图例见图内 legend。标签仅显示消耗 Top 8，其余悬停查看。</div>
-      </div>
-    </div>
-  </div>
+  <!-- R14: 三张散点矩阵 + Top10 三列已按子青要求删除 -->
 
-  <div class="panel" style="margin-bottom:14px">
-    <h2>
-      散点矩阵 C：客单价 × ROI × 退款率
-      <span class="desc">气泡大小=消耗，颜色=退款率（红=风险）</span>
-    </h2>
-    <div id="matC" class="chart chart-scatter"></div>
-    <div class="quad-legend">
-      <div class="lg-item"><span class="dot" style="background:var(--good)"></span>低退款</div>
-      <div class="lg-item"><span class="dot" style="background:var(--warn)"></span>中退款</div>
-      <div class="lg-item"><span class="dot" style="background:var(--bad)"></span>高退款</div>
-      <div class="note">▎重点看 <b style="color:var(--good)">右上</b>（高客单价 + 高 ROI，头部盈利品类）与 <b style="color:var(--bad)">右下</b>（高价低 ROI，烧钱陷阱）。红色气泡代表退款风险高，即使 ROI 尚可也需警惕。</div>
-    </div>
-  </div>
-
-  <!-- Top10 三列 -->
-  <div class="row row-3">
-    <div class="panel">
-      <h2>Top10 三级类目消耗 <span class="tag">降序</span></h2>
-      <div id="barCost" class="chart"></div>
-    </div>
-    <div class="panel">
-      <h2>Top10 三级类目 ROI <span class="tag">消耗 &gt; 50 万</span></h2>
-      <div id="barRoi" class="chart"></div>
-    </div>
-    <div class="panel">
-      <h2>⚠️ 退款率红榜 <span class="tag">L4 · 消耗 ≥ 10 万</span></h2>
-      <div class="redlist" id="redlist"></div>
-    </div>
-  </div>
 
   <!-- 词云: 大幅拉宽 -->
   <div class="panel" style="margin-bottom:14px">
@@ -337,7 +282,7 @@
       <div id="wcChart" class="wc-chart"></div>
       <div class="wc-table">
         <table id="wcTable">
-          <thead><tr><th style="text-align:left">关键词</th><th>消耗</th><th>ROI</th><th>SKU 数</th></tr></thead>
+          <thead><tr><th style="text-align:left">关键词</th><th>占比</th><th>ROI</th><th>SKU 数</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -354,8 +299,8 @@
       </div>
     </h2>
     <div class="header-legend">
-      <div></div><div>三级 / 四级类目</div><div>消耗占比</div>
-      <div>消耗(元)</div><div>ROI</div><div>CTR%</div><div>CVR%</div><div>单价¥</div><div>退款%</div><div>SKU 数</div>
+      <div></div><div>三级 / 四级类目</div><div>占比 (bar)</div>
+      <div>占比%</div><div>ROI</div><div>CTR%</div><div>CVR%</div><div>单价¥</div><div>退款%</div><div>SKU 数</div>
     </div>
     <div class="l3-list" id="l3List"></div>
   </div>
@@ -618,10 +563,10 @@ const commonTip = {
   extraCssText:'box-shadow:0 4px 12px rgba(30,41,59,0.12);border-radius:8px;padding:8px 12px;'
 };
 
-// ============ KPI (删除下单量估算 → 5 张) ============
+// ============ KPI (R14: 去掉总消耗 → 品类覆盖) ============
 const ov = D.overview;
 const kpiData = [
-  {lbl:'总消耗',       val:'¥'+fmtMoney(ov.total_cost), sub:`${ov.l3_count} 个三级 · ${ov.l4_count} 个四级`, cls:''},
+  {lbl:'品类覆盖',     val:`${ov.l3_count}·${ov.l4_count}`,  sub:`三级 · 四级`, cls:''},
   {lbl:'加权 ROI',     val:fmtF(ov.roi,2),              sub:'下单金额 / 消耗', cls:'good'},
   {lbl:'加权 CTR',     val:fmtPct(ov.ctr)+'%',          sub:'点击率', cls:'gold'},
   {lbl:'加权 CVR',     val:fmtPct(ov.cvr)+'%',          sub:'点击→下单转化率', cls:'warn'},
@@ -682,7 +627,7 @@ function drawTrend(m1, m2){
     ]
   }, true);
 }
-drawTrend('cost','roi');
+drawTrend('ctr','cvr');
 document.getElementById('trendCtrl').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON') return;
   document.querySelectorAll('#trendCtrl .btn').forEach(b=>b.classList.remove('active'));
@@ -701,8 +646,8 @@ window.addEventListener('resize',()=>trendChart.resize());
     return `
     <div class="band-card ${isHot?'hot':''}">
       <div class="name">${b.name}${isHot?' 🏆':''}</div>
-      <div class="cost">¥${fmtMoney(b.cost)}</div>
-      <div class="pct">占比 ${((b.cost/totalCost)*100).toFixed(1)}% · ${fmtInt(b.sku)} SKU</div>
+      <div class="cost">${((b.cost/totalCost)*100).toFixed(1)}%</div>
+      <div class="pct">占比 · ${fmtInt(b.sku)} SKU</div>
       <div class="metrics">
         <div>ROI <b>${fmtF(b.roi,2)}</b></div>
         <div>CTR <b>${fmtPct(b.ctr)}%</b></div>
@@ -776,247 +721,7 @@ window.addEventListener('resize',()=>trendChart.resize());
   window.addEventListener('resize',()=>bandLineChart.resize());
 })();
 
-// ============ 3 张散点矩阵 (v5: 象限底色 + Top 标签 + 缩放 + 引导线) ============
-function median(arr){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; }
-function pctile(arr,p){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); return s[Math.min(s.length-1,Math.floor(s.length*p))]; }
-
-// 象限背景色块 (markArea) - 淡色象限提示
-function quadrantAreas(xMed, yMed, colors){
-  // colors: [Q1右上, Q2右下, Q3左上, Q4左下]
-  return {
-    silent:true, itemStyle:{opacity:0.06},
-    data:[
-      [{xAxis:xMed,yAxis:yMed,itemStyle:{color:colors[0]}},{xAxis:'max',yAxis:'max'}],  // 右上
-      [{xAxis:xMed,yAxis:'min',itemStyle:{color:colors[1]}},{xAxis:'max',yAxis:yMed}],  // 右下
-      [{xAxis:'min',yAxis:yMed,itemStyle:{color:colors[2]}},{xAxis:xMed,yAxis:'max'}],  // 左上
-      [{xAxis:'min',yAxis:'min',itemStyle:{color:colors[3]}},{xAxis:xMed,yAxis:yMed}],  // 左下
-    ]
-  };
-}
-
-// 象限文字标注
-function quadrantLabels(xMed,yMed,texts){
-  return {
-    silent:true, symbol:'none', label:{show:false},
-    data:[
-      // 用 markPoint 挑角落写标签, 但这里用 graphic 更方便? 简化: 用 markLine 顶点标签
-    ]
-  };
-}
-
-// 拆分 Top N 强标签 + 其余弱标签的 series 通用工具
-function splitSeriesByCost(arr, valueFn, topN, baseColorFn){
-  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
-  const topSet = new Set(sorted.slice(0,topN).map(x=>x.l3));
-  const maxCost = Math.max(...arr.map(x=>x.cost));
-  const buildData = (filter,strong) => arr.filter(filter).map(x=>({
-    name:x.l3, value:valueFn(x), refund:x.refund,ctr:x.ctr,cvr:x.cvr,roi:x.roi,cost:x.cost,
-    itemStyle:{color:baseColorFn(x),opacity:strong?0.85:0.55,borderColor:'#fff',borderWidth:strong?1.5:1}
-  }));
-  return {topSet, maxCost, buildData};
-}
-
-// ---------- A: 消耗 × ROI × 退款率 ----------
-(function(){
-  const arr = D.l3_list.filter(x=>x.roi!=null && x.cost>0);
-  const maxCost = Math.max(...arr.map(x=>x.cost));
-  const maxRoi  = Math.max(...arr.map(x=>x.roi));
-  const roiMed = median(arr.map(x=>x.roi));
-  const costMed = median(arr.map(x=>x.cost));
-  const refundColor = r => r==null?'#94a3b8':r>=50?'#ef4444':r>=35?'#f59e0b':'#10b981';
-  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
-  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
-  const symSize = v=>Math.max(12,Math.min(55,Math.sqrt(v[0]/maxCost)*55));
-  echarts.init(document.getElementById('matA')).setOption({
-    tooltip:{...commonTip,formatter:p=>{
-      const v=p.data;
-      return `<b style="font-size:13px">${v.name}</b><br>
-        消耗: <b>¥${fmtMoney(v.value[0])}</b><br>
-        ROI: <b style="color:#10b981">${fmtF(v.value[1])}</b><br>
-        退款率: <b style="color:${refundColor(v.refund)}">${fmtPct(v.refund)}%</b><br>
-        <span style="color:#5a6683">CTR ${fmtPct(v.ctr)}%｜CVR ${fmtPct(v.cvr)}%</span>`;
-    }},
-    grid:{left:70,right:30,top:35,bottom:60},
-    xAxis:{name:'消耗',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11,padding:[8,0,0,0]},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>fmtMoneyInt(v)},
-      min:0, max:Math.ceil(maxCost/1e7)*1e7,
-      splitLine:{lineStyle:{color:'#eef2f7',type:'solid'}}},
-    yAxis:{name:'ROI',nameTextStyle:{color:'#5a6683',fontSize:11},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)},
-      min:0, max:Math.ceil(maxRoi*1.1),
-      splitLine:{lineStyle:{color:'#eef2f7',type:'solid'}}},
-    series:[{
-      type:'scatter',
-      symbolSize:symSize,
-      data:arr.map(x=>({name:x.l3,value:[x.cost,x.roi],refund:x.refund,ctr:x.ctr,cvr:x.cvr,cost:x.cost,
-        itemStyle:{color:refundColor(x.refund),opacity:0.82,borderColor:'#fff',borderWidth:1.5,
-          shadowColor:refundColor(x.refund)+'44',shadowBlur:8}})),
-      label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
-        backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
-      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
-      emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}},
-      markArea: quadrantAreas(costMed,roiMed,['#10b981','#ef4444','#f59e0b','#94a3b8']),
-      markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
-        label:{show:false},
-        data:[{xAxis:costMed,label:{show:true,formatter:'消耗中位',color:'#94a3b8',fontSize:10,position:'insideEndTop'}},
-              {yAxis:roiMed,label:{show:true,formatter:'ROI 中位',color:'#94a3b8',fontSize:10,position:'insideStartTop'}}]}
-    }],
-    graphic:[
-      {type:'text',right:20,top:38,style:{text:'🏆 核心赛道',fill:'#10b981',fontSize:11,fontWeight:600}},
-      {type:'text',right:20,bottom:78,style:{text:'⚠️ 烧钱低效',fill:'#ef4444',fontSize:11,fontWeight:600}},
-      {type:'text',left:85,top:38,style:{text:'💎 高效小类',fill:'#f59e0b',fontSize:11,fontWeight:600}},
-      {type:'text',left:85,bottom:78,style:{text:'长尾区',fill:'#94a3b8',fontSize:11,fontWeight:500}},
-    ]
-  });
-})();
-
-// ---------- B: CTR × CVR × 消耗 ----------
-(function(){
-  const arr = D.l3_list.filter(x=>x.ctr!=null && x.cvr!=null && x.cost>0);
-  const maxCost = Math.max(...arr.map(x=>x.cost));
-  const ctrMed = median(arr.map(x=>x.ctr));
-  const cvrMed = median(arr.map(x=>x.cvr));
-  const ctrMax = pctile(arr.map(x=>x.ctr),0.95)*1.15;
-  const cvrMax = pctile(arr.map(x=>x.cvr),0.95)*1.15;
-  const cat = (ctr,cvr) => {
-    if(ctr>=ctrMed && cvr>=cvrMed) return 0;
-    if(ctr>=ctrMed && cvr<cvrMed)  return 1;
-    if(ctr<ctrMed  && cvr>=cvrMed) return 2;
-    return 3;
-  };
-  const colors=['#10b981','#3b82f6','#f59e0b','#94a3b8'];
-  const names=['金牌','流量型','转化型','双低'];
-  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
-  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
-  const symSize = v=>Math.max(12,Math.min(55,Math.sqrt(v[2]/maxCost)*55));
-  const series = [0,1,2,3].map(k=>({
-    name:names[k],type:'scatter',
-    itemStyle:{color:colors[k],opacity:0.82,borderColor:'#fff',borderWidth:1.5,shadowColor:colors[k]+'44',shadowBlur:8},
-    symbolSize:symSize,
-    data:arr.filter(x=>cat(x.ctr,x.cvr)===k).map(x=>({name:x.l3,value:[x.ctr,x.cvr,x.cost],roi:x.roi,refund:x.refund})),
-    label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
-      backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
-    labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
-    emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}}
-  }));
-  // 只在第一个 series 上挂 markArea/markLine, 避免重复渲染
-  series[0].markArea = quadrantAreas(ctrMed,cvrMed,['#10b981','#3b82f6','#f59e0b','#94a3b8']);
-  series[0].markLine = {silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},
-    data:[{xAxis:ctrMed},{yAxis:cvrMed}]};
-  echarts.init(document.getElementById('matB')).setOption({
-    tooltip:{...commonTip,formatter:p=>{
-      const v=p.data;
-      return `<b style="font-size:13px">${v.name}</b> <span style="color:#94a3b8;font-size:11px">${p.seriesName}</span><br>
-        CTR: <b>${fmtPct(v.value[0])}%</b><br>
-        CVR: <b>${fmtPct(v.value[1])}%</b><br>
-        消耗: <b>¥${fmtMoney(v.value[2])}</b><br>
-        <span style="color:#5a6683">ROI ${fmtF(v.roi)}｜退款 ${fmtPct(v.refund)}%</span>`;
-    }},
-    legend:{data:names,textStyle:{color:'#1a2340',fontSize:11.5},top:5,itemGap:16,
-      icon:'circle',itemWidth:10,itemHeight:10},
-    grid:{left:60,right:30,top:35,bottom:50},
-    xAxis:{name:'CTR (%)',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'},
-      min:0,max:Math.max(4,Math.ceil(ctrMax)),
-      splitLine:{lineStyle:{color:'#eef2f7'}}},
-    yAxis:{name:'CVR (%)',nameTextStyle:{color:'#5a6683',fontSize:11},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)+'%'},
-      min:0,max:Math.max(10,Math.ceil(cvrMax)),
-      splitLine:{lineStyle:{color:'#eef2f7'}}},
-    series
-  });
-})();
-
-// ---------- C: 客单价 × ROI × 退款率 ----------
-(function(){
-  const arr = D.l3_list.filter(x=>x.aov!=null && x.roi!=null && x.cost>0);
-  const maxCost = Math.max(...arr.map(x=>x.cost));
-  const aovMed = median(arr.map(x=>x.aov));
-  const roiMed = median(arr.map(x=>x.roi));
-  const aovMax = pctile(arr.map(x=>x.aov),0.95)*1.15;
-  const roiMax = pctile(arr.map(x=>x.roi),0.95)*1.15;
-  const refundColor = r => r==null?'#94a3b8':r>=50?'#ef4444':r>=35?'#f59e0b':'#10b981';
-  const sorted = [...arr].sort((a,b)=>b.cost-a.cost);
-  const topLabels = new Set(sorted.slice(0,8).map(x=>x.l3));
-  const symSize = v=>Math.max(12,Math.min(58,Math.sqrt(v[2]/maxCost)*58));
-  echarts.init(document.getElementById('matC')).setOption({
-    tooltip:{...commonTip,formatter:p=>{
-      const v=p.data;
-      return `<b style="font-size:13px">${v.name}</b><br>
-        客单价: <b>¥${fmtF(v.value[0],0)}</b><br>
-        ROI: <b>${fmtF(v.value[1])}</b><br>
-        退款率: <b style="color:${refundColor(v.refund)}">${fmtPct(v.refund)}%</b><br>
-        消耗: <b>¥${fmtMoney(v.value[2])}</b><br>
-        <span style="color:#5a6683">CTR ${fmtPct(v.ctr)}%｜CVR ${fmtPct(v.cvr)}%</span>`;
-    }},
-    grid:{left:60,right:30,top:35,bottom:50},
-    xAxis:{name:'客单价 (元)',nameLocation:'end',nameGap:22,nameTextStyle:{color:'#5a6683',fontSize:11},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>'¥'+Math.round(v)},
-      min:0,max:Math.ceil(aovMax/50)*50,
-      splitLine:{lineStyle:{color:'#eef2f7'}}},
-    yAxis:{name:'ROI',nameTextStyle:{color:'#5a6683',fontSize:11},
-      type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>Math.round(v)},
-      min:0,max:Math.ceil(roiMax),
-      splitLine:{lineStyle:{color:'#eef2f7'}}},
-    series:[{
-      type:'scatter',
-      symbolSize:symSize,
-      data:arr.map(x=>({name:x.l3,value:[x.aov,x.roi,x.cost],refund:x.refund,ctr:x.ctr,cvr:x.cvr,
-        itemStyle:{color:refundColor(x.refund),opacity:0.82,borderColor:'#fff',borderWidth:1.5,
-          shadowColor:refundColor(x.refund)+'44',shadowBlur:8}})),
-      label:{show:true,formatter:p=>topLabels.has(p.data.name)?p.data.name:'',color:'#1a2340',fontSize:11.5,fontWeight:600,position:'top',
-        backgroundColor:'rgba(255,255,255,0.9)',padding:[2,5],borderRadius:3,borderColor:'#e4e9f2',borderWidth:1},
-      labelLayout:{hideOverlap:true,moveOverlap:'shiftY'},
-      emphasis:{scale:1.15,label:{show:true,formatter:p=>p.data.name,fontSize:12,fontWeight:'bold'}},
-      markArea: quadrantAreas(aovMed,roiMed,['#10b981','#ef4444','#f59e0b','#94a3b8']),
-      markLine:{silent:true,symbol:'none',lineStyle:{color:'#cbd5e1',type:'dashed',width:1},data:[{xAxis:aovMed},{yAxis:roiMed}]}
-    }]
-  });
-})();
-
-// ============ Top10 & 红榜 ============
-(function(){
-  const top = [...D.l3_list].sort((a,b)=>b.cost-a.cost).slice(0,10).reverse();
-  echarts.init(document.getElementById('barCost')).setOption({
-    tooltip:{...commonTip,formatter:p=>`<b>${p.name}</b><br>消耗: ¥${fmtMoney(p.value)}`},
-    grid:{left:90,right:65,top:15,bottom:30},
-    xAxis:{type:'value',...commonAxis,axisLabel:{color:'#5a6683',formatter:v=>fmtMoneyInt(v)}},
-    yAxis:{type:'category',data:top.map(x=>x.l3),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
-    series:[{type:'bar',data:top.map(x=>x.cost),
-      itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#3b82f6'},{offset:1,color:'#8b5cf6'}]},borderRadius:[0,6,6,0]},
-      label:{show:true,position:'right',color:'#1a2340',fontSize:11,fontWeight:500,formatter:p=>'¥'+fmtMoney(p.value)}
-    }]
-  });
-})();
-(function(){
-  const top = D.l3_list.filter(x=>x.cost>=5e5 && x.roi!=null).sort((a,b)=>b.roi-a.roi).slice(0,10).reverse();
-  echarts.init(document.getElementById('barRoi')).setOption({
-    tooltip:{...commonTip,formatter:p=>{
-      const item = top.find(x=>x.l3===p.name);
-      return `<b>${p.name}</b><br>ROI: <b>${fmtF(p.value)}</b><br>消耗: ¥${fmtMoney(item.cost)}`;
-    }},
-    grid:{left:90,right:65,top:15,bottom:30},
-    xAxis:{type:'value',...commonAxis,axisLabel:{color:'#5a6683'}},
-    yAxis:{type:'category',data:top.map(x=>x.l3),...commonAxis,axisLabel:{color:'#1a2340',fontSize:11.5,fontWeight:500}},
-    series:[{type:'bar',data:top.map(x=>x.roi),
-      itemStyle:{color:{type:'linear',x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:'#fbbf24'},{offset:1,color:'#10b981'}]},borderRadius:[0,6,6,0]},
-      label:{show:true,position:'right',color:'#1a2340',fontSize:11,fontWeight:600,formatter:p=>fmtF(p.value,2)}
-    }]
-  });
-})();
-(function(){
-  const l4Flat = [];
-  D.l3_list.forEach(l3=>l3.l4_list.forEach(l4=>l4Flat.push({...l4,l3:l3.l3})));
-  const red = l4Flat.filter(x=>x.refund!=null && x.cost>=1e5).sort((a,b)=>b.refund-a.refund).slice(0,15);
-  document.getElementById('redlist').innerHTML = red.map(x=>`
-    <div class="item">
-      <div class="left">
-        ${x.l4}
-        <div class="parent">${x.l3} · 消耗 ¥${fmtMoney(x.cost)}</div>
-      </div>
-      <div class="right">${fmtPct(x.refund)}%</div>
-    </div>`).join('') || '<div class="sku-empty">无异常</div>';
-})();
+// ============ R14: 散点矩阵 + Top10 & 红榜 JS 已删 ============
 
 // ============ 词云 (放大) ============
 const wcCats = Object.keys(D.wordcloud);
@@ -1027,10 +732,12 @@ document.getElementById('wcTabs').innerHTML = wcCats.map((c,i)=>
 const wcChart = echarts.init(document.getElementById('wcChart'));
 function drawWC(cat){
   const arr = D.wordcloud[cat] || [];
+  const totalCost = arr.reduce((s,x)=>s+(x.cost||0),0) || 1;
   const palette = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6','#eab308','#6366f1'];
   wcChart.setOption({
     tooltip:{...commonTip,formatter:p=>{
-      return `<b>${p.name}</b><br>消耗: ¥${fmtMoney(p.value)}<br>SKU 数: ${p.data.count}<br>ROI: ${p.data.roi==null?'—':fmtF(p.data.roi)}`;
+      const pct = (p.value/totalCost*100).toFixed(1);
+      return `<b>${p.name}</b><br>占比: <b>${pct}%</b><br>SKU 数: ${p.data.count}<br>ROI: ${p.data.roi==null?'—':fmtF(p.data.roi)}`;
     }},
     series:[{
       type:'wordCloud', shape:'square', gridSize:2,
@@ -1045,13 +752,16 @@ function drawWC(cat){
   }, true);
   // 表
   const tbody = document.querySelector('#wcTable tbody');
-  tbody.innerHTML = arr.map(x=>`
+  tbody.innerHTML = arr.map(x=>{
+    const pct = (x.cost/totalCost*100);
+    return `
     <tr>
       <td class="w">${x.word}</td>
-      <td class="num">¥${fmtMoney(x.cost)}</td>
+      <td class="num">${pct.toFixed(1)}%</td>
       <td class="num ${cls(x.roi,[3,5])}">${x.roi==null?'—':fmtF(x.roi)}</td>
       <td class="num">${x.count}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 drawWC(wcCats[0]);
 document.getElementById('wcTabs').addEventListener('click',e=>{
@@ -1063,19 +773,50 @@ document.getElementById('wcTabs').addEventListener('click',e=>{
 window.addEventListener('resize',()=>wcChart.resize());
 
 // ============ 钻取表 ============
+// R14: <1万四级合并为「其他(<1万)」；消耗列→占比；一级默认展开二级
+const L4_MERGE_THRESHOLD = 1e4;
+function _weightedAvg(items, valKey, weightKey='cost'){
+  let sw=0, sv=0;
+  items.forEach(x=>{ if(x[valKey]!=null && x[weightKey]!=null){ sw+=x[weightKey]; sv+=x[valKey]*x[weightKey]; } });
+  return sw>0 ? sv/sw : null;
+}
+function _buildL4Display(l4list){
+  const kept = l4list.filter(x=>x.cost>=L4_MERGE_THRESHOLD);
+  const small = l4list.filter(x=>x.cost<L4_MERGE_THRESHOLD);
+  if(small.length<=1) return l4list;
+  const cost = small.reduce((s,x)=>s+(x.cost||0),0);
+  const sku_count_raw = small.reduce((s,x)=>s+(x.sku_count_raw||0),0);
+  const sku_count_merged = small.reduce((s,x)=>s+(x.sku_count_merged||0),0);
+  const merged = {
+    l4:`其他(<1万) ×${small.length}`,
+    cost, sku_count_raw, sku_count_merged,
+    roi:_weightedAvg(small,'roi'),
+    ctr:_weightedAvg(small,'ctr'),
+    cvr:_weightedAvg(small,'cvr'),
+    aov:_weightedAvg(small,'aov'),
+    refund:_weightedAvg(small,'refund'),
+    top_skus:[],
+    _isOther:true
+  };
+  return [...kept, merged];
+}
 const l3List = D.l3_list;
+// 预处理：每个 l3 生成 l4_display（合并小项）
+l3List.forEach(l3=>{ l3.l4_display = _buildL4Display(l3.l4_list); });
+const totalCost = l3List.reduce((s,x)=>s+(x.cost||0),0) || 1;
 const maxL3Cost = Math.max(...l3List.map(x=>x.cost));
 
 function renderL3(){
   document.getElementById('l3List').innerHTML = l3List.map((l3,idx)=>{
     const barW = (l3.cost/maxL3Cost*100).toFixed(1);
+    const pct = (l3.cost/totalCost*100).toFixed(1);
     return `
     <div class="l3-row">
-      <div class="l3-head" data-idx="${idx}" onclick="toggleL3(${idx})">
+      <div class="l3-head open" data-idx="${idx}" onclick="toggleL3(${idx})">
         <span class="caret">▶</span>
         <span class="name">${l3.l3}</span>
         <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div></div>
-        <span class="num">¥${fmtMoney(l3.cost)}</span>
+        <span class="num">${pct}%</span>
         <span class="num ${cls(l3.roi,[3,5])}">${fmtF(l3.roi,2)}</span>
         <span class="num ${cls(l3.ctr,[2,3])}">${fmtPct(l3.ctr)}</span>
         <span class="num ${cls(l3.cvr,[3,6])}">${fmtPct(l3.cvr)}</span>
@@ -1083,11 +824,16 @@ function renderL3(){
         <span class="num ${cls(l3.refund,[30,50],true)}">${fmtPct(l3.refund)}</span>
         <span class="num">${fmtInt(l3.sku_count_raw)}</span>
       </div>
-      <div class="l3-body" id="l3body-${idx}"></div>
+      <div class="l3-body open" id="l3body-${idx}"></div>
     </div>`;
   }).join('');
+  // 默认展开二级：为每个 l3 立即渲染 L4
+  l3List.forEach((_,idx)=>{
+    const body = document.getElementById(`l3body-${idx}`);
+    renderL4(idx);
+    body.dataset.rendered = '1';
+  });
 }
-renderL3();
 
 function toggleL3(idx){
   const head = document.querySelector(`.l3-head[data-idx="${idx}"]`);
@@ -1103,16 +849,21 @@ function toggleL3(idx){
 function renderL4(l3idx){
   const l3 = l3List[l3idx];
   const body = document.getElementById(`l3body-${l3idx}`);
-  const maxL4 = Math.max(...l3.l4_list.map(x=>x.cost));
-  body.innerHTML = l3.l4_list.map((l4,l4idx)=>{
+  const list = l3.l4_display || l3.l4_list;
+  const maxL4 = Math.max(...list.map(x=>x.cost));
+  const l3TotalCost = l3.cost || list.reduce((s,x)=>s+(x.cost||0),0) || 1;
+  body.innerHTML = list.map((l4,l4idx)=>{
     const barW = (l4.cost/maxL4*100).toFixed(1);
+    const pct = (l4.cost/l3TotalCost*100).toFixed(1);
+    const clickable = l4._isOther ? '' : `onclick="toggleL4(${l3idx},${l4idx})"`;
+    const caret = l4._isOther ? '<span class="caret" style="visibility:hidden">▶</span>' : '<span class="caret">▶</span>';
     return `
     <div class="l4-row">
-      <div class="l4-head" data-l3="${l3idx}" data-l4="${l4idx}" onclick="toggleL4(${l3idx},${l4idx})">
-        <span class="caret">▶</span>
+      <div class="l4-head" data-l3="${l3idx}" data-l4="${l4idx}" ${clickable}>
+        ${caret}
         <span class="name">└ ${l4.l4}</span>
         <div class="bar-wrap"><div class="bar" style="width:${barW}%"></div></div>
-        <span class="num">¥${fmtMoney(l4.cost)}</span>
+        <span class="num">${pct}%</span>
         <span class="num ${cls(l4.roi,[3,5])}">${fmtF(l4.roi,2)}</span>
         <span class="num ${cls(l4.ctr,[2,3])}">${fmtPct(l4.ctr)}</span>
         <span class="num ${cls(l4.cvr,[3,6])}">${fmtPct(l4.cvr)}</span>
@@ -1135,6 +886,7 @@ function toggleL4(l3idx,l4idx){
     body.classList.add('open'); head.classList.add('open');
   }
 }
+renderL3();
 
 function rngTxt(r,prefix='',suffix=''){
   if(!r || r[0]==null) return '';
@@ -1143,9 +895,10 @@ function rngTxt(r,prefix='',suffix=''){
 }
 
 function renderSku(l3idx,l4idx){
-  const l4 = l3List[l3idx].l4_list[l4idx];
+  const l4 = (l3List[l3idx].l4_display || l3List[l3idx].l4_list)[l4idx];
   const body = document.getElementById(`l4body-${l3idx}-${l4idx}`);
   if(!l4.top_skus || !l4.top_skus.length){ body.innerHTML = `<div class="sku-empty">无 SKU 数据</div>`; return; }
+  const _l4Total = l4.cost || l4.top_skus.reduce((s,x)=>s+(x.cost||0),0) || 1;
   body.innerHTML = `
     <div style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
       Top ${l4.top_skus.length} 商品品类 · 归并规则: 同 L4 + 同价格带 + 商品名 Jaccard ≥ 0.5 · <span style="color:var(--purple);font-weight:600">×N</span> = 合并的原始 SKU 数
@@ -1154,7 +907,7 @@ function renderSku(l3idx,l4idx){
       <thead><tr>
         <th style="text-align:left">#</th>
         <th style="text-align:left">商品品类（概括）</th>
-        <th>消耗</th><th>ROI</th><th>CTR%</th><th>CVR%</th>
+        <th>占比</th><th>ROI</th><th>CTR%</th><th>CVR%</th>
         <th>单价¥</th><th>CPM¥</th><th>退款%</th>
       </tr></thead>
       <tbody>
@@ -1165,7 +918,7 @@ function renderSku(l3idx,l4idx){
             ${escapeHtml(s.display_name)}<span class="badge">×${s.sku_count}</span>
             <div class="samples">${escapeHtml((s.sample_names||[])[0]||'')}</div>
           </td>
-          <td class="num">¥${fmtMoney(s.cost)}</td>
+          <td class="num">${((s.cost||0)/_l4Total*100).toFixed(1)}%</td>
           <td class="num ${cls(s.roi,[3,5])}">${fmtF(s.roi,2)}${rngTxt(s.roi_range)}</td>
           <td class="num ${cls(s.ctr,[2,3])}">${fmtPct(s.ctr)}</td>
           <td class="num ${cls(s.cvr,[3,6])}">${fmtPct(s.cvr)}${rngTxt(s.cvr_range,'',' %')}</td>
@@ -1501,7 +1254,7 @@ document.getElementById('attrTabs').addEventListener('click',e=>{
       <div style="font-weight:600;color:var(--purple);margin-bottom:6px">🎯 属性亮点</div>
       <div>• <b>材质 · 羊毛</b> 占比 ${material.share.toFixed(1)}%，环比 <b style="color:var(--bad)">+${material.yoy.toFixed(1)}%</b>（Q4 主要增长材质，关联针织衫/外套/羊毛衫）</div>
       <div>• <b>风格 · ${style.attr}</b> 占比 ${style.share.toFixed(1)}%（大盘第一风格但环比 ${style.yoy.toFixed(1)}%，需警惕风格过于同质化）</div>
-      <div>• <b>档次 · ${tier.attr}</b> 占比 ${tier.share.toFixed(1)}%（女装消费主力档次，与 ADQ 广告 200-500 元价格带 (¥2974 万消耗) 高度吻合）</div>
+      <div>• <b>档次 · ${tier.attr}</b> 占比 ${tier.share.toFixed(1)}%（女装消费主力档次，与 ADQ 广告 200-500 元价格带高度吻合）</div>
     </div>`;
 })();
 
