@@ -805,7 +805,37 @@ function _buildL4Display(l4list){
   };
   return [...kept, merged];
 }
-const l3List = D.l3_list;
+// R16: 上衣/裤子在一级层拆细——每个四级升级为独立 l3 行，与其他三级并列
+const SPLIT_L3 = new Set(['上衣','裤子']);
+function _splitBigL3(rawList){
+  const out = [];
+  rawList.forEach(l3=>{
+    if(SPLIT_L3.has(l3.l3) && l3.l4_list && l3.l4_list.length){
+      // 先合并 <1万 的四级为"其他"，然后每项升为 l3
+      const disp = _buildL4Display(l3.l4_list);
+      disp.forEach(l4=>{
+        out.push({
+          l3: `${l3.l3} · ${l4.l4}`,   // 名称带原三级前缀
+          _parentL3: l3.l3,
+          cost: l4.cost,
+          sku_count_raw: l4.sku_count_raw,
+          sku_count_merged: l4.sku_count_merged,
+          roi: l4.roi, ctr: l4.ctr, cvr: l4.cvr,
+          aov: l4.aov, refund: l4.refund,
+          orders: l4.orders,
+          // 无 l4_list，用一个虚拟单项承载 top_skus，好继续用 renderL4/renderSku
+          l4_list: [{...l4, l4: l4.l4}],
+          l4_count: 1,
+          _leaf: true       // 标记：这是从 L4 提升的一级，展开直接显示 top_skus
+        });
+      });
+    } else {
+      out.push(l3);
+    }
+  });
+  return out;
+}
+const l3List = _splitBigL3(D.l3_list).sort((a,b)=>(b.cost||0)-(a.cost||0));
 // 预处理：每个 l3 生成 l4_display（合并小项）
 l3List.forEach(l3=>{ l3.l4_display = _buildL4Display(l3.l4_list); });
 const totalCost = l3List.reduce((s,x)=>s+(x.cost||0),0) || 1;
@@ -854,6 +884,16 @@ function toggleL3(idx){
 function renderL4(l3idx){
   const l3 = l3List[l3idx];
   const body = document.getElementById(`l3body-${l3idx}`);
+  // R16: _leaf 一级（上衣/裤子拆细后）跳过 L4 层，直接展示 top_skus
+  if(l3._leaf){
+    const l4 = (l3.l4_list && l3.l4_list[0]) || {};
+    if(!l4.top_skus || !l4.top_skus.length){
+      body.innerHTML = `<div class="sku-empty" style="padding:14px 16px">无 SKU 数据</div>`;
+      return;
+    }
+    body.innerHTML = _renderSkuHtml(l4);
+    return;
+  }
   const list = l3.l4_display || l3.l4_list;
   const maxL4 = Math.max(...list.map(x=>x.cost));
   const l3TotalCost = l3.cost || list.reduce((s,x)=>s+(x.cost||0),0) || 1;
@@ -903,8 +943,11 @@ function renderSku(l3idx,l4idx){
   const l4 = (l3List[l3idx].l4_display || l3List[l3idx].l4_list)[l4idx];
   const body = document.getElementById(`l4body-${l3idx}-${l4idx}`);
   if(!l4.top_skus || !l4.top_skus.length){ body.innerHTML = `<div class="sku-empty">无 SKU 数据</div>`; return; }
+  body.innerHTML = _renderSkuHtml(l4);
+}
+function _renderSkuHtml(l4){
   const _l4Total = l4.cost || l4.top_skus.reduce((s,x)=>s+(x.cost||0),0) || 1;
-  body.innerHTML = `
+  return `
     <div style="font-size:11.5px;color:var(--mute);margin-bottom:8px">
       Top ${l4.top_skus.length} 商品品类 · 归并规则: 同 L4 + 同价格带 + 商品名 Jaccard ≥ 0.5 · <span style="color:var(--purple);font-weight:600">×N</span> = 合并的原始 SKU 数
     </div>
@@ -934,7 +977,6 @@ function renderSku(l3idx,l4idx){
       </tbody>
     </table>`;
 }
-
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 function expandAll(open){
