@@ -2901,9 +2901,9 @@
       "date": "2026-06-22"
     },
     "广州市梵金诺鞋业贸易有限公司": {
-      "sale": "lijunwu",
-      "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
-      "date": "2026-06-22"
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（原属 lijunwu，可溯源）",
+      "date": "2026-07-31"
     },
     "广州市番禺区南村桃禧禧电子商务商行": {
       "sale": "Jonzhu",
@@ -12719,8 +12719,8 @@
     },
     "深圳市南山区韩舒娜服饰店": {
       "sale": "ruilingzhan",
-      "reason": "2026-07-30 子青主动拍板归 ruilingzhan（可溯源）",
-      "date": "2026-07-30"
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
     },
     "九江欧雄电子商务有限公司": {
       "sale": "其他",
@@ -20701,13 +20701,43 @@
     },
     "义乌市泫蝶电子商务商行": {
       "sale": "ruilingzhan",
-      "reason": "2026-07-30 子青主动拍板归 ruilingzhan（可溯源）",
-      "date": "2026-07-30"
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
     },
     "广昌县二九饰品店(个体工商户)": {
       "sale": "yvaineechen",
       "reason": "2026-07-30 子青主动拍板归 yvaineechen（可溯源）",
       "date": "2026-07-30"
+    },
+    "北京千九福珠宝有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
+    },
+    "广州市名堂电子商务有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
+    },
+    "东莞市厚街祈祈鞋服店": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
+    },
+    "东莞市厚街祈祈鞋服店(个体工商户)": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
+    },
+    "佛山市宏生商贸有限公司": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
+    },
+    "湖口县清友服装经营部(个体工商户)": {
+      "sale": "ruilingzhan",
+      "reason": "2026-07-31 子青主动拍板归 ruilingzhan（可溯源）",
+      "date": "2026-07-31"
     }
   }
 }
