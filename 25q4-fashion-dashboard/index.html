@@ -529,53 +529,51 @@
 
   </div><!-- /tab-douyin -->
 
-  <!-- ============ Tab 4: 秋冬爆品榜 ============ -->
+  <!-- ============ Tab 4: 秋冬爆品榜 (Excel 风单表) ============ -->
   <div class="tab-panel" id="tab-qiudong">
 
     <!-- 说明 -->
-    <div class="panel" style="margin-bottom:14px;padding:12px 18px;background:linear-gradient(135deg,#fef2f2 0%,#fef3c7 100%);border-left:3px solid #ef4444">
-      <div style="font-size:12.5px;color:var(--text);line-height:1.75">
-        <b>🔥 秋冬爆品榜 · 商家 26 秋冬备品参考</b><br>
-        <b>数据源</b>：14 周（09/29 ~ 12/29）DPA 商品消耗表 + 素材维度指标表；<b>主键</b> DPA 商品名称（等价 dpa_id 精确匹配）；<b>过滤</b>：黑名单排除法剔除夏季/非女装/非服饰共 2,122 条，保留 6,088 条；<b>排序</b>：近 4 周日均消耗降序 Top 300。
-        <br><b>与钻取表差异</b>：钻取表看的是「类目-价格带-同店对比」，本榜看的是「谁在真金白银投出爆款」，直接给商品名和真实 mp4 素材做备品参考。
+    <div class="panel" style="margin-bottom:12px;padding:10px 16px;background:linear-gradient(135deg,#fef2f2 0%,#fef3c7 100%);border-left:3px solid #ef4444">
+      <div style="font-size:12px;color:var(--text);line-height:1.7">
+        <b>🔥 秋冬爆品榜 · 商家 26 秋冬备品参考</b>　
+        <span style="color:var(--sub)">全周期 <b id="qdPeriod">-</b>，<b>Top 200</b>，按日均消耗降序；ROI/CTR/下单率/退款率均为脱敏区间（步长 0.5）</span>
       </div>
     </div>
 
-    <!-- KPI -->
-    <div class="kpi-grid" id="qdKpiGrid" style="grid-template-columns:repeat(5,1fr)"></div>
-
-    <!-- 筛选与工具栏 -->
-    <div class="panel" style="margin-bottom:14px;padding:12px 18px">
-      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-        <div class="btn-grp" id="qdTypeCtrl">
-          <button class="btn active" data-t="all">全部</button>
-          <button class="btn" data-t="hot">🚀 近4周 WoW≥+30%</button>
-          <button class="btn" data-t="stable">💎 稳态高耗</button>
-          <button class="btn" data-t="decline">📉 环比下滑</button>
-        </div>
+    <!-- 工具栏 -->
+    <div class="panel" style="margin-bottom:10px;padding:8px 14px">
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
         <div style="flex:1;min-width:200px">
-          <input id="qdSearch" placeholder="🔎 搜索商品名（含加绒/羊绒/羽绒等关键词）" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px" />
+          <input id="qdSearch" placeholder="🔎 搜索商品名 / 主营品类" style="width:100%;padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:12.5px" />
         </div>
         <div style="font-size:12px;color:var(--sub)">共 <b id="qdCount">0</b> 条</div>
+        <label style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="qdShowRaw" style="margin:0">显示精确值(取消脱敏)
+        </label>
       </div>
     </div>
 
-    <!-- Top10 头部条 -->
-    <div class="panel" style="margin-bottom:14px">
-      <h2>
-        <span>🏆 Top 10 头部爆品 <span class="tag">近 4 周日均消耗</span></span>
-        <span class="desc">柱形宽度 = 消耗规模，点击卡片跳转下方明细</span>
-      </h2>
-      <div id="qdTopBar" class="chart" style="height:340px"></div>
-    </div>
-
-    <!-- 明细卡片瀑布 -->
-    <div class="panel" style="margin-bottom:14px">
-      <h2>
-        <span>📋 商品明细 <span class="tag" id="qdListTag">Top 300</span></span>
-        <span class="desc">每商品含 14 周消耗迷你趋势 + 一条日耗最高的 mp4 素材</span>
-      </h2>
-      <div id="qdList"></div>
+    <!-- 主表格 -->
+    <div class="panel" style="padding:0;overflow:hidden">
+      <div id="qdTableWrap" style="overflow:auto;max-height:calc(100vh - 240px)">
+        <table id="qdTable" class="qd-table">
+          <thead>
+            <tr>
+              <th style="width:60px">排名</th>
+              <th style="width:130px">商品缩略</th>
+              <th style="min-width:280px">商品名称</th>
+              <th style="width:100px">主营品类</th>
+              <th style="width:100px">下单ROI</th>
+              <th style="width:100px">下单单价(元)</th>
+              <th style="width:100px">CTR(%)</th>
+              <th style="width:100px">下单率(%)</th>
+              <th style="width:110px">7日退款率(%)</th>
+              <th style="width:220px">商品TOP素材链接</th>
+            </tr>
+          </thead>
+          <tbody id="qdTbody"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- 视频弹窗 -->
@@ -585,6 +583,56 @@
         <video id="qdVideoPlayer" controls autoplay style="max-width:90vw;max-height:90vh;display:block"></video>
       </div>
     </div>
+
+    <style>
+      .qd-table { border-collapse:collapse; width:100%; font-size:12.5px; background:#fff; }
+      .qd-table thead th {
+        position:sticky; top:0; z-index:2;
+        background:#e8f0ff; color:#1e293b; font-weight:600;
+        text-align:center; padding:10px 8px; border:1px solid #cbd5e1;
+        font-size:12px;
+      }
+      .qd-table tbody td {
+        padding:6px 8px; border:1px solid #e5e7eb; text-align:center;
+        vertical-align:middle; color:#334155;
+      }
+      .qd-table tbody td.tl { text-align:left; }
+      .qd-table tbody tr:hover { background:#f8fafc; }
+      .qd-table tbody tr:nth-child(even) { background:#fafbfc; }
+      .qd-thumb {
+        width:100px; height:100px; background:#f1f5f9; border-radius:4px;
+        display:flex; align-items:center; justify-content:center; overflow:hidden;
+        position:relative; margin:0 auto; cursor:pointer;
+      }
+      .qd-thumb video { width:100%; height:100%; object-fit:cover; background:#000; }
+      .qd-thumb .noimg {
+        font-size:24px; color:#94a3b8;
+      }
+      .qd-thumb .play-btn {
+        position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+        width:32px; height:32px; border-radius:16px; background:rgba(0,0,0,0.55);
+        color:#fff; text-align:center; line-height:32px; font-size:14px; pointer-events:none;
+      }
+      .qd-name-cell { font-size:12px; line-height:1.4; max-width:400px; }
+      .qd-cat-tag {
+        display:inline-block; padding:2px 8px; border-radius:10px;
+        background:#e0f2fe; color:#0369a1; font-size:11px; font-weight:500;
+      }
+      .qd-mat-links { max-width:220px; font-size:11px; text-align:left; }
+      .qd-mat-links a {
+        display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis;
+        white-space:nowrap; color:#3b82f6; text-decoration:none; padding:1px 0;
+      }
+      .qd-mat-links a:hover { text-decoration:underline; }
+      .qd-mat-count { color:var(--sub); font-size:11px; }
+      .qd-rank {
+        display:inline-block; min-width:26px; padding:2px 6px; border-radius:4px;
+        font-weight:600; font-size:12px;
+      }
+      .qd-rank-1 { background:#fef3c7; color:#b45309; }
+      .qd-rank-2 { background:#e0e7ff; color:#4338ca; }
+      .qd-rank-3 { background:#fce7f3; color:#be185d; }
+    </style>
 
   </div><!-- /tab-qiudong -->
 
@@ -2001,128 +2049,83 @@ function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
 
 } // end if(DM)
 
-// ============ 秋冬爆品榜 Tab ============
+// ============ 秋冬爆品榜 Tab (Excel 风单表 v2) ============
 (function(){
   const QH = window.__QIUDONG_HOT__;
   if (!QH || !QH.items || !QH.items.length) return;
   const items = QH.items;
-  const weeks = QH.meta.weeks;
 
-  // ---- KPI ----
-  const totalCost4 = items.reduce((a,b)=>a+b.avg4,0);
-  const topN = items.length;
-  const hasMp4 = items.filter(x=>x.mp4).length;
-  const wowPositive = items.filter(x=>x.wow4!=null && x.wow4>=30).length;
-  const avgRoi = items.reduce((a,b)=>a+b.roi*b.avg4,0)/totalCost4;
-  const kpiHtml = [
-    {label:'榜单商品', v:topN, u:'个', c:'#3b82f6', sub:`过滤黑名单 ${QH.meta.blacklist_hits} 个`},
-    {label:'近4周日均总消耗', v:fmtMoney(totalCost4), u:'元/日', c:'#ef4444', sub:'榜单头部合计'},
-    {label:'加权 ROI', v:avgRoi.toFixed(2), u:'', c:'#22c55e', sub:'消耗加权'},
-    {label:'黑马商品', v:wowPositive, u:'个', c:'#f59e0b', sub:'近4周 WoW≥+30%'},
-    {label:'有视频素材', v:hasMp4, u:'个', c:'#8b5cf6', sub:`覆盖率 ${(hasMp4/topN*100).toFixed(0)}%`},
-  ].map(k=>`
-    <div class="kpi-card">
-      <div class="kpi-label">${k.label}</div>
-      <div class="kpi-val" style="color:${k.c}">${k.v}<span style="font-size:14px;color:var(--sub);margin-left:4px">${k.u}</span></div>
-      <div class="kpi-sub">${k.sub}</div>
-    </div>`).join('');
-  document.getElementById('qdKpiGrid').innerHTML = kpiHtml;
+  // 周期显示
+  const pd = document.getElementById('qdPeriod');
+  if (pd) pd.textContent = QH.meta.period || '';
 
-  // ---- Top 10 头部条 ----
-  const top10 = items.slice(0,10).slice().reverse();
-  echarts.init(document.getElementById('qdTopBar')).setOption({
-    grid:{left:280,right:60,top:12,bottom:12},
-    xAxis:{type:'value',axisLabel:{color:'#5a6683',formatter:v=>v>=10000?(v/10000).toFixed(0)+'万':v}, splitLine:{lineStyle:{color:'#e4e9f2'}}},
-    yAxis:{type:'category',data:top10.map(x=>`#${x.rank} ${x.name.length>26?x.name.slice(0,26)+'…':x.name}`),axisLabel:{color:'#3a4258',fontSize:11}},
-    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{
-      const it = top10.find(x=>p[0].axisValue.includes('#'+x.rank));
-      if(!it) return '';
-      return `<b>${it.name}</b><br>近4周日耗：<b>${fmtMoney(it.avg4)}元</b><br>WoW：${it.wow4==null?'—':(it.wow4>=0?'+':'')+it.wow4+'%'}<br>ROI：${it.roi}｜CTR：${it.ctr}%｜CVR：${it.cvr}%<br>7日退款率：${it.refund}%｜素材：${it.creatives}条`;
-    }},
-    series:[{
-      type:'bar',data:top10.map(x=>x.avg4),
-      itemStyle:{color:p=>{
-        const it = top10[p.dataIndex];
-        if(it.wow4!=null && it.wow4>=30) return '#ef4444';
-        if(it.wow4!=null && it.wow4<-15) return '#22c55e';
-        return '#3b82f6';
-      },borderRadius:[0,6,6,0]},
-      label:{show:true,position:'right',color:'#3a4258',fontSize:11,fontWeight:600,formatter:p=>fmtMoney(p.value)+'元'}
-    }]
-  });
+  let curKw = '';
+  let showRaw = false;
 
-  // ---- 明细列表渲染 ----
-  let curFilter = 'all', curKw = '';
-  function renderList(){
+  function shortUrl(u){
+    if(!u) return '';
+    // 取 URL 最后 hash 段末尾 8 位 + .mp4
+    const m = u.match(/([a-f0-9]{8,})\.f0\.mp4/i);
+    if(m) return '…' + m[1].slice(-10) + '.mp4';
+    return u.length>28 ? '…'+u.slice(-25) : u;
+  }
+
+  function renderTable(){
     let arr = items.slice();
-    if (curFilter === 'hot') arr = arr.filter(x=>x.wow4!=null && x.wow4>=30);
-    else if (curFilter === 'stable') arr = arr.filter(x=>x.wow4!=null && x.wow4>=-10 && x.wow4<=15 && x.avg4>=5000);
-    else if (curFilter === 'decline') arr = arr.filter(x=>x.wow4!=null && x.wow4<-15);
-    if (curKw) {
+    if (curKw){
       const kw = curKw.toLowerCase();
-      arr = arr.filter(x=>x.name.toLowerCase().includes(kw));
+      arr = arr.filter(x=>x.name.toLowerCase().includes(kw) || (x.cat||'').toLowerCase().includes(kw));
     }
     document.getElementById('qdCount').textContent = arr.length;
-    document.getElementById('qdListTag').textContent = `共 ${arr.length} 条`;
 
-    const html = arr.slice(0,150).map(x=>{
-      const wowTag = x.wow4==null?'':(x.wow4>=30?`<span class="tag" style="background:#fee2e2;color:#dc2626">🚀 WoW +${x.wow4}%</span>`:x.wow4<=-15?`<span class="tag" style="background:#dcfce7;color:#16a34a">📉 ${x.wow4}%</span>`:x.wow4>=0?`<span class="tag" style="background:#fff7ed;color:#d97706">+${x.wow4}%</span>`:`<span class="tag" style="background:#f3f4f6;color:#6b7280">${x.wow4}%</span>`);
-      const roiCls = x.roi>=4?'good':x.roi>=2.5?'warn':'bad';
-      const refundCls = x.refund<=25?'good':x.refund<=40?'warn':'bad';
-      // 迷你 sparkline (14 周)
-      const spark = miniSpark(x.trend);
-      const mp4Btn = x.mp4 ? `<button class="btn" style="padding:4px 10px;font-size:11px" onclick="qdPlayVideo('${x.mp4}')">▶ 播放素材</button>` : `<span style="font-size:11px;color:var(--sub)">无视频</span>`;
-      const nameShort = x.name.length>60?x.name.slice(0,60)+'…':x.name;
+    const rows = arr.map(x=>{
+      // 缩略图: 有 mp4 用 <video preload=metadata> 首帧;无则占位
+      const firstMp4 = (x.mp4s && x.mp4s.length) ? x.mp4s[0] : null;
+      const thumb = firstMp4
+        ? `<div class="qd-thumb" onclick="qdPlayVideo('${firstMp4}')"><video src="${firstMp4}#t=0.5" preload="metadata" muted playsinline></video><div class="play-btn">▶</div></div>`
+        : `<div class="qd-thumb"><span class="noimg">🖼️</span></div>`;
+
+      // 素材链接列: 列出前 3 个 mp4, hover 显示完整
+      const links = (x.mp4s || []).slice(0, 3).map(u =>
+        `<a href="javascript:void(0)" onclick="qdPlayVideo('${u}')" title="${u}">▶ ${shortUrl(u)}</a>`
+      ).join('<br>');
+      const moreN = Math.max(0, (x.mp4s||[]).length - 3);
+      const linksHtml = links + (moreN>0 ? `<div class="qd-mat-count">+ ${moreN} 条…</div>` : '');
+      const linksCell = (x.mp4s && x.mp4s.length)
+        ? `<div class="qd-mat-links">${linksHtml}<div class="qd-mat-count" style="margin-top:2px">共 ${x.creatives} 条素材</div></div>`
+        : `<div class="qd-mat-count">无视频（${x.creatives} 条其他素材）</div>`;
+
+      const roiTxt    = showRaw ? x.roi_raw.toFixed(2) : x.roi;
+      const ctrTxt    = showRaw ? x.ctr_raw.toFixed(2) : x.ctr;
+      const cvrTxt    = showRaw ? x.cvr_raw.toFixed(2) : x.cvr;
+      const refundTxt = showRaw ? x.refund_raw.toFixed(1) : x.refund;
+
+      const rankCls = x.rank<=3 ? 'qd-rank-'+x.rank : '';
       return `
-        <div style="display:grid;grid-template-columns:60px 1fr 100px 120px 90px 90px 90px 110px;gap:12px;padding:12px 14px;border-bottom:1px solid #f1f5f9;align-items:center;font-size:12.5px">
-          <div style="font-size:20px;font-weight:700;color:${x.rank<=10?'#ef4444':x.rank<=30?'#f59e0b':'#94a3b8'}">#${x.rank}</div>
-          <div>
-            <div style="font-weight:600;color:#1f2937;line-height:1.4;margin-bottom:4px" title="${x.name}">${nameShort}</div>
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              ${wowTag}
-              <span class="tag" style="background:#eff6ff;color:#2563eb">素材 ${x.creatives}</span>
-              <span style="color:var(--sub);font-size:11px">占比 ${x.share}%</span>
-            </div>
-          </div>
-          <div style="text-align:right"><div style="font-weight:700;color:#111">${fmtMoney(x.avg4)}</div><div style="font-size:10px;color:var(--sub)">元/日 近4周</div></div>
-          <div>${spark}</div>
-          <div style="text-align:center"><span class="${roiCls}" style="font-weight:600">${x.roi}</span><div style="font-size:10px;color:var(--sub)">ROI</div></div>
-          <div style="text-align:center"><span style="font-weight:600">${x.ctr}%</span><div style="font-size:10px;color:var(--sub)">CTR</div></div>
-          <div style="text-align:center"><span class="${refundCls}" style="font-weight:600">${x.refund}%</span><div style="font-size:10px;color:var(--sub)">7日退款</div></div>
-          <div style="text-align:center">${mp4Btn}</div>
-        </div>`;
+        <tr>
+          <td><span class="qd-rank ${rankCls}">#${x.rank}</span></td>
+          <td>${thumb}</td>
+          <td class="tl qd-name-cell" title="${x.name}">${x.name}</td>
+          <td><span class="qd-cat-tag">${x.cat || '—'}</span></td>
+          <td>${roiTxt}</td>
+          <td>${x.aov.toFixed(1)}</td>
+          <td>${ctrTxt}</td>
+          <td>${cvrTxt}</td>
+          <td>${refundTxt}</td>
+          <td>${linksCell}</td>
+        </tr>`;
     }).join('');
-    const tail = arr.length>150?`<div style="text-align:center;padding:14px;color:var(--sub);font-size:12px">仅展示 Top 150 / 共 ${arr.length} 条，用搜索框缩小范围查看更多</div>`:'';
-    document.getElementById('qdList').innerHTML = `
-      <div style="display:grid;grid-template-columns:60px 1fr 100px 120px 90px 90px 90px 110px;gap:12px;padding:8px 14px;background:#f8fafc;border-bottom:2px solid var(--border);font-size:11px;color:var(--sub);font-weight:600">
-        <div>排名</div><div>商品名</div><div style="text-align:right">近4周日耗</div><div>14周趋势</div><div style="text-align:center">ROI</div><div style="text-align:center">CTR</div><div style="text-align:center">退款率</div><div style="text-align:center">视频素材</div>
-      </div>${html}${tail}`;
+
+    document.getElementById('qdTbody').innerHTML = rows;
   }
 
-  function miniSpark(trend){
-    if(!trend||!trend.length) return '';
-    const max = Math.max(...trend, 1);
-    const w = 120, h = 30;
-    const step = w / (trend.length-1||1);
-    const pts = trend.map((v,i)=>`${(i*step).toFixed(1)},${(h - v/max*h).toFixed(1)}`).join(' ');
-    const last = trend[trend.length-1], prev = trend[trend.length-2]||0;
-    const color = last>=prev?'#ef4444':'#22c55e';
-    return `<svg width="${w}" height="${h}" style="display:block"><polyline fill="none" stroke="${color}" stroke-width="1.5" points="${pts}"/><circle cx="${(trend.length-1)*step}" cy="${h-last/max*h}" r="2.5" fill="${color}"/></svg>`;
-  }
-
-  document.querySelectorAll('#qdTypeCtrl .btn').forEach(b=>{
-    b.onclick = ()=>{
-      document.querySelectorAll('#qdTypeCtrl .btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      curFilter = b.dataset.t;
-      renderList();
-    };
-  });
-  document.getElementById('qdSearch').oninput = e=>{ curKw = e.target.value.trim(); renderList(); };
-  renderList();
+  document.getElementById('qdSearch').oninput = e=>{ curKw = e.target.value.trim(); renderTable(); };
+  document.getElementById('qdShowRaw').onchange = e=>{ showRaw = e.target.checked; renderTable(); };
+  renderTable();
 })();
 
 window.qdPlayVideo = function(url){
+  if(!url) return;
   document.getElementById('qdVideoPlayer').src = url;
   document.getElementById('qdVideoModal').style.display = 'flex';
 };
