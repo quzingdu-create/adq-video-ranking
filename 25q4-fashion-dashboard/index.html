@@ -618,6 +618,11 @@
         display:inline-block; padding:2px 8px; border-radius:10px;
         background:#e0f2fe; color:#0369a1; font-size:11px; font-weight:500;
       }
+      .qd-sku-tag {
+        display:inline-block; margin-left:6px; padding:1px 7px; border-radius:9px;
+        background:#fef3c7; color:#b45309; font-size:10.5px; font-weight:600;
+        cursor:help; border:1px solid #fcd34d; white-space:nowrap;
+      }
       .qd-mat-links { max-width:220px; font-size:11px; text-align:left; }
       .qd-mat-links a {
         display:inline-block; max-width:200px; overflow:hidden; text-overflow:ellipsis;
@@ -2101,11 +2106,14 @@ function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
       const refundTxt = showRaw ? x.refund_raw.toFixed(1) : x.refund;
 
       const rankCls = x.rank<=3 ? 'qd-rank-'+x.rank : '';
+      const skuTag = (x.sku_count && x.sku_count>1)
+        ? `<span class="qd-sku-tag" title="${(x.alt_names||[]).map(a=>'· '+a).join('\n')}">合并×${x.sku_count}</span>`
+        : '';
       return `
         <tr>
           <td><span class="qd-rank ${rankCls}">#${x.rank}</span></td>
           <td>${thumb}</td>
-          <td class="tl qd-name-cell" title="${x.name}">${x.name}</td>
+          <td class="tl qd-name-cell" title="${x.name}">${x.name} ${skuTag}</td>
           <td><span class="qd-cat-tag">${x.cat || '—'}</span></td>
           <td>${roiTxt}</td>
           <td>${x.aov.toFixed(1)}</td>
