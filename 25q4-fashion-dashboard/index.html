@@ -614,6 +614,10 @@
         color:#fff; text-align:center; line-height:32px; font-size:14px; pointer-events:none;
       }
       .qd-name-cell { font-size:12px; line-height:1.4; max-width:400px; }
+      .qd-short { font-size:13px; font-weight:600; color:#1f2937; margin-bottom:3px; }
+      .qd-raw { font-size:11px; color:#94a3b8; line-height:1.3;
+                overflow:hidden; text-overflow:ellipsis; display:-webkit-box;
+                -webkit-line-clamp:1; -webkit-box-orient:vertical; }
       .qd-cat-tag {
         display:inline-block; padding:2px 8px; border-radius:10px;
         background:#e0f2fe; color:#0369a1; font-size:11px; font-weight:500;
@@ -2079,7 +2083,7 @@ function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
     let arr = items.slice();
     if (curKw){
       const kw = curKw.toLowerCase();
-      arr = arr.filter(x=>x.name.toLowerCase().includes(kw) || (x.cat||'').toLowerCase().includes(kw));
+      arr = arr.filter(x=>x.name.toLowerCase().includes(kw) || (x.cat||'').toLowerCase().includes(kw) || (x.short||'').toLowerCase().includes(kw));
     }
     document.getElementById('qdCount').textContent = arr.length;
 
@@ -2109,11 +2113,16 @@ function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
       const skuTag = (x.sku_count && x.sku_count>1)
         ? `<span class="qd-sku-tag" title="${(x.alt_names||[]).map(a=>'· '+a).join('\n')}">合并×${x.sku_count}</span>`
         : '';
+      const displayName = x.short || x.name;
+      const rawNameTitle = x.name.replace(/"/g,'&quot;');
       return `
         <tr>
           <td><span class="qd-rank ${rankCls}">#${x.rank}</span></td>
           <td>${thumb}</td>
-          <td class="tl qd-name-cell" title="${x.name}">${x.name} ${skuTag}</td>
+          <td class="tl qd-name-cell" title="${rawNameTitle}">
+            <div class="qd-short">${displayName} ${skuTag}</div>
+            <div class="qd-raw">${x.name}</div>
+          </td>
           <td><span class="qd-cat-tag">${x.cat || '—'}</span></td>
           <td>${roiTxt}</td>
           <td>${x.aov.toFixed(1)}</td>
