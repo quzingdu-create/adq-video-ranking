@@ -40,6 +40,13 @@ tr:hover td{background:#f0f5fd}
 .pill{display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;background:#e6ecf6;color:var(--fg2);margin-left:6px}
 .pill.warn{background:#fff4d6;color:var(--yellow)}
 .note{color:var(--fg2);font-size:11px;margin-top:6px;padding:5px 8px;background:#eef4ff;border-left:3px solid var(--acc);border-radius:3px}
+.insight{margin-top:8px;padding:8px 10px;background:linear-gradient(90deg,#fff8e1 0%,#fffef7 100%);border-left:3px solid #d18a00;border-radius:4px;font-size:12px;line-height:1.65;color:#3d3320}
+.insight b{color:#1c2637}
+.insight .k{color:#e5384a;font-weight:600}
+.insight .g{color:#0aa662;font-weight:600}
+.insight ul{margin:2px 0 0 0;padding-left:18px}
+.insight li{margin-bottom:2px}
+.section-title{font-size:12px;color:var(--fg2);margin:12px 0 4px;padding-left:4px;border-left:3px solid var(--acc);font-weight:600}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .grid3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -126,59 +133,85 @@ const allHtml = `
   </div>
 </div>
 
+<div class="insight" style="margin-bottom:10px">
+  <b>🎯 一句话结论</b>：季度累计新客 <b>2266</b>，日均 <b>~94</b>。新客增速 <span class="k">W1→W2 -13.0%</span>（日均口径）后 <span class="g">W3 反弹 +5.6%</span>，W4(残周) 日均升至 <b>105.7</b>，说明 <b>7月中下旬增势企稳</b>。类目结构上 <b>运动户外 (23%)</b> 与 <b>女装 (19%)</b> 领跑；投放端 <b>全域通稳占 90%+</b>，ADQ 稳 6~10%。
+</div>
+
+<div class="section-title">一 · 新客增速</div>
 <div class="grid2">
   <div class="panel">
-    <h2>① 新客数周趋势 <span class="hint">残周(<7天)虚线 · WoW按日均修正</span></h2>
+    <h2>① 新客数周趋势 <span class="hint">柱=新增 · 线=日均 · 残周虚线</span></h2>
     <div class="chart-wrap short"><canvas id="c-week"></canvas></div>
+    <div class="insight">
+      <b>📈 增速解读</b>：
+      <ul>
+        <li>W1 起点最高 <b>699 客户</b>（日均 99.9），进入 W2 明显回落到 608（日均 86.9），<span class="k">日均 -13.0%</span></li>
+        <li>W3 回升至 642（日均 91.7），<span class="g">日均 +5.6%</span> — 拐点信号</li>
+        <li>W4 仅 3 天 317 客户，但日均 <b>105.7</b>（+15.2%），如果续满 7 天可望突破 W1</li>
+      </ul>
+    </div>
   </div>
   <div class="panel">
-    <h2>② 大盘 by天消耗 <span class="hint">全客户 daily 汇总</span></h2>
+    <h2>② 大盘 by天消耗 <span class="hint">全客户 daily 汇总 · 元</span></h2>
     <div class="chart-wrap short"><canvas id="c-daily"></canvas></div>
+    <div class="insight">
+      <b>💰 消耗节奏</b>：24 天大盘日耗在 <b>460~660万</b> 区间波动，<b>7/11 见峰 660万</b>、<b>7/20 见谷 460万</b>（周日效应）。整体走势平稳，未见系统性衰减。
+    </div>
   </div>
 </div>
 
-<div class="grid2">
-  <div class="panel">
-    <h2>③ 分投放端 · 新客周趋势</h2>
-    <div class="chart-wrap short"><canvas id="c-ch"></canvas></div>
-  </div>
-  <div class="panel">
-    <h2>④ 分类目 · 新客周趋势</h2>
-    <div class="chart-wrap short"><canvas id="c-cat"></canvas></div>
-  </div>
-</div>
-
-<div class="grid2">
-  <div class="panel">
-    <h2>⑤ 新客首周消耗 vs 累计消耗</h2>
-    <div class="chart-wrap short"><canvas id="c-w-cost"></canvas></div>
-    <div class="note">首周消耗=首投日→当周末；累计=首投日→7/24</div>
-  </div>
-  <div class="panel">
-    <h2>⑥ 各类目 · 周新客累计消耗</h2>
-    <div class="chart-wrap short"><canvas id="c-cat-cost"></canvas></div>
-  </div>
-</div>
-
+<div class="section-title">二 · 分类目结构</div>
 <div class="panel">
-  <h2>⑦ 周新客明细 · 全维度（周×端×类目×消耗）</h2>
+  <h2>③ 分类目 · 新客周趋势 <span class="hint">8 大类 · 点图例可切换</span></h2>
+  <div class="chart-wrap"><canvas id="c-cat"></canvas></div>
+  <div class="insight">
+    <b>🔍 类目走势</b>：
+    <ul>
+      <li><b>运动户外</b> 是最大类目（累计 520 · 23%），走势 W1 高开 181 → W2 骤降 116（<span class="k">-35.9%</span>）→ W3 强势反弹 152（<span class="g">+31.0%</span>），是拐点主贡献</li>
+      <li><b>女装</b> 累计 422（19%），全季稳定在 119~121，是最稳定的基本盘</li>
+      <li><b>贴身衣物</b> W2 逆势增 <span class="g">+19.6%</span>（受婴童/孕产妇服归入拉动），W3 回调 <span class="k">-14.9%</span></li>
+      <li><b>男装、配饰</b> W2 双双回落 -25~-28%，W3 回升，与运动户外节奏一致</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-title">三 · 分维度明细（周×端×类目×消耗）</div>
+<div class="panel">
+  <h2>④ 全维度明细表</h2>
   <div style="overflow-x:auto"><table id="t-week"></table></div>
+  <div class="insight">
+    <b>📊 交叉解读</b>：
+    <ul>
+      <li>投放端结构极稳：全域通占 <b>90.0% → 92.9% → 92.1% → 89.6%</b>，ADQ 占 <b>6~10%</b>，双投占比极小 (<1%)</li>
+      <li>ADQ 独立走势：W1(55)→W2(35, <span class="k">-36.4%</span>)→W3(48, <span class="g">+37.1%</span>)，与大盘趋势同步</li>
+      <li>双投数量从 15 缩到 1，需关注是否被主端替代</li>
+    </ul>
+  </div>
 </div>
 
 <div class="grid2">
   <div class="panel">
-    <h2>⑧ 投放端 · WoW</h2>
+    <h2>⑤ 投放端 · WoW</h2>
     <table id="t-ch"></table>
   </div>
   <div class="panel">
-    <h2>⑨ 类目 · WoW 与占比</h2>
+    <h2>⑥ 类目 · 累计占比与 WoW</h2>
     <table id="t-cat"></table>
   </div>
 </div>
 
+<div class="section-title">四 · 新客消耗产出</div>
 <div class="panel">
-  <h2>⑩ 周新客 · 客单产出</h2>
+  <h2>⑦ 周新客 · 客单产出 <span class="hint">首周消耗=首投日→当周末 · 累计=首投日→7/24</span></h2>
   <table id="t-cost"></table>
+  <div class="insight">
+    <b>💵 消耗产出解读</b>：
+    <ul>
+      <li><b>W1 客单产出最强</b>：客均首周 <b>839元</b>、客均累计 <b>4868元</b>（时间窗最长）</li>
+      <li>累计消耗随窗口缩短逐周下降：W1 340万 → W2 154万 → W3 79万 → W4 6万，符合"时间窗越短累计越少"预期</li>
+      <li>客均首周对比：W1 839 &gt; W3 624 &gt; W2 524 &gt; W4 195 —— <b>W1 新客单客首周投入高于其余各周</b>，值得复盘 W1 拉来的是否更优质客户</li>
+    </ul>
+  </div>
 </div>
 `;
 document.body.insertAdjacentHTML('beforeend', `<div class="tab-content active" data-tab="all">${allHtml}</div>`);
@@ -219,15 +252,7 @@ new Chart(document.getElementById('c-week'),{
   }
 });
 
-// -------- 投放端图表 --------
-new Chart(document.getElementById('c-ch'),{
-  type:'line',
-  data:{labels:WEEKS.map(w=>w.label),datasets:CHS.map(ch=>({
-    label:ch,data:WEEKS.map(w=>DATA.week_new_ch[w.id][ch]),
-    borderColor:CH_COLORS[ch],backgroundColor:CH_COLORS[ch],tension:.25,fill:false
-  }))},
-  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}}}
-});
+// -------- 投放端表 --------
 
 {
   const th = ['投放端'].concat(WEEKS.map(w=>w.id)).concat(WEEKS.slice(1).map((w,i)=>`WoW(${w.id})`));
@@ -282,15 +307,6 @@ new Chart(document.getElementById('c-daily'),{
   options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'万'}}},plugins:{legend:{display:false}}}
 });
 
-new Chart(document.getElementById('c-w-cost'),{
-  type:'bar',
-  data:{labels:WEEKS.map(w=>w.label),datasets:[
-    {label:'首周消耗',data:WEEKS.map(w=>DATA.week_first_cost[w.id]),backgroundColor:'#d18a00'},
-    {label:'累计消耗(至7/24)',data:WEEKS.map(w=>DATA.week_cum_cost[w.id]),backgroundColor:'#2f7dfa'},
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>(v/10000).toFixed(0)+'万'}}},plugins:{legend:{position:'top'}}}
-});
-
 {
   const th = ['周','新客数','首周消耗','累计消耗','客均首周','客均累计'];
   let html = '<thead><tr>'+th.map(x=>`<th>${x}</th>`).join('')+'</tr></thead><tbody>';
@@ -303,14 +319,6 @@ new Chart(document.getElementById('c-w-cost'),{
   html += '</tbody>';
   document.getElementById('t-cost').innerHTML = html;
 }
-
-new Chart(document.getElementById('c-cat-cost'),{
-  type:'bar',
-  data:{labels:WEEKS.map(w=>w.label),datasets:CATS.map(cat=>({
-    label:cat,data:WEEKS.map(w=>DATA.week_cum_cost_cat[w.id][cat]),backgroundColor:CAT_COLORS[cat]
-  }))},
-  options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:v=>(v/10000).toFixed(0)+'万'}}},plugins:{legend:{position:'top'}}}
-});
 
 // -------- 客户下钻 --------
 let kcHtml = `
