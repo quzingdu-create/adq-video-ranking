@@ -253,64 +253,40 @@
     <div id="trendChart" class="chart chart-tall"></div>
   </div>
 
-  <!-- 价格带 -->
-  <div class="panel" style="margin-bottom:14px">
-    <h2>
-      💰 价格带洞察 <span class="tag">按客单价 5 档划分 · 消耗加权</span>
-      <span class="desc">500 元以上档 ROI 遥遥领先，头部客单价段承接了低烧钱高回报的核心投放</span>
-    </h2>
-    <div class="band-grid" id="bandGrid"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px">
-      <h3 style="font-size:13px;color:var(--text);font-weight:600">📊 各价格带核心指标趋势（多指标折线对比）</h3>
-      <div class="btn-grp" id="bandMetricCtrl">
-        <button class="btn active" data-set="核心">核心 3 指标</button>
-        <button class="btn" data-set="全部">全部 6 指标</button>
+  <!-- R19: 价格带 + 关键词洞察 同一行各占一半 -->
+  <div class="row row-2" style="margin-bottom:14px">
+    <!-- 价格带 -->
+    <div class="panel">
+      <h2>
+        💰 价格带洞察 <span class="tag">客单价 5 档 · 消耗加权</span>
+      </h2>
+      <div class="desc" style="font-size:11px;color:var(--mute);margin:-6px 0 8px">500 元以上档 ROI 遥遥领先，头部客单价段承接低烧钱高回报核心投放</div>
+      <div class="band-grid" id="bandGrid"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px">
+        <h3 style="font-size:12px;color:var(--text);font-weight:600">📊 各价格带核心指标趋势</h3>
+        <div class="btn-grp" id="bandMetricCtrl">
+          <button class="btn active" data-set="核心">核心 3 指标</button>
+          <button class="btn" data-set="全部">全部 6 指标</button>
+        </div>
       </div>
+      <div id="bandLines" class="chart" style="height:300px"></div>
     </div>
-    <div id="bandLines" class="chart" style="height:400px"></div>
-  </div>
 
-  <!-- R14: 三张散点矩阵 + Top10 三列已按子青要求删除 -->
-
-
-  <!-- 词云: 大幅拉宽 -->
-  <div class="panel" style="margin-bottom:14px">
-    <h2>
-      🎨 商品名关键词洞察 <span class="tag">按消耗聚合，识别真正吃预算的关键词</span>
-    </h2>
-    <div class="wc-tabs" id="wcTabs"></div>
-    <div class="row row-2-3">
-      <div id="wcChart" class="wc-chart"></div>
-      <div class="wc-table">
-        <table id="wcTable">
-          <thead><tr><th style="text-align:left">关键词</th><th>占比</th><th>ROI</th><th>SKU 数</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- R17: AMS 爆品榜（初版，基于现有 SKU 数据合成）-->
-  <div class="panel" style="margin-bottom:14px">
-    <h2>
-      🔥 AMS 爆品榜
-      <span class="tag">Top 20 · 综合打分</span>
-      <span class="desc">综合分 = 0.4·ROI标准化 + 0.3·CVR标准化 + 0.2·下单量标准化 + 0.1·CTR标准化；仅纳入下单量≥100 的 SKU 品类</span>
-      <div class="btn-grp" id="amsHotSortCtrl">
-        <button class="btn active" data-sort="score">综合分</button>
-        <button class="btn" data-sort="roi">ROI</button>
-        <button class="btn" data-sort="orders">下单量</button>
-        <button class="btn" data-sort="cvr">CVR</button>
-      </div>
-    </h2>
-    <div id="amsHotList" style="max-height:600px;overflow-y:auto"></div>
-    <div style="margin-top:10px;padding:10px 14px;background:#fef3c7;border-radius:8px;font-size:11.5px;color:#78350f;line-height:1.7">
-      <b>⚠️ 当前榜单基于 ADQ 已有 SKU 维度合成。若要做到与"抖音爆品榜"同等成色，还差以下 4 类数据（建议向数据源方补齐）：</b>
-      <div style="margin-top:6px">
-        ① <b>商品主图 URL</b>（当前只有商品名，无图预览）<br>
-        ② <b>品牌名 / 店铺名</b>（识别白牌 vs 品牌自营）<br>
-        ③ <b>周环比 / 增长指数</b>（"爆品"的核心是增速，当前只有整季汇总，无时间序列）<br>
-        ④ <b>销售额区间 / 类目标签</b>（友望/抖音爆品榜自带销售额档位与二级类目标签，AMS 只有内部 L3/L4）
+    <!-- 词云 -->
+    <div class="panel">
+      <h2>
+        🎨 商品名关键词洞察 <span class="tag">按消耗聚合</span>
+      </h2>
+      <div class="desc" style="font-size:11px;color:var(--mute);margin:-6px 0 8px">识别真正吃预算的关键词</div>
+      <div class="wc-tabs" id="wcTabs"></div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:10px">
+        <div id="wcChart" class="wc-chart" style="min-height:340px"></div>
+        <div class="wc-table" style="max-height:360px;overflow-y:auto">
+          <table id="wcTable" style="font-size:11px">
+            <thead><tr><th style="text-align:left">关键词</th><th>占比</th><th>ROI</th><th>SKU 数</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1084,87 +1060,7 @@ document.querySelectorAll('.main-tab').forEach(tab=>{
   });
 });
 
-// ============ R17: AMS 爆品榜 ============
-(function(){
-  // 从所有 l3.l4_list.top_skus 里收集 SKU 品类（拉平）
-  const raw = [];
-  D.l3_list.forEach(l3=>{
-    (l3.l4_list||[]).forEach(l4=>{
-      (l4.top_skus||[]).forEach(s=>{
-        if((s.orders||0) < 100) return;   // 门槛：下单量≥100 才算爆品候选
-        raw.push({
-          ...s,
-          l3: l3.l3, l4: l4.l4,
-        });
-      });
-    });
-  });
-  if(!raw.length){ document.getElementById('amsHotList').innerHTML='<div style="text-align:center;padding:30px;color:var(--mute)">无数据</div>'; return; }
-  // 归一化打分
-  const maxRoi = Math.max(...raw.map(x=>x.roi||0));
-  const maxCvr = Math.max(...raw.map(x=>x.cvr||0));
-  const maxOrd = Math.max(...raw.map(x=>x.orders||0));
-  const maxCtr = Math.max(...raw.map(x=>x.ctr||0));
-  raw.forEach(s=>{
-    s.score = 0.4*(s.roi||0)/maxRoi + 0.3*(s.cvr||0)/maxCvr + 0.2*(s.orders||0)/maxOrd + 0.1*(s.ctr||0)/maxCtr;
-  });
-  function render(sortKey){
-    const items = [...raw].sort((a,b)=>(b[sortKey]||0)-(a[sortKey]||0)).slice(0,20);
-    const maxScore = Math.max(...items.map(x=>x.score||0));
-    const el = document.getElementById('amsHotList');
-    el.innerHTML = `
-      <table class="sku" style="font-size:11.5px">
-        <thead><tr>
-          <th style="text-align:left;width:28px">#</th>
-          <th style="text-align:left">商品品类（Top SKU 归并名）</th>
-          <th style="width:110px">品类归属</th>
-          <th style="width:90px">综合分</th>
-          <th style="width:60px">ROI</th>
-          <th style="width:64px">下单量</th>
-          <th style="width:60px">CVR%</th>
-          <th style="width:60px">CTR%</th>
-          <th style="width:70px">客单价¥</th>
-          <th style="width:60px">退款%</th>
-          <th style="width:50px">SKU 数</th>
-        </tr></thead>
-        <tbody>
-        ${items.map((s,i)=>{
-          const w = (s.score/maxScore*100).toFixed(0);
-          const rankColor = i<3?['#fbbf24','#94a3b8','#c2825f'][i]:'#e4e9f2';
-          return `
-          <tr>
-            <td class="num" style="font-weight:700;color:${i<3?rankColor:'var(--mute)'};font-size:${i<3?'14px':'12px'}">${i+1}</td>
-            <td class="name" title="${escapeHtml((s.sample_names||[]).join(' | '))}">
-              ${escapeHtml(s.display_name)}<span class="badge" style="background:#8b5cf6;color:#fff;padding:1px 5px;border-radius:8px;margin-left:4px;font-size:10px">×${s.sku_count}</span>
-              <div class="samples" style="color:var(--mute);font-size:10.5px;margin-top:2px;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml((s.sample_names||[])[0]||'')}</div>
-            </td>
-            <td class="num" style="color:var(--sub);font-size:10.5px">${s.l3} · ${s.l4}</td>
-            <td class="num">
-              <div style="display:flex;align-items:center;gap:6px">
-                <div class="bar-wrap" style="flex:1;min-width:36px"><div class="bar" style="width:${w}%;background:linear-gradient(90deg,#ef4444,#ec4899)"></div></div>
-                <span style="font-weight:600;color:var(--accent)">${(s.score*100).toFixed(0)}</span>
-              </div>
-            </td>
-            <td class="num ${cls(s.roi,[3,5])}">${fmtF(s.roi,2)}</td>
-            <td class="num">${fmtInt(s.orders)}</td>
-            <td class="num ${cls(s.cvr,[3,6])}">${fmtPct(s.cvr)}</td>
-            <td class="num ${cls(s.ctr,[2,3])}">${fmtPct(s.ctr)}</td>
-            <td class="num">¥${fmtF(s.aov,0)}</td>
-            <td class="num ${cls(s.refund,[30,50],true)}">${fmtPct(s.refund)}</td>
-            <td class="num">${fmtInt(s.sku_count)}</td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-      </table>`;
-  }
-  render('score');
-  document.getElementById('amsHotSortCtrl').addEventListener('click',e=>{
-    if(!e.target.classList.contains('btn')) return;
-    document.querySelectorAll('#amsHotSortCtrl .btn').forEach(b=>b.classList.remove('active'));
-    e.target.classList.add('active');
-    render(e.target.dataset.sort);
-  });
-})();
+// ============ R19: AMS 爆品榜 JS 已删 ============
 
 // ============ 微信小店 Tab ============
 const WC = window.__WECHAT__;
