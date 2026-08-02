@@ -232,7 +232,7 @@
     <div class="main-tab active" data-tab="adq">📊 AMS广告投放 <span class="badge">类目 · 关键词</span></div>
     <div class="main-tab" data-tab="wechat">🛒 微信小店GMV <span class="badge">销售 ¥148 亿</span></div>
     <div class="main-tab" data-tab="douyin">🎵 抖音女装GMV <span class="badge">39 品类 · 92 天</span></div>
-    <div class="main-tab" data-tab="qiudong">🔥 秋冬爆品榜 <span class="badge">Top 300 · 备品参考</span></div>
+    <div class="main-tab" data-tab="qiudong">🔥 秋冬爆品榜 <span class="badge">Top 200 · 备品参考</span></div>
   </div>
 
   <!-- ============ Tab 1: ADQ 广告 ============ -->
@@ -2123,7 +2123,7 @@ function renderProductTable(elId, items, valueKey, valueLabel, valueFormat){
             <div class="qd-short">${displayName} ${skuTag}</div>
             <div class="qd-raw">${x.name}</div>
           </td>
-          <td><span class="qd-cat-tag">${x.cat || '—'}</span></td>
+          <td><span class="qd-cat-tag">${(function(c){var m={'其他上衣':'打底衫','针织打底衫':'打底衫','骑行内搭上衣':'打底衫'};return m[c]||c||'—';})(x.cat)}</span></td>
           <td>${roiTxt}</td>
           <td>${x.aov.toFixed(1)}</td>
           <td>${ctrTxt}</td>
