@@ -7,32 +7,32 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 分级日志（生产 info+，本地 debug；必须最先，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260803a"></script>
+<script src="sc_logger.js?v=20260803b"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260803a"></script>
+<script src="auth-guard.js?v=20260803b"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260803a"></script>
-<script defer src="api_client.js?v=20260803a"></script>
-<script defer src="data_adapter.js?v=20260803a"></script>
+<script defer src="cloud_gray_switch.js?v=20260803b"></script>
+<script defer src="api_client.js?v=20260803b"></script>
+<script defer src="data_adapter.js?v=20260803b"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script defer src="lib_loader.js?v=20260803a"></script>
-<script src="data/current_rising_data.js?v=20260803a"></script>
+<script defer src="lib_loader.js?v=20260803b"></script>
+<script src="data/current_rising_data.js?v=20260803b"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260803a"></script>
-<script src="data/center_quarter_summary.js?v=20260803a"></script>
-<script src="data/center_daily_kpi.js?v=20260803a"></script>
-<script src="data/top80_effective_metrics.js?v=20260803a"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260803b"></script>
+<script src="data/center_quarter_summary.js?v=20260803b"></script>
+<script src="data/center_daily_kpi.js?v=20260803b"></script>
+<script src="data/top80_effective_metrics.js?v=20260803b"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260803a"></script>
-<script src="data/redblack_data.js?v=20260803a"></script>
+<script src="data/top_rising_data.js?v=20260803b"></script>
+<script src="data/redblack_data.js?v=20260803b"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260803a"></script>
-<script defer src="dual_check.js?v=20260803a"></script>
-<script defer src="big_data_dual_check.js?v=20260803a"></script>
-<script defer src="login_guard_banner.js?v=20260803a"></script>
+<script defer src="cloud_sync.js?v=20260803b"></script>
+<script defer src="dual_check.js?v=20260803b"></script>
+<script defer src="big_data_dual_check.js?v=20260803b"></script>
+<script defer src="login_guard_banner.js?v=20260803b"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script defer src="export_tuoke.js?v=20260803a"></script>
+<script defer src="export_tuoke.js?v=20260803b"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -3650,7 +3650,7 @@ function renderAll() {
 renderAll();
 // 2026-06-15 子青：今日待办首屏 3 秒优先，主营商品标签后置加载，加载后补渲染。
 (function loadMainProductAfterFirstPaint(){
-  const run = () => fetch('data/customer_main_product.js?v=20260803a', {cache:'force-cache'})
+  const run = () => fetch('data/customer_main_product.js?v=20260803b', {cache:'force-cache'})
     .then(r => r.ok ? r.text() : '')
     .then(code => { if (code) (0, eval)(code); try { renderSummaryBoard(); } catch(e){} })
     .catch(e => console.warn('[lazy-product]', e));
