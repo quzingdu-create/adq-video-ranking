@@ -135,7 +135,7 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
-  footer { text-align: center; color: #7A94B4; font-size: 10px; padding: 2px; }
+  footer { display: none; }
 </style>
 </head>
 <body>
@@ -188,7 +188,6 @@
     </section>
   </div>
 
-  <footer>加油子青 保持心情愉悦 加油工作</footer>
 </div>
 
 <script>
@@ -270,7 +269,7 @@
   });
 
   // ==== 图2：全域通 消耗环 + 指标分组柱（左环右柱） ====
-  const gytMap = { 'true':'全域通', 'false':'非全域通' };
+  const gytMap = { 'true':'全域通', 'false':'ADQ' };
   const gytEntries = Object.entries(P.gyt);
   echarts.init(document.getElementById('chartGyt')).setOption({
     tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
