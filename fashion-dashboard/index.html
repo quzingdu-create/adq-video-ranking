@@ -9,19 +9,15 @@
   html, body {
     font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
     background: linear-gradient(135deg, #F0F7FF 0%, #E1EEFF 60%, #CFE2FC 100%);
-    color: #0D2340; height: 100vh; overflow: hidden;
+    color: #0D2340; min-height: 100vh;
   }
   .wrap {
-    height: 100vh; padding: 10px 14px 6px;
-    display: flex; flex-direction: column; gap: 8px;
+    padding: 12px 16px; display: flex; flex-direction: column; gap: 10px;
     max-width: 1680px; margin: 0 auto;
   }
 
   /* Header */
-  .row-head {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; padding: 0 2px;
-  }
+  .row-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .title-block h1 {
     font-size: 24px; font-weight: 800; letter-spacing: 0.3px;
     background: linear-gradient(90deg, #1565C0, #1E88E5, #42A5F5);
@@ -29,158 +25,195 @@
     line-height: 1.2;
   }
   .title-block .sub { color: #5B7A9E; font-size: 12px; margin-top: 3px; }
-  .badge {
-    background: linear-gradient(135deg, #1565C0, #1E88E5);
-    color: #fff; padding: 5px 12px; border-radius: 999px;
-    font-weight: 600; font-size: 11px; box-shadow: 0 4px 12px rgba(30,136,229,.3);
-    white-space: nowrap;
-  }
 
   .kpi-inline { display: flex; gap: 8px; flex: 1; margin-left: 20px; }
   .kpi {
-    flex: 1; background: #fff; border-radius: 10px; padding: 8px 12px;
-    box-shadow: 0 4px 12px rgba(30,136,229,.10);
-    border: 1px solid rgba(30,136,229,.14);
-    position: relative; overflow: hidden; min-width: 0;
-  }
-  .kpi::before {
-    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #1565C0, #42A5F5);
+    flex: 1; background: rgba(255,255,255,.85); border-radius: 10px;
+    padding: 8px 10px; box-shadow: 0 4px 12px rgba(21,101,192,.08);
+    border-left: 3px solid #1E88E5; min-width: 0;
   }
   .kpi .label { color: #5B7A9E; font-size: 13px; margin-bottom: 3px; font-weight: 500; white-space: nowrap; }
   .kpi .val {
-    font-size: 26px; font-weight: 800; color: #0D2340; letter-spacing: -0.5px;
-    line-height: 1.1;
+    font-size: 26px; font-weight: 800; color: #0D2340; letter-spacing: -0.3px; line-height: 1.1;
   }
-  .kpi .unit { font-size: 13px; color: #5B7A9E; margin-left: 3px; font-weight: 500; }
-  .kpi .delta { font-size: 13px; font-weight: 700; margin-top: 3px; white-space: nowrap; }
-  .up { color: #E53935; }
-  .down { color: #26A69A; }
+  .kpi .unit { font-size: 13px; color: #5B7A9E; margin-left: 2px; font-weight: 500; }
+  .kpi .delta { font-size: 13px; font-weight: 600; margin-top: 2px; white-space: nowrap; }
+  .up { color: #D32F2F; }
+  .dn { color: #2E7D32; }
 
+  /* Sections */
   section {
-    background: #fff; border-radius: 12px; padding: 8px 12px 10px;
-    box-shadow: 0 6px 18px rgba(30,136,229,.08);
-    border: 1px solid rgba(30,136,229,.10);
+    background: rgba(255,255,255,.9); border-radius: 12px; padding: 10px 14px;
+    box-shadow: 0 4px 16px rgba(21,101,192,.08); border: 1px solid #E3EEFB;
   }
   .sec-title {
     font-size: 15px; font-weight: 700; color: #0D2340; margin-bottom: 6px;
     display: flex; align-items: center; gap: 8px;
   }
   .sec-title::before {
-    content:""; width: 3px; height: 15px; border-radius: 2px;
+    content:""; width: 4px; height: 15px; border-radius: 2px;
     background: linear-gradient(180deg, #1565C0, #42A5F5);
   }
   .sec-title .tag {
     background: #E3F2FD; color: #1565C0; font-size: 11px; padding: 2px 8px;
     border-radius: 999px; font-weight: 600;
   }
+  .sec-title .aux { color: #5B7A9E; font-size: 11px; font-weight: 500; margin-left: auto; }
 
-  /* 大盘拆解 2 图并排 */
-  .row-market {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    flex-shrink: 0;
-  }
+  /* Two-col charts row */
+  .row-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .chart-box { display: flex; flex-direction: column; gap: 6px; }
   .chart { height: 210px; }
-  .chart-box { position: relative; }
-  .pie-info {
-    display: flex; gap: 8px; margin-top: 4px; padding: 0 4px;
-    justify-content: flex-start;
-  }
+  .pie-info { display: flex; gap: 6px; }
   .pie-info .card {
     flex: 1; background: linear-gradient(135deg, #F0F7FF, #E3F2FD);
-    border-left: 3px solid #1E88E5;
-    border-radius: 6px; padding: 6px 10px;
-    display: flex; flex-direction: column; gap: 2px;
-    box-shadow: 0 1px 3px rgba(21,101,192,0.08);
+    border-radius: 8px; padding: 6px 10px; border-left: 3px solid #1E88E5;
+    display: flex; flex-direction: column; gap: 1px;
   }
-  .pie-info .card.c2 { border-left-color: #42A5F5; }
-  .pie-info .card .name { color:#0D47A1; font-weight:700; font-size:13px; }
-  .pie-info .card .cost { color:#0D2340; font-weight:700; font-size:15px; font-variant-numeric: tabular-nums; }
-  .pie-info .card .cost .unit { color:#5B7A9E; font-size:11px; margin-left:2px; font-weight:500; }
-  .pie-info .card .delta { font-size:12px; font-weight:600; font-variant-numeric: tabular-nums; }
-  .pie-info .card .delta.up { color:#D32F2F; }
-  .pie-info .card .delta.down { color:#2E7D32; }
+  .pie-info .card.blue2 { border-left-color: #42A5F5; }
+  .pie-info .card .n { font-size: 13px; font-weight: 700; color: #0D47A1; }
+  .pie-info .card .v { font-size: 15px; font-weight: 800; color: #0D2340; }
+  .pie-info .card .d { font-size: 12px; font-weight: 600; }
 
-  /* Top20 单表 */
-  .row-top { flex: 1; min-height: 0; display: flex; }
-  .row-top > section { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-  .table-wrap { flex: 1; min-height: 0; overflow-y: auto; }
+  /* Segment (商品聚合页/潜客优投) 组 KPI 卡 */
+  .row-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .seg-kpi { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 4px; }
+  .seg-kpi .k {
+    background: linear-gradient(135deg, #F5FAFF, #E3F2FD);
+    border-radius: 8px; padding: 6px 8px; border-left: 3px solid #1E88E5;
+    min-width: 0;
+  }
+  .seg-kpi .k.b2 { border-left-color: #42A5F5; }
+  .seg-kpi .k .lb { color: #5B7A9E; font-size: 11px; font-weight: 500; white-space: nowrap; }
+  .seg-kpi .k .vv { color: #0D2340; font-size: 15px; font-weight: 800; line-height: 1.1; }
+  .seg-kpi .k .un { color: #5B7A9E; font-size: 10px; font-weight: 500; margin-left: 2px; }
+  .seg-kpi .k .dd { font-size: 11px; font-weight: 600; margin-top: 1px; white-space: nowrap; }
+
+  /* Table 通用 */
+  .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
   thead th {
-    position: sticky; top: 0; z-index: 2;
     background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
-    color: #0D47A1; font-weight: 700; font-size: 13px;
-    padding: 8px 8px; text-align: right; white-space: nowrap;
+    color: #0D47A1; font-weight: 700; font-size: 12px;
+    padding: 7px 8px; text-align: right; white-space: nowrap;
     border-bottom: 2px solid #64B5F6;
   }
-  thead th:first-child, thead th:nth-child(2) { text-align: left; }
+  thead th:nth-child(1), thead th:nth-child(2) { text-align: left; }
   tbody td {
-    padding: 7px 8px; font-size: 13px; color: #0D2340;
+    padding: 6px 8px; font-size: 13px; color: #0D2340;
     border-bottom: 1px solid #E8F1FB; text-align: right;
     font-variant-numeric: tabular-nums;
   }
-  tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
+  tbody td:nth-child(1), tbody td:nth-child(2) { text-align: left; }
   tbody tr:hover { background: #F5FAFF; }
-  .delta-cell .abs { color: #7A94B4; font-weight: 500; font-size: 12px; margin-left: 4px; }
+  .delta-cell .abs { color: #7A94B4; font-weight: 500; font-size: 11px; margin-left: 3px; }
   .rank {
     display: inline-block; width: 24px; height: 24px; line-height: 24px;
     text-align: center; border-radius: 50%; font-weight: 700; font-size: 12px;
     color: #fff; background: linear-gradient(135deg, #64B5F6, #1E88E5);
   }
-  .rank.gold { background: linear-gradient(135deg, #FFD54F, #F9A825); }
-  .rank.silver { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); }
-  .rank.bronze { background: linear-gradient(135deg, #FFAB91, #D84315); }
-  .cust {
-    font-weight: 600; color: #0D2340; max-width: 220px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
-  footer { display: none; }
+  .rank.top3 { background: linear-gradient(135deg, #FFB300, #FF6F00); }
+  .gyt-pct { font-weight: 700; }
+  .gyt-pct.high { color: #1565C0; }
+  .gyt-pct.mid  { color: #1E88E5; }
+  .gyt-pct.low  { color: #7A94B4; }
+  .gyt-pct.na   { color: #B0BEC5; }
 </style>
 </head>
 <body>
 <div class="wrap">
+
   <!-- 顶栏 -->
   <div class="row-head">
     <div class="title-block">
-      <h1>女装大盘 · 昨日投放看板</h1>
-      <div class="sub">数据日 2026-08-02 · 1011 家客户 · T-1 快照 08-03 生成</div>
+      <h1>女装大盘看板</h1>
+      <div class="sub">数据日 2026-08-02　·　T-1 数据</div>
     </div>
     <div class="kpi-inline" id="kpiGrid"></div>
   </div>
 
-  <!-- 大盘拆解：2 张合并图 -->
-  <div class="row-market">
+  <!-- 大盘拆解：分链路 + 全域通/ADQ -->
+  <div class="row-charts">
     <section>
       <div class="sec-title">分链路 · 消耗占比与核心指标 <span class="tag">环 / 柱=指标</span></div>
       <div class="chart-box">
         <div id="chartLink" class="chart"></div>
-        <div class="pie-info" id="linkInfo"></div>
+        <div id="linkInfo" class="pie-info"></div>
       </div>
     </section>
     <section>
       <div class="sec-title">是否全域通 · 消耗占比与核心指标 <span class="tag">环 / 柱=指标</span></div>
       <div class="chart-box">
         <div id="chartGyt" class="chart"></div>
-        <div class="pie-info" id="gytInfo"></div>
+        <div id="gytInfo" class="pie-info"></div>
       </div>
     </section>
   </div>
 
-  <!-- Top20 单表 -->
-  <div class="row-top">
+  <!-- 商品聚合页 + 潜客优投 -->
+  <div class="row-seg">
     <section>
-      <div class="sec-title">Top 20 客户明细 <span class="tag" id="top20Tag">—</span></div>
+      <div class="sec-title">商品聚合页 vs 非商品聚合页 <span class="tag">女装白名单聚合</span>
+        <span class="aux">占女装闭环 / 占直播</span>
+      </div>
+      <div id="ppKpiA" class="seg-kpi"></div>
+      <div id="ppKpiB" class="seg-kpi"></div>
+    </section>
+    <section>
+      <div class="sec-title">潜客优投 vs 非潜客优投 <span class="tag">女装白名单聚合</span>
+        <span class="aux">占女装闭环 / 占直播</span>
+      </div>
+      <div id="qkKpiA" class="seg-kpi"></div>
+      <div id="qkKpiB" class="seg-kpi"></div>
+    </section>
+  </div>
+
+  <!-- Top10 客户 -->
+  <section>
+    <div class="sec-title">Top 10 客户消耗明细 <span class="tag">按消耗降序</span>
+      <span class="aux">全域通占比 = 全域通消耗 / (全域通+ADQ)</span>
+    </div>
+    <div class="table-wrap">
+      <table id="tblTop10">
+        <thead><tr>
+          <th>#</th><th>客户简称</th>
+          <th>消耗(万)</th><th>消耗环比</th>
+          <th>全域通占比</th>
+          <th>ROI</th><th>ROI环比</th>
+          <th>CTR%</th><th>CTR环比</th>
+          <th>下单率%</th><th>下单率环比</th>
+          <th>单价(元)</th><th>退款率%</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 商品聚合页 Top5 明细 -->
+  <div class="row-seg">
+    <section>
+      <div class="sec-title">商品聚合页 · Top 5 客户 <span class="tag">按消耗降序</span></div>
       <div class="table-wrap">
-        <table id="top20Table">
+        <table id="tblPp5">
           <thead><tr>
             <th>#</th><th>客户简称</th>
-            <th>消耗 (万)</th><th>消耗环比</th>
-            <th>ROI</th><th>ROI 环比</th>
-            <th>CTR (%)</th><th>CTR 环比</th>
-            <th>下单率 (%)</th><th>下单率环比</th>
-            <th>单价 (元)</th>
-            <th>退款率 (%)</th>
+            <th>消耗(万)</th><th>消耗环比</th>
+            <th>全域通占比</th>
+            <th>ROI</th><th>CTR%</th><th>下单率%</th><th>广告条均(元)</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <section>
+      <div class="sec-title">潜客优投 · Top 5 客户 <span class="tag">按消耗降序</span></div>
+      <div class="table-wrap">
+        <table id="tblQk5">
+          <thead><tr>
+            <th>#</th><th>客户简称</th>
+            <th>消耗(万)</th><th>消耗环比</th>
+            <th>全域通占比</th>
+            <th>ROI</th><th>首24H ROI</th><th>CTR%</th><th>下单率%</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -191,189 +224,229 @@
 </div>
 
 <script>
-(function(){
-  if (typeof echarts === 'undefined') {
-    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#c00;">ECharts 未加载（同目录 echarts.min.js 缺失）</div>';
-    return;
-  }
-  const P = {"overall": {"商品消费链路": "整体", "消耗(万元)": 32.740801067, "消耗(万元)环比变化量": -8.453260756000006, "消耗(万元)环比变化率(%)": -20.520580835950174, "下单ROI": 8.409603217604744, "下单ROI环比变化量": 0.5167239381338433, "下单ROI环比变化率(%)": 6.546710266782162, "ctr(%)": 2.5877563423685563, "ctr(%)环比变化量": -0.031108202729988932, "ctr(%)环比变化率(%)": -1.1878507725117322, "下单率(%)": 6.568883960848012, "下单率(%)环比变化量": 0.2307024652199594, "下单率(%)环比变化率(%)": 3.6398841746499877, "下单单价(元)": 135.89514140466906, "下单单价(元)环比变化量": -1.9927962543640092, "下单单价(元)环比变化率(%)": -1.4452288490177883, "下单后7日发起退款率(%)": 47.34712008291792, "下单后7日发起退款率(%)环比变化量": 4.327612025241919, "下单后7日发起退款率(%)环比变化率(%)": 10.059650192744918}, "link": {"小店": {"商品消费链路": "小店", "消耗(万元)": 14.061153018, "消耗(万元)环比变化量": -1.259835764, "消耗(万元)环比变化率(%)": -8.222940320145193, "下单ROI": 6.125369156408678, "下单ROI环比变化量": 0.3601560714820815, "下单ROI环比变化率(%)": 6.247055679931856, "ctr(%)": 2.6993259177534505, "ctr(%)环比变化量": 0.10982872201937122, "ctr(%)环比变化率(%)": 4.241314576447595, "下单率(%)": 6.278665553862528, "下单率(%)环比变化量": -0.07204534661140638, "下单率(%)环比变化率(%)": -1.1344453832094588, "下单单价(元)": 105.03628414634147, "下单单价(元)环比变化量": 8.099535902267718, "下单单价(元)环比变化率(%)": 8.355485457253188, "下单后7日发起退款率(%)": 40.31707317073171, "下单后7日发起退款率(%)环比变化量": 4.847362898563141, "下单后7日发起退款率(%)环比变化率(%)": 13.666203815503508}, "直播": {"商品消费链路": "直播", "消耗(万元)": 18.679648048999997, "消耗(万元)环比变化量": -7.193424992000001, "消耗(万元)环比变化率(%)": -27.802746819447677, "下单ROI": 10.129066270610439, "下单ROI环比变化量": 0.9762690120576831, "下单ROI环比变化率(%)": 10.666345866510007, "ctr(%)": 2.511522217914851, "ctr(%)环比变化量": -0.12612137896356845, "ctr(%)环比变化率(%)": -4.7815929003004705, "下单率(%)": 6.782015092387454, "下单率(%)环比变化量": 0.4516993204153339, "下单率(%)环比变化率(%)": 7.135494289483341, "下单单价(元)": 156.87537766354365, "下单单价(元)环比变化量": -6.803770802035558, "下单单价(元)环比变化率(%)": -4.15677309285755, "下单后7日发起退款率(%)": 52.126689329243014, "下单后7日发起退款率(%)环比变化量": 4.352290656309641, "下单后7日发起退款率(%)环比变化率(%)": 9.11008987492591}}, "gyt": {"false": {"是否全域通广告": "false", "消耗(万元)": 14.831486067, "消耗(万元)环比变化量": -6.403828755999999, "消耗(万元)环比变化率(%)": -30.15650490410438, "下单ROI": 10.061271697650175, "下单ROI环比变化量": 2.307095252775718, "下单ROI环比变化率(%)": 29.752937261322153, "ctr(%)": 2.138261169932328, "ctr(%)环比变化量": -0.3175562015859339, "ctr(%)环比变化率(%)": -12.930774302227974, "下单率(%)": 7.358684480986639, "下单率(%)环比变化量": 0.6689037642795554, "下单率(%)环比变化率(%)": 9.998889240256151, "下单单价(元)": 189.4662404773997, "下单单价(元)环比变化量": 31.13703086201508, "下单单价(元)环比变化率(%)": 19.666005367963095, "下单后7日发起退款率(%)": 53.03453529710513, "下单后7日发起退款率(%)环比变化量": 7.015304527874363, "下单后7日发起退款率(%)环比变化率(%)": 15.244288986605387}, "true": {"是否全域通广告": "true", "消耗(万元)": 17.909315, "消耗(万元)环比变化量": -2.0494319999999995, "消耗(万元)环比变化率(%)": -10.268339991483431, "下单ROI": 7.041784401022597, "下单ROI环比变化量": -0.9986691905781173, "下单ROI环比变化率(%)": -12.420557860334588, "ctr(%)": 2.913187703599434, "ctr(%)环比变化量": 0.16326601611736136, "ctr(%)环比变化率(%)": 5.937115113516327, "下单率(%)": 6.14917903370753, "下单率(%)环比变化量": 0.06338691106819905, "下单率(%)环比变化率(%)": 1.0415556396084877, "下单单价(元)": 101.82764230924506, "下单单价(元)环比变化量": -19.930611863744318, "下单单价(元)环比变化率(%)": -16.36900265950568, "下单后7日发起退款率(%)": 43.73031893419459, "下单后7日发起退款率(%)环比变化量": 3.0778151405678855, "下单后7日发起退款率(%)环比变化率(%)": 7.571034630960197}}, "top20": [{"name": "kolakola", "cost": 4.95254422, "cost_delta": -3.359181157, "cost_pct": -40.41496806782672, "roi": 2.9675252450345613, "roi_delta": 0.186017320822498, "roi_pct": 6.68764303000116, "ctr": 2.3055415622091635, "ctr_delta": -0.5424620432938116, "order_rate": 7.814146939008062, "order_rate_delta": 2.052885254885058, "price": 53.579292745169525, "price_delta": -0.2361867706591525, "refund": 56.06999635435655, "refund_delta": 9.375396726796026}, {"name": "宁波市希盟贸易有限公司", "cost": 3.959857573, "cost_delta": 0.10242974899999968, "cost_pct": 2.6553899041922726, "roi": 2.4543306977167383, "roi_delta": 0.052714796477778325, "roi_pct": 2.194971995754338, "ctr": 1.6808433662617803, "ctr_delta": -0.08698869887080707, "order_rate": 11.780319482650452, "order_rate_delta": 0.8060912187025622, "price": 39.814829987709956, "price_delta": -0.03058936712875493, "refund": 36.337566571077424, "refund_delta": -3.4043689127935437}, {"name": "广州市季俏韵服饰有限公司", "cost": 1.49694, "cost_delta": -0.8511169999999999, "cost_pct": -36.247714599773346, "roi": 3.635463011209534, "roi_delta": -0.061495793453214986, "roi_pct": -1.6634157074094005, "ctr": 3.267088258164033, "ctr_delta": -0.15712419739012073, "order_rate": 8.76547987616099, "order_rate_delta": 0.16835614889186523, "price": 40.04466519499632, "price_delta": 0.04157763739263487, "refund": 29.13907284768212, "refund_delta": 12.733542893765069}, {"name": "厦门美洋服饰有限公司", "cost": 1.367899, "cost_delta": 0.05166399999999993, "cost_pct": 3.92513494930616, "roi": 10.370207157107359, "roi_delta": -0.1190816097161953, "roi_pct": -1.1352686761073554, "ctr": 3.3663494181385816, "ctr_delta": 0.04812611876542361, "order_rate": 5.801502317404507, "order_rate_delta": 1.0073935106717151, "price": 390.782258953168, "price_delta": -42.01927709698873, "refund": 59.22865013774105, "refund_delta": -5.975111617744851}, {"name": "浙锦", "cost": 0.9068240889999999, "cost_delta": -0.09256391100000005, "cost_pct": -9.262059480402012, "roi": 6.052938013648202, "roi_delta": -0.9673584077617017, "roi_pct": -13.7794524574708, "ctr": 2.2247135027404084, "ctr_delta": -0.38942808412689667, "order_rate": 3.471444568868981, "order_rate_delta": 0.5278632115509105, "price": 1770.6290322580646, "price_delta": -178.2598566308243, "refund": 58.064516129032256, "refund_delta": 5.286738351254478}, {"name": "主曼", "cost": 0.8819617089999999, "cost_delta": -0.510554823, "cost_pct": -36.66418396244936, "roi": 5.652751076520942, "roi_delta": 0.04185898263806642, "roi_pct": 0.7460307904281754, "ctr": 3.043676069153776, "ctr_delta": 0.12933777799850787, "order_rate": 6.769165065129191, "order_rate_delta": -0.4864468103233799, "price": 157.27160883280757, "price_delta": 1.3183154196339046, "refund": 59.305993690851736, "refund_delta": 18.58743081660024}, {"name": "哥弟商元", "cost": 0.81038009, "cost_delta": -0.34217291000000016, "cost_pct": -29.688258153854974, "roi": 4.134578380374572, "roi_delta": -0.046591596190496354, "roi_pct": -1.1143195912062027, "ctr": 3.3593409834684045, "ctr_delta": 0.6047496055136099, "order_rate": 3.9928922337200796, "order_rate_delta": -0.7755234217234341, "price": 87.71151832460734, "price_delta": 1.3491527332094932, "refund": 76.17801047120419, "refund_delta": 24.02747283679559}, {"name": "义乌市汐岂电子商务商行(个体工商户)", "cost": 0.716934, "cost_delta": 0.26004299999999997, "cost_pct": 56.915763278331156, "roi": 2.8321295963087256, "roi_delta": -0.0787178487055118, "roi_pct": -2.7042931720912216, "ctr": 2.250577045916788, "ctr_delta": 0.11404735912753816, "order_rate": 10.134076266759534, "order_rate_delta": 1.9690191991563726, "price": 34.88745704467354, "price_delta": -0.8636182241436643, "refund": 27.147766323024054, "refund_delta": -13.174814322137234}, {"name": "杭州佑曦电子商务有限公司", "cost": 0.686619, "cost_delta": -0.14758899999999997, "cost_pct": -17.69211036096513, "roi": 3.387321061607675, "roi_delta": 0.10269660343896891, "roi_pct": 3.126585847084202, "ctr": 1.8315945294344942, "ctr_delta": -0.46870402150120793, "order_rate": 6.774624870004457, "order_rate_delta": 2.509034493302969, "price": 51.004364035087725, "price_delta": 0.1683714562380061, "refund": 28.07017543859649, "refund_delta": 9.888357256778306}, {"name": "深圳市佐佑服饰有限公司", "cost": 0.685855, "cost_delta": 0.623378, "cost_pct": 997.7719800886726, "roi": 15.36711987227621, "roi_delta": -0.024624289575351455, "roi_pct": -0.15998375048607394, "ctr": 4.843974409191801, "ctr_delta": 0.3836550431214443, "order_rate": 48.517520215633425, "order_rate_delta": 46.09490917929426, "price": 585.5342222222223, "price_delta": 51.295333333333474, "refund": 45.0, "refund_delta": -77.22222222222223}, {"name": "丫头", "cost": 0.676697, "cost_delta": 0.45667599999999997, "cost_pct": 207.56018743665376, "roi": 6.462364987579374, "roi_delta": -6.431004281717646, "roi_pct": -49.87838436483625, "ctr": 5.812100363438478, "ctr_delta": 0.7103068588335333, "order_rate": 24.0428022069888, "order_rate_delta": -5.2327322348164245, "price": 30.410730180806674, "price_delta": -27.13109537700265, "refund": 30.528511821974966, "refund_delta": -4.76560582508386}, {"name": "海口秀英诗娟电子商务中心", "cost": 0.557668, "cost_delta": -0.12629881199999993, "cost_pct": -18.46563455771885, "roi": 2.7951576923904544, "roi_delta": -0.08682424798474608, "roi_pct": -3.012657600950913, "ctr": 4.451210793260941, "ctr_delta": 0.02873350709353062, "order_rate": 4.195011337868481, "order_rate_delta": -0.0596612042983633, "price": 70.21486486486486, "price_delta": -0.1844208494208459, "refund": 28.82882882882883, "refund_delta": -1.1711711711711708}, {"name": "森衣惠", "cost": 0.541114177, "cost_delta": 0.016465648000000055, "cost_pct": 3.138414974951747, "roi": 3.6581558645801286, "roi_delta": 0.21087659087801924, "roi_pct": 6.1171890681068675, "ctr": 3.5116467196283008, "ctr_delta": -0.2818992442516328, "order_rate": 4.459539279385706, "order_rate_delta": 0.6366569911568831, "price": 131.09139072847682, "price_delta": 0.9755633903473324, "refund": 79.47019867549669, "refund_delta": 3.211205869741292}, {"name": "广州市白云区妍妍服装店(个体工商户)", "cost": 0.52446, "cost_delta": 0.15158500000000003, "cost_pct": 40.653033858531685, "roi": 4.3040460664302325, "roi_delta": 0.017354816011191154, "roi_pct": 0.40485341717798434, "ctr": 3.680077307922839, "ctr_delta": -0.2977411799714025, "order_rate": 6.315439587834469, "order_rate_delta": -0.4059943180654564, "price": 59.40263157894737, "price_delta": 0.2026315789473685, "refund": 31.842105263157894, "refund_delta": -17.787524366471732}, {"name": "杭州曼娴服饰有限公司", "cost": 0.455771, "cost_delta": -0.410479, "cost_pct": -47.38574314574315, "roi": 5.407233018335962, "roi_delta": 0.02077529827824165, "roi_pct": 0.3856950032463826, "ctr": 2.0400166949174197, "ctr_delta": 0.03765740432471132, "order_rate": 6.38830897703549, "order_rate_delta": -0.9188970912325249, "price": 161.07581699346403, "price_delta": -0.3781276432141851, "refund": 50.326797385620914, "refund_delta": 13.994617454825068}, {"name": "特际直购", "cost": 0.446314649, "cost_delta": -0.16371785700000002, "cost_pct": -26.837562816693577, "roi": 2.1498286066787826, "roi_delta": 0.262617697953863, "roi_pct": 13.915651755706456, "ctr": 1.6412622008289879, "ctr_delta": 0.12496825523328314, "order_rate": 10.047522063815343, "order_rate_delta": 0.7032597687333766, "price": 64.83108108108108, "price_delta": -2.4940651177493294, "refund": 24.324324324324323, "refund_delta": 4.441283388651808}, {"name": "合肥市经开区奥诗服装店", "cost": 0.42637600000000003, "cost_delta": -0.0007639999999999314, "cost_pct": -0.17886407266936635, "roi": 4.547160252922303, "roi_delta": 0.013517887421530261, "roi_pct": 0.29816836732416396, "ctr": 2.3749288852843984, "ctr_delta": 0.38711193233765084, "order_rate": 6.8807339449541285, "order_rate_delta": -0.04942306641566052, "price": 143.61481481481482, "price_delta": -7.674247685185179, "refund": 51.111111111111114, "refund_delta": 10.486111111111114}, {"name": "晚年之美", "cost": 0.38738243, "cost_delta": -0.52921693, "cost_pct": -57.73699536512878, "roi": 2.2241586950652357, "roi_delta": -0.3992339287306179, "roi_pct": -15.21823020730142, "ctr": 0.7800881526543045, "ctr_delta": -0.11643864859124609, "order_rate": 2.7234369006520907, "order_rate_delta": -1.4119014452125707, "price": 121.35211267605634, "price_delta": -0.09233176838810664, "refund": 46.478873239436616, "refund_delta": 18.196044956608333}, {"name": "杭州富阳星空设计工作室(个体工商户)", "cost": 0.374764, "cost_delta": -0.07108900000000001, "cost_pct": -15.944492915826519, "roi": 16.00633998996702, "roi_delta": -0.04693317405789443, "roi_pct": -0.292358907609389, "ctr": 3.989629370323371, "ctr_delta": -0.44629525648142554, "order_rate": 10.200164518782561, "order_rate_delta": -6.055811943151973, "price": 161.252688172043, "price_delta": -0.6794385247895605, "refund": 40.053763440860216, "refund_delta": 13.809419549457502}, {"name": "义乌市藿岐电子商务商行(个体工商户)", "cost": 0.296177, "cost_delta": 0.20472300000000004, "cost_pct": 223.85352198919685, "roi": 6.698798353687153, "roi_delta": -0.29805252216300104, "roi_pct": -4.259809555063385, "ctr": 3.2305727836556, "ctr_delta": -0.4899628765273971, "order_rate": 4.6019198193111235, "order_rate_delta": 0.6116918062818075, "price": 121.71963190184049, "price_delta": -8.870164016526857, "refund": 38.65030674846626, "refund_delta": -16.451734067860272}], "total_customers": 1011, "total_cost_all": 32.740801067, "headers_link": ["商品消费链路", "消耗(万元)", "消耗(万元)环比变化量", "消耗(万元)环比变化率(%)", "下单ROI", "下单ROI环比变化量", "下单ROI环比变化率(%)", "ctr(%)", "ctr(%)环比变化量", "ctr(%)环比变化率(%)", "下单率(%)", "下单率(%)环比变化量", "下单率(%)环比变化率(%)", "下单单价(元)", "下单单价(元)环比变化量", "下单单价(元)环比变化率(%)", "下单后7日发起退款率(%)", "下单后7日发起退款率(%)环比变化量", "下单后7日发起退款率(%)环比变化率(%)"]};
+if (typeof echarts === 'undefined') {
+  document.body.innerHTML = '<div style="padding:40px;color:#D32F2F;font-size:16px;text-align:center;">ECharts 加载失败：请确认同目录存在 echarts.min.js 或网络可访问 CDN</div>';
+  throw new Error('echarts missing');
+}
+const P = {"overall": {"商品消费链路": "整体", "消耗(万元)": 32.740801067, "消耗(万元)环比变化量": -8.453260756000006, "消耗(万元)环比变化率(%)": -20.520580835950174, "下单ROI": 8.409603217604744, "下单ROI环比变化量": 0.5167239381338433, "下单ROI环比变化率(%)": 6.546710266782162, "ctr(%)": 2.5877563423685563, "ctr(%)环比变化量": -0.031108202729988932, "ctr(%)环比变化率(%)": -1.1878507725117322, "下单率(%)": 6.568883960848012, "下单率(%)环比变化量": 0.2307024652199594, "下单率(%)环比变化率(%)": 3.6398841746499877, "下单单价(元)": 135.89514140466906, "下单单价(元)环比变化量": -1.9927962543640092, "下单单价(元)环比变化率(%)": -1.4452288490177883, "下单后7日发起退款率(%)": 47.34712008291792, "下单后7日发起退款率(%)环比变化量": 4.327612025241919, "下单后7日发起退款率(%)环比变化率(%)": 10.059650192744918}, "link": {"小店": {"商品消费链路": "小店", "消耗(万元)": 14.061153018, "消耗(万元)环比变化量": -1.259835764, "消耗(万元)环比变化率(%)": -8.222940320145193, "下单ROI": 6.125369156408678, "下单ROI环比变化量": 0.3601560714820815, "下单ROI环比变化率(%)": 6.247055679931856, "ctr(%)": 2.6993259177534505, "ctr(%)环比变化量": 0.10982872201937122, "ctr(%)环比变化率(%)": 4.241314576447595, "下单率(%)": 6.278665553862528, "下单率(%)环比变化量": -0.07204534661140638, "下单率(%)环比变化率(%)": -1.1344453832094588, "下单单价(元)": 105.03628414634147, "下单单价(元)环比变化量": 8.099535902267718, "下单单价(元)环比变化率(%)": 8.355485457253188, "下单后7日发起退款率(%)": 40.31707317073171, "下单后7日发起退款率(%)环比变化量": 4.847362898563141, "下单后7日发起退款率(%)环比变化率(%)": 13.666203815503508}, "直播": {"商品消费链路": "直播", "消耗(万元)": 18.679648048999997, "消耗(万元)环比变化量": -7.193424992000001, "消耗(万元)环比变化率(%)": -27.802746819447677, "下单ROI": 10.129066270610439, "下单ROI环比变化量": 0.9762690120576831, "下单ROI环比变化率(%)": 10.666345866510007, "ctr(%)": 2.511522217914851, "ctr(%)环比变化量": -0.12612137896356845, "ctr(%)环比变化率(%)": -4.7815929003004705, "下单率(%)": 6.782015092387454, "下单率(%)环比变化量": 0.4516993204153339, "下单率(%)环比变化率(%)": 7.135494289483341, "下单单价(元)": 156.87537766354365, "下单单价(元)环比变化量": -6.803770802035558, "下单单价(元)环比变化率(%)": -4.15677309285755, "下单后7日发起退款率(%)": 52.126689329243014, "下单后7日发起退款率(%)环比变化量": 4.352290656309641, "下单后7日发起退款率(%)环比变化率(%)": 9.11008987492591}}, "gyt": {"false": {"是否全域通广告": "false", "消耗(万元)": 14.831486067, "消耗(万元)环比变化量": -6.403828755999999, "消耗(万元)环比变化率(%)": -30.15650490410438, "下单ROI": 10.061271697650175, "下单ROI环比变化量": 2.307095252775718, "下单ROI环比变化率(%)": 29.752937261322153, "ctr(%)": 2.138261169932328, "ctr(%)环比变化量": -0.3175562015859339, "ctr(%)环比变化率(%)": -12.930774302227974, "下单率(%)": 7.358684480986639, "下单率(%)环比变化量": 0.6689037642795554, "下单率(%)环比变化率(%)": 9.998889240256151, "下单单价(元)": 189.4662404773997, "下单单价(元)环比变化量": 31.13703086201508, "下单单价(元)环比变化率(%)": 19.666005367963095, "下单后7日发起退款率(%)": 53.03453529710513, "下单后7日发起退款率(%)环比变化量": 7.015304527874363, "下单后7日发起退款率(%)环比变化率(%)": 15.244288986605387}, "true": {"是否全域通广告": "true", "消耗(万元)": 17.909315, "消耗(万元)环比变化量": -2.0494319999999995, "消耗(万元)环比变化率(%)": -10.268339991483431, "下单ROI": 7.041784401022597, "下单ROI环比变化量": -0.9986691905781173, "下单ROI环比变化率(%)": -12.420557860334588, "ctr(%)": 2.913187703599434, "ctr(%)环比变化量": 0.16326601611736136, "ctr(%)环比变化率(%)": 5.937115113516327, "下单率(%)": 6.14917903370753, "下单率(%)环比变化量": 0.06338691106819905, "下单率(%)环比变化率(%)": 1.0415556396084877, "下单单价(元)": 101.82764230924506, "下单单价(元)环比变化量": -19.930611863744318, "下单单价(元)环比变化率(%)": -16.36900265950568, "下单后7日发起退款率(%)": 43.73031893419459, "下单后7日发起退款率(%)环比变化量": 3.0778151405678855, "下单后7日发起退款率(%)环比变化率(%)": 7.571034630960197}}, "top20": [{"name": "kolakola", "cost": 4.95254422, "cost_pct": -40.41496806782672, "cost_delta": -3.359181157, "roi": 2.9675252450345613, "roi_pct": 6.68764303000116, "ctr": 2.3055415622091635, "ctr_pct": -19.0470981934733, "ctr_d": -0.5424620432938116, "order_rate": 7.814146939008062, "or_pct": 35.6325639667165, "or_d": 2.052885254885058, "ac": 0.0, "refund": 56.06999635435655, "cost_wan": 4.95254422, "cost_delta_wan": -3.359181157, "gyt_pct": 1.872047898645517}, {"name": "宁波市希盟贸易有限公司", "cost": 3.959857573, "cost_pct": 2.6553899041922726, "cost_delta": 0.10242974899999968, "roi": 2.4543306977167383, "roi_pct": 2.194971995754338, "ctr": 1.6808433662617803, "ctr_pct": -4.920642666603229, "ctr_d": -0.08698869887080707, "order_rate": 11.780319482650452, "or_pct": 7.345311208358058, "or_d": 0.8060912187025622, "ac": 0.0, "refund": 36.337566571077424, "cost_wan": 3.959857573, "cost_delta_wan": 0.10242974899999968, "gyt_pct": 0.0}, {"name": "广州市季俏韵服饰有限公司", "cost": 1.49694, "cost_pct": -36.247714599773346, "cost_delta": -0.8511169999999999, "roi": 3.635463011209534, "roi_pct": -1.6634157074094005, "ctr": 3.267088258164033, "ctr_pct": -4.588622914891323, "ctr_d": -0.15712419739012073, "order_rate": 8.76547987616099, "or_pct": 1.9582845871795256, "or_d": 0.16835614889186523, "ac": 0.0, "refund": 29.13907284768212, "cost_wan": 1.49694, "cost_delta_wan": -0.8511169999999999, "gyt_pct": 100.0}, {"name": "厦门美洋服饰有限公司", "cost": 1.367899, "cost_pct": 3.92513494930616, "cost_delta": 0.05166399999999993, "roi": 10.370207157107359, "roi_pct": -1.1352686761073554, "ctr": 3.3663494181385816, "ctr_pct": 1.4503580507832328, "ctr_d": 0.04812611876542361, "order_rate": 5.801502317404507, "or_pct": 21.013154921660167, "or_d": 1.0073935106717151, "ac": 0.0, "refund": 59.22865013774105, "cost_wan": 1.367899, "cost_delta_wan": 0.05166399999999993, "gyt_pct": 98.21412253390052}, {"name": "浙锦", "cost": 0.9068240889999999, "cost_pct": -9.262059480402012, "cost_delta": -0.09256391100000005, "roi": 6.052938013648202, "roi_pct": -13.7794524574708, "ctr": 2.2247135027404084, "ctr_pct": -14.896977504327666, "ctr_d": -0.38942808412689667, "order_rate": 3.471444568868981, "or_pct": 17.932686325743433, "or_d": 0.5278632115509105, "ac": 0.0, "refund": 58.064516129032256, "cost_wan": 0.9068240889999999, "cost_delta_wan": -0.09256391100000005, "gyt_pct": 20.63233677507656}, {"name": "主曼", "cost": 0.8819617089999999, "cost_pct": -36.66418396244936, "cost_delta": -0.510554823, "roi": 5.652751076520942, "roi_pct": 0.7460307904281754, "ctr": 3.043676069153776, "ctr_pct": 4.437980943771538, "ctr_d": 0.12933777799850787, "order_rate": 6.769165065129191, "or_pct": -6.704421607351174, "or_d": -0.4864468103233799, "ac": 0.0, "refund": 59.305993690851736, "cost_wan": 0.8819617089999999, "cost_delta_wan": -0.510554823, "gyt_pct": 0.0}, {"name": "哥弟商元", "cost": 0.81038009, "cost_pct": -29.688258153854974, "cost_delta": -0.34217291000000016, "roi": 4.134578380374572, "roi_pct": -1.1143195912062027, "ctr": 3.3593409834684045, "ctr_pct": 21.95424012263551, "ctr_d": 0.6047496055136099, "order_rate": 3.9928922337200796, "or_pct": -16.263754625461697, "or_d": -0.7755234217234341, "ac": 0.0, "refund": 76.17801047120419, "cost_wan": 0.81038009, "cost_delta_wan": -0.34217291000000016, "gyt_pct": 82.86926200272269}, {"name": "义乌市汐岂电子商务商行(个体工商户)", "cost": 0.716934, "cost_pct": 56.915763278331156, "cost_delta": 0.26004299999999997, "roi": 2.8321295963087256, "roi_pct": -2.7042931720912216, "ctr": 2.250577045916788, "ctr_pct": 5.337972125204922, "ctr_d": 0.11404735912753816, "order_rate": 10.134076266759534, "or_pct": 24.115192127302237, "or_d": 1.9690191991563726, "ac": 0.0, "refund": 27.147766323024054, "cost_wan": 0.716934, "cost_delta_wan": 0.26004299999999997, "gyt_pct": 100.0}, {"name": "杭州佑曦电子商务有限公司", "cost": 0.686619, "cost_pct": -17.69211036096513, "cost_delta": -0.14758899999999997, "roi": 3.387321061607675, "roi_pct": 3.126585847084202, "ctr": 1.8315945294344942, "ctr_pct": -20.375790842912597, "ctr_d": -0.46870402150120793, "order_rate": 6.774624870004457, "or_pct": 58.820333687154566, "or_d": 2.509034493302969, "ac": 0.0, "refund": 28.07017543859649, "cost_wan": 0.686619, "cost_delta_wan": -0.14758899999999997, "gyt_pct": 100.0}, {"name": "深圳市佐佑服饰有限公司", "cost": 0.685855, "cost_pct": 997.7719800886726, "cost_delta": 0.623378, "roi": 15.36711987227621, "roi_pct": -0.15998375048607394, "ctr": 4.843974409191801, "ctr_pct": 8.601515085218061, "ctr_d": 0.3836550431214443, "order_rate": 48.517520215633425, "or_pct": 1902.6954177897576, "or_d": 46.09490917929426, "ac": 0.0, "refund": 45.0, "cost_wan": 0.685855, "cost_delta_wan": 0.623378, "gyt_pct": 100.0}, {"name": "丫头", "cost": 0.676697, "cost_pct": 207.56018743665376, "cost_delta": 0.45667599999999997, "roi": 6.462364987579374, "roi_pct": -49.87838436483625, "ctr": 5.812100363438478, "ctr_pct": 13.922689309012629, "ctr_d": 0.7103068588335333, "order_rate": 24.0428022069888, "or_pct": -17.874079276736023, "or_d": -5.2327322348164245, "ac": 0.0, "refund": 30.528511821974966, "cost_wan": 0.676697, "cost_delta_wan": 0.45667599999999997}, {"name": "海口秀英诗娟电子商务中心", "cost": 0.557668, "cost_pct": -18.46563455771885, "cost_delta": -0.12629881199999993, "roi": 2.7951576923904544, "roi_pct": -3.012657600950913, "ctr": 4.451210793260941, "ctr_pct": 0.6497151988412253, "ctr_d": 0.02873350709353062, "order_rate": 4.195011337868481, "or_pct": -1.4022513767411746, "or_d": -0.0596612042983633, "ac": 0.0, "refund": 28.82882882882883, "cost_wan": 0.557668, "cost_delta_wan": -0.12629881199999993}, {"name": "森衣惠", "cost": 0.541114177, "cost_pct": 3.138414974951747, "cost_delta": 0.016465648000000055, "roi": 3.6581558645801286, "roi_pct": 6.1171890681068675, "ctr": 3.5116467196283008, "ctr_pct": -7.431022239765197, "ctr_d": -0.2818992442516328, "order_rate": 4.459539279385706, "or_pct": 16.653847624794437, "or_d": 0.6366569911568831, "ac": 0.0, "refund": 79.47019867549669, "cost_wan": 0.541114177, "cost_delta_wan": 0.016465648000000055}, {"name": "广州市白云区妍妍服装店(个体工商户)", "cost": 0.52446, "cost_pct": 40.653033858531685, "cost_delta": 0.15158500000000003, "roi": 4.3040460664302325, "roi_pct": 0.40485341717798434, "ctr": 3.680077307922839, "ctr_pct": -7.485036858205646, "ctr_d": -0.2977411799714025, "order_rate": 6.315439587834469, "or_pct": -6.04029324321829, "or_d": -0.4059943180654564, "ac": 0.0, "refund": 31.842105263157894, "cost_wan": 0.52446, "cost_delta_wan": 0.15158500000000003}, {"name": "杭州曼娴服饰有限公司", "cost": 0.455771, "cost_pct": -47.38574314574315, "cost_delta": -0.410479, "roi": 5.407233018335962, "roi_pct": 0.3856950032463826, "ctr": 2.0400166949174197, "ctr_pct": 1.8806517142867272, "ctr_d": 0.03765740432471132, "order_rate": 6.38830897703549, "or_pct": -12.575217978631958, "or_d": -0.9188970912325249, "ac": 0.0, "refund": 50.326797385620914, "cost_wan": 0.455771, "cost_delta_wan": -0.410479}, {"name": "特际直购", "cost": 0.446314649, "cost_pct": -26.837562816693577, "cost_delta": -0.16371785700000002, "roi": 2.1498286066787826, "roi_pct": 13.915651755706456, "ctr": 1.6412622008289879, "ctr_pct": 8.241690576967054, "ctr_d": 0.12496825523328314, "order_rate": 10.047522063815343, "or_pct": 7.526113314515083, "or_d": 0.7032597687333766, "ac": 0.0, "refund": 24.324324324324323, "cost_wan": 0.446314649, "cost_delta_wan": -0.16371785700000002}, {"name": "合肥市经开区奥诗服装店", "cost": 0.42637600000000003, "cost_pct": -0.17886407266936635, "cost_delta": -0.0007639999999999314, "roi": 4.547160252922303, "roi_pct": 0.29816836732416396, "ctr": 2.3749288852843984, "ctr_pct": 19.474224312444598, "ctr_d": 0.38711193233765084, "order_rate": 6.8807339449541285, "or_pct": -0.7131594036697264, "or_d": -0.04942306641566052, "ac": 0.0, "refund": 51.111111111111114, "cost_wan": 0.42637600000000003, "cost_delta_wan": -0.0007639999999999314}, {"name": "晚年之美", "cost": 0.38738243, "cost_pct": -57.73699536512878, "cost_delta": -0.52921693, "roi": 2.2241586950652357, "roi_pct": -15.21823020730142, "ctr": 0.7800881526543045, "ctr_pct": -12.987748768857452, "ctr_d": -0.11643864859124609, "order_rate": 2.7234369006520907, "or_pct": -34.14234403877671, "or_d": -1.4119014452125707, "ac": 0.0, "refund": 46.478873239436616, "cost_wan": 0.38738243, "cost_delta_wan": -0.52921693}, {"name": "杭州富阳星空设计工作室(个体工商户)", "cost": 0.374764, "cost_pct": -15.944492915826519, "cost_delta": -0.07108900000000001, "roi": 16.00633998996702, "roi_pct": -0.292358907609389, "ctr": 3.989629370323371, "ctr_pct": -10.060929660179838, "ctr_d": -0.44629525648142554, "order_rate": 10.200164518782561, "or_pct": -37.2528341027833, "or_d": -6.055811943151973, "ac": 0.0, "refund": 40.053763440860216, "cost_wan": 0.374764, "cost_delta_wan": -0.07108900000000001}, {"name": "义乌市藿岐电子商务商行(个体工商户)", "cost": 0.296177, "cost_pct": 223.85352198919685, "cost_delta": 0.20472300000000004, "roi": 6.698798353687153, "roi_pct": -4.259809555063385, "ctr": 3.2305727836556, "ctr_pct": -13.169148780670415, "ctr_d": -0.4899628765273971, "order_rate": 4.6019198193111235, "or_pct": 15.329745675797135, "or_d": 0.6116918062818075, "ac": 0.0, "refund": 38.65030674846626, "cost_wan": 0.296177, "cost_delta_wan": 0.20472300000000004}], "top10": [{"name": "kolakola", "cost": 4.95254422, "cost_pct": -40.41496806782672, "cost_delta": -3.359181157, "roi": 2.9675252450345613, "roi_pct": 6.68764303000116, "ctr": 2.3055415622091635, "ctr_pct": -19.0470981934733, "ctr_d": -0.5424620432938116, "order_rate": 7.814146939008062, "or_pct": 35.6325639667165, "or_d": 2.052885254885058, "ac": 0.0, "refund": 56.06999635435655, "cost_wan": 4.95254422, "cost_delta_wan": -3.359181157, "gyt_pct": 1.872047898645517}, {"name": "宁波市希盟贸易有限公司", "cost": 3.959857573, "cost_pct": 2.6553899041922726, "cost_delta": 0.10242974899999968, "roi": 2.4543306977167383, "roi_pct": 2.194971995754338, "ctr": 1.6808433662617803, "ctr_pct": -4.920642666603229, "ctr_d": -0.08698869887080707, "order_rate": 11.780319482650452, "or_pct": 7.345311208358058, "or_d": 0.8060912187025622, "ac": 0.0, "refund": 36.337566571077424, "cost_wan": 3.959857573, "cost_delta_wan": 0.10242974899999968, "gyt_pct": 0.0}, {"name": "广州市季俏韵服饰有限公司", "cost": 1.49694, "cost_pct": -36.247714599773346, "cost_delta": -0.8511169999999999, "roi": 3.635463011209534, "roi_pct": -1.6634157074094005, "ctr": 3.267088258164033, "ctr_pct": -4.588622914891323, "ctr_d": -0.15712419739012073, "order_rate": 8.76547987616099, "or_pct": 1.9582845871795256, "or_d": 0.16835614889186523, "ac": 0.0, "refund": 29.13907284768212, "cost_wan": 1.49694, "cost_delta_wan": -0.8511169999999999, "gyt_pct": 100.0}, {"name": "厦门美洋服饰有限公司", "cost": 1.367899, "cost_pct": 3.92513494930616, "cost_delta": 0.05166399999999993, "roi": 10.370207157107359, "roi_pct": -1.1352686761073554, "ctr": 3.3663494181385816, "ctr_pct": 1.4503580507832328, "ctr_d": 0.04812611876542361, "order_rate": 5.801502317404507, "or_pct": 21.013154921660167, "or_d": 1.0073935106717151, "ac": 0.0, "refund": 59.22865013774105, "cost_wan": 1.367899, "cost_delta_wan": 0.05166399999999993, "gyt_pct": 98.21412253390052}, {"name": "浙锦", "cost": 0.9068240889999999, "cost_pct": -9.262059480402012, "cost_delta": -0.09256391100000005, "roi": 6.052938013648202, "roi_pct": -13.7794524574708, "ctr": 2.2247135027404084, "ctr_pct": -14.896977504327666, "ctr_d": -0.38942808412689667, "order_rate": 3.471444568868981, "or_pct": 17.932686325743433, "or_d": 0.5278632115509105, "ac": 0.0, "refund": 58.064516129032256, "cost_wan": 0.9068240889999999, "cost_delta_wan": -0.09256391100000005, "gyt_pct": 20.63233677507656}, {"name": "主曼", "cost": 0.8819617089999999, "cost_pct": -36.66418396244936, "cost_delta": -0.510554823, "roi": 5.652751076520942, "roi_pct": 0.7460307904281754, "ctr": 3.043676069153776, "ctr_pct": 4.437980943771538, "ctr_d": 0.12933777799850787, "order_rate": 6.769165065129191, "or_pct": -6.704421607351174, "or_d": -0.4864468103233799, "ac": 0.0, "refund": 59.305993690851736, "cost_wan": 0.8819617089999999, "cost_delta_wan": -0.510554823, "gyt_pct": 0.0}, {"name": "哥弟商元", "cost": 0.81038009, "cost_pct": -29.688258153854974, "cost_delta": -0.34217291000000016, "roi": 4.134578380374572, "roi_pct": -1.1143195912062027, "ctr": 3.3593409834684045, "ctr_pct": 21.95424012263551, "ctr_d": 0.6047496055136099, "order_rate": 3.9928922337200796, "or_pct": -16.263754625461697, "or_d": -0.7755234217234341, "ac": 0.0, "refund": 76.17801047120419, "cost_wan": 0.81038009, "cost_delta_wan": -0.34217291000000016, "gyt_pct": 82.86926200272269}, {"name": "义乌市汐岂电子商务商行(个体工商户)", "cost": 0.716934, "cost_pct": 56.915763278331156, "cost_delta": 0.26004299999999997, "roi": 2.8321295963087256, "roi_pct": -2.7042931720912216, "ctr": 2.250577045916788, "ctr_pct": 5.337972125204922, "ctr_d": 0.11404735912753816, "order_rate": 10.134076266759534, "or_pct": 24.115192127302237, "or_d": 1.9690191991563726, "ac": 0.0, "refund": 27.147766323024054, "cost_wan": 0.716934, "cost_delta_wan": 0.26004299999999997, "gyt_pct": 100.0}, {"name": "杭州佑曦电子商务有限公司", "cost": 0.686619, "cost_pct": -17.69211036096513, "cost_delta": -0.14758899999999997, "roi": 3.387321061607675, "roi_pct": 3.126585847084202, "ctr": 1.8315945294344942, "ctr_pct": -20.375790842912597, "ctr_d": -0.46870402150120793, "order_rate": 6.774624870004457, "or_pct": 58.820333687154566, "or_d": 2.509034493302969, "ac": 0.0, "refund": 28.07017543859649, "cost_wan": 0.686619, "cost_delta_wan": -0.14758899999999997, "gyt_pct": 100.0}, {"name": "深圳市佐佑服饰有限公司", "cost": 0.685855, "cost_pct": 997.7719800886726, "cost_delta": 0.623378, "roi": 15.36711987227621, "roi_pct": -0.15998375048607394, "ctr": 4.843974409191801, "ctr_pct": 8.601515085218061, "ctr_d": 0.3836550431214443, "order_rate": 48.517520215633425, "or_pct": 1902.6954177897576, "or_d": 46.09490917929426, "ac": 0.0, "refund": 45.0, "cost_wan": 0.685855, "cost_delta_wan": 0.623378, "gyt_pct": 100.0}], "pp": {"groups": {"非商品聚合页": {"n": 379, "cost_wan": 33.59910441500001, "cost_pct": -23.120558706080054, "cost_delta_wan": -10.104522782999952, "roi": 10.758876413343227, "ac": 168.20038978684616, "ctr": 0.0, "order_rate": 0.0, "refund": 0.0, "pct_female": 102.62809584681129, "pct_live": 179.8705776087283}, "商品聚合页": {"n": 7, "cost_wan": 3.7601916830000004, "cost_pct": -23.718412533589248, "cost_delta_wan": -1.1691652010000004, "roi": 3.1046204513399003, "ac": 66.48681812097635, "ctr": 0.0, "order_rate": 0.0, "refund": 0.0, "pct_female": 11.485464245678664, "pct_live": 20.12993684554273}}, "top5": [{"name": "kolakola", "cost_wan": 2.557242683, "cost_pct": -29.401860814140047, "cost_delta_wan": -1.0650095640000004, "roi": 2.9024034556207194, "ctr": 0.0, "order_rate": 0.0, "ac": 41.047234077046554, "gyt_pct": 1.872047898645517}, {"name": "海口秀英诗娟电子商务中心", "cost_wan": 0.479739, "cost_pct": -17.666647538918916, "cost_delta_wan": -0.10293981199999998, "roi": 2.7975211521264685, "ctr": 0.0, "order_rate": 0.0, "ac": 102.07212765957448, "gyt_pct": 0.0}, {"name": "浙锦", "cost_wan": 0.24409099999999997, "cost_pct": -33.36363611545634, "cost_delta_wan": -0.12221200000000003, "roi": 3.4413395004322163, "ctr": 0.0, "order_rate": 0.0, "ac": 187.76230769230767, "gyt_pct": 20.63233677507656}, {"name": "广州华垲贸易有限公司", "cost_wan": 0.185392, "cost_pct": 38.500041088624435, "cost_delta_wan": 0.05153500000000001, "roi": 2.5261607836368345, "ctr": 0.0, "order_rate": 0.0, "ac": 88.28190476190477, "gyt_pct": 0.0}, {"name": "主曼", "cost_wan": 0.15531, "cost_pct": 98.6919135589493, "cost_delta_wan": 0.07714375899999999, "roi": 6.177322773807225, "ctr": 0.0, "order_rate": 0.0, "ac": 194.1375, "gyt_pct": 0.0}]}, "qk": {"groups": {"非潜客优投": {"n": 986, "cost_wan": 69.84707779899992, "cost_pct": -18.653570146646416, "cost_delta_wan": -16.016650855000016, "roi": 7.556133293346698, "roi24": 3.9486869270850002, "ctr": 0.0, "order_rate": 0.0, "pct_female": 213.34713290081743, "pct_live": 373.92169960277477}, "潜客优投": {"n": 14, "cost_wan": 0.4117819050000001, "cost_pct": -39.32943565633097, "cost_delta_wan": -0.26693587100000105, "roi": 56.72380868702813, "roi24": 8.938510787646193, "ctr": 0.0, "order_rate": 0.0, "pct_female": 1.2577833114937371, "pct_live": 2.204447124135421}}, "top5": [{"name": "森衣惠", "cost_wan": 0.197421235, "cost_pct": 10.48178678117811, "cost_delta_wan": 0.018730031000000008, "roi": 3.8922358073588184, "roi24": 3.826437414394657, "ctr": 0.0, "order_rate": 0.0, "gyt_pct": 0.0}, {"name": "茉寻", "cost_wan": 0.11823955900000001, "cost_pct": -30.64774584185671, "cost_delta_wan": -0.05225174, "roi": 4.815055171171604, "roi24": 3.837801864602692, "ctr": 0.0, "order_rate": 0.0, "gyt_pct": 4.818330691415036}, {"name": "贵州幺衫服饰有限公司", "cost_wan": 0.039301226, "cost_pct": -53.08977676574747, "cost_delta_wan": -0.04447843500000001, "roi": 6.935915943182026, "roi24": 4.572376444439672, "ctr": 0.0, "order_rate": 0.0, "gyt_pct": 0.0}, {"name": "宜宾市骏升商贸有限公司", "cost_wan": 0.023423175, "cost_pct": -34.03843967592426, "cost_delta_wan": -0.012087166, "roi": 0.853428282032645, "roi24": 0.0, "ctr": 0.0, "order_rate": 0.0, "gyt_pct": 0.0}, {"name": "易达", "cost_wan": 0.014112122, "cost_pct": -31.907662338652422, "cost_delta_wan": -0.006612855999999999, "roi": 3.3963708647076607, "roi24": 3.3963708647076607, "ctr": 0.0, "order_rate": 0.0, "gyt_pct": null}]}, "base": {"female": 32.7387, "live": 18.6796}};
+const fmt = (v, d=2) => {
+  if (v === null || v === undefined || isNaN(v)) return '-';
+  return Number(v).toLocaleString('en-US',{minimumFractionDigits:d, maximumFractionDigits:d});
+};
+const deltaHtml = (pct, abs, unit='万', ppMode=false) => {
+  if (pct === null || pct === undefined || isNaN(pct)) return '-';
+  const up = pct >= 0;
+  const cls = up ? 'up' : 'dn';
+  const ar  = up ? '▲' : '▼';
+  const sgn = up ? '+' : '';
+  const absHtml = (abs !== null && abs !== undefined && !isNaN(abs))
+    ? ` <span class="abs">(${abs>=0?'+':''}${fmt(abs, ppMode?2:2)}${unit})</span>` : '';
+  return `<span class="${cls}">${ar} ${sgn}${fmt(pct,1)}%${absHtml}</span>`;
+};
+const gytPctCell = v => {
+  if (v === null || v === undefined) return '<span class="gyt-pct na">-</span>';
+  const cls = v >= 60 ? 'high' : v >= 20 ? 'mid' : 'low';
+  return `<span class="gyt-pct ${cls}">${fmt(v,1)}%</span>`;
+};
 
-  function fmt(v, d){ if(v===null||v===undefined||isNaN(v)) return '—'; return Number(v).toFixed(d===undefined?2:d); }
-  function fmtInt(v){ if(v===null||v===undefined||isNaN(v)) return '—'; return Math.round(v).toLocaleString(); }
-  function pct(v){ if(v===null||v===undefined||isNaN(v)) return '—'; const s=v>=0?'+':''; return s+Number(v).toFixed(1)+'%'; }
-  function signAbs(v, d){ if(v===null||v===undefined||isNaN(v)) return ''; const s=v>=0?'+':''; return s+Number(v).toFixed(d===undefined?2:d); }
-  function cls(v){ if(v===null||v===undefined||isNaN(v)) return ''; return v>=0?'up':'down'; }
-  function arr(v){ if(v===null||v===undefined||isNaN(v)) return ''; return v>=0?'▲':'▼'; }
+// ============ KPI ============
+const kpis = [
+  { lb:'消耗',      key:'消耗(万元)',                     unit:'万', d:2, deltaUnit:'万' },
+  { lb:'ROI',      key:'下单ROI',                        unit:'',   d:2, deltaUnit:'pp' },
+  { lb:'CTR',      key:'ctr(%)',                          unit:'%',  d:2, deltaUnit:'pp' },
+  { lb:'下单率',    key:'下单率(%)',                       unit:'%',  d:2, deltaUnit:'pp' },
+  { lb:'单价',      key:'下单单价(元)',                    unit:'元', d:1, deltaUnit:'元' },
+  { lb:'7日退款率', key:'下单后7日发起退款率(%)',           unit:'%',  d:2, deltaUnit:'pp' },
+];
+document.getElementById('kpiGrid').innerHTML = kpis.map(k => {
+  const v = P.overall[k.key];
+  const pct = P.overall[k.key + '环比变化率(%)'];
+  const abs = P.overall[k.key + '环比变化量'];
+  return `<div class="kpi">
+    <div class="label">${k.lb}</div>
+    <div class="val">${fmt(v,k.d)}<span class="unit">${k.unit}</span></div>
+    <div class="delta">${deltaHtml(pct, abs, k.deltaUnit)}</div>
+  </div>`;
+}).join('');
 
-  // ---- KPI（环比同时展示 % 和绝对值） ----
-  const o = P.overall;
-  const kpis = [
-    { l:'昨日消耗', v:fmt(o['消耗(万元)']),          u:'万', d:o['消耗(万元)环比变化率(%)'],           abs:o['消耗(万元)环比变化量'],           absUnit:'万', absD:2 },
-    { l:'下单ROI',  v:fmt(o['下单ROI']),             u:'',   d:o['下单ROI环比变化率(%)'],              abs:o['下单ROI环比变化量'],              absUnit:'',   absD:2 },
-    { l:'CTR',      v:fmt(o['ctr(%)']),              u:'%',  d:o['ctr(%)环比变化率(%)'],               abs:o['ctr(%)环比变化量'],               absUnit:'pp', absD:2 },
-    { l:'下单率',   v:fmt(o['下单率(%)']),           u:'%',  d:o['下单率(%)环比变化率(%)'],            abs:o['下单率(%)环比变化量'],            absUnit:'pp', absD:2 },
-    { l:'单价',     v:fmtInt(o['下单单价(元)']),     u:'元', d:o['下单单价(元)环比变化率(%)'],         abs:o['下单单价(元)环比变化量'],         absUnit:'元', absD:1 },
-    { l:'退款率',   v:fmt(o['下单后7日发起退款率(%)']), u:'%', d:o['下单后7日发起退款率(%)环比变化率(%)'], abs:o['下单后7日发起退款率(%)环比变化量'], absUnit:'pp', absD:2 },
-  ];
-  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
-    <div class="kpi">
-      <div class="label">${k.l}</div>
-      <div class="val">${k.v}<span class="unit">${k.u}</span></div>
-      <div class="delta ${cls(k.d)}">${arr(k.d)} ${pct(k.d)} <span style="color:#7A94B4;font-weight:500;">(${signAbs(k.abs, k.absD)}${k.absUnit})</span></div>
-    </div>`).join('');
+const axisLabel = { color:'#5B7A9E', fontSize: 12 };
+const splitLine = { lineStyle:{ color:'#E3EEFB' } };
 
-  const axisLabel = { color:'#5B7A9E', fontSize: 12 };
-  const splitLine = { lineStyle: { color:'#E8F1FB' } };
-
-  // ==== 图1：分链路 消耗环 + 指标分组柱（左环右柱，与全域通图对称） ====
-  const linkNames = Object.keys(P.link); // ['小店','直播']
-  const metricsCfg = [
-    { key:'下单ROI',                  label:'ROI',    color:'#00B8D4' },
-    { key:'ctr(%)',                    label:'CTR%',   color:'#7C4DFF' },
-    { key:'下单率(%)',                 label:'下单率%', color:'#F9A825' },
-    { key:'下单后7日发起退款率(%)',    label:'退款率%', color:'#E53935' },
-  ];
-  echarts.init(document.getElementById('chartLink')).setOption({
-    tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
-    legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
-              data: linkNames },
-    grid: { top: 40, right: 20, bottom: 28, left: '52%' },
-    xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
-    yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
-    series: [
-      // 左环：消耗占比（label 内嵌 · 图例外置显示环比）
-      {
-        type:'pie', radius:['38%','62%'], center:['22%','58%'],
-        avoidLabelOverlap: false,
-        itemStyle:{ borderRadius:4, borderColor:'#fff', borderWidth:2 },
-        label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
-                lineHeight: 18,
-                textBorderColor:'#fff', textBorderWidth: 3,
-                formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
-        labelLine:{ show:false },
-        data: linkNames.map((n, i) => ({
-          name: n, value: P.link[n]['消耗(万元)'],
-          deltaPct: P.link[n]['消耗(万元)环比变化率(%)'],
-          deltaAbs: P.link[n]['消耗(万元)环比变化量'],
-          itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
-        }))
-      },
-      // 右侧分组柱：指标
-      ...linkNames.map((n, i) => ({
-        name: n, type:'bar', barWidth:'26%',
-        data: metricsCfg.map(m => P.link[n][m.key]),
-        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5', borderRadius:[4,4,0,0] },
-        label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:600, formatter: p => fmt(p.value,1) }
+// ============ 图1：分链路 ============
+const linkNames = Object.keys(P.link);
+const metricsCfg = [
+  { key:'下单ROI',                  label:'ROI',    color:'#00B8D4' },
+  { key:'ctr(%)',                    label:'CTR%',   color:'#7C4DFF' },
+  { key:'下单率(%)',                 label:'下单率%', color:'#F9A825' },
+  { key:'下单后7日发起退款率(%)',    label:'退款率%', color:'#E53935' },
+];
+echarts.init(document.getElementById('chartLink')).setOption({
+  tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
+  legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10, data: linkNames },
+  grid: { top: 40, right: 20, bottom: 28, left: '52%' },
+  xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
+  yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
+  series: [
+    {
+      type:'pie', radius:['26%','44%'], center:['24%','58%'],
+      itemStyle:{ borderRadius:6, borderColor:'#fff', borderWidth:2 },
+      label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
+              textBorderColor:'#fff', textBorderWidth:3, lineHeight: 18,
+              formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
+      labelLine:{ show:false },
+      data: linkNames.map((n, i) => ({
+        name: n, value: P.link[n]['消耗(万元)'],
+        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
       }))
-    ]
-  });
+    },
+    ...metricsCfg.map(m => ({
+      name: m.label, type:'bar', yAxisIndex: 0,
+      barGap: 0.1, barCategoryGap: '40%',
+      data: linkNames.map(n => ({ value: P.link[n][m.key], itemStyle:{ color: m.color, borderRadius:[4,4,0,0] } })),
+      label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:700, formatter: p => fmt(p.value,1) }
+    }))
+  ]
+});
+// pie-info 卡
+document.getElementById('linkInfo').innerHTML = linkNames.map((n, i) => {
+  const v = P.link[n];
+  return `<div class="card ${i===1?'blue2':''}">
+    <div class="n">${n} · ${fmt((v['消耗(万元)']/(P.link[linkNames[0]]['消耗(万元)']+P.link[linkNames[1]]['消耗(万元)']))*100,1)}%</div>
+    <div class="v">${fmt(v['消耗(万元)'],2)} <span style="font-size:11px;color:#5B7A9E;font-weight:500;">万</span></div>
+    <div class="d">${deltaHtml(v['消耗(万元)环比变化率(%)'], v['消耗(万元)环比变化量'], '万')}</div>
+  </div>`;
+}).join('');
 
-  // ==== 图2：全域通 消耗环 + 指标分组柱（左环右柱） ====
-  const gytMap = { 'true':'全域通', 'false':'ADQ' };
-  const gytEntries = Object.entries(P.gyt);
-  echarts.init(document.getElementById('chartGyt')).setOption({
-    tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
-    legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
-              data: [...gytEntries.map(([k])=>gytMap[k]||k), 'ROI','CTR%','下单率%','退款率%'] },
-    grid: { top: 40, right: 20, bottom: 28, left: '52%' },
-    xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
-    yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
-    series: [
-      // 左侧环：消耗占比（label 内嵌）
-      {
-        type:'pie', radius:['38%','62%'], center:['22%','58%'],
-        avoidLabelOverlap: false,
-        itemStyle:{ borderRadius:4, borderColor:'#fff', borderWidth:2 },
-        label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
-                lineHeight: 18,
-                textBorderColor:'#fff', textBorderWidth: 3,
-                formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
-        labelLine:{ show:false },
-        data: gytEntries.map(([k,v], i) => ({
-          name: gytMap[k]||k, value: v['消耗(万元)'],
-          deltaPct: v['消耗(万元)环比变化率(%)'],
-          deltaAbs: v['消耗(万元)环比变化量'],
-          itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
-        }))
-      },
-      // 右侧分组柱：指标
-      ...gytEntries.map(([k,v], i) => ({
-        name: gytMap[k]||k, type:'bar', barWidth:'26%',
-        data: metricsCfg.map(m => v[m.key]),
-        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5', borderRadius:[4,4,0,0] },
-        label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:600, formatter: p => fmt(p.value,1) }
+// ============ 图2：是否全域通 ============
+const gytMap = { 'true':'全域通', 'false':'ADQ' };
+const gytEntries = Object.entries(P.gyt);
+echarts.init(document.getElementById('chartGyt')).setOption({
+  tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
+  legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
+            data: [...gytEntries.map(([k])=>gytMap[k]||k), 'ROI','CTR%','下单率%','退款率%'] },
+  grid: { top: 40, right: 20, bottom: 28, left: '52%' },
+  xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
+  yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
+  series: [
+    {
+      type:'pie', radius:['26%','44%'], center:['24%','58%'],
+      itemStyle:{ borderRadius:6, borderColor:'#fff', borderWidth:2 },
+      label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
+              textBorderColor:'#fff', textBorderWidth:3, lineHeight: 18,
+              formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
+      labelLine:{ show:false },
+      data: gytEntries.map(([k,v], i) => ({
+        name: gytMap[k]||k, value: v['消耗(万元)'],
+        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
       }))
-    ]
-  });
+    },
+    ...metricsCfg.map(m => ({
+      name: m.label, type:'bar',
+      barGap: 0.1, barCategoryGap: '40%',
+      data: gytEntries.map(([,v]) => ({ value: v[m.key], itemStyle:{ color: m.color, borderRadius:[4,4,0,0] } })),
+      label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:700, formatter: p => fmt(p.value,1) }
+    }))
+  ]
+});
+document.getElementById('gytInfo').innerHTML = gytEntries.map(([k,v], i) => {
+  const name = gytMap[k]||k;
+  return `<div class="card ${i===1?'blue2':''}">
+    <div class="n">${name} · ${fmt((v['消耗(万元)']/(gytEntries[0][1]['消耗(万元)']+gytEntries[1][1]['消耗(万元)']))*100,1)}%</div>
+    <div class="v">${fmt(v['消耗(万元)'],2)} <span style="font-size:11px;color:#5B7A9E;font-weight:500;">万</span></div>
+    <div class="d">${deltaHtml(v['消耗(万元)环比变化率(%)'], v['消耗(万元)环比变化量'], '万')}</div>
+  </div>`;
+}).join('');
 
-  // ==== 饼图下方消耗+环比卡片 ====
-  function renderPieInfo(elId, entries) {
-    document.getElementById(elId).innerHTML = entries.map((e, i) => {
-      const d = e.deltaPct, a = e.deltaAbs;
-      const sign = d>=0?'+':'', ar = d>=0?'▲':'▼';
-      const dcls = d>=0?'up':'down';
-      return `<div class="card${i===1?' c2':''}">
-        <div class="name">${e.name} · ${fmt(e.percent,1)}%</div>
-        <div class="cost">${fmt(e.value,2)}<span class="unit">万</span></div>
-        <div class="delta ${dcls}">${ar} ${sign}${fmt(d,1)}% (${a>=0?'+':''}${fmt(a,2)}万)</div>
-      </div>`;
-    }).join('');
-  }
-  const linkTotal = linkNames.reduce((s,n)=>s+P.link[n]['消耗(万元)'],0);
-  renderPieInfo('linkInfo', linkNames.map(n => ({
-    name: n,
-    value: P.link[n]['消耗(万元)'],
-    percent: P.link[n]['消耗(万元)']/linkTotal*100,
-    deltaPct: P.link[n]['消耗(万元)环比变化率(%)'],
-    deltaAbs: P.link[n]['消耗(万元)环比变化量'],
-  })));
-  const gytTotal = gytEntries.reduce((s,[,v])=>s+v['消耗(万元)'],0);
-  renderPieInfo('gytInfo', gytEntries.map(([k,v]) => ({
-    name: gytMap[k]||k,
-    value: v['消耗(万元)'],
-    percent: v['消耗(万元)']/gytTotal*100,
-    deltaPct: v['消耗(万元)环比变化率(%)'],
-    deltaAbs: v['消耗(万元)环比变化量'],
-  })));
+// ============ 商品聚合页 / 潜客优投 KPI 卡 ============
+function renderSegKpi(elId, group, kind, colorClass='') {
+  // 5 个指标 + 环比
+  const items = kind === 'pp' ? [
+    { lb:'消耗',     val:fmt(group.cost_wan,2),     un:'万', dpct:group.cost_pct, dabs:group.cost_delta_wan, dun:'万' },
+    { lb:'占女装闭环', val:fmt(group.pct_female,1),   un:'%',  dpct:null },
+    { lb:'占直播',    val:fmt(group.pct_live,1),     un:'%',  dpct:null },
+    { lb:'ROI',      val:fmt(group.roi,2),           un:'',   dpct:null },
+    { lb:'CTR',      val:fmt(group.ctr,2),           un:'%',  dpct:null },
+    { lb:'下单率',    val:fmt(group.order_rate,2),    un:'%',  dpct:null },
+  ] : [
+    { lb:'消耗',     val:fmt(group.cost_wan,2),     un:'万', dpct:group.cost_pct, dabs:group.cost_delta_wan, dun:'万' },
+    { lb:'占女装闭环', val:fmt(group.pct_female,1),   un:'%',  dpct:null },
+    { lb:'占直播',    val:fmt(group.pct_live,1),     un:'%',  dpct:null },
+    { lb:'ROI',      val:fmt(group.roi,2),           un:'',   dpct:null },
+    { lb:'首24H ROI', val:fmt(group.roi24,2),         un:'',   dpct:null },
+    { lb:'下单率',    val:fmt(group.order_rate,2),    un:'%',  dpct:null },
+  ];
+  document.getElementById(elId).innerHTML = items.map(it => `
+    <div class="k ${colorClass}">
+      <div class="lb">${it.lb}</div>
+      <div class="vv">${it.val}<span class="un">${it.un}</span></div>
+      <div class="dd">${it.dpct !== null && it.dpct !== undefined ? deltaHtml(it.dpct, it.dabs, it.dun) : '&nbsp;'}</div>
+    </div>
+  `).join('');
+}
+// 板块标题 + 分组卡（每组一行 6 个指标，两组上下叠）
+function renderSegSection(gid, groups, order, kind) {
+  const [aName, bName] = order;
+  const a = groups[aName], b = groups[bName];
+  if (a) renderSegKpi(gid+'A', {...a, __name:aName}, kind, '');
+  if (b) renderSegKpi(gid+'B', {...b, __name:bName}, kind, 'b2');
+  // 在每个卡片行前置分组名（用 CSS 伪元素或注入前置 label）
+  const wrapA = document.getElementById(gid+'A');
+  const wrapB = document.getElementById(gid+'B');
+  wrapA.insertAdjacentHTML('beforebegin', `<div style="font-size:12px;color:#0D47A1;font-weight:700;margin-top:4px;">▎${aName}（${a? a.n : 0} 个客户 · ${a?fmt(a.cost_wan,2):'-'} 万）</div>`);
+  wrapB.insertAdjacentHTML('beforebegin', `<div style="font-size:12px;color:#42A5F5;font-weight:700;margin-top:4px;">▎${bName}（${b? b.n : 0} 个客户 · ${b?fmt(b.cost_wan,2):'-'} 万）</div>`);
+}
+renderSegSection('ppKpi', P.pp.groups, ['商品聚合页','非商品聚合页'], 'pp');
+renderSegSection('qkKpi', P.qk.groups, ['潜客优投','非潜客优投'], 'qk');
 
-  // ==== Top20 表格 ====
-  const top = P.top20;
-  const totalCost = P.overall['消耗(万元)'];
-  const topSum = top.reduce((a,c)=>a+(c.cost||0),0);
-  document.getElementById('top20Tag').textContent = `${topSum.toFixed(2)} 万 · 占大盘 ${(topSum/totalCost*100).toFixed(1)}%`;
+// ============ Top10 客户 ============
+const rankCls = i => i < 3 ? 'top3' : '';
+document.querySelector('#tblTop10 tbody').innerHTML = P.top10.map((c, i) => `
+  <tr>
+    <td><span class="rank ${rankCls(i)}">${i+1}</span></td>
+    <td>${c.name}</td>
+    <td>${fmt(c.cost_wan, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.cost_pct, c.cost_delta_wan, '万')}</td>
+    <td>${gytPctCell(c.gyt_pct)}</td>
+    <td>${fmt(c.roi, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.roi_pct, null, '')}</td>
+    <td>${fmt(c.ctr, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.ctr_pct, c.ctr_d, 'pp', true)}</td>
+    <td>${fmt(c.order_rate, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.or_pct, c.or_d, 'pp', true)}</td>
+    <td>${fmt(c.ac, 1)}</td>
+    <td>${fmt(c.refund, 2)}</td>
+  </tr>
+`).join('');
 
-  function deltaCell(pctV, absV, absUnit, absD){
-    if(pctV===null||pctV===undefined||isNaN(pctV)) return '<td>—</td>';
-    return `<td class="delta-cell ${cls(pctV)}">${arr(pctV)} ${pct(pctV)}<span class="abs">(${signAbs(absV, absD)}${absUnit||''})</span></td>`;
-  }
+// ============ 商品聚合页 Top5 ============
+document.querySelector('#tblPp5 tbody').innerHTML = P.pp.top5.map((c, i) => `
+  <tr>
+    <td><span class="rank ${rankCls(i)}">${i+1}</span></td>
+    <td>${c.name}</td>
+    <td>${fmt(c.cost_wan, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.cost_pct, c.cost_delta_wan, '万')}</td>
+    <td>${gytPctCell(c.gyt_pct)}</td>
+    <td>${fmt(c.roi, 2)}</td>
+    <td>${fmt(c.ctr, 2)}</td>
+    <td>${fmt(c.order_rate, 2)}</td>
+    <td>${fmt(c.ac, 1)}</td>
+  </tr>
+`).join('');
 
-  const tbody = document.querySelector('#top20Table tbody');
-  tbody.innerHTML = top.map((c, i) => {
-    const rank = i+1;
-    const rankCls = rank===1?'rank gold' : rank===2?'rank silver' : rank===3?'rank bronze' : 'rank';
-    return `<tr>
-      <td><span class="${rankCls}">${rank}</span></td>
-      <td class="cust" title="${c.name}">${c.name}</td>
-      <td>${fmt(c.cost,3)}</td>
-      ${deltaCell(c.cost_pct, c.cost_delta, '万', 2)}
-      <td>${fmt(c.roi)}</td>
-      ${deltaCell(c.roi_pct, c.roi_delta, '', 2)}
-      <td>${fmt(c.ctr)}</td>
-      <td class="delta-cell ${cls(c.ctr_delta)}">${arr(c.ctr_delta)} <span class="abs" style="color:inherit;">${signAbs(c.ctr_delta,2)}pp</span></td>
-      <td>${fmt(c.order_rate)}</td>
-      <td class="delta-cell ${cls(c.order_rate_delta)}">${arr(c.order_rate_delta)} <span class="abs" style="color:inherit;">${signAbs(c.order_rate_delta,2)}pp</span></td>
-      <td>${fmtInt(c.price)}</td>
-      <td>${fmt(c.refund,1)}</td>
-    </tr>`;
-  }).join('');
-
-  window.addEventListener('resize', () => {
-    document.querySelectorAll('[_echarts_instance_]').forEach(el => {
-      const inst = echarts.getInstanceByDom(el);
-      if (inst) inst.resize();
-    });
-  });
-})();
+// ============ 潜客优投 Top5 ============
+document.querySelector('#tblQk5 tbody').innerHTML = P.qk.top5.map((c, i) => `
+  <tr>
+    <td><span class="rank ${rankCls(i)}">${i+1}</span></td>
+    <td>${c.name}</td>
+    <td>${fmt(c.cost_wan, 2)}</td>
+    <td class="delta-cell">${deltaHtml(c.cost_pct, c.cost_delta_wan, '万')}</td>
+    <td>${gytPctCell(c.gyt_pct)}</td>
+    <td>${fmt(c.roi, 2)}</td>
+    <td>${fmt(c.roi24, 2)}</td>
+    <td>${fmt(c.ctr, 2)}</td>
+    <td>${fmt(c.order_rate, 2)}</td>
+  </tr>
+`).join('');
 </script>
 </body>
 </html>
