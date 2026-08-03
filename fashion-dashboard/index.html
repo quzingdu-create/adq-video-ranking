@@ -2,254 +2,379 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>服饰中心大盘行业数据看板 · 6.5</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<title>女装大盘看板 · 2026-08-03</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 <style>
-:root{
-  --bg:#0d1117; --panel:#161b22; --panel2:#1c232c; --line:#283039;
-  --txt:#e6edf3; --sub:#8b949e; --muted:#6e7681;
-  --accent:#3b82f6; --red:#f85149; --green:#3fb950; --gold:#d29922;
-  --up:#f85149; --down:#3fb950; /* 中国习惯: 涨红 跌绿 */
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.5;padding-bottom:60px}
-.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
-header{padding:26px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
-h1{font-size:22px;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
-h1 .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
-.sub{color:var(--sub);font-size:13px;margin-top:6px}
-.sec-title{font-size:16px;font-weight:600;margin:30px 0 14px;padding-left:11px;border-left:3px solid var(--accent)}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #F0F7FF 0%, #E1EEFF 60%, #CFE2FC 100%);
+    color: #0D2340; height: 100vh; overflow: hidden;
+  }
+  .wrap {
+    height: 100vh; padding: 10px 14px 6px;
+    display: flex; flex-direction: column; gap: 8px;
+    max-width: 1680px; margin: 0 auto;
+  }
 
-/* KPI cards */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
-.kpi .k-label{color:var(--sub);font-size:12px}
-.kpi .k-val{font-size:26px;font-weight:700;margin-top:6px}
-.kpi .k-unit{font-size:13px;color:var(--muted);font-weight:400;margin-left:3px}
-.kpi .k-sub{font-size:11px;color:var(--muted);margin-top:4px}
-.kpi.accent .k-val{color:#79c0ff}
+  /* Header */
+  .row-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 0 2px;
+  }
+  .title-block h1 {
+    font-size: 24px; font-weight: 800; letter-spacing: 0.3px;
+    background: linear-gradient(90deg, #1565C0, #1E88E5, #42A5F5);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+  }
+  .title-block .sub { color: #5B7A9E; font-size: 12px; margin-top: 3px; }
+  .badge {
+    background: linear-gradient(135deg, #1565C0, #1E88E5);
+    color: #fff; padding: 5px 12px; border-radius: 999px;
+    font-weight: 600; font-size: 11px; box-shadow: 0 4px 12px rgba(30,136,229,.3);
+    white-space: nowrap;
+  }
 
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
-.card h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--txt)}
-.card .chart-box{position:relative;height:300px}
+  .kpi-inline { display: flex; gap: 8px; flex: 1; margin-left: 20px; }
+  .kpi {
+    flex: 1; background: #fff; border-radius: 10px; padding: 8px 12px;
+    box-shadow: 0 4px 12px rgba(30,136,229,.10);
+    border: 1px solid rgba(30,136,229,.14);
+    position: relative; overflow: hidden; min-width: 0;
+  }
+  .kpi::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #1565C0, #42A5F5);
+  }
+  .kpi .label { color: #5B7A9E; font-size: 13px; margin-bottom: 3px; font-weight: 500; white-space: nowrap; }
+  .kpi .val {
+    font-size: 26px; font-weight: 800; color: #0D2340; letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+  .kpi .unit { font-size: 13px; color: #5B7A9E; margin-left: 3px; font-weight: 500; }
+  .kpi .delta { font-size: 13px; font-weight: 700; margin-top: 3px; white-space: nowrap; }
+  .up { color: #E53935; }
+  .down { color: #26A69A; }
 
-/* overall table */
-table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child{text-align:left}
-thead th{color:var(--sub);font-weight:600;font-size:12px;background:var(--panel2);position:sticky;top:0}
-tbody tr:hover{background:rgba(56,139,253,.06)}
-.row-total{background:rgba(210,153,34,.08)}
-.row-total td{font-weight:700;color:#f0d98a}
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  section {
+    background: #fff; border-radius: 12px; padding: 8px 12px 10px;
+    box-shadow: 0 6px 18px rgba(30,136,229,.08);
+    border: 1px solid rgba(30,136,229,.10);
+  }
+  .sec-title {
+    font-size: 15px; font-weight: 700; color: #0D2340; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sec-title::before {
+    content:""; width: 3px; height: 15px; border-radius: 2px;
+    background: linear-gradient(180deg, #1565C0, #42A5F5);
+  }
+  .sec-title .tag {
+    background: #E3F2FD; color: #1565C0; font-size: 11px; padding: 2px 8px;
+    border-radius: 999px; font-weight: 600;
+  }
 
-/* tabs */
-.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 20px}
-.tab{padding:8px 16px;border:1px solid var(--line);border-radius:20px;background:var(--panel);color:var(--sub);cursor:pointer;font-size:13px;transition:.15s;user-select:none}
-.tab:hover{border-color:var(--accent);color:var(--txt)}
-.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  /* 大盘拆解 2 图并排 */
+  .row-market {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    flex-shrink: 0;
+  }
+  .chart { height: 210px; }
+  .chart-box { position: relative; }
+  .pie-info {
+    display: flex; gap: 8px; margin-top: 4px; padding: 0 4px;
+    justify-content: flex-start;
+  }
+  .pie-info .card {
+    flex: 1; background: linear-gradient(135deg, #F0F7FF, #E3F2FD);
+    border-left: 3px solid #1E88E5;
+    border-radius: 6px; padding: 6px 10px;
+    display: flex; flex-direction: column; gap: 2px;
+    box-shadow: 0 1px 3px rgba(21,101,192,0.08);
+  }
+  .pie-info .card.c2 { border-left-color: #42A5F5; }
+  .pie-info .card .name { color:#0D47A1; font-weight:700; font-size:13px; }
+  .pie-info .card .cost { color:#0D2340; font-weight:700; font-size:15px; font-variant-numeric: tabular-nums; }
+  .pie-info .card .cost .unit { color:#5B7A9E; font-size:11px; margin-left:2px; font-weight:500; }
+  .pie-info .card .delta { font-size:12px; font-weight:600; font-variant-numeric: tabular-nums; }
+  .pie-info .card .delta.up { color:#D32F2F; }
+  .pie-info .card .delta.down { color:#2E7D32; }
 
-/* category blocks */
-.cat-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
-.cat-head .ch-name{font-size:19px;font-weight:700}
-.cat-head .ch-tag{font-size:12px;color:var(--muted)}
-.block{margin-top:22px}
-.block-title{font-size:14px;font-weight:600;color:#79c0ff;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.block-title .seg{font-size:11px;color:var(--muted);font-weight:400;background:var(--panel2);padding:2px 8px;border-radius:10px}
-.bar{display:inline-block;height:6px;border-radius:3px;background:var(--accent);vertical-align:middle;margin-right:6px;min-width:2px}
-.up{color:var(--up)}
-.down{color:var(--down)}
-.metricbar{position:relative}
-.metricbar .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(59,130,246,.13);border-radius:4px;z-index:0}
-.metricbar span{position:relative;z-index:1}
-.note{color:var(--muted);font-size:12px;margin-top:14px;font-style:italic}
-.legend{display:flex;gap:18px;font-size:12px;color:var(--sub);margin-bottom:10px;flex-wrap:wrap}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+  /* Top20 单表 */
+  .row-top { flex: 1; min-height: 0; display: flex; }
+  .row-top > section { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .table-wrap { flex: 1; min-height: 0; overflow-y: auto; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+    color: #0D47A1; font-weight: 700; font-size: 13px;
+    padding: 8px 8px; text-align: right; white-space: nowrap;
+    border-bottom: 2px solid #64B5F6;
+  }
+  thead th:first-child, thead th:nth-child(2) { text-align: left; }
+  tbody td {
+    padding: 7px 8px; font-size: 13px; color: #0D2340;
+    border-bottom: 1px solid #E8F1FB; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  tbody td:first-child, tbody td:nth-child(2) { text-align: left; }
+  tbody tr:hover { background: #F5FAFF; }
+  .delta-cell .abs { color: #7A94B4; font-weight: 500; font-size: 12px; margin-left: 4px; }
+  .rank {
+    display: inline-block; width: 24px; height: 24px; line-height: 24px;
+    text-align: center; border-radius: 50%; font-weight: 700; font-size: 12px;
+    color: #fff; background: linear-gradient(135deg, #64B5F6, #1E88E5);
+  }
+  .rank.gold { background: linear-gradient(135deg, #FFD54F, #F9A825); }
+  .rank.silver { background: linear-gradient(135deg, #E0E0E0, #9E9E9E); }
+  .rank.bronze { background: linear-gradient(135deg, #FFAB91, #D84315); }
+  .cust {
+    font-weight: 600; color: #0D2340; max-width: 220px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  footer { text-align: center; color: #7A94B4; font-size: 10px; padding: 2px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1><span class="dot"></span>服饰中心大盘行业数据看板</h1>
-    <div class="sub" id="subtitle">近 7 天数据 · 2026-06-05 更新　|　环比 = 近7天日均 vs 前7天日均　|　涨<span class="up">红</span>跌<span class="down">绿</span></div>
-  </header>
-
-  <!-- 整体总览 -->
-  <div class="sec-title">整体总览</div>
-  <div class="kpis" id="kpis"></div>
-
-  <div class="grid2" style="margin-top:18px">
-    <div class="card"><h3>各行业日均消耗 (万元)</h3><div class="chart-box"><canvas id="chCost"></canvas></div></div>
-    <div class="card"><h3>各行业下单 ROI</h3><div class="chart-box"><canvas id="chRoi"></canvas></div></div>
+  <!-- 顶栏 -->
+  <div class="row-head">
+    <div class="title-block">
+      <h1>女装大盘 · 昨日投放看板</h1>
+      <div class="sub">数据日 2026-08-02 · 1011 家客户 · T-1 快照 08-03 生成</div>
+    </div>
+    <div class="kpi-inline" id="kpiGrid"></div>
   </div>
 
-  <div class="sec-title">整体情况明细</div>
-  <div class="tbl-wrap">
-    <table id="overallTbl"><thead></thead><tbody></tbody></table>
+  <!-- 大盘拆解：2 张合并图 -->
+  <div class="row-market">
+    <section>
+      <div class="sec-title">分链路 · 消耗占比与核心指标 <span class="tag">环 / 柱=指标</span></div>
+      <div class="chart-box">
+        <div id="chartLink" class="chart"></div>
+        <div class="pie-info" id="linkInfo"></div>
+      </div>
+    </section>
+    <section>
+      <div class="sec-title">是否全域通 · 消耗占比与核心指标 <span class="tag">环 / 柱=指标</span></div>
+      <div class="chart-box">
+        <div id="chartGyt" class="chart"></div>
+        <div class="pie-info" id="gytInfo"></div>
+      </div>
+    </section>
   </div>
 
-  <!-- 类目下钻 -->
-  <div class="sec-title">行业类目下钻</div>
-  <div class="tabs" id="catTabs"></div>
-  <div id="catPanel"></div>
+  <!-- Top20 单表 -->
+  <div class="row-top">
+    <section>
+      <div class="sec-title">Top 20 客户明细 <span class="tag" id="top20Tag">—</span></div>
+      <div class="table-wrap">
+        <table id="top20Table">
+          <thead><tr>
+            <th>#</th><th>客户简称</th>
+            <th>消耗 (万)</th><th>消耗环比</th>
+            <th>ROI</th><th>ROI 环比</th>
+            <th>CTR (%)</th><th>CTR 环比</th>
+            <th>下单率 (%)</th><th>下单率环比</th>
+            <th>单价 (元)</th>
+            <th>退款率 (%)</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <footer>加油子青 保持心情愉悦 加油工作</footer>
 </div>
 
 <script>
-window.__DASH__={"overallHeader": ["运营二级行业", "日均消耗(万)", "下单ROI", "CTR(%)", "CVR(%)", "CPM(元)", "客单价(元)", "7天退款率(%)", "14天退款率(%)"], "overall": [["合计", 8845.8, 4.67, 2.65, 3.33, 37.9, 200.5, 25.83, 27.62], ["其他", 3715.2, 3.94, 3.1, 1.76, 39.9, 1219.9, 12.46, 13.42], ["贴身衣物", 1312, 2.63, 2.08, 7.23, 55.6, 97.1, 31.35, 33.94], ["运动鞋服", 885.4, 11.59, 2.02, 3.05, 28.5, 535.8, 13.85, 14.49], ["男装", 479.8, 3.46, 2.31, 5.43, 49.9, 137.7, 37.74, 40.02], ["女装", 368.3, 6.19, 2.73, 8.01, 45.1, 127.5, 43.78, 47.01], ["配饰闭环", 250.1, 2.24, 4.82, 3.49, 49.9, 66.4, 13.73, 14.62], ["珠宝文玩闭环", 241, 16.49, 2.95, 4.82, 35.5, 411.9, 55.48, 58.97], ["鞋靴", 193.6, 4.97, 2.65, 4.49, 35.4, 148, 36.99, 40.05], ["运动用品-非品牌", 166.9, 2.7, 2.02, 5.9, 42.7, 96.5, 23.76, 25.74], ["箱包", 50.1, 3.65, 2.32, 3.41, 47.8, 220.8, 40.97, 43.41]], "cats": ["女装", "男装", "珠宝", "贴身衣物", "文玩", "箱包", "鞋靴", "运动鞋服", "户外用品"], "catData": {"女装": {"title": "女装大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [94.74, 10.16, 2.71, 8.46, 46.89, 6.24, 127.64]}, {"name": "下单-下单ROI", "vals": [94.74, 10.16, 2.71, 8.46, 46.89, 6.24, 127.64]}, {"name": "下单-辅助优化下单ROI", "vals": [0.37, -26.0, 2.34, 17.75, 52.47, 10.04, 126.99]}, {"name": "24小时下单", "vals": [4.02, -29.03, 2.98, 6.52, 41.45, 5.69, 121.18]}, {"name": "下单-二十四小时退款率", "vals": [0.37, -26.0, 2.34, 20.32, 52.47, 10.04, 126.99]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [2.57, 17.71, 2.47, 5.97, 60.82, 4.69, 193.24]}, {"name": "直播快推", "vals": [1.22, 30.19, 3.43, 9.74, 49.83, 13.24, 197.65]}, {"name": "一键起量", "vals": [16.76, -17.46, 2.39, 7.53, 66.74, 2.66, 98.65]}, {"name": "AIGC素材", "vals": [5.93, -29.12, 1.72, 3.13, 16.9, 7.87, 247.71]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [55.51, 9.92, 2.79, 9.26, 49.34, 6.16, 117.78]}, {"name": "小程序", "vals": [6.63, 17.06, 4.29, 7.69, 41.72, 4.66, 58.87]}, {"name": "朋友圈", "vals": [4.53, 30.8, 2.38, 10.34, 29.44, 22.5, 268.59]}, {"name": "公众号", "vals": [2.5, 38.14, 2.03, 10.03, 37.01, 10.51, 190.74]}, {"name": "平台与内容广告", "vals": [0.65, -51.86, 7.24, 1.62, 26.69, 8.52, 194.07]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [13.53, 0.27, 2.96, 9.0, 58.78, 4.53, 99.87]}, {"name": "朋友圈", "vals": [1.13, -18.22, 2.26, 4.76, 31.1, 13.65, 394.9]}, {"name": "小程序", "vals": [0.89, 22.34, 2.67, 11.51, 57.74, 3.65, 68.54]}, {"name": "公众号", "vals": [0.77, -12.07, 0.35, 5.48, 4.54, 9.31, 218.01]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [50.89, 6.43, 1.76, 8.44, 30.49, 5.65, 115.84]}, {"name": "直播链路", "vals": [49.11, -21.46, 3.58, 7.79, 38.54, 11.4, 157.73]}]}]}, "男装": {"title": "男装大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [85.32, -10.3, 2.41, 5.26, 49.94, 3.58, 141.16]}, {"name": "下单-下单ROI", "vals": [85.32, -10.3, 2.41, 5.26, 49.94, 3.58, 141.16]}, {"name": "下单-辅助优化下单ROI", "vals": [1.13, -23.16, 1.52, 4.06, 35.82, 4.28, 248.91]}, {"name": "24小时下单", "vals": [12.84, 4.68, 1.78, 7.51, 52.06, 2.77, 108.01]}, {"name": "下单-二十四小时退款率", "vals": [1.13, -23.16, 1.52, 10.73, 35.82, 4.28, 248.91]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [2.13, 34.99, 2.31, 4.35, 48.46, 2.82, 135.71]}, {"name": "直播快推", "vals": [5.86, -8.08, 1.34, 6.1, 38.91, 2.06, 98.21]}, {"name": "一键起量", "vals": [22.53, -0.97, 2.05, 4.91, 52.39, 2.93, 152.63]}, {"name": "AIGC素材", "vals": [7.47, -12.67, 2.2, 2.75, 26.24, 4.11, 178.07]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [61.41, -11.13, 2.15, 7.09, 55.44, 3.55, 129.34]}, {"name": "小程序", "vals": [5.37, -17.26, 3.37, 4.98, 48.68, 3.09, 89.82]}, {"name": "朋友圈", "vals": [4.91, -10.67, 1.55, 6.12, 26.62, 5.97, 167.29]}, {"name": "公众号", "vals": [3.69, -12.95, 1.4, 6.58, 30.87, 4.09, 137.61]}, {"name": "平台与内容广告", "vals": [1.11, -24.02, 7.57, 0.55, 16.34, 3.55, 138.26]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [12.88, -7.28, 2.42, 6.57, 76.28, 3.64, 174.81]}, {"name": "朋友圈", "vals": [1.85, -12.96, 1.34, 3.95, 40.92, 3.69, 286.68]}, {"name": "小程序", "vals": [0.48, -11.54, 2.95, 2.66, 47.6, 2.78, 168.86]}, {"name": "公众号", "vals": [0.75, -18.41, 0.82, 5.2, 21.41, 4.48, 224.5]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [30.4, -34.83, 1.96, 3.9, 40.87, 5.33, 284.93]}, {"name": "直播链路", "vals": [69.6, -28.0, 3.08, 7.85, 45.15, 4.31, 80.41]}]}]}, "珠宝": {"title": "珠宝大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [23.37, -14.76, 2.9, 5.08, 39.95, 15.57, 421.92]}, {"name": "下单-下单ROI", "vals": [23.37, -14.76, 2.9, 5.08, 39.95, 15.57, 421.92]}, {"name": "下单-辅助优化下单ROI", "vals": [0.7, 23.64, 3.06, 10.48, 48.15, 18.95, 284.65]}, {"name": "24小时下单", "vals": [0.53, 2.98, 3.57, 17.66, 68.67, 54.45, 593.41]}, {"name": "下单-二十四小时退款率", "vals": [0.7, 23.64, 3.06, 32.16, 48.15, 18.95, 284.65]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [0.13, 242.93, 2.6, 24.75, 87.08, 6.86, 92.75]}, {"name": "直播快推", "vals": [0.54, 223.69, 2.88, 15.01, 39.28, 61.84, 561.65]}, {"name": "一键起量", "vals": [18.58, -1.47, 2.53, 0.89, 42.34, 2.44, 456.77]}, {"name": "AIGC素材", "vals": [2.52, -30.36, 3.76, 0.95, 15.68, 10.74, 473.92]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [9.01, -19.93, 2.95, 12.67, 65.02, 25.6, 445.08]}, {"name": "小程序", "vals": [2.62, -5.74, 5.09, 1.04, 18.69, 10.88, 384.36]}, {"name": "朋友圈", "vals": [2.21, -15.17, 2.3, 15.68, 51.29, 41.93, 597.47]}, {"name": "公众号", "vals": [0.36, -31.38, 1.58, 13.78, 33.08, 27.36, 416.56]}, {"name": "平台与内容广告", "vals": [0.1, -55.91, 13.85, 0.27, 10.72, 2.29, 66.75]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [13.61, -14.68, 2.18, 9.33, 72.87, 2.77, 99.4]}, {"name": "朋友圈", "vals": [0.49, -60.75, 1.08, 3.54, 16.43, 2.45, 105.22]}, {"name": "小程序", "vals": [1.33, -46.82, 2.36, 5.91, 53.54, 2.31, 88.65]}, {"name": "公众号", "vals": [0.7, -16.93, 1.99, 8.73, 60.61, 2.95, 103.03]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [44.48, -26.85, 1.53, 4.95, 25.85, 7.06, 240.78]}, {"name": "直播链路", "vals": [55.52, -8.45, 4.94, 2.48, 34.58, 20.36, 575.77]}]}]}, "贴身衣物": {"title": "贴身衣物大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [96.69, -7.68, 2.07, 7.11, 55.86, 2.63, 99.81]}, {"name": "下单-下单ROI", "vals": [96.69, -7.68, 2.07, 7.11, 55.86, 2.63, 99.81]}, {"name": "下单-辅助优化下单ROI", "vals": [0.27, 92.05, 1.69, 9.05, 49.86, 2.7, 88.03]}, {"name": "24小时下单", "vals": [3.04, -29.58, 1.77, 9.56, 47.53, 2.8, 78.45]}, {"name": "下单-二十四小时退款率", "vals": [0.27, 92.05, 1.69, 9.71, 49.86, 2.7, 88.03]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [6.85, -41.6, 2.32, 8.25, 64.43, 2.54, 85.5]}, {"name": "直播快推", "vals": [10.61, -20.7, 2.15, 9.25, 72.96, 2.26, 82.72]}, {"name": "一键起量", "vals": [15.23, -11.37, 1.68, 7.86, 50.84, 2.58, 98.89]}, {"name": "AIGC素材", "vals": [6.61, -4.7, 1.97, 3.99, 27.27, 2.69, 93.56]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [65.82, -8.38, 1.73, 10.09, 64.77, 2.65, 98.26]}, {"name": "小程序", "vals": [8.77, -6.2, 2.42, 6.52, 56.89, 2.58, 93.09]}, {"name": "朋友圈", "vals": [5.73, 72.11, 1.22, 4.46, 24.82, 2.69, 122.71]}, {"name": "公众号", "vals": [3.18, -7.9, 1.61, 8.19, 48.4, 2.85, 104.9]}, {"name": "平台与内容广告", "vals": [3.7, -29.28, 6.64, 1.81, 51.86, 2.12, 91.55]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [4.08, -3.45, 2.74, 7.25, 87.6, 2.87, 126.49]}, {"name": "朋友圈", "vals": [1.03, -22.85, 2.06, 2.75, 39.98, 7.4, 523.12]}, {"name": "小程序", "vals": [0.25, 4.34, 2.84, 6.95, 72.0, 3.21, 117.01]}, {"name": "公众号", "vals": [0.49, -20.2, 0.59, 3.43, 10.9, 8.04, 433.83]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [57.34, -40.08, 2.04, 8.07, 55.13, 3.26, 109.3]}, {"name": "直播链路", "vals": [42.66, -45.4, 1.75, 7.67, 39.96, 3.13, 92.93]}]}]}, "文玩": {"title": "文玩大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [84.49, -15.13, 3.03, 7.09, 50.67, 17.35, 409.73]}, {"name": "下单-下单ROI", "vals": [84.49, -15.13, 3.03, 7.09, 50.67, 17.35, 409.73]}, {"name": "下单-辅助优化下单ROI", "vals": [2.93, 23.64, 3.06, 10.48, 48.17, 18.95, 284.65]}, {"name": "24小时下单", "vals": [2.23, 2.98, 3.57, 17.66, 68.67, 54.45, 593.41]}, {"name": "下单-二十四小时退款率", "vals": [2.93, 23.64, 3.06, 32.16, 48.17, 18.95, 284.65]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [0.56, 242.93, 2.6, 24.75, 87.08, 6.86, 92.75]}, {"name": "直播快推", "vals": [2.24, 223.69, 2.88, 15.01, 39.28, 61.84, 561.65]}, {"name": "一键起量", "vals": [10.31, -22.29, 3.01, 7.04, 53.85, 17.28, 439.36]}, {"name": "AIGC素材", "vals": [9.3, -25.15, 2.65, 1.6, 16.58, 11.84, 462.99]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [35.49, -21.88, 2.96, 12.88, 62.58, 26.94, 442.11]}, {"name": "小程序", "vals": [10.82, -6.35, 5.09, 1.04, 18.52, 10.96, 383.41]}, {"name": "朋友圈", "vals": [8.93, -12.74, 2.33, 15.87, 51.04, 43.21, 596.31]}, {"name": "公众号", "vals": [1.27, -37.21, 1.57, 14.19, 28.76, 30.46, 394.34]}, {"name": "平台与内容广告", "vals": [0.42, -56.18, 13.89, 0.27, 10.69, 2.31, 66.75]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [22.97, -3.44, 2.74, 7.24, 87.46, 2.87, 126.49]}, {"name": "朋友圈", "vals": [7.07, -22.89, 1.94, 2.42, 40.04, 6.66, 569.24]}, {"name": "小程序", "vals": [1.61, 6.6, 2.99, 5.24, 64.96, 3.01, 125.16]}, {"name": "公众号", "vals": [2.91, -18.06, 0.58, 3.24, 10.69, 7.68, 433.31]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [29.29, -28.6, 0.84, 3.73, 14.49, 4.82, 224.15]}, {"name": "直播链路", "vals": [70.71, -51.99, 2.68, 4.14, 25.92, 6.91, 161.56]}]}]}, "箱包": {"title": "箱包大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [90.77, -10.54, 2.55, 3.51, 53.91, 3.7, 223.03]}, {"name": "下单-下单ROI", "vals": [90.77, -10.54, 2.55, 3.51, 53.91, 3.7, 223.03]}, {"name": "下单-辅助优化下单ROI", "vals": [1.19, 87.41, 0.48, 5.57, 12.13, 4.99, 227.13]}, {"name": "24小时下单", "vals": [7.83, 8.07, 1.79, 3.83, 43.64, 3.01, 191.54]}, {"name": "下单-二十四小时退款率", "vals": [1.19, 87.41, 0.48, 36.64, 12.13, 4.99, 227.13]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [0.17, -60.47, 1.78, 1.28, 96.59, 1.25, 528.5]}, {"name": "直播快推", "vals": [7.41, -1.67, 1.15, 2.56, 61.41, 1.69, 352.82]}, {"name": "一键起量", "vals": [6.04, -63.26, 2.44, 4.75, 91.65, 1.82, 143.63]}, {"name": "AIGC素材", "vals": [11.15, -30.92, 1.62, 1.99, 16.39, 3.46, 176.46]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [67.06, 10.68, 2.64, 4.29, 73.58, 3.81, 247.63]}, {"name": "小程序", "vals": [3.96, -9.47, 4.17, 1.64, 26.93, 3.84, 151.59]}, {"name": "朋友圈", "vals": [4.52, -17.89, 2.01, 2.84, 25.34, 4.14, 183.16]}, {"name": "公众号", "vals": [5.29, -25.82, 1.1, 3.65, 17.98, 4.1, 183.05]}, {"name": "平台与内容广告", "vals": [0.3, -11.67, 3.38, 0.03, 2.55, 1.27, 275.23]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [13.0, -21.45, 2.88, 5.59, 81.26, 3.07, 155.16]}, {"name": "朋友圈", "vals": [1.4, -46.41, 0.64, 1.42, 11.61, 4.46, 570.24]}, {"name": "小程序", "vals": [0.79, -51.42, 2.68, 3.96, 80.77, 2.08, 158.55]}, {"name": "公众号", "vals": [0.68, -43.99, 0.49, 2.2, 6.49, 3.23, 193.94]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [52.65, -4.91, 2.41, 4.09, 28.83, 4.1, 120.1]}, {"name": "直播链路", "vals": [47.35, -6.68, 2.96, 4.57, 29.57, 6.34, 138.75]}]}]}, "鞋靴": {"title": "鞋靴大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [95.09, -1.74, 2.68, 4.4, 35.67, 5.01, 151.98]}, {"name": "下单-下单ROI", "vals": [95.09, -1.74, 2.68, 4.4, 35.67, 5.01, 151.98]}, {"name": "下单-辅助优化下单ROI", "vals": [1.42, 16.94, 1.71, 6.08, 28.25, 5.84, 158.62]}, {"name": "24小时下单", "vals": [3.37, 5.02, 1.98, 8.61, 35.49, 3.15, 65.33]}, {"name": "下单-二十四小时退款率", "vals": [1.42, 16.94, 1.71, 18.0, 28.25, 5.84, 158.62]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [0.16, -4.79, 1.99, 2.48, 13.08, 3.71, 98.31]}, {"name": "直播快推", "vals": [0.59, 97.83, 2.2, 3.47, 17.61, 6.3, 145.27]}, {"name": "一键起量", "vals": [1.64, -35.07, 4.42, 1.44, 20.34, 2.44, 78.14]}, {"name": "AIGC素材", "vals": [10.85, 1.83, 2.7, 1.77, 20.85, 4.34, 189.56]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [43.94, -0.46, 2.43, 6.32, 42.03, 5.48, 150.0]}, {"name": "小程序", "vals": [1.98, 39.46, 4.7, 1.38, 15.26, 7.67, 180.55]}, {"name": "朋友圈", "vals": [4.19, -14.02, 2.6, 2.67, 24.97, 8.0, 287.99]}, {"name": "公众号", "vals": [2.48, 25.23, 1.65, 4.77, 22.55, 7.17, 205.93]}, {"name": "平台与内容广告", "vals": [0.47, -37.72, 6.08, 1.66, 25.98, 4.24, 109.05]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [32.94, -3.27, 2.48, 6.18, 48.79, 3.28, 104.47]}, {"name": "朋友圈", "vals": [5.78, -10.24, 2.98, 1.28, 19.56, 4.15, 213.54]}, {"name": "小程序", "vals": [0.76, -22.39, 3.22, 3.1, 36.28, 3.12, 113.32]}, {"name": "公众号", "vals": [1.66, -0.56, 1.06, 4.41, 17.09, 3.54, 129.55]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [28.84, 24.14, 1.17, 3.32, 12.32, 8.14, 258.96]}, {"name": "直播链路", "vals": [71.16, -2.51, 3.24, 3.48, 33.03, 8.05, 235.6]}]}]}, "运动鞋服": {"title": "运动鞋服大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [62.37, -17.74, 2.44, 3.92, 40.91, 9.95, 426.56]}, {"name": "下单-下单ROI", "vals": [62.37, -17.74, 2.44, 3.92, 40.91, 9.95, 426.56]}, {"name": "下单-辅助优化下单ROI", "vals": [0.27, 6.32, 1.37, 4.77, 11.98, 11.19, 205.02]}, {"name": "24小时下单", "vals": [9.54, -25.6, 2.7, 4.38, 54.24, 18.54, 850.78]}, {"name": "下单-二十四小时退款率", "vals": [0.27, 6.32, 1.37, 25.54, 11.98, 11.19, 205.02]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [0.71, -43.19, 2.9, 6.36, 69.81, 3.3, 124.91]}, {"name": "直播快推", "vals": [1.62, 7.31, 2.65, 6.49, 75.2, 3.07, 134.17]}, {"name": "一键起量", "vals": [14.36, -30.72, 2.11, 2.83, 30.12, 11.15, 563.03]}, {"name": "AIGC素材", "vals": [2.03, 1.53, 1.98, 1.75, 13.77, 5.72, 227.77]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [13.28, -8.7, 2.48, 7.47, 61.2, 4.46, 147.17]}, {"name": "小程序", "vals": [0.87, 52.45, 4.42, 6.89, 46.89, 5.03, 77.49]}, {"name": "朋友圈", "vals": [2.89, 1.37, 2.01, 2.93, 27.88, 4.77, 225.91]}, {"name": "公众号", "vals": [0.71, -26.64, 0.98, 4.82, 20.49, 4.74, 205.27]}, {"name": "平台与内容广告", "vals": [0.33, 20.16, 6.67, 0.88, 29.16, 3.57, 178.22]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [2.75, -4.46, 3.12, 6.85, 75.26, 4.51, 158.69]}, {"name": "朋友圈", "vals": [0.96, -33.22, 1.91, 3.17, 30.16, 5.25, 261.25]}, {"name": "小程序", "vals": [0.12, -50.71, 2.59, 3.18, 35.71, 3.13, 136.0]}, {"name": "公众号", "vals": [0.31, 8.77, 0.46, 3.16, 5.88, 4.55, 183.04]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [73.31, -5.69, 2.15, 9.44, 27.34, 3.02, 40.66]}, {"name": "直播链路", "vals": [26.69, 24.0, 1.74, 2.57, 32.89, 3.36, 246.99]}]}]}, "户外用品": {"title": "户外用品大盘数据-0605更新近7天数据", "metricHeader": ["曝光量占比", "曝光量环比", "CTR", "CVR", "CPM", "ROI", "客单价"], "blocks": [{"section": "投放OG", "groupTitle": "投放OG", "rows": [{"name": "下单", "vals": [93.67, -16.47, 2.02, 6.5, 39.47, 2.75, 82.77]}, {"name": "下单-下单ROI", "vals": [93.67, -16.47, 2.02, 6.5, 39.47, 2.75, 82.77]}, {"name": "下单-辅助优化下单ROI", "vals": [0.61, 220.63, 1.41, 5.54, 33.34, 3.63, 155.05]}, {"name": "24小时下单", "vals": [5.54, -51.52, 2.37, 5.26, 64.58, 2.87, 148.73]}, {"name": "下单-二十四小时退款率", "vals": [0.61, 220.63, 1.41, 10.36, 33.34, 3.63, 155.05]}]}, {"section": "系统工具", "groupTitle": "系统工具", "rows": [{"name": "创意优投", "vals": [1.21, -51.26, 2.76, 5.48, 19.99, 2.78, 36.78]}, {"name": "直播快推", "vals": [13.51, -25.97, 1.71, 4.45, 51.2, 2.69, 181.09]}, {"name": "一键起量", "vals": [17.94, -13.79, 2.31, 6.06, 37.62, 2.42, 64.96]}, {"name": "AIGC素材", "vals": [8.17, 15.6, 1.07, 3.21, 15.73, 2.83, 128.81]}]}, {"section": "链路", "groupTitle": "直播链路", "rows": [{"name": "视频号", "vals": [41.94, -32.68, 2.48, 6.82, 57.6, 2.95, 100.48]}, {"name": "小程序", "vals": [2.36, -37.21, 3.43, 3.19, 27.14, 2.6, 64.29]}, {"name": "朋友圈", "vals": [4.93, -21.52, 0.93, 3.12, 20.98, 2.38, 171.84]}, {"name": "公众号", "vals": [3.26, -35.12, 0.63, 3.72, 10.32, 2.59, 114.63]}, {"name": "平台与内容广告", "vals": [7.76, 57.58, 3.4, 1.91, 54.98, 2.74, 232.14]}]}, {"section": "链路", "groupTitle": "小店直购", "rows": [{"name": "视频号", "vals": [29.45, -3.75, 2.59, 9.37, 52.4, 2.78, 60.03]}, {"name": "朋友圈", "vals": [1.31, 15.57, 1.11, 3.42, 25.14, 2.45, 161.81]}, {"name": "小程序", "vals": [1.16, -30.38, 2.53, 6.61, 47.39, 2.37, 67.18]}, {"name": "公众号", "vals": [1.57, -4.42, 0.63, 5.16, 11.03, 2.82, 96.32]}]}, {"section": "行业链路", "groupTitle": "小店推广", "rows": [{"name": "小店直购", "vals": [73.31, -5.69, 2.15, 9.44, 27.34, 3.02, 40.66]}, {"name": "直播链路", "vals": [26.69, 24.0, 1.74, 2.57, 32.89, 3.36, 246.99]}]}]}}, "updateDate": "2026-06-05"};
-</script>
-<script>
-const D = window.__DASH__;
-const fmt = (v,d=2)=> (typeof v==='number'? v.toFixed(d): (v??'-'));
-const pct = v => (typeof v==='number'? (v>=0?'+':'')+v.toFixed(1)+'%':'-');
-
-/* ---------- KPI ---------- */
 (function(){
-  const tot = D.overall.find(r=>r[0]==='合计');
-  const kpis=[
-    {label:'服饰中心日均消耗',val:(tot[1]).toLocaleString(),unit:'万元',sub:'下含其他/品牌等全口径',accent:true},
-    {label:'整体下单 ROI',val:fmt(tot[2]),unit:'',sub:'全行业加权'},
-    {label:'整体 CTR',val:fmt(tot[3])+'%',unit:'',sub:'点击率'},
-    {label:'整体 CVR',val:fmt(tot[4])+'%',unit:'',sub:'转化率'},
-    {label:'整体 CPM',val:fmt(tot[5],1),unit:'元',sub:'千次曝光成本'},
-    {label:'整体客单价',val:fmt(tot[6],1),unit:'元',sub:'下单单价'},
-    {label:'7天退款率',val:fmt(tot[7],1)+'%',unit:'',sub:'整体'},
-    {label:'14天退款率',val:fmt(tot[8],1)+'%',unit:'',sub:'整体'},
+  if (typeof echarts === 'undefined') {
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#c00;">ECharts 未加载（同目录 echarts.min.js 缺失）</div>';
+    return;
+  }
+  const P = {"overall": {"商品消费链路": "整体", "消耗(万元)": 32.740801067, "消耗(万元)环比变化量": -8.453260756000006, "消耗(万元)环比变化率(%)": -20.520580835950174, "下单ROI": 8.409603217604744, "下单ROI环比变化量": 0.5167239381338433, "下单ROI环比变化率(%)": 6.546710266782162, "ctr(%)": 2.5877563423685563, "ctr(%)环比变化量": -0.031108202729988932, "ctr(%)环比变化率(%)": -1.1878507725117322, "下单率(%)": 6.568883960848012, "下单率(%)环比变化量": 0.2307024652199594, "下单率(%)环比变化率(%)": 3.6398841746499877, "下单单价(元)": 135.89514140466906, "下单单价(元)环比变化量": -1.9927962543640092, "下单单价(元)环比变化率(%)": -1.4452288490177883, "下单后7日发起退款率(%)": 47.34712008291792, "下单后7日发起退款率(%)环比变化量": 4.327612025241919, "下单后7日发起退款率(%)环比变化率(%)": 10.059650192744918}, "link": {"小店": {"商品消费链路": "小店", "消耗(万元)": 14.061153018, "消耗(万元)环比变化量": -1.259835764, "消耗(万元)环比变化率(%)": -8.222940320145193, "下单ROI": 6.125369156408678, "下单ROI环比变化量": 0.3601560714820815, "下单ROI环比变化率(%)": 6.247055679931856, "ctr(%)": 2.6993259177534505, "ctr(%)环比变化量": 0.10982872201937122, "ctr(%)环比变化率(%)": 4.241314576447595, "下单率(%)": 6.278665553862528, "下单率(%)环比变化量": -0.07204534661140638, "下单率(%)环比变化率(%)": -1.1344453832094588, "下单单价(元)": 105.03628414634147, "下单单价(元)环比变化量": 8.099535902267718, "下单单价(元)环比变化率(%)": 8.355485457253188, "下单后7日发起退款率(%)": 40.31707317073171, "下单后7日发起退款率(%)环比变化量": 4.847362898563141, "下单后7日发起退款率(%)环比变化率(%)": 13.666203815503508}, "直播": {"商品消费链路": "直播", "消耗(万元)": 18.679648048999997, "消耗(万元)环比变化量": -7.193424992000001, "消耗(万元)环比变化率(%)": -27.802746819447677, "下单ROI": 10.129066270610439, "下单ROI环比变化量": 0.9762690120576831, "下单ROI环比变化率(%)": 10.666345866510007, "ctr(%)": 2.511522217914851, "ctr(%)环比变化量": -0.12612137896356845, "ctr(%)环比变化率(%)": -4.7815929003004705, "下单率(%)": 6.782015092387454, "下单率(%)环比变化量": 0.4516993204153339, "下单率(%)环比变化率(%)": 7.135494289483341, "下单单价(元)": 156.87537766354365, "下单单价(元)环比变化量": -6.803770802035558, "下单单价(元)环比变化率(%)": -4.15677309285755, "下单后7日发起退款率(%)": 52.126689329243014, "下单后7日发起退款率(%)环比变化量": 4.352290656309641, "下单后7日发起退款率(%)环比变化率(%)": 9.11008987492591}}, "gyt": {"false": {"是否全域通广告": "false", "消耗(万元)": 14.831486067, "消耗(万元)环比变化量": -6.403828755999999, "消耗(万元)环比变化率(%)": -30.15650490410438, "下单ROI": 10.061271697650175, "下单ROI环比变化量": 2.307095252775718, "下单ROI环比变化率(%)": 29.752937261322153, "ctr(%)": 2.138261169932328, "ctr(%)环比变化量": -0.3175562015859339, "ctr(%)环比变化率(%)": -12.930774302227974, "下单率(%)": 7.358684480986639, "下单率(%)环比变化量": 0.6689037642795554, "下单率(%)环比变化率(%)": 9.998889240256151, "下单单价(元)": 189.4662404773997, "下单单价(元)环比变化量": 31.13703086201508, "下单单价(元)环比变化率(%)": 19.666005367963095, "下单后7日发起退款率(%)": 53.03453529710513, "下单后7日发起退款率(%)环比变化量": 7.015304527874363, "下单后7日发起退款率(%)环比变化率(%)": 15.244288986605387}, "true": {"是否全域通广告": "true", "消耗(万元)": 17.909315, "消耗(万元)环比变化量": -2.0494319999999995, "消耗(万元)环比变化率(%)": -10.268339991483431, "下单ROI": 7.041784401022597, "下单ROI环比变化量": -0.9986691905781173, "下单ROI环比变化率(%)": -12.420557860334588, "ctr(%)": 2.913187703599434, "ctr(%)环比变化量": 0.16326601611736136, "ctr(%)环比变化率(%)": 5.937115113516327, "下单率(%)": 6.14917903370753, "下单率(%)环比变化量": 0.06338691106819905, "下单率(%)环比变化率(%)": 1.0415556396084877, "下单单价(元)": 101.82764230924506, "下单单价(元)环比变化量": -19.930611863744318, "下单单价(元)环比变化率(%)": -16.36900265950568, "下单后7日发起退款率(%)": 43.73031893419459, "下单后7日发起退款率(%)环比变化量": 3.0778151405678855, "下单后7日发起退款率(%)环比变化率(%)": 7.571034630960197}}, "top20": [{"name": "kolakola", "cost": 4.95254422, "cost_delta": -3.359181157, "cost_pct": -40.41496806782672, "roi": 2.9675252450345613, "roi_delta": 0.186017320822498, "roi_pct": 6.68764303000116, "ctr": 2.3055415622091635, "ctr_delta": -0.5424620432938116, "order_rate": 7.814146939008062, "order_rate_delta": 2.052885254885058, "price": 53.579292745169525, "price_delta": -0.2361867706591525, "refund": 56.06999635435655, "refund_delta": 9.375396726796026}, {"name": "宁波市希盟贸易有限公司", "cost": 3.959857573, "cost_delta": 0.10242974899999968, "cost_pct": 2.6553899041922726, "roi": 2.4543306977167383, "roi_delta": 0.052714796477778325, "roi_pct": 2.194971995754338, "ctr": 1.6808433662617803, "ctr_delta": -0.08698869887080707, "order_rate": 11.780319482650452, "order_rate_delta": 0.8060912187025622, "price": 39.814829987709956, "price_delta": -0.03058936712875493, "refund": 36.337566571077424, "refund_delta": -3.4043689127935437}, {"name": "广州市季俏韵服饰有限公司", "cost": 1.49694, "cost_delta": -0.8511169999999999, "cost_pct": -36.247714599773346, "roi": 3.635463011209534, "roi_delta": -0.061495793453214986, "roi_pct": -1.6634157074094005, "ctr": 3.267088258164033, "ctr_delta": -0.15712419739012073, "order_rate": 8.76547987616099, "order_rate_delta": 0.16835614889186523, "price": 40.04466519499632, "price_delta": 0.04157763739263487, "refund": 29.13907284768212, "refund_delta": 12.733542893765069}, {"name": "厦门美洋服饰有限公司", "cost": 1.367899, "cost_delta": 0.05166399999999993, "cost_pct": 3.92513494930616, "roi": 10.370207157107359, "roi_delta": -0.1190816097161953, "roi_pct": -1.1352686761073554, "ctr": 3.3663494181385816, "ctr_delta": 0.04812611876542361, "order_rate": 5.801502317404507, "order_rate_delta": 1.0073935106717151, "price": 390.782258953168, "price_delta": -42.01927709698873, "refund": 59.22865013774105, "refund_delta": -5.975111617744851}, {"name": "浙锦", "cost": 0.9068240889999999, "cost_delta": -0.09256391100000005, "cost_pct": -9.262059480402012, "roi": 6.052938013648202, "roi_delta": -0.9673584077617017, "roi_pct": -13.7794524574708, "ctr": 2.2247135027404084, "ctr_delta": -0.38942808412689667, "order_rate": 3.471444568868981, "order_rate_delta": 0.5278632115509105, "price": 1770.6290322580646, "price_delta": -178.2598566308243, "refund": 58.064516129032256, "refund_delta": 5.286738351254478}, {"name": "主曼", "cost": 0.8819617089999999, "cost_delta": -0.510554823, "cost_pct": -36.66418396244936, "roi": 5.652751076520942, "roi_delta": 0.04185898263806642, "roi_pct": 0.7460307904281754, "ctr": 3.043676069153776, "ctr_delta": 0.12933777799850787, "order_rate": 6.769165065129191, "order_rate_delta": -0.4864468103233799, "price": 157.27160883280757, "price_delta": 1.3183154196339046, "refund": 59.305993690851736, "refund_delta": 18.58743081660024}, {"name": "哥弟商元", "cost": 0.81038009, "cost_delta": -0.34217291000000016, "cost_pct": -29.688258153854974, "roi": 4.134578380374572, "roi_delta": -0.046591596190496354, "roi_pct": -1.1143195912062027, "ctr": 3.3593409834684045, "ctr_delta": 0.6047496055136099, "order_rate": 3.9928922337200796, "order_rate_delta": -0.7755234217234341, "price": 87.71151832460734, "price_delta": 1.3491527332094932, "refund": 76.17801047120419, "refund_delta": 24.02747283679559}, {"name": "义乌市汐岂电子商务商行(个体工商户)", "cost": 0.716934, "cost_delta": 0.26004299999999997, "cost_pct": 56.915763278331156, "roi": 2.8321295963087256, "roi_delta": -0.0787178487055118, "roi_pct": -2.7042931720912216, "ctr": 2.250577045916788, "ctr_delta": 0.11404735912753816, "order_rate": 10.134076266759534, "order_rate_delta": 1.9690191991563726, "price": 34.88745704467354, "price_delta": -0.8636182241436643, "refund": 27.147766323024054, "refund_delta": -13.174814322137234}, {"name": "杭州佑曦电子商务有限公司", "cost": 0.686619, "cost_delta": -0.14758899999999997, "cost_pct": -17.69211036096513, "roi": 3.387321061607675, "roi_delta": 0.10269660343896891, "roi_pct": 3.126585847084202, "ctr": 1.8315945294344942, "ctr_delta": -0.46870402150120793, "order_rate": 6.774624870004457, "order_rate_delta": 2.509034493302969, "price": 51.004364035087725, "price_delta": 0.1683714562380061, "refund": 28.07017543859649, "refund_delta": 9.888357256778306}, {"name": "深圳市佐佑服饰有限公司", "cost": 0.685855, "cost_delta": 0.623378, "cost_pct": 997.7719800886726, "roi": 15.36711987227621, "roi_delta": -0.024624289575351455, "roi_pct": -0.15998375048607394, "ctr": 4.843974409191801, "ctr_delta": 0.3836550431214443, "order_rate": 48.517520215633425, "order_rate_delta": 46.09490917929426, "price": 585.5342222222223, "price_delta": 51.295333333333474, "refund": 45.0, "refund_delta": -77.22222222222223}, {"name": "丫头", "cost": 0.676697, "cost_delta": 0.45667599999999997, "cost_pct": 207.56018743665376, "roi": 6.462364987579374, "roi_delta": -6.431004281717646, "roi_pct": -49.87838436483625, "ctr": 5.812100363438478, "ctr_delta": 0.7103068588335333, "order_rate": 24.0428022069888, "order_rate_delta": -5.2327322348164245, "price": 30.410730180806674, "price_delta": -27.13109537700265, "refund": 30.528511821974966, "refund_delta": -4.76560582508386}, {"name": "海口秀英诗娟电子商务中心", "cost": 0.557668, "cost_delta": -0.12629881199999993, "cost_pct": -18.46563455771885, "roi": 2.7951576923904544, "roi_delta": -0.08682424798474608, "roi_pct": -3.012657600950913, "ctr": 4.451210793260941, "ctr_delta": 0.02873350709353062, "order_rate": 4.195011337868481, "order_rate_delta": -0.0596612042983633, "price": 70.21486486486486, "price_delta": -0.1844208494208459, "refund": 28.82882882882883, "refund_delta": -1.1711711711711708}, {"name": "森衣惠", "cost": 0.541114177, "cost_delta": 0.016465648000000055, "cost_pct": 3.138414974951747, "roi": 3.6581558645801286, "roi_delta": 0.21087659087801924, "roi_pct": 6.1171890681068675, "ctr": 3.5116467196283008, "ctr_delta": -0.2818992442516328, "order_rate": 4.459539279385706, "order_rate_delta": 0.6366569911568831, "price": 131.09139072847682, "price_delta": 0.9755633903473324, "refund": 79.47019867549669, "refund_delta": 3.211205869741292}, {"name": "广州市白云区妍妍服装店(个体工商户)", "cost": 0.52446, "cost_delta": 0.15158500000000003, "cost_pct": 40.653033858531685, "roi": 4.3040460664302325, "roi_delta": 0.017354816011191154, "roi_pct": 0.40485341717798434, "ctr": 3.680077307922839, "ctr_delta": -0.2977411799714025, "order_rate": 6.315439587834469, "order_rate_delta": -0.4059943180654564, "price": 59.40263157894737, "price_delta": 0.2026315789473685, "refund": 31.842105263157894, "refund_delta": -17.787524366471732}, {"name": "杭州曼娴服饰有限公司", "cost": 0.455771, "cost_delta": -0.410479, "cost_pct": -47.38574314574315, "roi": 5.407233018335962, "roi_delta": 0.02077529827824165, "roi_pct": 0.3856950032463826, "ctr": 2.0400166949174197, "ctr_delta": 0.03765740432471132, "order_rate": 6.38830897703549, "order_rate_delta": -0.9188970912325249, "price": 161.07581699346403, "price_delta": -0.3781276432141851, "refund": 50.326797385620914, "refund_delta": 13.994617454825068}, {"name": "特际直购", "cost": 0.446314649, "cost_delta": -0.16371785700000002, "cost_pct": -26.837562816693577, "roi": 2.1498286066787826, "roi_delta": 0.262617697953863, "roi_pct": 13.915651755706456, "ctr": 1.6412622008289879, "ctr_delta": 0.12496825523328314, "order_rate": 10.047522063815343, "order_rate_delta": 0.7032597687333766, "price": 64.83108108108108, "price_delta": -2.4940651177493294, "refund": 24.324324324324323, "refund_delta": 4.441283388651808}, {"name": "合肥市经开区奥诗服装店", "cost": 0.42637600000000003, "cost_delta": -0.0007639999999999314, "cost_pct": -0.17886407266936635, "roi": 4.547160252922303, "roi_delta": 0.013517887421530261, "roi_pct": 0.29816836732416396, "ctr": 2.3749288852843984, "ctr_delta": 0.38711193233765084, "order_rate": 6.8807339449541285, "order_rate_delta": -0.04942306641566052, "price": 143.61481481481482, "price_delta": -7.674247685185179, "refund": 51.111111111111114, "refund_delta": 10.486111111111114}, {"name": "晚年之美", "cost": 0.38738243, "cost_delta": -0.52921693, "cost_pct": -57.73699536512878, "roi": 2.2241586950652357, "roi_delta": -0.3992339287306179, "roi_pct": -15.21823020730142, "ctr": 0.7800881526543045, "ctr_delta": -0.11643864859124609, "order_rate": 2.7234369006520907, "order_rate_delta": -1.4119014452125707, "price": 121.35211267605634, "price_delta": -0.09233176838810664, "refund": 46.478873239436616, "refund_delta": 18.196044956608333}, {"name": "杭州富阳星空设计工作室(个体工商户)", "cost": 0.374764, "cost_delta": -0.07108900000000001, "cost_pct": -15.944492915826519, "roi": 16.00633998996702, "roi_delta": -0.04693317405789443, "roi_pct": -0.292358907609389, "ctr": 3.989629370323371, "ctr_delta": -0.44629525648142554, "order_rate": 10.200164518782561, "order_rate_delta": -6.055811943151973, "price": 161.252688172043, "price_delta": -0.6794385247895605, "refund": 40.053763440860216, "refund_delta": 13.809419549457502}, {"name": "义乌市藿岐电子商务商行(个体工商户)", "cost": 0.296177, "cost_delta": 0.20472300000000004, "cost_pct": 223.85352198919685, "roi": 6.698798353687153, "roi_delta": -0.29805252216300104, "roi_pct": -4.259809555063385, "ctr": 3.2305727836556, "ctr_delta": -0.4899628765273971, "order_rate": 4.6019198193111235, "order_rate_delta": 0.6116918062818075, "price": 121.71963190184049, "price_delta": -8.870164016526857, "refund": 38.65030674846626, "refund_delta": -16.451734067860272}], "total_customers": 1011, "total_cost_all": 32.740801067, "headers_link": ["商品消费链路", "消耗(万元)", "消耗(万元)环比变化量", "消耗(万元)环比变化率(%)", "下单ROI", "下单ROI环比变化量", "下单ROI环比变化率(%)", "ctr(%)", "ctr(%)环比变化量", "ctr(%)环比变化率(%)", "下单率(%)", "下单率(%)环比变化量", "下单率(%)环比变化率(%)", "下单单价(元)", "下单单价(元)环比变化量", "下单单价(元)环比变化率(%)", "下单后7日发起退款率(%)", "下单后7日发起退款率(%)环比变化量", "下单后7日发起退款率(%)环比变化率(%)"]};
+
+  function fmt(v, d){ if(v===null||v===undefined||isNaN(v)) return '—'; return Number(v).toFixed(d===undefined?2:d); }
+  function fmtInt(v){ if(v===null||v===undefined||isNaN(v)) return '—'; return Math.round(v).toLocaleString(); }
+  function pct(v){ if(v===null||v===undefined||isNaN(v)) return '—'; const s=v>=0?'+':''; return s+Number(v).toFixed(1)+'%'; }
+  function signAbs(v, d){ if(v===null||v===undefined||isNaN(v)) return ''; const s=v>=0?'+':''; return s+Number(v).toFixed(d===undefined?2:d); }
+  function cls(v){ if(v===null||v===undefined||isNaN(v)) return ''; return v>=0?'up':'down'; }
+  function arr(v){ if(v===null||v===undefined||isNaN(v)) return ''; return v>=0?'▲':'▼'; }
+
+  // ---- KPI（环比同时展示 % 和绝对值） ----
+  const o = P.overall;
+  const kpis = [
+    { l:'昨日消耗', v:fmt(o['消耗(万元)']),          u:'万', d:o['消耗(万元)环比变化率(%)'],           abs:o['消耗(万元)环比变化量'],           absUnit:'万', absD:2 },
+    { l:'下单ROI',  v:fmt(o['下单ROI']),             u:'',   d:o['下单ROI环比变化率(%)'],              abs:o['下单ROI环比变化量'],              absUnit:'',   absD:2 },
+    { l:'CTR',      v:fmt(o['ctr(%)']),              u:'%',  d:o['ctr(%)环比变化率(%)'],               abs:o['ctr(%)环比变化量'],               absUnit:'pp', absD:2 },
+    { l:'下单率',   v:fmt(o['下单率(%)']),           u:'%',  d:o['下单率(%)环比变化率(%)'],            abs:o['下单率(%)环比变化量'],            absUnit:'pp', absD:2 },
+    { l:'单价',     v:fmtInt(o['下单单价(元)']),     u:'元', d:o['下单单价(元)环比变化率(%)'],         abs:o['下单单价(元)环比变化量'],         absUnit:'元', absD:1 },
+    { l:'退款率',   v:fmt(o['下单后7日发起退款率(%)']), u:'%', d:o['下单后7日发起退款率(%)环比变化率(%)'], abs:o['下单后7日发起退款率(%)环比变化量'], absUnit:'pp', absD:2 },
   ];
-  document.getElementById('kpis').innerHTML = kpis.map(k=>`
-    <div class="kpi ${k.accent?'accent':''}">
-      <div class="k-label">${k.label}</div>
-      <div class="k-val">${k.val}<span class="k-unit">${k.unit}</span></div>
-      <div class="k-sub">${k.sub}</div>
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="label">${k.l}</div>
+      <div class="val">${k.v}<span class="unit">${k.u}</span></div>
+      <div class="delta ${cls(k.d)}">${arr(k.d)} ${pct(k.d)} <span style="color:#7A94B4;font-weight:500;">(${signAbs(k.abs, k.absD)}${k.absUnit})</span></div>
     </div>`).join('');
-})();
 
-/* ---------- 整体明细表 ---------- */
-(function(){
-  const t=document.getElementById('overallTbl');
-  t.querySelector('thead').innerHTML='<tr>'+D.overallHeader.map(h=>`<th>${h}</th>`).join('')+'</tr>';
-  t.querySelector('tbody').innerHTML=D.overall.map(r=>{
-    const isTot=r[0]==='合计';
-    return `<tr class="${isTot?'row-total':''}">`+r.map((v,i)=>{
-      if(i===0) return `<td>${v}</td>`;
-      if(i===1) return `<td>${typeof v==='number'?v.toLocaleString():v}</td>`;
-      return `<td>${fmt(v, i>=7?2:2)}</td>`;
-    }).join('')+'</tr>';
+  const axisLabel = { color:'#5B7A9E', fontSize: 12 };
+  const splitLine = { lineStyle: { color:'#E8F1FB' } };
+
+  // ==== 图1：分链路 消耗环 + 指标分组柱（左环右柱，与全域通图对称） ====
+  const linkNames = Object.keys(P.link); // ['小店','直播']
+  const metricsCfg = [
+    { key:'下单ROI',                  label:'ROI',    color:'#00B8D4' },
+    { key:'ctr(%)',                    label:'CTR%',   color:'#7C4DFF' },
+    { key:'下单率(%)',                 label:'下单率%', color:'#F9A825' },
+    { key:'下单后7日发起退款率(%)',    label:'退款率%', color:'#E53935' },
+  ];
+  echarts.init(document.getElementById('chartLink')).setOption({
+    tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
+    legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
+              data: linkNames },
+    grid: { top: 40, right: 20, bottom: 28, left: '52%' },
+    xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
+    yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
+    series: [
+      // 左环：消耗占比（label 内嵌 · 图例外置显示环比）
+      {
+        type:'pie', radius:['38%','62%'], center:['22%','58%'],
+        avoidLabelOverlap: false,
+        itemStyle:{ borderRadius:4, borderColor:'#fff', borderWidth:2 },
+        label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
+                lineHeight: 18,
+                textBorderColor:'#fff', textBorderWidth: 3,
+                formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
+        labelLine:{ show:false },
+        data: linkNames.map((n, i) => ({
+          name: n, value: P.link[n]['消耗(万元)'],
+          deltaPct: P.link[n]['消耗(万元)环比变化率(%)'],
+          deltaAbs: P.link[n]['消耗(万元)环比变化量'],
+          itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
+        }))
+      },
+      // 右侧分组柱：指标
+      ...linkNames.map((n, i) => ({
+        name: n, type:'bar', barWidth:'26%',
+        data: metricsCfg.map(m => P.link[n][m.key]),
+        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5', borderRadius:[4,4,0,0] },
+        label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:600, formatter: p => fmt(p.value,1) }
+      }))
+    ]
+  });
+
+  // ==== 图2：全域通 消耗环 + 指标分组柱（左环右柱） ====
+  const gytMap = { 'true':'全域通', 'false':'非全域通' };
+  const gytEntries = Object.entries(P.gyt);
+  echarts.init(document.getElementById('chartGyt')).setOption({
+    tooltip: { trigger:'item', valueFormatter: v => fmt(v, 2) },
+    legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
+              data: [...gytEntries.map(([k])=>gytMap[k]||k), 'ROI','CTR%','下单率%','退款率%'] },
+    grid: { top: 40, right: 20, bottom: 28, left: '52%' },
+    xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
+    yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
+    series: [
+      // 左侧环：消耗占比（label 内嵌）
+      {
+        type:'pie', radius:['38%','62%'], center:['22%','58%'],
+        avoidLabelOverlap: false,
+        itemStyle:{ borderRadius:4, borderColor:'#fff', borderWidth:2 },
+        label:{ show:true, position:'inside', color:'#0D2340', fontWeight:800, fontSize: 15,
+                lineHeight: 18,
+                textBorderColor:'#fff', textBorderWidth: 3,
+                formatter: p => `${p.name}\n${fmt(p.percent,1)}%` },
+        labelLine:{ show:false },
+        data: gytEntries.map(([k,v], i) => ({
+          name: gytMap[k]||k, value: v['消耗(万元)'],
+          deltaPct: v['消耗(万元)环比变化率(%)'],
+          deltaAbs: v['消耗(万元)环比变化量'],
+          itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5' }
+        }))
+      },
+      // 右侧分组柱：指标
+      ...gytEntries.map(([k,v], i) => ({
+        name: gytMap[k]||k, type:'bar', barWidth:'26%',
+        data: metricsCfg.map(m => v[m.key]),
+        itemStyle:{ color: i===0 ? '#1565C0' : '#42A5F5', borderRadius:[4,4,0,0] },
+        label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:600, formatter: p => fmt(p.value,1) }
+      }))
+    ]
+  });
+
+  // ==== 饼图下方消耗+环比卡片 ====
+  function renderPieInfo(elId, entries) {
+    document.getElementById(elId).innerHTML = entries.map((e, i) => {
+      const d = e.deltaPct, a = e.deltaAbs;
+      const sign = d>=0?'+':'', ar = d>=0?'▲':'▼';
+      const dcls = d>=0?'up':'down';
+      return `<div class="card${i===1?' c2':''}">
+        <div class="name">${e.name} · ${fmt(e.percent,1)}%</div>
+        <div class="cost">${fmt(e.value,2)}<span class="unit">万</span></div>
+        <div class="delta ${dcls}">${ar} ${sign}${fmt(d,1)}% (${a>=0?'+':''}${fmt(a,2)}万)</div>
+      </div>`;
+    }).join('');
+  }
+  const linkTotal = linkNames.reduce((s,n)=>s+P.link[n]['消耗(万元)'],0);
+  renderPieInfo('linkInfo', linkNames.map(n => ({
+    name: n,
+    value: P.link[n]['消耗(万元)'],
+    percent: P.link[n]['消耗(万元)']/linkTotal*100,
+    deltaPct: P.link[n]['消耗(万元)环比变化率(%)'],
+    deltaAbs: P.link[n]['消耗(万元)环比变化量'],
+  })));
+  const gytTotal = gytEntries.reduce((s,[,v])=>s+v['消耗(万元)'],0);
+  renderPieInfo('gytInfo', gytEntries.map(([k,v]) => ({
+    name: gytMap[k]||k,
+    value: v['消耗(万元)'],
+    percent: v['消耗(万元)']/gytTotal*100,
+    deltaPct: v['消耗(万元)环比变化率(%)'],
+    deltaAbs: v['消耗(万元)环比变化量'],
+  })));
+
+  // ==== Top20 表格 ====
+  const top = P.top20;
+  const totalCost = P.overall['消耗(万元)'];
+  const topSum = top.reduce((a,c)=>a+(c.cost||0),0);
+  document.getElementById('top20Tag').textContent = `${topSum.toFixed(2)} 万 · 占大盘 ${(topSum/totalCost*100).toFixed(1)}%`;
+
+  function deltaCell(pctV, absV, absUnit, absD){
+    if(pctV===null||pctV===undefined||isNaN(pctV)) return '<td>—</td>';
+    return `<td class="delta-cell ${cls(pctV)}">${arr(pctV)} ${pct(pctV)}<span class="abs">(${signAbs(absV, absD)}${absUnit||''})</span></td>`;
+  }
+
+  const tbody = document.querySelector('#top20Table tbody');
+  tbody.innerHTML = top.map((c, i) => {
+    const rank = i+1;
+    const rankCls = rank===1?'rank gold' : rank===2?'rank silver' : rank===3?'rank bronze' : 'rank';
+    return `<tr>
+      <td><span class="${rankCls}">${rank}</span></td>
+      <td class="cust" title="${c.name}">${c.name}</td>
+      <td>${fmt(c.cost,3)}</td>
+      ${deltaCell(c.cost_pct, c.cost_delta, '万', 2)}
+      <td>${fmt(c.roi)}</td>
+      ${deltaCell(c.roi_pct, c.roi_delta, '', 2)}
+      <td>${fmt(c.ctr)}</td>
+      <td class="delta-cell ${cls(c.ctr_delta)}">${arr(c.ctr_delta)} <span class="abs" style="color:inherit;">${signAbs(c.ctr_delta,2)}pp</span></td>
+      <td>${fmt(c.order_rate)}</td>
+      <td class="delta-cell ${cls(c.order_rate_delta)}">${arr(c.order_rate_delta)} <span class="abs" style="color:inherit;">${signAbs(c.order_rate_delta,2)}pp</span></td>
+      <td>${fmtInt(c.price)}</td>
+      <td>${fmt(c.refund,1)}</td>
+    </tr>`;
   }).join('');
-})();
 
-/* ---------- 图表 ---------- */
-const baseOpt={
-  responsive:true,maintainAspectRatio:false,
-  plugins:{legend:{display:false}},
-  scales:{
-    x:{ticks:{color:'#8b949e',font:{size:11}},grid:{display:false}},
-    y:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#283039'}}
-  }
-};
-(function(){
-  const rows=D.overall.filter(r=>r[0]!=='合计');
-  const sorted=[...rows].sort((a,b)=>b[1]-a[1]);
-  const labels=sorted.map(r=>r[0]);
-  new Chart(document.getElementById('chCost'),{
-    type:'bar',
-    data:{labels,datasets:[{data:sorted.map(r=>r[1]),backgroundColor:'#3b82f6',borderRadius:5}]},
-    options:{...baseOpt,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toLocaleString()+' 万'}}}}
-  });
-  const sr=[...rows].sort((a,b)=>b[2]-a[2]);
-  new Chart(document.getElementById('chRoi'),{
-    type:'bar',
-    data:{labels:sr.map(r=>r[0]),datasets:[{data:sr.map(r=>r[2]),backgroundColor:sr.map(r=>r[2]>=D.overall.find(x=>x[0]==='合计')[2]?'#3fb950':'#d29922'),borderRadius:5}]},
-    options:{...baseOpt,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'ROI '+c.parsed.x.toFixed(2)}}}}
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('[_echarts_instance_]').forEach(el => {
+      const inst = echarts.getInstanceByDom(el);
+      if (inst) inst.resize();
+    });
   });
 })();
-
-/* ---------- 类目下钻 ---------- */
-const METRICS=D.catData[D.cats[0]].metricHeader; // 曝光量占比,环比,CTR,CVR,CPM,ROI,客单价
-const tabsEl=document.getElementById('catTabs');
-const panel=document.getElementById('catPanel');
-let chartRefs=[];
-
-function maxOf(blocks,idx){
-  let m=0;blocks.forEach(b=>b.rows.forEach(r=>{const v=r.vals[idx];if(typeof v==='number'&&Math.abs(v)>m)m=Math.abs(v);}));return m||1;
-}
-
-function renderCat(cat){
-  chartRefs.forEach(c=>c.destroy());chartRefs=[];
-  const cd=D.catData[cat];
-  const shareMax=maxOf(cd.blocks,0);
-  let html=`<div class="cat-head"><div class="ch-name">${cat}</div><div class="ch-tag">${cd.title||''}</div></div>`;
-
-  // 顶部两图: 直播链路各渠道ROI / 投放OG各方式ROI
-  html+=`<div class="grid2" style="margin-top:14px">
-    <div class="card"><h3>${cat} · 直播链路各渠道曝光占比 & ROI</h3><div class="chart-box"><canvas id="cc_live_${cat}"></canvas></div></div>
-    <div class="card"><h3>${cat} · 投放OG / 系统工具 ROI 对比</h3><div class="chart-box"><canvas id="cc_og_${cat}"></canvas></div></div>
-  </div>`;
-
-  cd.blocks.forEach((bl,bi)=>{
-    const segMax=maxOf([bl],0);
-    html+=`<div class="block"><div class="block-title">${bl.groupTitle}<span class="seg">${bl.section}</span></div>
-      <div class="tbl-wrap"><table><thead><tr><th>${bl.section==='行业链路'?'链路':'细分'}</th>`+
-      METRICS.map(m=>`<th>${m}</th>`).join('')+`</tr></thead><tbody>`+
-      bl.rows.map(rw=>{
-        return '<tr><td>'+rw.name+'</td>'+rw.vals.map((v,i)=>{
-          if(i===0){ // 曝光占比 带条
-            const w=typeof v==='number'?(Math.abs(v)/segMax*100):0;
-            return `<td class="metricbar"><span class="fill" style="width:${w}%"></span><span>${fmt(v)}%</span></td>`;
-          }
-          if(i===1){ // 环比
-            const cls=typeof v==='number'?(v>=0?'up':'down'):'';
-            return `<td class="${cls}">${pct(v)}</td>`;
-          }
-          if(i===4||i===6) return `<td>${fmt(v,1)}</td>`; // CPM 客单价
-          if(i===2||i===3) return `<td>${fmt(v)}%</td>`;   // CTR CVR
-          return `<td>${fmt(v)}</td>`;                      // ROI
-        }).join('')+'</tr>';
-      }).join('')+`</tbody></table></div></div>`;
-  });
-  html+=`<div class="note">说明：曝光量占比=消耗占比；客单价=下单单价；环比为近7天日均 vs 前7天日均；图示仅为大盘区间，非品牌区间。</div>`;
-  panel.innerHTML=html;
-
-  // 直播链路图
-  const live=cd.blocks.find(b=>b.groupTitle==='直播链路');
-  if(live){
-    const lbl=live.rows.map(r=>r.name);
-    chartRefs.push(new Chart(document.getElementById('cc_live_'+cat),{
-      data:{labels:lbl,datasets:[
-        {type:'bar',label:'曝光占比%',data:live.rows.map(r=>r.vals[0]),backgroundColor:'#3b82f6',borderRadius:4,yAxisID:'y'},
-        {type:'line',label:'ROI',data:live.rows.map(r=>r.vals[5]),borderColor:'#d29922',backgroundColor:'#d29922',tension:.3,yAxisID:'y1',pointRadius:4}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:true,labels:{color:'#8b949e',font:{size:11}}}},
-        scales:{x:{ticks:{color:'#8b949e',font:{size:10}},grid:{display:false}},
-          y:{position:'left',ticks:{color:'#3b82f6',font:{size:10}},grid:{color:'#283039'},title:{display:true,text:'曝光占比%',color:'#3b82f6',font:{size:10}}},
-          y1:{position:'right',ticks:{color:'#d29922',font:{size:10}},grid:{display:false},title:{display:true,text:'ROI',color:'#d29922',font:{size:10}}}}}
-    }));
-  }
-  // 投放OG+系统工具 ROI
-  const og=cd.blocks.find(b=>b.groupTitle==='投放OG');
-  const sys=cd.blocks.find(b=>b.groupTitle==='系统工具');
-  const combo=[];
-  if(og) og.rows.forEach(r=>combo.push([r.name,r.vals[5]]));
-  if(sys) sys.rows.forEach(r=>combo.push([r.name,r.vals[5]]));
-  chartRefs.push(new Chart(document.getElementById('cc_og_'+cat),{
-    type:'bar',
-    data:{labels:combo.map(c=>c[0]),datasets:[{data:combo.map(c=>c[1]),
-      backgroundColor:combo.map((c,i)=>i<(og?og.rows.length:0)?'#388bfd':'#8957e5'),borderRadius:4}]},
-    options:{...baseOpt,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'ROI '+c.parsed.y.toFixed(2)}}}}
-  }));
-}
-
-D.cats.forEach((c,i)=>{
-  const el=document.createElement('div');
-  el.className='tab'+(i===0?' active':'');
-  el.textContent=c;
-  el.onclick=()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderCat(c);};
-  tabsEl.appendChild(el);
-});
-renderCat(D.cats[0]);
 </script>
 </body>
 </html>
