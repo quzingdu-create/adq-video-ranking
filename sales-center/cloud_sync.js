@@ -767,9 +767,28 @@
     //   → token 失效或首次进入时抛 NEED_PASSWORD → 云函数一直调不通
     //   → 用户"点刷新弹 NEED_PASSWORD" + "看不到今天登记" 都是这个坑
     // 修复：callFunction 走匿名快路径，只做 SDK init（跳过 auth 环节）
+    // 2026-08-04 R32 P0 根治：76 次持续失败的"网络异常"根因 —— SDK v2 内部会自动读 localStorage
+    //   里的 tcb_access_token 尝试用它, 如果 token 过期/refresh_token 也过期 → 每次都 401 但错误消息被吞
+    //   → 表现为 pushRecordToCloud .catch(e) 里 e.message 为空 → alert "网络异常"
+    //   修复：init SDK 前主动清 localStorage 里所有 tcb_* token, 强制 SDK 走匿名新会话
     callFunction: function (name, data) {
       return new Promise(function (resolve, reject) {
         try {
+          // R32: 一次性清理坏 token（只做一次，防重）
+          if (!window.__TCB_TOKEN_CLEAN_DONE__) {
+            try {
+              var _keysToDel = [];
+              for (var i = 0; i < localStorage.length; i++) {
+                var _k = localStorage.key(i);
+                if (_k && /^tcb_(access_token|refresh_token|user|anonymous_uuid)/.test(_k)) {
+                  _keysToDel.push(_k);
+                }
+              }
+              _keysToDel.forEach(function(k){ try { localStorage.removeItem(k); } catch(_){} });
+              if (_keysToDel.length) console.info('[cloud] R32 cleaned', _keysToDel.length, 'stale tcb tokens');
+              window.__TCB_TOKEN_CLEAN_DONE__ = true;
+            } catch(_){}
+          }
           // 已 init 直接用
           if (!_app) {
             var SDK = (typeof cloudbase !== 'undefined') ? cloudbase
@@ -784,7 +803,14 @@
           _app.callFunction({ name: name, data: data || {} }).then(function (r) {
             // v1/v2 SDK 返回结构：{ result: {...} } 或 直接 {ok,data,meta}
             resolve(r && r.result !== undefined ? r.result : r);
-          }).catch(reject);
+          }).catch(function(e){
+            // R32: 补齐 e.message —— SDK v2 有时抛 {code, msg} 结构非Error 实例
+            if (e && !e.message) {
+              var _m = e.errMsg || e.msg || e.error || e.code || '';
+              if (_m) e = new Error('CloudBase API: ' + _m +' (code=' + (e.code || 'unknown') + ')');
+            }
+            reject(e);
+          });
         } catch (e) { reject(e); }
       });
     },
