@@ -60,44 +60,52 @@
     DIFF_STARTED = true;
 
     console.info('[diff-probe] starting double-read comparison ...');
-    var staticKpi = window.__CENTER_DAILY_KPI__;
-    var staticQuarter = window.__CENTER_QUARTER_SUMMARY__;
-    if (!staticKpi || !staticQuarter) {
-      console.warn('[diff-probe] static data notready, skip');
-      return;
-    }
+    // 各字段对比目标: [staticVar, cloudSnapKey, label]
+    var PROBES = [
+      ['__CENTER_DAILY_KPI__',         'centerDailyKpi',       'kpi'],
+      ['__CENTER_QUARTER_SUMMARY__',   'centerQuarterSummary', 'quarterSummary'],
+      ['__TOP80_EFFECTIVE_METRICS__',  'top80Metrics',         'top80'],
+      ['__TOP_RISING_DATA__',          'topRisingData',        'topRising'],
+      ['__TOP_STATUS_DATA__',          'topStatusData',        'topStatus'],
+      ['__DASHBOARD_RUNTIME_SUMMARY__','dashboardRuntime',     'runtime'],
+      ['__REDBLACK_DATA__',            'redblack',             'redblack'],
+    ];
 
     _fetchCloud('getKpiSnapshot').then(function (data) {
       var cloudSnap = (data && data.snapshot) || data;
-      var cloudKpi = cloudSnap && cloudSnap.centerDailyKpi;
-      var cloudQuarter = cloudSnap && cloudSnap.centerQuarterSummary;
-      if (!cloudKpi || !cloudQuarter) {
-        console.warn('[diff-probe] cloud data incomplete');
-        return;
+      if (!cloudSnap) { console.warn('[diff-probe] cloud snap empty'); return; }
+
+      var overall = { dataDate: cloudSnap.dataDate, version: cloudSnap.version, byField: {} };
+      var totalDiff = 0;
+      var totalSamples = [];
+
+      for (var i = 0; i < PROBES.length; i++) {
+        var s = window[PROBES[i][0]];
+        var c = cloudSnap[PROBES[i][1]];
+        var lbl = PROBES[i][2];
+        if (s === undefined) { overall.byField[lbl] = 'static-missing'; continue; }
+        if (c === undefined) { overall.byField[lbl] = 'cloud-missing'; continue; }
+        var diffs = _deepEqual(s, c, '$' + lbl);
+        overall.byField[lbl] = diffs.length;
+        totalDiff += diffs.length;
+        if (diffs.length && totalSamples.length < 10) {
+          totalSamples = totalSamples.concat(diffs.slice(0, 3));
+        }
       }
 
-      var kpiDiffs = _deepEqual(staticKpi, cloudKpi, '$kpi');
-      var quarterDiffs = _deepEqual(staticQuarter, cloudQuarter, '$quarter');
+      overall.totalDiff = totalDiff;
+      overall.samples = totalSamples.slice(0, 10);
+      overall.userAgent = navigator.userAgent.slice(0, 80);
+      overall.checkedAt = new Date().toISOString();
 
-      var summary = {
-        dataDate: staticKpi.dataDate,
-        kpiDiffCount: kpiDiffs.length,
-        quarterDiffCount: quarterDiffs.length,
-        kpiSamples: kpiDiffs.slice(0, 5),
-        quarterSamples: quarterDiffs.slice(0, 5),
-        userAgent: navigator.userAgent.slice(0, 80),
-        checkedAt: new Date().toISOString(),
-      };
-
-      if (kpiDiffs.length === 0 && quarterDiffs.length === 0) {
-        console.info('[diff-probe] ✅ static == cloud (0 diff)', summary);
+      if (totalDiff === 0) {
+        console.info('[diff-probe] ✅ ALL FIELDS static == cloud', overall);
       } else {
-        console.warn('[diff-probe] ⚠️ diff found', summary);
+        console.warn('[diff-probe] ⚠️ diff found', overall);
       }
 
-      // 静默上报（不block 用户）
       try {
-        window.cloud && window.cloud.callFunction && window.cloud.callFunction('logDoubleReadDiff', summary).catch(function (e) {
+        window.cloud && window.cloud.callFunction && window.cloud.callFunction('logDoubleReadDiff', overall).catch(function (e) {
           console.debug('[diff-probe] report skipped:', e && e.message);
         });
       } catch (_) {}

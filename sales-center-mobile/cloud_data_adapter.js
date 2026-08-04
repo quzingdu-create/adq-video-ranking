@@ -134,6 +134,108 @@
     },
 
     /**
+     * 涨跌榜数据（对应 redblack_data.js）
+     * @returns {Promise<Object>}  { q1: {...}, q2: {...} }
+     */
+    getRedblack: function (dataDate) {
+      var params = dataDate ? { dataDate: dataDate } : {};
+      var key = _cacheKey('getRedblack', params);
+      if (_cache[key]) return Promise.resolve(_cache[key]);
+      var p;
+      if (USE_CLOUD) {
+        // getTopMetricsFromSnapshot 目前只有 top80/rising/status;
+        // redblack 走 getKpiSnapshot 里的 redblack 字段
+        p = _cloudCall('getKpiSnapshot', params).then(function (data) {
+          var snap = data.snapshot || data;
+          return snap.redblack || { q1: {}, q2: {} };
+        });
+      } else {
+        p = _staticRead('__REDBLACK_DATA__');
+      }
+      return p.then(function (v) { _cache[key] = v; return v; });
+    },
+
+    /**
+     * Top80 有效客户名单（对应 top80_effective_metrics.js）
+     * @returns {Promise<Array>}
+     */
+    getTop80: function (dataDate) {
+      var params = { type: 'top80' };
+      if (dataDate) params.dataDate = dataDate;
+      var key = _cacheKey('getTop80', params);
+      if (_cache[key]) return Promise.resolve(_cache[key]);
+      var p;
+      if (USE_CLOUD) {
+        p = _cloudCall('getTopMetricsFromSnapshot', params).then(function (data) {
+          return data.data || [];
+        });
+      } else {
+        p = _staticRead('__TOP80_EFFECTIVE_METRICS__');
+      }
+      return p.then(function (v) { _cache[key] = v; return v; });
+    },
+
+    /**
+     * 潜力起量客户（对应 top_rising_data.js）
+     * @returns {Promise<Array>}
+     */
+    getTopRising: function (dataDate) {
+      var params = { type: 'rising' };
+      if (dataDate) params.dataDate = dataDate;
+      var key = _cacheKey('getTopRising', params);
+      if (_cache[key]) return Promise.resolve(_cache[key]);
+      var p;
+      if (USE_CLOUD) {
+        p = _cloudCall('getTopMetricsFromSnapshot', params).then(function (data) {
+          return data.data || [];
+        });
+      } else {
+        p = _staticRead('__TOP_RISING_DATA__');
+      }
+      return p.then(function (v) { _cache[key] = v; return v; });
+    },
+
+    /**
+     * 头部客户状态（对应 top_status_data.js）
+     * @returns {Promise<Object>}
+     */
+    getTopStatus: function (dataDate) {
+      var params = { type: 'status' };
+      if (dataDate) params.dataDate = dataDate;
+      var key = _cacheKey('getTopStatus', params);
+      if (_cache[key]) return Promise.resolve(_cache[key]);
+      var p;
+      if (USE_CLOUD) {
+        p = _cloudCall('getTopMetricsFromSnapshot', params).then(function (data) {
+          return data.data || {};
+        });
+      } else {
+        p = _staticRead('__TOP_STATUS_DATA__');
+      }
+      return p.then(function (v) { _cache[key] = v; return v; });
+    },
+
+    /**
+     * 看板 runtime 汇总（对应 dashboard_runtime_summary.js）
+     * @returns {Promise<Object>}
+     */
+    getRuntimeSummary: function (dataDate) {
+      var params = dataDate ? { dataDate: dataDate } : {};
+      var key = _cacheKey('getRuntimeSummary', params);
+      if (_cache[key]) return Promise.resolve(_cache[key]);
+      var p;
+      if (USE_CLOUD) {
+        p = _cloudCall('getKpiSnapshot', params).then(function (data) {
+          var snap = data.snapshot || data;
+          return snap.dashboardRuntime || {};
+        });
+      } else {
+        p = _staticRead('__DASHBOARD_RUNTIME_SUMMARY__');
+      }
+      return p.then(function (v) { _cache[key] = v; return v; });
+    },
+
+    /**
      * 当前是否云端模式
      */
     isCloudMode: function () { return USE_CLOUD; },
