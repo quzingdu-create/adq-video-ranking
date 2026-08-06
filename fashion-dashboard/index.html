@@ -411,13 +411,17 @@ function renderPieBarV2(elId, catNames, categoryData, colorPair) {
     data: metricsCfg.map(m => categoryData[i][m.key] || 0),
     label:{ show:true, position:'top', color:'#0D47A1', fontSize:11, fontWeight:700, formatter: p => fmt(p.value,1) }
   }));
+  // 计算 yAxis max：让最大柱值上方留出 22% 空间，防 label 溢出 grid.top
+  let _maxV = 0;
+  barSeries.forEach(s => s.data.forEach(v => { if (v > _maxV) _maxV = v; }));
+  const _yMax = _maxV > 0 ? Math.ceil(_maxV * 1.22 / 5) * 5 : 50;
   echarts.init(document.getElementById(elId)).setOption({
     tooltip: { trigger:'axis', axisPointer:{type:'shadow'}, valueFormatter: v => fmt(v, 2) },
     legend: { top: 4, textStyle:{ color:'#0D47A1', fontSize: 12 }, itemWidth: 14, itemHeight: 10,
               data: catNames },
-    grid: { top: 40, right: 20, bottom: 28, left: '52%' },
+    grid: { top: 44, right: 20, bottom: 28, left: '52%' },
     xAxis: { type:'category', data: metricsCfg.map(m=>m.label), axisLabel: axisLabel },
-    yAxis: { type:'value', axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
+    yAxis: { type:'value', max: _yMax, axisLabel: axisLabel, splitLine: splitLine, axisLine:{show:false} },
     series: [
       {
         name: '消耗占比', type:'pie', radius:['26%','44%'], center:['24%','58%'],
