@@ -916,6 +916,21 @@ async function listUserRecords(params) {
   const rows = (res && res.data) || [];
   return ok('listUserRecords', { count: rows.length, records: rows }, { collection: COLLECTIONS.userRecords });
 }
+// R34 (2026-08-07): 匿名会话读redspot_progress 集合会被行级安全拦截 (每次徽章卡 "☁️ 同步中")
+// 用云函数 admin 凭证读,绕过行级安全, 所有销售的 done 状态互相可见
+async function listRedspotProgress(params) {
+  params = params || {};
+  const database = getDb();
+  const _ = database.command;
+  const where = {};
+  if (params.dateKey) where.dateKey = String(params.dateKey);
+  if (params.taskKeyPrefix) where.taskKey = database.RegExp({ regexp: '^' + escapeRegExp(String(params.taskKeyPrefix)), options: 'i' });
+  const limit = safeLimit(params.limit, 1000, 2000);
+  const res = await database.collection(COLLECTIONS.progress).where(where).orderBy('ts', 'desc').limit(limit).get();
+  const rows = (res && res.data) || [];
+  return ok('listRedspotProgress', { count: rows.length, records: rows }, { collection: COLLECTIONS.progress, dateKey: params.dateKey || null });
+}
+function escapeRegExp(s) { return String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 // R14 (2026-07-29): 死规矩 -8 修复 · tuoke_user_records 分页全量导出
 // 与 exportAllRecords 完全对齐 (按 _id asc 游标翻页, 1000/页)
 // 用途: agent 端 daily_run 合并 tuoke_records ∪ tuoke_user_records → tuoke_real_records.js
@@ -1246,6 +1261,7 @@ async function handle(action, params, context) {
     case 'deleteUserRecord': return await deleteUserRecord(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
+    case 'listRedspotProgress': return await listRedspotProgress(params);
     default: return fail(action, 'UNKNOWN_ACTION', 'Unsupported action: ' + action);
   }
 }
