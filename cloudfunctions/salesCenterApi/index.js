@@ -911,7 +911,9 @@ async function listUserRecords(params) {
   const where = {};
   if (params.sale) where.sale = String(params.sale);
   if (params.since) where._updatedAt = _.gte(Number(params.since));
-  const limit = safeLimit(params.limit, 200, 1000);
+  // R37 (2026-08-09): 上限 1000 → 3000. 云端一次批量补录 kaikai/Jonzhu 300+ 条,
+  // 加上其他销售当天登记, 1000 完全不够, 前端能拉但看不到本人 08-09 记录
+  const limit = safeLimit(params.limit, 500, 3000);
   const res = await database.collection(COLLECTIONS.userRecords).where(where).orderBy('_updatedAt', 'desc').limit(limit).get();
   const rows = (res && res.data) || [];
   return ok('listUserRecords', { count: rows.length, records: rows }, { collection: COLLECTIONS.userRecords });
