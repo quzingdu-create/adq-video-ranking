@@ -467,6 +467,15 @@
   .secondary-btn:active { transform: scale(0.97); }
   .row { display: flex; gap: 8px; }
   .row > * { flex: 1; }
+  /* 答错后的「下一题」按钮容器 */
+  .next-wrap {
+    margin-top: 14px;
+    animation: nextWrapIn 0.25s ease-out;
+  }
+  @keyframes nextWrapIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
@@ -524,16 +533,20 @@ const TREBLE_NOTES = [
   { name: 'F5', letter: 'F', midi: 77, staffPos: 8,  label: 'F5(第五线)' }
 ];
 
-// 低音谱号：F3 是第四线，中央C(C4) 在低音谱表上加一线
+// 低音谱号：从下到上五线依次是 G2 B2 D3 F3 A3，中央C(C4) 在低音谱表上加一线
+// staffPos 约定：0=第一线（最底线），2=第二线，4=第三线，6=第四线，8=第五线；奇数为线间
 const BASS_NOTES = [
-  { name: 'C3', letter: 'C', midi: 48, staffPos: -1, label: 'C3(第二间)' },
-  { name: 'D3', letter: 'D', midi: 50, staffPos: 0,  label: 'D3(第一线上间)' },
-  { name: 'E3', letter: 'E', midi: 52, staffPos: 1,  label: 'E3(第二间)' },
-  { name: 'F3', letter: 'F', midi: 53, staffPos: 2,  label: 'F3(第三线)' },
-  { name: 'G3', letter: 'G', midi: 55, staffPos: 3,  label: 'G3(第三间)' },
-  { name: 'A3', letter: 'A', midi: 57, staffPos: 4,  label: 'A3(第四线)' },
-  { name: 'B3', letter: 'B', midi: 59, staffPos: 5,  label: 'B3(第四间)' },
-  { name: 'C4', letter: 'C', midi: 60, staffPos: 6,  label: '中央C(上加一线)' }
+  { name: 'G2', letter: 'G', midi: 43, staffPos: 0,  label: 'G2(第一线)' },
+  { name: 'A2', letter: 'A', midi: 45, staffPos: 1,  label: 'A2(第一间)' },
+  { name: 'B2', letter: 'B', midi: 47, staffPos: 2,  label: 'B2(第二线)' },
+  { name: 'C3', letter: 'C', midi: 48, staffPos: 3,  label: 'C3(第二间)' },
+  { name: 'D3', letter: 'D', midi: 50, staffPos: 4,  label: 'D3(第三线)' },
+  { name: 'E3', letter: 'E', midi: 52, staffPos: 5,  label: 'E3(第三间)' },
+  { name: 'F3', letter: 'F', midi: 53, staffPos: 6,  label: 'F3(第四线)' },
+  { name: 'G3', letter: 'G', midi: 55, staffPos: 7,  label: 'G3(第四间)' },
+  { name: 'A3', letter: 'A', midi: 57, staffPos: 8,  label: 'A3(第五线)' },
+  { name: 'B3', letter: 'B', midi: 59, staffPos: 9,  label: 'B3(上加一间)' },
+  { name: 'C4', letter: 'C', midi: 60, staffPos: 10, label: '中央C(上加一线)' }
 ];
 
 /* ---------- 2. Web Audio 合成钢琴音 ---------- */
@@ -576,6 +589,36 @@ function ensureAudio() {
 }
 function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12);
+}
+
+/* ---------- 2.5 防误触点击工具 ----------
+ * 手机滚动时容易触发按钮 click，用 touchstart 记位置、touchmove 超阈值就取消这次点击。
+ * 同时对所有绑定的按钮做 300ms 冷却，避免连点。
+ */
+function tapSafe(el, handler) {
+  if (!el) return;
+  let sx = 0, sy = 0, canceled = false, lastFire = 0;
+  const THRESH = 12; // px 位移阈值
+  const COOL = 350;  // ms 冷却
+  el.addEventListener('touchstart', (e) => {
+    if (!e.touches || !e.touches[0]) return;
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+    canceled = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', (e) => {
+    if (!e.touches || !e.touches[0]) return;
+    const dx = Math.abs(e.touches[0].clientX - sx);
+    const dy = Math.abs(e.touches[0].clientY - sy);
+    if (dx > THRESH || dy > THRESH) canceled = true;
+  }, { passive: true });
+  el.addEventListener('click', (e) => {
+    if (canceled) { canceled = false; e.preventDefault(); e.stopPropagation(); return; }
+    const now = Date.now();
+    if (now - lastFire < COOL) { e.preventDefault(); e.stopPropagation(); return; }
+    lastFire = now;
+    handler(e);
+  });
 }
 function playNote(midi, duration = 0.9) {
   const ctx = ensureAudio();
@@ -904,7 +947,7 @@ function buildCard(m) {
     </div>
     <div class="progress-ring">${p.best}%</div>
   `;
-  card.addEventListener('click', () => openModule(m.id));
+  tapSafe(card, () => openModule(m.id));
   return card;
 }
 
@@ -1089,7 +1132,10 @@ function renderQuizNoteToKey() {
     <div class="row" style="margin-top:12px;">
       <button class="secondary-btn" id="qHint">💡 提示</button>
       <button class="secondary-btn" id="qHear">🔊 再听</button>
-      <button class="secondary-btn" id="qLabel">👁 隐唱名</button>
+      <button class="secondary-btn" id="qLabel">👁隐唱名</button>
+    </div>
+    <div class="next-wrap" id="qNextWrap" style="display:none;">
+      <button class="primary-btn" id="qNext">下一题 →</button>
     </div>
   `;
   let showLabel = true;
@@ -1100,6 +1146,7 @@ function renderQuizNoteToKey() {
     answered = false;
     document.getElementById('qFb').textContent = '';
     document.getElementById('qFb').className = 'feedback';
+    document.getElementById('qNextWrap').style.display = 'none';
     // 从 C4-C5 之间挑（初学者友好范围）
     const pool = TREBLE_NOTES.slice(0, 8);
     current = pool[Math.floor(Math.random() * pool.length)];
@@ -1117,22 +1164,23 @@ function renderQuizNoteToKey() {
       onKey: (midi, keyEl) => {
         if (answered) return;
         answered = true;
-        // 只判断同一音名 (跨八度也算对)
+        // 只判断同一音名(跨八度也算对)
         if (midi % 12 === current.midi % 12) {
           correct++;
           keyEl.classList.add('correct');
           document.getElementById('qFb').textContent = `✓ 对了！这是 ${current.letter} (${SOLFEGE[current.letter]})`;
           document.getElementById('qFb').className = 'feedback good';
-          setTimeout(nextOrEnd, 900);
+          setTimeout(nextOrEnd, 1200);
         } else {
           keyEl.classList.add('wrong');
-          document.getElementById('qFb').textContent = `✗ 这是 ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12]}，正确答案是 ${current.letter}`;
+          document.getElementById('qFb').textContent = `✗ 你按的是 ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12]}，正确答案是 ${current.letter} (${SOLFEGE[current.letter]})`;
           document.getElementById('qFb').className = 'feedback bad';
           // 标出正确键
           document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
             if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
           });
-          setTimeout(nextOrEnd, 1800);
+          // 答错：等用户看清答案后手动继续
+          document.getElementById('qNextWrap').style.display = 'block';
         }
       }
     });
@@ -1150,14 +1198,15 @@ function renderQuizNoteToKey() {
       nextQ();
     }
   }
-  document.getElementById('qHint').addEventListener('click', () => {
+  tapSafe(document.getElementById('qHint'), () => {
     document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
       if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
     });
   });
-  document.getElementById('qHear').addEventListener('click', () => {
+  tapSafe(document.getElementById('qHear'), () => {
     if (current) playNote(current.midi);
   });
+  tapSafe(document.getElementById('qNext'), nextOrEnd);
   document.getElementById('qLabel').addEventListener('click', (e) => {
     showLabel = !showLabel;
     e.currentTarget.textContent = showLabel ? '👁 隐唱名' : '👁 显唱名';
@@ -1183,6 +1232,9 @@ function renderQuizNameChoice() {
     <div class="prompt big">这个音是什么？</div>
     <div class="feedback" id="cFb"></div>
     <div class="choices" id="cChoices"></div>
+    <div class="next-wrap" id="cNextWrap" style="display:none;">
+      <button class="primary-btn" id="cNext">下一题 →</button>
+    </div>
   `;
   const total = 10;
   let idx = 0, correct = 0, current = null, answered = false;
@@ -1198,6 +1250,7 @@ function renderQuizNameChoice() {
     document.getElementById('cScore').textContent = '✓ ' + correct;
     document.getElementById('cFb').textContent = '';
     document.getElementById('cFb').className = 'feedback';
+    document.getElementById('cNextWrap').style.display = 'none';
     // 4 个选项
     const opts = new Set([current.letter]);
     while (opts.size < 4) opts.add(NOTE_NAMES[Math.floor(Math.random()*7)]);
@@ -1208,25 +1261,30 @@ function renderQuizNameChoice() {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
       btn.innerHTML = `<div>${letter}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">${SOLFEGE[letter]}</div>`;
-      btn.addEventListener('click', () => {
+      // 用 tapSafe 包一层，防止滚动误触
+      tapSafe(btn, () => {
         if (answered) return;
         answered = true;
         if (letter === current.letter) {
           correct++;
           btn.classList.add('correct');
-          document.getElementById('cFb').textContent = `✓ 正确！`;
+          document.getElementById('cFb').textContent = `✓ 正确！这是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
           document.getElementById('cFb').className = 'feedback good';
+          playNote(current.midi);
+          // 答对：1.5 秒后自动进入下一题
+          setTimeout(nextOrEnd, 1500);
         } else {
           btn.classList.add('wrong');
-          document.getElementById('cFb').textContent = `✗ 应该是 ${current.letter}`;
+          document.getElementById('cFb').textContent = `✗ 你选了 ${letter}，正确答案是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
           document.getElementById('cFb').className = 'feedback bad';
           // 高亮正确
           cc.querySelectorAll('.choice-btn').forEach(b => {
             if (b.textContent.trim().startsWith(current.letter)) b.classList.add('correct');
           });
+          playNote(current.midi);
+          // 答错：不自动跳，露出下一题按钮，用户看清答案后手动继续
+          document.getElementById('cNextWrap').style.display = 'block';
         }
-        playNote(current.midi);
-        setTimeout(nextOrEnd, 1000);
       });
       cc.appendChild(btn);
     });
@@ -1240,6 +1298,7 @@ function renderQuizNameChoice() {
       showScreen('homeScreen');
     } else nextQ();
   }
+  tapSafe(document.getElementById('cNext'), nextOrEnd);
   nextQ();
 }
 
@@ -1962,14 +2021,13 @@ function renderQuizChord() {
 function renderQuizBass() {
   showScreen('quizScreen');
   const s = document.getElementById('quizScreen');
-  // 低音谱号扩展范围（含加线）：F2 ~ E4
+  // 低音谱号扩展范围（含加线）：F2 ~ D4
+  // 注：BASS_NOTES 已含 G2(0) ~ C4(10)，此处再加下加线音和上加音
   const extBass = [
-    { name: 'F2', letter: 'F', midi: 41, staffPos: -3, label: 'F2(下加二线)' },
-    { name: 'G2', letter: 'G', midi: 43, staffPos: -2, label: 'G2(下加一线下)' },
-    { name: 'A2', letter: 'A', midi: 45, staffPos: -2, label: 'A2(下加一间)' },
-    { name: 'B2', letter: 'B', midi: 47, staffPos: -1, label: 'B2(下加一线)' },
+    { name: 'E2', letter: 'E', midi: 40, staffPos: -3, label: 'E2(下加二线)' },
+    { name: 'F2', letter: 'F', midi: 41, staffPos: -2, label: 'F2(下加一间)' },
     ...BASS_NOTES,
-    { name: 'D4', letter: 'D', midi: 62, staffPos: 7, label: 'D4(上加一间)' }
+    { name: 'D4', letter: 'D', midi: 62, staffPos: 11, label: 'D4(上加一间)' }
   ];
   s.innerHTML = `
     <div class="lesson-card">
