@@ -177,6 +177,17 @@
   .module-card[data-mid="quiz-twohand"] { --card-accent: linear-gradient(180deg,#a855f7,#7c3aed); --icon-bg: linear-gradient(135deg,#a855f7,#7c3aed); --icon-shadow: rgba(124,58,237,0.6); }
   .module-card[data-mid="quiz-keysig"]  { --card-accent: linear-gradient(180deg,#14b8a6,#0d9488); --icon-bg: linear-gradient(135deg,#14b8a6,#0d9488); --icon-shadow: rgba(13,148,136,0.6); }
   .module-card[data-mid="play-song2"]   { --card-accent: linear-gradient(180deg,#f97316,#dc2626); --icon-bg: linear-gradient(135deg,#f97316,#dc2626); --icon-shadow: rgba(220,38,38,0.6); }
+  .module-card[data-mid="wrong-book"]   { --card-accent: linear-gradient(180deg,#ef4444,#f97316); --icon-bg: linear-gradient(135deg,#ef4444,#f97316); --icon-shadow: rgba(239,68,68,0.55); }
+  /* 错题本卡片右侧徽标：红底 */
+  .module-card .progress-ring.wb-badge {
+    color: #fff;
+    background: linear-gradient(135deg,#ef4444,#f97316);
+    box-shadow: 0 2px 8px -2px rgba(239,68,68,0.5);
+  }
+  .module-card.wb {
+    border-color: rgba(239,68,68,0.28);
+    box-shadow: 0 4px 20px -8px rgba(239,68,68,0.28);
+  }
   /* 进阶卡带轻微金色光边 */
   .module-card.adv:not(.locked) {
     border-color: rgba(251,191,36,0.35);
@@ -206,8 +217,19 @@
   }
   .section-title.advanced .hint {
     color: #fbbf24;
-    background: rgba(251,191,36,0.1);
+background: rgba(251,191,36,0.1);
     border: 1px solid rgba(251,191,36,0.3);
+  }
+  .section-title.wrongbook {
+    color: transparent;
+    background: linear-gradient(90deg, #ef4444, #f97316, #f59e0b);
+    -webkit-background-clip: text; background-clip: text;
+    margin-top: 6px;
+  }
+  .section-title.wrongbook .hint {
+ color: #fca5a5;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.35);
   }
   /* Screen area */
   .screen {
@@ -793,10 +815,26 @@ function renderKeyboard(container, opts = {}) {
     }
     key.addEventListener('pointerdown', (e) => {
       e.preventDefault();
+   key._px = e.clientX; key._py = e.clientY; key._pt = Date.now();
       key.classList.add('active');
+    });
+    key.addEventListener('pointerup', (e) => {
+  key.classList.remove('active');
+      if (key._px == null) return;
+      const dx = Math.abs(e.clientX - key._px);
+      const dy = Math.abs(e.clientY - key._py);
+      const dt = Date.now() - key._pt;
+      key._px = null;
+      // 位移 > 12px 或时长 > 800ms 视为滑动/长按误触，不触发
+   if (dx > 12 || dy > 12 || dt > 800) return;
       playNote(m);
-      if (opts.onKey) opts.onKey(m, key);
-      setTimeout(() => key.classList.remove('active'), 200);
+  if (opts.onKey) opts.onKey(m, key);
+    });
+    key.addEventListener('pointercancel', () => {
+   key.classList.remove('active'); key._px = null;
+    });
+    key.addEventListener('pointerleave', () => {
+      key.classList.remove('active'); key._px = null;
     });
     inner.appendChild(key);
   });
@@ -813,11 +851,26 @@ function renderKeyboard(container, opts = {}) {
       key.style.left = ((i + 1) * (whiteWidth + gap) - 16) + 'px';
       key.addEventListener('pointerdown', (e) => {
         e.preventDefault();
+        key._px = e.clientX; key._py = e.clientY; key._pt = Date.now();
         key.classList.add('active');
-        playNote(blackMidi);
-        if (opts.onKey) opts.onKey(blackMidi, key);
-        setTimeout(() => key.classList.remove('active'), 200);
       });
+      key.addEventListener('pointerup', (e) => {
+        key.classList.remove('active');
+        if (key._px == null) return;
+        const dx = Math.abs(e.clientX - key._px);
+        const dy = Math.abs(e.clientY - key._py);
+        const dt = Date.now() - key._pt;
+        key._px = null;
+      if (dx > 12 || dy > 12 || dt > 800) return;
+  playNote(blackMidi);
+     if (opts.onKey) opts.onKey(blackMidi, key);
+      });
+      key.addEventListener('pointercancel', () => {
+        key.classList.remove('active'); key._px = null;
+      });
+      key.addEventListener('pointerleave', () => {
+        key.classList.remove('active'); key._px = null;
+    });
       inner.appendChild(key);
     }
   });
@@ -827,12 +880,14 @@ function renderKeyboard(container, opts = {}) {
 const STORAGE_KEY = 'piano-tutor-progress-v1';
 const state = {
   streak: 0,
-  progress: {} // moduleId -> { correct, total, best }
+  progress: {}, // moduleId -> { correct, total, best }
+  mistakes: {}  // key "clef:midi" -> { clef, midi, letter, name, staffPos, count, lastWrong, mastered }
 };
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) Object.assign(state, JSON.parse(raw));
+    if (!state.mistakes) state.mistakes = {};
   } catch (e) {}
 }
 function saveState() {
@@ -850,6 +905,39 @@ function updateModuleProgress(id, correct, total) {
   state.progress[id] = p;
   saveState();
   refreshHome();
+}
+
+/* ---------- 错题本 ---------- */
+function recordMistake(clef, note) {
+  const key = `${clef}:${note.midi}`;
+  const m = state.mistakes[key] || {
+    clef, midi: note.midi, letter: note.letter, name: note.name,
+    staffPos: note.staffPos, label: note.label || '',
+    count: 0, correctAfter: 0, lastWrong: 0, mastered: false
+  };
+  m.count += 1;
+  m.lastWrong = Date.now();
+  m.correctAfter = 0; // 每次错了重置连对计数
+  m.mastered = false;
+  state.mistakes[key] = m;
+  saveState();
+}
+function markMistakeCorrect(clef, midi) {
+  const key = `${clef}:${midi}`;
+  const m = state.mistakes[key];
+  if (!m) return;
+  m.correctAfter = (m.correctAfter || 0) + 1;
+  if (m.correctAfter >= 3) m.mastered = true; // 连对 3 次算掌握
+state.mistakes[key] = m;
+  saveState();
+}
+function getMistakeList(onlyUnmastered = true) {
+  return Object.values(state.mistakes)
+    .filter(m => onlyUnmastered ? !m.mastered : true)
+  .sort((a, b) => b.count - a.count);
+}
+function mistakeCount() {
+  return getMistakeList(true).length;
 }
 
 /* ---------- 6. 模块定义 ---------- */
@@ -870,7 +958,9 @@ const MODULES = [
   { id: 'quiz-bass',    icon: '🖐️', title: '低音谱号专项', desc: '左手区高频认谱（含加线）', locked: true, tier: 'advanced' },
   { id: 'quiz-twohand', icon: '🙌', title: '双手协调', desc: '高低音同时出，双手各找一键', locked: true, tier: 'advanced' },
   { id: 'quiz-keysig',  icon: '🔑', title: '调号识别', desc: '几个升降号 → 什么调？', locked: true, tier: 'advanced' },
-  { id: 'play-song2',   icon: '🌟', title: '进阶视奏曲库', desc: '欢乐颂 / 生日快乐 / 卡农片段', locked: true, tier: 'advanced' }
+  { id: 'play-song2',   icon: '🌟', title: '进阶视奏曲库', desc: '欢乐颂 / 生日快乐 / 卡农片段', locked: true, tier: 'advanced' },
+  // === 错题本（一直可见，有错题时活跃）===
+  { id: 'wrong-book',   icon: '📕', title: '错题本 · 定向训练', desc: '专攻做错过的音，连对 3 次自动掌握', locked: false, tier: 'wrongbook' }
 ];
 
 function unlockCheck() {
@@ -920,6 +1010,16 @@ function refreshHome() {
   list.appendChild(basicHdr);
   MODULES.filter(m => m.tier === 'basic').forEach((m) => list.appendChild(buildCard(m)));
 
+  // 错题本入口（一直显示，用数字提醒未掌握的错题数）
+  const wbHdr = document.createElement('div');
+  wbHdr.className = 'section-title wrongbook';
+  const mc = mistakeCount();
+  wbHdr.innerHTML = mc > 0
+    ? `<span class="emoji">📕</span> 错题本 <span class="hint">当前 ${mc} 题待攻克</span>`
+    : '<span class="emoji">📕</span> 错题本 <span class="hint">全部掌握 · 保持👏</span>';
+  list.appendChild(wbHdr);
+  MODULES.filter(m => m.tier === 'wrongbook').forEach((m) => list.appendChild(buildCard(m)));
+
   // 进阶关卡分组标题
   const advHdr = document.createElement('div');
   advHdr.className = 'section-title advanced';
@@ -936,16 +1036,25 @@ function refreshHome() {
 
 function buildCard(m) {
   const p = getModuleProgress(m.id);
-  const card = document.createElement('div');
-  card.className = 'module-card' + (m.locked ? ' locked' : '') + (m.tier === 'advanced' ? ' adv' : '');
+const card = document.createElement('div');
+  card.className = 'module-card' + (m.locked ? ' locked' : '') + (m.tier === 'advanced' ? ' adv' : '') + (m.tier === 'wrongbook' ? ' wb' : '');
   card.dataset.mid = m.id;
+  let rightBadge;
+  if (m.tier === 'wrongbook') {
+    const cnt = mistakeCount();
+ rightBadge = cnt > 0
+      ? `<div class="progress-ring wb-badge">${cnt} 题</div>`
+      : `<div class="progress-ring">0</div>`;
+  } else {
+    rightBadge = `<div class="progress-ring">${p.best}%</div>`;
+  }
   card.innerHTML = `
     <div class="icon">${m.icon}</div>
     <div class="info">
       <h3>${m.title} ${m.locked ? '🔒' : ''}</h3>
       <p>${m.desc}</p>
     </div>
-    <div class="progress-ring">${p.best}%</div>
+    ${rightBadge}
   `;
   tapSafe(card, () => openModule(m.id));
   return card;
@@ -1064,6 +1173,8 @@ function openModule(id) {
   if (id === 'quiz-twohand') return renderQuizTwoHand();
   if (id === 'quiz-keysig') return renderQuizKeySig();
   if (id === 'play-song2') return renderSongPlayer2();
+  // 错题本
+  if (id === 'wrong-book') return renderWrongBook();
 }
 
 /* ---------- 8. 模块 1: 认识五线谱（教学） ---------- */
@@ -1121,69 +1232,105 @@ function renderQuizNoteToKey() {
   const s = document.getElementById('quizScreen');
   s.innerHTML = `
     <div class="stage-header">
-      <span id="qCounter">1/10</span>
+      <span id="qCounter">1/20</span>
       <div class="progress-bar"><div class="fill" id="qFill"></div></div>
       <span id="qScore">✓ 0</span>
     </div>
     <div class="staff-container" id="qStaff"></div>
     <div class="prompt big" id="qPrompt">请在钢琴上找到这个音</div>
-    <div class="feedback" id="qFb"></div>
-    <div class="keyboard" id="qKeyboard"></div>
+ <div class="feedback" id="qFb"></div>
+ <div class="keyboard" id="qKeyboard"></div>
     <div class="row" style="margin-top:12px;">
       <button class="secondary-btn" id="qHint">💡 提示</button>
       <button class="secondary-btn" id="qHear">🔊 再听</button>
-      <button class="secondary-btn" id="qLabel">👁隐唱名</button>
+      <button class="secondary-btn" id="qLabel">👁 隐唱名</button>
     </div>
     <div class="next-wrap" id="qNextWrap" style="display:none;">
-      <button class="primary-btn" id="qNext">下一题 →</button>
+   <button class="primary-btn" id="qNext">下一题 →</button>
     </div>
   `;
   let showLabel = true;
-  const total = 10;
-  let idx = 0, correct = 0, current = null, answered = false;
+  const total = 20;
+  let idx = 0, correct = 0, current = null, currentClef = 'treble', answered = false;
+
+  function pickNote() {
+    // 50/50 高低音混合，两个谱表都练到
+    if (Math.random() < 0.5) {
+   currentClef = 'treble';
+      // 高音谱号常用范围 C4-C5 之间 8 个音
+     const pool = TREBLE_NOTES.slice(0, 8);
+      current = pool[Math.floor(Math.random() * pool.length)];
+    } else {
+      currentClef = 'bass';
+      // 低音谱号 G2-C4 之间 11 个音
+      current = BASS_NOTES[Math.floor(Math.random() * BASS_NOTES.length)];
+    }
+  }
+
+  function updatePrompt() {
+  // 提示词的唱名部分也跟随 showLabel 开关
+    const suffix = showLabel ? `（${SOLFEGE[current.letter]}）` : '';
+    document.getElementById('qPrompt').textContent = `找到这个音${suffix}`;
+  }
 
   function nextQ() {
     answered = false;
     document.getElementById('qFb').textContent = '';
     document.getElementById('qFb').className = 'feedback';
     document.getElementById('qNextWrap').style.display = 'none';
-    // 从 C4-C5 之间挑（初学者友好范围）
-    const pool = TREBLE_NOTES.slice(0, 8);
-    current = pool[Math.floor(Math.random() * pool.length)];
-    document.getElementById('qStaff').innerHTML = renderStaff('treble', [current], {
+    pickNote();
+    document.getElementById('qStaff').innerHTML = renderStaff(currentClef, [current], {
       labelType: showLabel ? 'both' : 'none'
     });
-    document.getElementById('qPrompt').textContent = `找到这个音（${SOLFEGE[current.letter]}）`;
+    updatePrompt();
     document.getElementById('qCounter').textContent = `${idx + 1}/${total}`;
     document.getElementById('qFill').style.width = ((idx / total) * 100) + '%';
     document.getElementById('qScore').textContent = '✓ ' + correct;
-    // 重置键盘
+// 键盘覆盖 C3-C6，高低音都能弹到（3 个八度，可横滑）
     renderKeyboard(document.getElementById('qKeyboard'), {
-      range: [60, 77],
-      labelMode: 'all',
+      range: [48, 84],
+      labelMode: showLabel ? 'all' : 'letter',
       onKey: (midi, keyEl) => {
         if (answered) return;
-        answered = true;
-        // 只判断同一音名(跨八度也算对)
-        if (midi % 12 === current.midi % 12) {
+  answered = true;
+        // 严格判定：必须点到正确 midi（不再跨八度容错）
+      if (midi === current.midi) {
           correct++;
-          keyEl.classList.add('correct');
-          document.getElementById('qFb').textContent = `✓ 对了！这是 ${current.letter} (${SOLFEGE[current.letter]})`;
+       keyEl.classList.add('correct');
+        markMistakeCorrect(currentClef, current.midi);
+     document.getElementById('qFb').textContent = `✓ 对了！${current.name} = ${current.letter} (${SOLFEGE[current.letter]})`;
           document.getElementById('qFb').className = 'feedback good';
-          setTimeout(nextOrEnd, 1200);
+   setTimeout(nextOrEnd, 1200);
         } else {
           keyEl.classList.add('wrong');
-          document.getElementById('qFb').textContent = `✗ 你按的是 ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12]}，正确答案是 ${current.letter} (${SOLFEGE[current.letter]})`;
+const wrongName = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12] + (Math.floor(midi/12) - 1);
+          // 是否只是八度错了（音名对，八度错）
+          const sameLetter = midi % 12 === current.midi % 12;
+    const hint = sameLetter
+    ? `⚠️ 音名对了，但八度错了。这是 ${wrongName}，正确答案是 ${current.name}`
+: `✗ 你按的是 ${wrongName}，正确答案是 ${current.name} (${SOLFEGE[current.letter]}) · ${current.label}`;
+       document.getElementById('qFb').textContent = hint;
           document.getElementById('qFb').className = 'feedback bad';
-          // 标出正确键
-          document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
-            if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
-          });
-          // 答错：等用户看清答案后手动继续
-          document.getElementById('qNextWrap').style.display = 'block';
+          // 记入错题本
+      recordMistake(currentClef, current);
+      // 高亮正确键
+      document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
+ if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+   });
+       document.getElementById('qNextWrap').style.display = 'block';
         }
       }
     });
+    // 让键盘自动滚动到当前音的位置
+    setTimeout(() => {
+      const kb = document.getElementById('qKeyboard');
+      const targetKey = kb.querySelector(`.white-key[data-midi="${current.midi}"]`) ||
+        kb.querySelector(`.black-key[data-midi="${current.midi}"]`);
+   if (targetKey) {
+        const scrollTo = targetKey.offsetLeft - kb.clientWidth / 2 + 40;
+      kb.scrollLeft = Math.max(0, scrollTo);
+      }
+}, 50);
     playNote(current.midi);
   }
   function nextOrEnd() {
@@ -1196,7 +1343,7 @@ function renderQuizNoteToKey() {
       showScreen('homeScreen');
     } else {
       nextQ();
-    }
+ }
   }
   tapSafe(document.getElementById('qHint'), () => {
     document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
@@ -1210,10 +1357,44 @@ function renderQuizNoteToKey() {
   document.getElementById('qLabel').addEventListener('click', (e) => {
     showLabel = !showLabel;
     e.currentTarget.textContent = showLabel ? '👁 隐唱名' : '👁 显唱名';
-    // 重绘当前题（不换题）
-    document.getElementById('qStaff').innerHTML = renderStaff('treble', [current], {
-      labelType: showLabel ? 'both' : 'none'
+    // 重绘五线谱（切换唱名）
+    document.getElementById('qStaff').innerHTML = renderStaff(currentClef, [current], {
+  labelType: showLabel ? 'both' : 'none'
     });
+    // 重绘键盘（切换键盘唱名）
+   const kb = document.getElementById('qKeyboard');
+    // 简单方式：整个键盘重建（但保留选中状态复杂，还是干脆重画）
+    renderKeyboard(kb, {
+      range: [48, 84],
+      labelMode: showLabel ? 'all' : 'letter',
+      onKey: (midi, keyEl) => {
+     if (answered) return;
+        answered = true;
+        if (midi === current.midi) {
+  correct++;
+          keyEl.classList.add('correct');
+          markMistakeCorrect(currentClef, current.midi);
+          document.getElementById('qFb').textContent = `✓ 对了！${current.name} = ${current.letter} (${SOLFEGE[current.letter]})`;
+   document.getElementById('qFb').className = 'feedback good';
+   setTimeout(nextOrEnd, 1200);
+        } else {
+      keyEl.classList.add('wrong');
+          const wrongName = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12] + (Math.floor(midi/12) - 1);
+          const sameLetter = midi % 12 === current.midi % 12;
+          const hint = sameLetter
+          ? `⚠️ 音名对了，但八度错了。这是 ${wrongName}，正确答案是 ${current.name}`
+    : `✗ 你按的是 ${wrongName}，正确答案是 ${current.name} (${SOLFEGE[current.letter]}) · ${current.label}`;
+          document.getElementById('qFb').textContent = hint;
+        document.getElementById('qFb').className = 'feedback bad';
+    recordMistake(currentClef, current);
+          document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
+        if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+          });
+   document.getElementById('qNextWrap').style.display = 'block';
+      }
+    }
+    });
+    updatePrompt();
   });
   nextQ();
 }
@@ -1224,27 +1405,33 @@ function renderQuizNameChoice() {
   const s = document.getElementById('quizScreen');
   s.innerHTML = `
     <div class="stage-header">
-      <span id="cCounter">1/10</span>
+      <span id="cCounter">1/20</span>
       <div class="progress-bar"><div class="fill" id="cFill"></div></div>
       <span id="cScore">✓ 0</span>
     </div>
     <div class="staff-container" id="cStaff"></div>
     <div class="prompt big">这个音是什么？</div>
     <div class="feedback" id="cFb"></div>
-    <div class="choices" id="cChoices"></div>
+  <div class="choices" id="cChoices"></div>
     <div class="next-wrap" id="cNextWrap" style="display:none;">
-      <button class="primary-btn" id="cNext">下一题 →</button>
+  <button class="primary-btn" id="cNext">下一题 →</button>
     </div>
   `;
-  const total = 10;
-  let idx = 0, correct = 0, current = null, answered = false;
+  const total = 20;
+  let idx = 0, correct = 0, current = null, currentClef = 'treble', answered = false;
   function nextQ() {
     answered = false;
-    const pool = Math.random() > 0.5 ? TREBLE_NOTES.slice(0,8) : BASS_NOTES;
+// 50/50 高低音混合
+    if (Math.random() < 0.5) {
+      currentClef = 'treble';
+      const pool = TREBLE_NOTES.slice(0, 8);
     current = pool[Math.floor(Math.random() * pool.length)];
-    const clef = TREBLE_NOTES.includes(current) ? 'treble' : 'bass';
+    } else {
+      currentClef = 'bass';
+      current = BASS_NOTES[Math.floor(Math.random() * BASS_NOTES.length)];
+    }
     // 4 选 1 不显唱名（避免直接给答案），但可显加线位置
-    document.getElementById('cStaff').innerHTML = renderStaff(clef, [current]);
+    document.getElementById('cStaff').innerHTML = renderStaff(currentClef, [current]);
     document.getElementById('cCounter').textContent = `${idx + 1}/${total}`;
     document.getElementById('cFill').style.width = ((idx / total) * 100) + '%';
     document.getElementById('cScore').textContent = '✓ ' + correct;
@@ -1262,32 +1449,31 @@ function renderQuizNameChoice() {
       btn.className = 'choice-btn';
       btn.innerHTML = `<div>${letter}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">${SOLFEGE[letter]}</div>`;
       // 用 tapSafe 包一层，防止滚动误触
-      tapSafe(btn, () => {
+   tapSafe(btn, () => {
         if (answered) return;
-        answered = true;
+     answered = true;
         if (letter === current.letter) {
-          correct++;
+        correct++;
           btn.classList.add('correct');
-          document.getElementById('cFb').textContent = `✓ 正确！这是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
+          markMistakeCorrect(currentClef, current.midi);
+      document.getElementById('cFb').textContent = `✓ 正确！这是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
           document.getElementById('cFb').className = 'feedback good';
-          playNote(current.midi);
-          // 答对：1.5 秒后自动进入下一题
+       playNote(current.midi);
           setTimeout(nextOrEnd, 1500);
         } else {
           btn.classList.add('wrong');
-          document.getElementById('cFb').textContent = `✗ 你选了 ${letter}，正确答案是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
+    document.getElementById('cFb').textContent = `✗ 你选了 ${letter}，正确答案是 ${current.letter} (${SOLFEGE[current.letter]}) · ${current.label || ''}`;
           document.getElementById('cFb').className = 'feedback bad';
-          // 高亮正确
-          cc.querySelectorAll('.choice-btn').forEach(b => {
+    cc.querySelectorAll('.choice-btn').forEach(b => {
             if (b.textContent.trim().startsWith(current.letter)) b.classList.add('correct');
-          });
+  });
           playNote(current.midi);
-          // 答错：不自动跳，露出下一题按钮，用户看清答案后手动继续
+  recordMistake(currentClef, current);
           document.getElementById('cNextWrap').style.display = 'block';
         }
       });
       cc.appendChild(btn);
-    });
+});
     playNote(current.midi);
   }
   function nextOrEnd() {
@@ -1295,7 +1481,7 @@ function renderQuizNameChoice() {
     if (idx >= total) {
       updateModuleProgress('quiz-name', correct, total);
       alert(`完成！答对 ${correct}/${total}`);
-      showScreen('homeScreen');
+    showScreen('homeScreen');
     } else nextQ();
   }
   tapSafe(document.getElementById('cNext'), nextOrEnd);
@@ -2410,6 +2596,190 @@ function renderSongPlayer2() {
       updateView();
     }
   });
+}
+
+/* ---------- 错题本：定向训练 ---------- */
+function renderWrongBook() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  const list = getMistakeList(true); // 只看未掌握
+  const allList = getMistakeList(false);
+  // 空态
+  if (list.length === 0) {
+    s.innerHTML = `
+      <div class="lesson-card" style="text-align:center;padding:32px 20px;">
+     <div style="font-size:56px;">🎉</div>
+   <h3 style="margin-top:12px;">错题本是空的！</h3>
+        <p>去练几题回来吧，做错的会自动收进这里。</p>
+        <p style="font-size:12px;opacity:0.7;">连续答对 3 次即算「已掌握」，会自动出栏。</p>
+    ${allList.length > 0 ? `<p style="margin-top:16px;color:#22c55e;">🏆 累计已掌握 ${allList.length - list.length} 题</p>` : ''}
+      </div>
+    `;
+    return;
+  }
+  // 概览页
+  const overviewHTML = `
+    <div class="lesson-card" style="padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:12px;justify-content:space-between;">
+        <div>
+     <div style="font-size:22px;font-weight:700;color:#f97316;">${list.length}</div>
+          <div style="font-size:12px;opacity:0.7;">待攻克</div>
+    </div>
+        <div>
+    <div style="font-size:22px;font-weight:700;color:#22c55e;">${allList.length - list.length}</div>
+     <div style="font-size:12px;opacity:0.7;">已掌握</div>
+        </div>
+        <div>
+    <div style="font-size:22px;font-weight:700;color:#a78bfa;">${allList.reduce((s, m) => s + m.count, 0)}</div>
+       <div style="font-size:12px;opacity:0.7;">累计错误</div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px;gap:10px;">
+      <button class="primary-btn" id="wbStart">🎯 开始训练（${Math.min(list.length * 2, 20)} 题）</button>
+    </div>
+    <div class="row" style="margin-top:8px;gap:10px;">
+      <button class="secondary-btn" id="wbClear">🗑 清空全部错题</button>
+  </div>
+    <div class="section-title wrongbook" style="margin-top:16px;"><span class="emoji">📋</span> 错题清单</div>
+    <div id="wbList"></div>
+  `;
+  s.innerHTML = overviewHTML;
+  const wbList = document.getElementById('wbList');
+  list.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'lesson-card';
+    card.style.padding = '12px 14px';
+    card.style.marginBottom = '8px';
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;">
+   <div style="font-size:20px;font-weight:700;min-width:52px;">
+        <span style="color:#f472b6;">${m.name}</span>
+       </div>
+  <div style="flex:1;">
+          <div style="font-size:13px;color:#e2e8f0;">${SOLFEGE[m.letter]} · ${m.clef === 'treble' ? '高音' : '低音'}谱号</div>
+    <div style="font-size:11px;opacity:0.6;margin-top:2px;">${m.label || ''}</div>
+</div>
+  <div style="text-align:right;">
+    <div style="font-size:14px;color:#ef4444;font-weight:700;">错 ${m.count} 次</div>
+<div style="font-size:10px;opacity:0.6;">对 ${m.correctAfter || 0}/3</div>
+   </div>
+  </div>
+    `;
+    wbList.appendChild(card);
+  });
+  tapSafe(document.getElementById('wbStart'), () => startWrongBookTraining(list));
+  tapSafe(document.getElementById('wbClear'), () => {
+    if (confirm('确认清空全部错题？已掌握的记录也会一并清除。')) {
+      state.mistakes = {};
+      saveState();
+      renderWrongBook();
+      refreshHome();
+    }
+  });
+}
+
+function startWrongBookTraining(pool) {
+  const s = document.getElementById('quizScreen');
+  // 训练题库：以错题为主，每题至少出 1 次；重复次数正比于错次
+  const bag = [];
+  pool.forEach(m => {
+    const times = Math.min(Math.max(m.count, 1), 4); // 每题最多重复 4 次
+    for (let i = 0; i < times; i++) bag.push(m);
+  });
+  // Fisher-Yates 洗牌
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+  [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  const total = Math.min(bag.length, 20);
+  s.innerHTML = `
+    <div class="stage-header">
+      <span id="wbCounter">1/${total}</span>
+    <div class="progress-bar"><div class="fill" id="wbFill"></div></div>
+      <span id="wbScore">✓ 0</span>
+</div>
+    <div class="staff-container" id="wbStaff"></div>
+    <div class="prompt big" id="wbPrompt">从错题本挑一题</div>
+    <div class="feedback" id="wbFb"></div>
+    <div class="keyboard" id="wbKeyboard"></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="secondary-btn" id="wbHear">🔊 再听</button>
+      <button class="secondary-btn" id="wbHint">💡 提示</button>
+    </div>
+    <div class="next-wrap" id="wbNextWrap" style="display:none;">
+  <button class="primary-btn" id="wbNext">下一题 →</button>
+    </div>
+  `;
+  let idx = 0, correct = 0, current = null, answered = false;
+  function nextQ() {
+    if (idx >= total) {
+      alert(`训练完成！\n答对 ${correct}/${total}\n正确率 ${Math.round(correct/total*100)}%\n\n已掌握的错题会自动出栏。`);
+      renderWrongBook();
+ refreshHome();
+      return;
+    }
+    answered = false;
+    current = bag[idx];
+    document.getElementById('wbFb').textContent = '';
+    document.getElementById('wbFb').className = 'feedback';
+    document.getElementById('wbNextWrap').style.display = 'none';
+    document.getElementById('wbCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('wbFill').style.width = ((idx / total) * 100) + '%';
+    document.getElementById('wbScore').textContent = '✓ ' + correct;
+    // 找到原音符对象
+    const src = current.clef === 'treble'
+? TREBLE_NOTES.find(n => n.midi === current.midi)
+      : BASS_NOTES.find(n => n.midi === current.midi);
+    const noteObj = src || current;
+    document.getElementById('wbStaff').innerHTML = renderStaff(current.clef, [noteObj], { labelType: 'none' });
+    document.getElementById('wbPrompt').textContent = `找到这个音（${current.clef === 'treble' ? '高音' : '低音'}谱号）`;
+    renderKeyboard(document.getElementById('wbKeyboard'), {
+      range: [48, 84],
+      labelMode: 'letter',
+      onKey: (midi, keyEl) => {
+    if (answered) return;
+       answered = true;
+        if (midi === current.midi) {
+       correct++;
+       keyEl.classList.add('correct');
+    markMistakeCorrect(current.clef, current.midi);
+   const st = state.mistakes[`${current.clef}:${current.midi}`];
+     const remaining = st && !st.mastered ? `连对 ${st.correctAfter}/3` : '🎉 已掌握！';
+document.getElementById('wbFb').textContent = `✓ ${current.name} = ${SOLFEGE[current.letter]} · ${remaining}`;
+document.getElementById('wbFb').className = 'feedback good';
+  setTimeout(() => { idx++; nextQ(); }, 1200);
+        } else {
+     keyEl.classList.add('wrong');
+        recordMistake(current.clef, noteObj);
+     const wrongName = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12] + (Math.floor(midi/12) - 1);
+       document.getElementById('wbFb').textContent = `✗ 你按的是 ${wrongName}，正确答案是 ${current.name} · ${SOLFEGE[current.letter]}`;
+    document.getElementById('wbFb').className = 'feedback bad';
+      document.querySelectorAll('#wbKeyboard .white-key').forEach(k => {
+     if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+  });
+      document.getElementById('wbNextWrap').style.display = 'block';
+        }
+     }
+    });
+    // 键盘滚动定位
+    setTimeout(() => {
+      const kb = document.getElementById('wbKeyboard');
+      const targetKey = kb.querySelector(`.white-key[data-midi="${current.midi}"]`);
+      if (targetKey) {
+    kb.scrollLeft = Math.max(0, targetKey.offsetLeft - kb.clientWidth / 2 + 40);
+      }
+    }, 50);
+    playNote(current.midi);
+  }
+  tapSafe(document.getElementById('wbHear'), () => { if (current) playNote(current.midi); });
+  tapSafe(document.getElementById('wbHint'), () => {
+    document.querySelectorAll('#wbKeyboard .white-key').forEach(k => {
+      if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+    });
+  });
+  tapSafe(document.getElementById('wbNext'), () => { idx++; nextQ(); });
+  nextQ();
 }
 
 /* ---------- 启动 ---------- */
