@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f172a">
+<title>钢琴启蒙 · Piano Tutor</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(236,72,153,0.18) 0%, transparent 40%),
+      radial-gradient(circle at 85% 20%, rgba(56,189,248,0.18) 0%, transparent 42%),
+      radial-gradient(circle at 50% 90%, rgba(250,204,21,0.14) 0%, transparent 40%),
+      linear-gradient(160deg, #1e1b4b 0%, #0f172a 55%, #082f49 100%);
+    background-attachment: fixed;
+    color: #e2e8f0;
+    overscroll-behavior: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    display: flex; flex-direction: column;
+  }
+  /* Top bar */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid rgba(148,163,184,0.15);
+    background: rgba(15,23,42,0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .topbar h1 {
+    font-size: 17px; margin: 0; font-weight: 700; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #fb7185, #fbbf24, #34d399, #38bdf8, #a78bfa);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .topbar .streak {
+    font-size: 13px; color: #fde047; font-weight: 700;
+    background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(249,115,22,0.25));
+    border: 1px solid rgba(251,191,36,0.4);
+    padding: 4px 10px; border-radius: 12px;
+  }
+  .back-btn {
+    background: none; border: none; color: #94a3b8;
+    font-size: 15px; cursor: pointer; padding: 6px 4px;
+  }
+  /* Home cards */
+  .home {
+    padding: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .intro {
+    position: relative;
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 45%, #6366f1 100%);
+    padding: 20px 22px; border-radius: 18px;
+    color: white;
+    box-shadow: 0 12px 30px -12px rgba(139,92,246,0.55);
+    overflow: hidden;
+  }
+  .intro::after {
+    content: '🎹';
+    position: absolute; right: -14px; bottom: -22px;
+    font-size: 96px; opacity: 0.18; transform: rotate(-8deg);
+  }
+  .intro h2 { margin: 0 0 8px; font-size: 20px; position: relative; z-index: 1; }
+  .intro p { margin: 0; font-size: 13px; opacity: 0.95; line-height: 1.6; position: relative; z-index: 1; }
+  /* 每日一知识卡 */
+  .daily-tip {
+    position: relative;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fde68a 0%, #fca5a5 50%, #f9a8d4 100%);
+    color: #4a1d47;
+    box-shadow: 0 10px 26px -14px rgba(244,114,182,0.6);
+    overflow: hidden;
+  }
+  .daily-tip::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 90% 10%, rgba(255,255,255,0.5) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .daily-tip .tip-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.6px;
+    margin-bottom: 8px; color: #7c2d12;
+    position: relative;
+  }
+  .daily-tip .tip-head .tag {
+    background: rgba(255,255,255,0.6);
+    padding: 3px 10px; border-radius: 10px;
+    font-size: 11px; color: #9d174d;
+  }
+  .daily-tip .tip-date { color: #7c2d12; opacity: 0.75; font-weight: 600; }
+  .daily-tip h4 {
+    margin: 0 0 6px; font-size: 17px; font-weight: 800;
+    color: #831843; position: relative;
+  }
+  .daily-tip p {
+    margin: 0; font-size: 13px; line-height: 1.65;
+    color: #4a1d47; position: relative;
+  }
+  .daily-tip .tip-actions {
+    margin-top: 12px; display: flex; gap: 8px; position: relative;
+  }
+  .daily-tip .tip-actions button {
+    background: rgba(255,255,255,0.75);
+    border: none; color: #831843; font-weight: 700;
+    font-size: 12px; padding: 6px 12px; border-radius: 10px;
+    cursor: pointer;
+  }
+  .daily-tip .tip-actions button:active { transform: scale(0.95); }
+
+  .module-card {
+    background: linear-gradient(135deg, rgba(30,41,59,0.85), rgba(15,23,42,0.85));
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    border: 1px solid rgba(148,163,184,0.15);
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .module-card::before {
+    content: ''; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 5px;
+    background: var(--card-accent, linear-gradient(180deg, #38bdf8, #6366f1));
+  }
+  .module-card:active { transform: scale(0.98); }
+  .module-card:hover { border-color: rgba(148,163,184,0.35); }
+  .module-card.locked { opacity: 0.4; pointer-events: none; }
+  .module-card .icon {
+    font-size: 30px; width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    background: var(--icon-bg, linear-gradient(135deg, #38bdf8, #6366f1));
+    box-shadow: 0 6px 14px -6px var(--icon-shadow, rgba(99,102,241,0.6));
+  }
+  .module-card .info { flex: 1; }
+  .module-card .info h3 {
+    margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #f1f5f9;
+  }
+  .module-card .info p {
+    margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.4;
+  }
+  .module-card .progress-ring {
+    font-size: 12px; color: #10b981; font-weight: 700;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.35);
+    padding: 4px 10px; border-radius: 10px;
+  }
+  /* 每个模块自己的主题色 */
+  .module-card[data-mid="lesson-basic"] { --card-accent: linear-gradient(180deg,#f472b6,#ec4899); --icon-bg: linear-gradient(135deg,#f472b6,#ec4899); --icon-shadow: rgba(236,72,153,0.55); }
+  .module-card[data-mid="quiz-note"]    { --card-accent: linear-gradient(180deg,#fb923c,#f97316); --icon-bg: linear-gradient(135deg,#fb923c,#f97316); --icon-shadow: rgba(249,115,22,0.55); }
+  .module-card[data-mid="quiz-name"]    { --card-accent: linear-gradient(180deg,#fbbf24,#f59e0b); --icon-bg: linear-gradient(135deg,#fbbf24,#f59e0b); --icon-shadow: rgba(245,158,11,0.55); }
+  .module-card[data-mid="quiz-speak"]   { --card-accent: linear-gradient(180deg,#34d399,#10b981); --icon-bg: linear-gradient(135deg,#34d399,#10b981); --icon-shadow: rgba(16,185,129,0.55); }
+  .module-card[data-mid="quiz-duration"]{ --card-accent: linear-gradient(180deg,#22d3ee,#0891b2); --icon-bg: linear-gradient(135deg,#22d3ee,#0891b2); --icon-shadow: rgba(6,182,212,0.55); }
+  .module-card[data-mid="quiz-rhythm"]  { --card-accent: linear-gradient(180deg,#38bdf8,#2563eb); --icon-bg: linear-gradient(135deg,#38bdf8,#2563eb); --icon-shadow: rgba(37,99,235,0.55); }
+  .module-card[data-mid="quiz-interval"]{ --card-accent: linear-gradient(180deg,#a78bfa,#7c3aed); --icon-bg: linear-gradient(135deg,#a78bfa,#7c3aed); --icon-shadow: rgba(124,58,237,0.55); }
+  .module-card[data-mid="play-song"]    { --card-accent: linear-gradient(180deg,#f472b6,#c026d3); --icon-bg: linear-gradient(135deg,#f472b6,#c026d3); --icon-shadow: rgba(192,38,211,0.55); }
+  /* 进阶乐园主题色（更明亮的红/金/紫，视觉强调) */
+  .module-card[data-mid="quiz-speed"]   { --card-accent: linear-gradient(180deg,#fde047,#f59e0b); --icon-bg: linear-gradient(135deg,#fde047,#f59e0b); --icon-shadow: rgba(245,158,11,0.7); }
+  .module-card[data-mid="quiz-sharp"]   { --card-accent: linear-gradient(180deg,#64748b,#0f172a); --icon-bg: linear-gradient(135deg,#64748b,#0f172a); --icon-shadow: rgba(15,23,42,0.7); }
+  .module-card[data-mid="quiz-chord"]   { --card-accent: linear-gradient(180deg,#f43f5e,#e11d48); --icon-bg: linear-gradient(135deg,#f43f5e,#e11d48); --icon-shadow: rgba(225,29,72,0.6); }
+  .module-card[data-mid="quiz-bass"]    { --card-accent: linear-gradient(180deg,#0ea5e9,#1e40af); --icon-bg: linear-gradient(135deg,#0ea5e9,#1e40af); --icon-shadow: rgba(30,64,175,0.6); }
+  .module-card[data-mid="quiz-twohand"] { --card-accent: linear-gradient(180deg,#a855f7,#7c3aed); --icon-bg: linear-gradient(135deg,#a855f7,#7c3aed); --icon-shadow: rgba(124,58,237,0.6); }
+  .module-card[data-mid="quiz-keysig"]  { --card-accent: linear-gradient(180deg,#14b8a6,#0d9488); --icon-bg: linear-gradient(135deg,#14b8a6,#0d9488); --icon-shadow: rgba(13,148,136,0.6); }
+  .module-card[data-mid="play-song2"]   { --card-accent: linear-gradient(180deg,#f97316,#dc2626); --icon-bg: linear-gradient(135deg,#f97316,#dc2626); --icon-shadow: rgba(220,38,38,0.6); }
+  /* 进阶卡带轻微金色光边 */
+  .module-card.adv:not(.locked) {
+    border-color: rgba(251,191,36,0.35);
+    box-shadow: 0 4px 20px -8px rgba(251,191,36,0.25);
+  }
+  /* 分组标题 */
+  .section-title {
+    font-size: 13px; font-weight: 700;
+    color: #cbd5e1;
+    padding: 8px 4px 4px;
+    display: flex; align-items: center; gap: 8px;
+    letter-spacing: 0.5px;
+  }
+  .section-title .emoji { font-size: 18px; }
+  .section-title .hint {
+    font-size: 11px; font-weight: 500;
+    color: #94a3b8;
+    background: rgba(148,163,184,0.1);
+    padding: 3px 9px; border-radius: 10px;
+    margin-left: 4px;
+  }
+  .section-title.advanced {
+    color: transparent;
+    background: linear-gradient(90deg, #fbbf24, #f472b6, #a78bfa);
+    -webkit-background-clip: text; background-clip: text;
+    margin-top: 6px;
+  }
+  .section-title.advanced .hint {
+    color: #fbbf24;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.3);
+  }
+  /* Screen area */
+  .screen {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    padding: 12px 16px 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .stage-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px; color: #94a3b8;
+  }
+  .progress-bar {
+    height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;
+    flex: 1; margin: 0 10px;
+  }
+  .progress-bar .fill {
+    height: 100%; background: linear-gradient(90deg, #22c55e, #10b981);
+    width: 0%; transition: width 0.3s;
+  }
+  /* Staff */
+  .staff-container {
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 18px 8px;
+    margin-bottom: 12px;
+  }
+  .staff-container svg { width: 100%; height: auto; display: block; }
+  /* 教学页大字五线谱 —— 允许横向滚动，横屏更舒展 */
+  .staff-container.large {
+    padding: 24px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .staff-container.large svg {
+    min-width: 560px; /* 保底宽度，窄屏可横滑 */
+  }
+  /* 横屏时占满宽度 */
+  @media (orientation: landscape) {
+    .staff-container.large svg { min-width: 0; width: 100%; }
+  }
+  .staff-hint {
+    text-align: center;
+    color: #64748b;
+    font-size: 11px;
+    margin-top: -4px;
+    margin-bottom: 12px;
+  }
+  @media (orientation: portrait) {
+    .staff-hint.rotate-tip::before { content: '📱 提示：横过手机可看到完整五线谱  ·  '; }
+  }
+  .prompt {
+    text-align: center;
+    color: #cbd5e1;
+    font-size: 14px;
+    margin: 8px 0 12px;
+    min-height: 20px;
+  }
+  .prompt.big { font-size: 22px; font-weight: 600; color: #f1f5f9; }
+  /* Piano keyboard */
+  .keyboard {
+    position: relative;
+    height: 160px;
+    background: #020617;
+    border-radius: 10px;
+    padding: 8px;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .keyboard-inner {
+    position: relative;
+    display: flex;
+    flex: none;
+    height: 100%;
+  }
+  .white-key {
+    width: 46px;
+    height: 100%;
+    background: linear-gradient(180deg, #fefefe 0%, #e5e7eb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0 0 6px 6px;
+    margin-right: 2px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 6px;
+    gap: 2px;
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.08s;
+  }
+  .white-key .kb-letter {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1;
+  }
+  .white-key .kb-solfege {
+    font-size: 10px;
+    color: #6366f1;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .white-key.center-c {
+    background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+  }
+  .white-key.center-c .kb-letter { color: #b45309; }
+  .white-key.center-c::before {
+    content: '★';
+    position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    color: #f59e0b; font-size: 12px;
+  }
+  .white-key:active, .white-key.active {
+    background: linear-gradient(180deg, #a5f3fc 0%, #67e8f9 100%);
+  }
+  .white-key.correct { background: linear-gradient(180deg, #86efac 0%, #22c55e 100%) !important; color: white; }
+  .white-key.wrong { background: linear-gradient(180deg, #fca5a5 0%, #ef4444 100%) !important; color: white; }
+  .white-key.hint { box-shadow: inset 0 0 0 2px #fbbf24; }
+  .black-key {
+    position: absolute;
+    top: 0;
+    width: 28px;
+    height: 62%;
+    background: linear-gradient(180deg, #1e293b 0%, #020617 100%);
+    border-radius: 0 0 4px 4px;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .black-key:active, .black-key.active {
+    background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+  }
+  /* Choice buttons */
+  .choices {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .choice-btn {
+    background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+    border: 2px solid rgba(148,163,184,0.25);
+    color: #f1f5f9;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 0;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px -6px rgba(0,0,0,0.4);
+  }
+  .choice-btn:nth-child(1) { border-color: rgba(244,114,182,0.4); }
+  .choice-btn:nth-child(2) { border-color: rgba(251,191,36,0.4); }
+  .choice-btn:nth-child(3) { border-color: rgba(52,211,153,0.4); }
+  .choice-btn:nth-child(4) { border-color: rgba(56,189,248,0.4); }
+  .choice-btn:active { transform: scale(0.95); }
+  .choice-btn.correct { background: linear-gradient(135deg,#34d399,#10b981); border-color: #10b981; color: white; }
+  .choice-btn.wrong { background: linear-gradient(135deg,#fb7185,#ef4444); border-color: #ef4444; color: white; }
+  /* Rhythm module */
+  .rhythm-canvas {
+    background: #f8fafc;
+    border-radius: 14px;
+    height: 120px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    font-size: 40px;
+    color: #0f172a;
+  }
+  .tap-pad {
+    height: 120px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.06s;
+  }
+  .tap-pad:active { transform: scale(0.97); background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+  .metronome-dot {
+    display: inline-block; width: 12px; height: 12px;
+    border-radius: 50%; background: #475569;
+    margin: 0 4px;
+    transition: all 0.15s;
+  }
+  .metronome-dot.on { background: #fbbf24; transform: scale(1.4); }
+  /* Feedback */
+  .feedback {
+    text-align: center;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 24px;
+    color: #94a3b8;
+  }
+  .feedback.good { color: #22c55e; }
+  .feedback.bad { color: #ef4444; }
+  /* Teaching cards */
+  .lesson-card {
+    background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+    border: 1px solid rgba(148,163,184,0.15);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 16px -10px rgba(0,0,0,0.4);
+  }
+  .lesson-card h3 {
+    margin: 0 0 10px; font-size: 16px;
+    background: linear-gradient(90deg, #fbbf24, #ec4899);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+  }
+  .lesson-card p { margin: 0 0 8px; font-size: 13px; line-height: 1.7; color: #cbd5e1; }
+  .lesson-card .mnemonic {
+    background: linear-gradient(90deg, rgba(251,191,36,0.15), rgba(236,72,153,0.1));
+    color: #fde047;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 8px;
+    border-left: 3px solid #fbbf24;
+  }
+  .primary-btn {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+    border: none; color: white; font-size: 16px; font-weight: 700;
+    padding: 14px; border-radius: 14px; cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    box-shadow: 0 8px 20px -8px rgba(139,92,246,0.65);
+    letter-spacing: 0.5px;
+  }
+  .primary-btn:active { opacity: 0.85; transform: scale(0.99); }
+  .secondary-btn {
+    background: linear-gradient(135deg, rgba(51,65,85,0.9), rgba(30,41,59,0.9));
+    border: 1px solid rgba(148,163,184,0.25);
+    color: #e2e8f0; font-size: 14px; font-weight: 600;
+    padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  }
+  .secondary-btn:active { transform: scale(0.97); }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" style="visibility:hidden;">← 返回</button>
+    <h1 id="titleBar">钢琴启蒙</h1>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button id="audioBtn" title="点击解锁音频" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#fca5a5;font-size:13px;padding:4px 10px;border-radius:12px;cursor:pointer;">🔇 未启用</button>
+      <div class="streak" id="streakBar">🔥 0</div>
+    </div>
+  </div>
+
+  <!-- Home -->
+  <div class="home screen active" id="homeScreen">
+    <div class="intro">
+      <h2>你好，未来的钢琴家 🎹</h2>
+      <p>从认识五线谱开始，每天 5 分钟，跟随进度循序渐进解锁下一关。</p>
+    </div>
+    <div class="daily-tip" id="dailyTip"></div>
+    <div id="moduleList"></div>
+  </div>
+
+  <!-- Module screens (dynamically driven) -->
+  <div class="screen" id="lessonScreen"></div>
+  <div class="screen" id="quizScreen"></div>
+</div>
+
+<script>
+/* =========================================================================
+ * 钢琴启蒙 - 单文件学习 App
+ * 数据模型 + Web Audio 合成 + SVG 渲染 + localStorage 进度
+ * ========================================================================= */
+
+/* ---------- 1. 音符数据 ---------- */
+// MIDI 编号 60 = 中央 C (C4)
+// 白键序列：C D E F G A B
+const NOTE_NAMES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+const SOLFEGE = { C: 'Do', D: 'Re', E: 'Mi', F: 'Fa', G: 'Sol', A: 'La', B: 'Si' };
+const CN_NAME = { C: '哆', D: '来', E: '咪', F: '发', G: '嗖', A: '拉', B: '西' };
+
+// 高音谱号常用范围 C4 (中央C) ~ A5，含线上线间位置索引
+// staffPos: 从最下面第一条线开始的半线格数，0=第一线(E4)
+const TREBLE_NOTES = [
+  { name: 'C4', letter: 'C', midi: 60, staffPos: -2, label: '中央C(下加一线)' },
+  { name: 'D4', letter: 'D', midi: 62, staffPos: -1, label: 'D4(下加一间)' },
+  { name: 'E4', letter: 'E', midi: 64, staffPos: 0,  label: 'E4(第一线)' },
+  { name: 'F4', letter: 'F', midi: 65, staffPos: 1,  label: 'F4(第一间)' },
+  { name: 'G4', letter: 'G', midi: 67, staffPos: 2,  label: 'G4(第二线)' },
+  { name: 'A4', letter: 'A', midi: 69, staffPos: 3,  label: 'A4(第二间)' },
+  { name: 'B4', letter: 'B', midi: 71, staffPos: 4,  label: 'B4(第三线)' },
+  { name: 'C5', letter: 'C', midi: 72, staffPos: 5,  label: 'C5(第三间)' },
+  { name: 'D5', letter: 'D', midi: 74, staffPos: 6,  label: 'D5(第四线)' },
+  { name: 'E5', letter: 'E', midi: 76, staffPos: 7,  label: 'E5(第四间)' },
+  { name: 'F5', letter: 'F', midi: 77, staffPos: 8,  label: 'F5(第五线)' }
+];
+
+// 低音谱号：F3 是第四线，中央C(C4) 在低音谱表上加一线
+const BASS_NOTES = [
+  { name: 'C3', letter: 'C', midi: 48, staffPos: -1, label: 'C3(第二间)' },
+  { name: 'D3', letter: 'D', midi: 50, staffPos: 0,  label: 'D3(第一线上间)' },
+  { name: 'E3', letter: 'E', midi: 52, staffPos: 1,  label: 'E3(第二间)' },
+  { name: 'F3', letter: 'F', midi: 53, staffPos: 2,  label: 'F3(第三线)' },
+  { name: 'G3', letter: 'G', midi: 55, staffPos: 3,  label: 'G3(第三间)' },
+  { name: 'A3', letter: 'A', midi: 57, staffPos: 4,  label: 'A3(第四线)' },
+  { name: 'B3', letter: 'B', midi: 59, staffPos: 5,  label: 'B3(第四间)' },
+  { name: 'C4', letter: 'C', midi: 60, staffPos: 6,  label: '中央C(上加一线)' }
+];
+
+/* ---------- 2. Web Audio 合成钢琴音 ---------- */
+let audioCtx = null;
+let audioUnlocked = false;
+function updateAudioBadge() {
+  const btn = document.getElementById('audioBtn');
+  if (!btn) return;
+  if (audioUnlocked && audioCtx && audioCtx.state === 'running') {
+    btn.textContent = '🔊 已开启';
+    btn.style.background = 'rgba(34,197,94,0.15)';
+    btn.style.borderColor = '#22c55e';
+    btn.style.color = '#86efac';
+  } else {
+    btn.textContent = '🔇 未启用';
+    btn.style.background = 'rgba(239,68,68,0.15)';
+    btn.style.borderColor = '#ef4444';
+    btn.style.color = '#fca5a5';
+  }
+}
+function ensureAudio() {
+  try {
+    if (!audioCtx) {
+      const Ctor = window.AudioContext || window.webkitAudioContext;
+      if (!Ctor) { console.warn('[audio] Web Audio not supported'); return null; }
+      audioCtx = new Ctor();
+      console.log('[audio] ctx created, state=', audioCtx.state);
+    }
+    if (audioCtx.state === 'suspended') {
+      const p = audioCtx.resume();
+      if (p && p.then) p.then(() => { audioUnlocked = (audioCtx.state === 'running'); updateAudioBadge(); });
+    }
+    audioUnlocked = (audioCtx.state === 'running');
+    updateAudioBadge();
+    return audioCtx;
+  } catch (e) {
+    console.error('[audio] ensureAudio failed', e);
+    return null;
+  }
+}
+function midiToFreq(midi) {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+}
+function playNote(midi, duration = 0.9) {
+  const ctx = ensureAudio();
+  if (!ctx || ctx.state !== 'running') {
+    console.warn('[audio] cannot play, state=', ctx && ctx.state);
+    return;
+  }
+  const freq = midiToFreq(midi);
+  const now = ctx.currentTime;
+  // 用三个泛音合成一个近似钢琴的音色
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.35, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  gain.connect(ctx.destination);
+  [1, 2, 3].forEach((h, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = i === 0 ? 'triangle' : 'sine';
+    osc.frequency.value = freq * h;
+    const g = ctx.createGain();
+    g.gain.value = i === 0 ? 0.8 : (i === 1 ? 0.2 : 0.08);
+    osc.connect(g).connect(gain);
+    osc.start(now);
+    osc.stop(now + duration);
+  });
+}
+function playClick() {
+  const ctx = ensureAudio();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.frequency.value = 1000;
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + 0.08);
+}
+
+/* ---------- 3. 五线谱 SVG 渲染 ---------- */
+function renderStaff(clef, notes, options = {}) {
+  // clef: 'treble' | 'bass'
+  // notes: 数组，每个对象含 letter/staffPos/midi
+  // options.size: 'normal' | 'large' —— large 用于教学页，画布更宽、字号更大
+  const isLarge = options.size === 'large';
+  // 标签紧贴音符右侧，需要更宽的横向间距
+  const hasLabel = options.labelType && options.labelType !== 'none';
+  const perNoteWide = isLarge ? (hasLabel ? 62 : 48) : (hasLabel ? 40 : 28);
+  const noteCount = Math.max(notes.length, 1);
+  const W = isLarge ? Math.max(600, 140 + perNoteWide * noteCount) : 320;
+  const H = isLarge ? 170 : 140;
+  const staffTop = isLarge ? 55 : 45;
+  const lineGap = isLarge ? 12 : 10;
+  // 5 条线从上到下：staffPos 8 → 顶线, 0 → 底线, 4 → 中线
+  // Y = staffTop + (8 - staffPos) * (lineGap/2)
+  const posToY = (p) => staffTop + (8 - p) * (lineGap / 2);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  // 五线
+  for (let i = 0; i < 5; i++) {
+    const y = staffTop + i * lineGap;
+    svg += `<line x1="10" y1="${y}" x2="${W - 10}" y2="${y}" stroke="#334155" stroke-width="1.2"/>`;
+  }
+  // 谱号
+  const clefFontTreble = isLarge ? 78 : 60;
+  const clefFontBass = isLarge ? 62 : 46;
+  if (clef === 'treble') {
+    // 高音谱号 (G clef) - 简化字形
+    svg += `<text x="14" y="${staffTop + (isLarge ? 50 : 38)}" font-size="${clefFontTreble}" font-family="serif" fill="#0f172a" font-weight="bold">𝄞</text>`;
+  } else {
+    svg += `<text x="14" y="${staffTop + (isLarge ? 38 : 28)}" font-size="${clefFontBass}" font-family="serif" fill="#0f172a" font-weight="bold">𝄢</text>`;
+  }
+  // 音符
+  const startX = isLarge ? 110 : 80;
+  const endPad = isLarge ? 40 : 20;
+  notes.forEach((n, idx) => {
+    // 使间距均匀且留出右侧标签空间
+    const usable = W - startX - endPad;
+    const x = notes.length === 1
+      ? startX + usable / 2
+      : startX + idx * (usable / (notes.length));
+    const y = posToY(n.staffPos);
+    // 需要辅助线（下加线 / 上加线）
+    if (n.staffPos < 0) {
+      // 下加线
+      for (let p = -2; p >= n.staffPos; p -= 2) {
+        if (p < 0) {
+          const ly = posToY(p);
+          svg += `<line x1="${x - 10}" y1="${ly}" x2="${x + 10}" y2="${ly}" stroke="#334155" stroke-width="1.2"/>`;
+        }
+      }
+    }
+    if (n.staffPos > 8) {
+      for (let p = 10; p <= n.staffPos; p += 2) {
+        const ly = posToY(p);
+        svg += `<line x1="${x - 10}" y1="${ly}" x2="${x + 10}" y2="${ly}" stroke="#334155" stroke-width="1.2"/>`;
+      }
+    }
+    // 音符头（椭圆）
+    const fillColor = options.highlight === idx ? '#ef4444' : '#0f172a';
+    const rx = isLarge ? 9 : 7;
+    const ry = isLarge ? 6.5 : 5.2;
+    const stemLen = isLarge ? 40 : 32;
+    const stemOffset = isLarge ? 8 : 6;
+    // 升降号（如有）
+    if (n.accidental) {
+      const accSym = n.accidental === '#' ? '♯' : (n.accidental === 'b' ? '♭' : n.accidental);
+      const accSize = isLarge ? 22 : 16;
+      const accX = x - (isLarge ? 16 : 12);
+      svg += `<text x="${accX}" y="${y + (isLarge ? 6 : 4)}" text-anchor="middle" font-size="${accSize}" fill="${fillColor}" font-weight="bold">${accSym}</text>`;
+    }
+    svg += `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(-20 ${x} ${y})" fill="${fillColor}"/>`;
+    // 符干
+    if (n.staffPos < 4) {
+      svg += `<line x1="${x + stemOffset}" y1="${y - 1}" x2="${x + stemOffset}" y2="${y - stemLen}" stroke="${fillColor}" stroke-width="${isLarge ? 2.2 : 1.8}"/>`;
+    } else {
+      svg += `<line x1="${x - stemOffset}" y1="${y + 1}" x2="${x - stemOffset}" y2="${y + stemLen}" stroke="${fillColor}" stroke-width="${isLarge ? 2.2 : 1.8}"/>`;
+    }
+    // 标签(可选)：letter=音名，solfege=唱名，both=两个都显示（紧贴音符右侧，跟着音符位置浮动）
+    const labelType = options.labelType || (options.showLabel ? 'letter' : 'none');
+    if (labelType !== 'none') {
+      // 标签统一画在音符头右侧，字色紫色，带白色描边保证与线谱不打架
+      const labelX = x + (isLarge ? 14 : 10);
+      const labelSize = isLarge ? 15 : 12;
+      const stroke = 'stroke="#f8fafc" stroke-width="3" paint-order="stroke"';
+      if (labelType === 'both') {
+        // 两行：上音名（深色）+ 下唱名（紫色），跟着音符 y 走
+        svg += `<text x="${labelX}" y="${y - 2}" font-size="${labelSize}" ${stroke} fill="#0f172a" font-weight="700">${n.letter}</text>`;
+        svg += `<text x="${labelX}" y="${y + labelSize + 1}" font-size="${labelSize}" ${stroke} fill="#6366f1" font-weight="700">${SOLFEGE[n.letter]}</text>`;
+      } else {
+        let text = '';
+        if (labelType === 'letter') text = n.letter;
+        else if (labelType === 'solfege') text = SOLFEGE[n.letter];
+        svg += `<text x="${labelX}" y="${y + labelSize / 2 - 1}" font-size="${labelSize}" ${stroke} fill="#6366f1" font-weight="700">${text}</text>`;
+      }
+    }
+  });
+  svg += `</svg>`;
+  return svg;
+}
+
+/* ---------- 4. 钢琴键盘渲染（触摸） ---------- */
+function renderKeyboard(container, opts = {}) {
+  // opts.range: [minMidi, maxMidi]
+  // opts.onKey: (midi) => void
+  // opts.showLabels: boolean
+  const [minMidi, maxMidi] = opts.range || [60, 84]; // C4 - C6 默认
+  container.innerHTML = '<div class="keyboard-inner"></div>';
+  const inner = container.querySelector('.keyboard-inner');
+  const whiteWidth = 46, gap = 2;
+  let whiteIndex = 0;
+  const whiteMidiInRange = [];
+  for (let m = minMidi; m <= maxMidi; m++) {
+    const semi = m % 12;
+    if ([0, 2, 4, 5, 7, 9, 11].includes(semi)) whiteMidiInRange.push(m);
+  }
+  // 铺白键
+  whiteMidiInRange.forEach((m, i) => {
+    const semi = m % 12;
+    const letter = ['C', '', 'D', '', 'E', 'F', '', 'G', '', 'A', '', 'B'][semi];
+    const key = document.createElement('div');
+    key.className = 'white-key';
+    key.dataset.midi = m;
+    key.dataset.letter = letter;
+    if (m === 60) key.classList.add('center-c');
+    // 双标注：音名 + 唱名（可通过 opts.labelMode 控制 all/letter/solfege/none）
+    const mode = opts.labelMode || 'all';
+    if (mode !== 'none') {
+      const octave = Math.floor(m / 12) - 1;
+      const letterHTML = `<div class="kb-letter">${letter}${letter === 'C' ? octave : ''}</div>`;
+      const solfegeHTML = `<div class="kb-solfege">${SOLFEGE[letter]}</div>`;
+      if (mode === 'all') key.innerHTML = letterHTML + solfegeHTML;
+      else if (mode === 'letter') key.innerHTML = letterHTML;
+      else if (mode === 'solfege') key.innerHTML = solfegeHTML;
+    }
+    key.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      key.classList.add('active');
+      playNote(m);
+      if (opts.onKey) opts.onKey(m, key);
+      setTimeout(() => key.classList.remove('active'), 200);
+    });
+    inner.appendChild(key);
+  });
+  inner.style.width = (whiteMidiInRange.length * (whiteWidth + gap)) + 'px';
+  // 铺黑键（叠加）
+  const blackOffsets = { 1: true, 3: true, 6: true, 8: true, 10: true }; // C#, D#, F#, G#, A#
+  whiteMidiInRange.forEach((m, i) => {
+    const nextSemi = (m + 1) % 12;
+    if (blackOffsets[nextSemi] && i < whiteMidiInRange.length - 1) {
+      const blackMidi = m + 1;
+      const key = document.createElement('div');
+      key.className = 'black-key';
+      key.dataset.midi = blackMidi;
+      key.style.left = ((i + 1) * (whiteWidth + gap) - 16) + 'px';
+      key.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        key.classList.add('active');
+        playNote(blackMidi);
+        if (opts.onKey) opts.onKey(blackMidi, key);
+        setTimeout(() => key.classList.remove('active'), 200);
+      });
+      inner.appendChild(key);
+    }
+  });
+}
+
+/* ---------- 5. 进度存储 ---------- */
+const STORAGE_KEY = 'piano-tutor-progress-v1';
+const state = {
+  streak: 0,
+  progress: {} // moduleId -> { correct, total, best }
+};
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) Object.assign(state, JSON.parse(raw));
+  } catch (e) {}
+}
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function getModuleProgress(id) {
+  return state.progress[id] || { correct: 0, total: 0, best: 0 };
+}
+function updateModuleProgress(id, correct, total) {
+  const p = getModuleProgress(id);
+  p.correct += correct;
+  p.total += total;
+  const rate = total > 0 ? Math.round((correct / total) * 100) : 0;
+  if (rate > p.best) p.best = rate;
+  state.progress[id] = p;
+  saveState();
+  refreshHome();
+}
+
+/* ---------- 6. 模块定义 ---------- */
+const MODULES = [
+  // === 基础关卡 ===
+  { id: 'lesson-basic', icon: '🎼', title: '认识五线谱', desc: '谱号 / 线间 / 音符位置口诀', locked: false, tier: 'basic' },
+  { id: 'quiz-note',    icon: '🎹', title: '音符找琴键', desc: '看谱识音 → 点对应琴键', locked: false, tier: 'basic' },
+  { id: 'quiz-name',    icon: '🔤', title: '音符名称测试', desc: '4 选 1 快速识别 C-B', locked: false, tier: 'basic' },
+  { id: 'quiz-speak',   icon: '🎤', title: '开口唱唱名', desc: '看谱/点键，念出 Do Re Mi', locked: false, tier: 'basic' },
+  { id: 'quiz-duration',icon: '⏱️', title: '音符时值', desc: '全 / 二分 / 四分 / 八分', locked: false, tier: 'basic' },
+  { id: 'quiz-rhythm',  icon: '👏', title: '节奏拍击', desc: '跟节拍器点屏幕，稳住拍感', locked: false, tier: 'basic' },
+  { id: 'quiz-interval',icon: '🎵', title: '音程听辨', desc: '听两个音，判断音程距离', locked: true, tier: 'basic' },
+  { id: 'play-song',    icon: '📖', title: '视奏小曲', desc: '《小星星》起步 · 看谱弹奏', locked: true, tier: 'basic' },
+  // === 进阶乐园（前 8 关全部 best≥60 才解锁）===
+  { id: 'quiz-speed',   icon: '⚡', title: '极速识谱挑战', desc: '30 秒内识别尽可能多音符 · 连击加分', locked: true, tier: 'advanced' },
+  { id: 'quiz-sharp',   icon: '⚫', title: '升降号 & 黑键', desc: 'F♯ / B♭ 认谱 + 点对应黑键', locked: true, tier: 'advanced' },
+  { id: 'quiz-chord',   icon: '🎶', title: '和弦识别', desc: '听三和弦：大 / 小 / 减 / 增', locked: true, tier: 'advanced' },
+  { id: 'quiz-bass',    icon: '🖐️', title: '低音谱号专项', desc: '左手区高频认谱（含加线）', locked: true, tier: 'advanced' },
+  { id: 'quiz-twohand', icon: '🙌', title: '双手协调', desc: '高低音同时出，双手各找一键', locked: true, tier: 'advanced' },
+  { id: 'quiz-keysig',  icon: '🔑', title: '调号识别', desc: '几个升降号 → 什么调？', locked: true, tier: 'advanced' },
+  { id: 'play-song2',   icon: '🌟', title: '进阶视奏曲库', desc: '欢乐颂 / 生日快乐 / 卡农片段', locked: true, tier: 'advanced' }
+];
+
+function unlockCheck() {
+  // 基础层：前一关 best ≥ 60（教学关看过即可）才解锁
+  // 进阶层：全部 8 个基础关都 best ≥ 60 才整层开放
+  const basicMods = MODULES.filter(m => m.tier === 'basic');
+  basicMods.forEach((m, i) => {
+    if (i === 0) { m.locked = false; return; }
+    const prev = basicMods[i - 1];
+    const prevProgress = getModuleProgress(prev.id);
+    if (prev.id.startsWith('lesson')) {
+      m.locked = prevProgress.total < 1;
+    } else {
+      m.locked = prevProgress.best < 60;
+    }
+  });
+  // 判断基础层是否全通关
+  const allBasicPassed = basicMods.every(m => {
+    if (m.id.startsWith('lesson')) return getModuleProgress(m.id).total >= 1;
+    return getModuleProgress(m.id).best >= 60;
+  });
+  const advMods = MODULES.filter(m => m.tier === 'advanced');
+  advMods.forEach((m, i) => {
+    if (!allBasicPassed) { m.locked = true; return; }
+    // 进阶层内部按顺序解锁：前一关 best≥50 才开下一关（进阶难度调低门槛）
+    if (i === 0) { m.locked = false; return; }
+    const prev = advMods[i - 1];
+    m.locked = getModuleProgress(prev.id).best < 50;
+  });
+}
+
+function isBasicAllPassed() {
+  return MODULES.filter(m => m.tier === 'basic').every(m => {
+    if (m.id.startsWith('lesson')) return getModuleProgress(m.id).total >= 1;
+    return getModuleProgress(m.id).best >= 60;
+  });
+}
+
+function refreshHome() {
+  unlockCheck();
+  const list = document.getElementById('moduleList');
+  list.innerHTML = '';
+  // 基础关卡分组标题
+  const basicHdr = document.createElement('div');
+  basicHdr.className = 'section-title';
+  basicHdr.innerHTML = '<span class="emoji">📘</span> 基础关卡 <span class="hint">循序渐进入门</span>';
+  list.appendChild(basicHdr);
+  MODULES.filter(m => m.tier === 'basic').forEach((m) => list.appendChild(buildCard(m)));
+
+  // 进阶关卡分组标题
+  const advHdr = document.createElement('div');
+  advHdr.className = 'section-title advanced';
+  const passed = isBasicAllPassed();
+  advHdr.innerHTML = passed
+    ? '<span class="emoji">🚀</span> 进阶乐园 <span class="hint">已解锁 · 挑战自我</span>'
+    : '<span class="emoji">🔒</span> 进阶乐园 <span class="hint">通关全部基础关卡后解锁</span>';
+  list.appendChild(advHdr);
+  MODULES.filter(m => m.tier === 'advanced').forEach((m) => list.appendChild(buildCard(m)));
+
+  document.getElementById('streakBar').textContent = '🔥 ' + state.streak;
+  renderDailyTip();
+}
+
+function buildCard(m) {
+  const p = getModuleProgress(m.id);
+  const card = document.createElement('div');
+  card.className = 'module-card' + (m.locked ? ' locked' : '') + (m.tier === 'advanced' ? ' adv' : '');
+  card.dataset.mid = m.id;
+  card.innerHTML = `
+    <div class="icon">${m.icon}</div>
+    <div class="info">
+      <h3>${m.title} ${m.locked ? '🔒' : ''}</h3>
+      <p>${m.desc}</p>
+    </div>
+    <div class="progress-ring">${p.best}%</div>
+  `;
+  card.addEventListener('click', () => openModule(m.id));
+  return card;
+}
+
+/* ---------- 每日一知识 ---------- */
+const PIANO_TIPS = [
+  { cat: '入门常识', title: '中央 C 是坐标原点', body: '整台钢琴 88 键中，最靠近品牌 Logo 正下方的那个 C，就是"中央 C"（C4）。左手往下走进入低音区（低音谱号），右手往上进入高音区（高音谱号）。所有五线谱位置都以它为原点。' },
+  { cat: '认谱口诀', title: '高音谱号"每个好男孩"', body: '高音谱号五条线上的音（从下往上）是 E-G-B-D-F，英语口诀"Every Good Boy Deserves Fun"；四个间是 F-A-C-E，正好拼成"FACE 脸"。记住这两句，认谱速度立刻翻倍。' },
+  { cat: '认谱口诀', title: '低音谱号"大牛吃草"', body: '低音谱号五条线（从下往上）是 G-B-D-F-A，口诀"Good Boys Do Fine Always"；四个间 A-C-E-G，口诀"All Cows Eat Grass"，翻译过来就是"所有牛都吃草"，很好记。' },
+  { cat: '手型', title: '想象手里握着一个鸡蛋', body: '好的钢琴手型：手指自然弯曲，手掌像轻握一个鸡蛋。手腕放平不塌陷，指尖立起来用指肚触键。手型正确 = 弹快不累、音色不飘。' },
+  { cat: '练习方法', title: '慢练是所有大师的秘诀', body: '感觉某段弹不好？把节拍器降到你能弹准的最慢速度，再一格一格往上加。90% 的错误是"用超过你能力的速度硬练"造成的肌肉记忆错误。' },
+  { cat: '节奏', title: '数拍要出声', body: '初学时数拍不要在心里默念，要小声念出来："1 - 2 - 3 - 4"。发声能强化大脑对节拍的感知，是钢琴老师带课时反复强调的技巧。' },
+  { cat: '音程', history: false, title: '八度就是"同一个音的高低版"', body: '从任意一个 C 到下一个 C，中间隔了 12 个半音（7 白键+5 黑键），这个距离叫"八度"。虽然音高不同，但听起来是同一个音——因为频率正好翻倍。' },
+  { cat: '黑键', title: '黑键为什么两两三三分组？', body: '两个黑键一组和三个黑键一组交替排列，是为了让你不看键盘也能靠触觉定位。左手往下摸，摸到两个黑键，最左边那个白键就是 C。这是钢琴设计的天才之处。' },
+  { cat: '音乐史', title: '钢琴是"轻重都能弹"的意思', body: '钢琴的意大利名 "Pianoforte" 由 piano（轻）和 forte（重）合成。发明它的克里斯托弗里 1700 年前后在佛罗伦萨造出，首次让键盘乐器可以通过触键力度控制音量——之前的羽管键琴做不到。' },
+  { cat: '手指编号', title: '五指编号：拇指 1，小指 5', body: '钢琴谱上的数字 ①②③④⑤ 分别代表拇指、食指、中指、无名指、小指。左右手都是拇指 1，不要混淆成"从左到右"。指法标注是效率的关键，跟着谱子的指法练最省事。' },
+  { cat: '踏板', title: '延音踏板不是"从头踩到尾"', body: '右脚下的延音踏板会让所有弹过的音持续响，用不好会让声音变浑浊。规则：换和弦时才换踏板——先弹再踩，弹之前松开。这叫"切分踏板法"。' },
+  { cat: '视奏', title: '先看拍号再动手', body: '拿到一份新谱子，第一件事不是弹音符，而是看左上角的拍号（4/4、3/4 等）和调号（几个升降号）。忽视调号是初学者最常见的错——弹了半页才发现全部升了 F。' },
+  { cat: '双手协调', title: '先分手练，再合手', body: '任何新曲子先"右手弹 3 遍 + 左手弹 3 遍"，双手各自流畅之后再合。直接合手练会导致两只手都练不好——大脑同时处理两条信息是需要肌肉记忆做基础的。' },
+  { cat: '身体', title: '坐姿：手肘略高于琴键', body: '琴凳高度调到手臂自然下垂时，手肘略高于键盘水平线约 1-2cm。太低会耸肩，太高会压手腕。距离键盘一个前臂长，前后位置以手能自然到黑键区为准。' },
+  { cat: '心态', title: '每天 20 分钟 > 周末 3 小时', body: '钢琴是肌肉记忆的运动。每天 20 分钟持续输入的效果，远超周末突击 3 小时。神经通路的巩固需要"睡眠周期"参与，短时高频比长时低频有效。' },
+  { cat: '识谱', title: '加线数字诀窍', body: '不认识超出五线的音？记住基准：高音谱号"中央 C"下加一线，往上每隔一个音一根线（C-E-G-B-D-F）。低音谱号"中央 C"上加一线，往下每隔一个音一根线（C-A-F-D-B-G）。' },
+  { cat: '调号', title: '一个升号是 G 大调', body: '五线谱开头写一个 #（升 F），就是 G 大调；两个升号是 D 大调；三个升号是 A 大调。规律：每加一个升号，主音就在原来主音上五度。降号规律相反，一个 b 是 F 大调。' },
+  { cat: '和弦', title: 'C 大调三和弦：C+E+G', body: '和弦是同时按下的三个或以上的音。最基础的 C 大调三和弦：中央 C、E、G 一起按。听起来"稳定明亮"，是所有流行歌开头最常见的和弦。' },
+  { cat: '练习方法', title: '错音先停下来分析原因', body: '弹错时不要"再试一次赌运气"。停下来问自己：是指法不对？看错谱？还是节奏错？找到原因再重弹。无脑重复只会强化错误的肌肉记忆。' },
+  { cat: '音色', title: '触键速度决定音量', body: '钢琴的音量不是"用力"决定的，是"手指下键的速度"决定的。慢速下键 = 弱音（p），快速下键 = 强音（f）。练音色控制时可以专门做"慢速用力"实验感受差别。' },
+  { cat: '休止符', title: '休止符也是音乐', body: '五线谱里的"⁍"（四分休止符）不是"什么都不做"，而是要主动断开声音、静默一拍。好的钢琴演奏，休止符和音符一样重要——静默给了乐句呼吸感。' },
+  { cat: '视奏', title: '先看整体轮廓再看细节', body: '新曲子拿到手，先花 30 秒看轮廓：调号、拍号、速度、力度记号、反复段落。有了整体印象再逐小节读音符，比一头扎进第一个音符效率高 3 倍。' },
+  { cat: '连奏', title: '连音线 vs 圆滑线', body: '两个相同音之间的弧线叫"连音线"（延长时值）；不同音之间的弧线叫"圆滑线"（表示要弹得连贯、legato）。初学者最容易搞混——记住"相同延时值，不同要连贯"。' },
+  { cat: '基本功', title: '哈农是"钢琴的健身房"', body: '《哈农手指练习》是所有钢琴学生的必修基本功。它不好听，但能均匀锻炼十根手指的独立性和力量。每天 10 分钟哈农 = 一年后弹曲子明显更稳。' },
+  { cat: '进阶曲目', title: '拜厄→车尔尼→巴赫→肖邦', body: '经典练习路径：《拜厄钢琴基本教程》入门 → 《车尔尼 599 / 849 / 299》技巧 → 巴赫《小前奏曲》《二部创意曲》复调 → 肖邦《圆舞曲》《夜曲》表现力。每一步都是下一步的基础。' },
+  { cat: '记忆', title: '背谱不是死记硬背', body: '背谱要"四条腿"一起用：视觉（谱面画面）+ 听觉（旋律哼唱）+ 触觉（手指位置）+ 分析（和声结构）。只靠肌肉记忆一紧张就忘，四条腿走路才稳。' },
+  { cat: '呼吸', title: '弹长乐句要"呼吸"', body: '钢琴不需要用嘴吹气，但要跟着乐句"内心呼吸"。乐句开始吸气，乐句结束呼气，手腕跟着微微起落。这样弹出的音乐才有生命感，不是打字机。' },
+  { cat: '装饰音', title: '波音、颤音、倚音', body: '装饰音是巴洛克到古典时期常见的写法：波音（⁋）快速弹本音-上方音-本音；颤音（tr）本音和上方音快速交替；倚音（小音符）快速经过。它们让旋律更华丽。' },
+  { cat: '调式', title: '大调开朗，小调忧郁', body: '同样的旋律用大调听起来阳光欢快，用小调就变得深沉忧郁。区别只在第三音：大三度（4 个半音）= 大调，小三度（3 个半音）= 小调。这是音乐情绪的开关。' },
+  { cat: '节拍器', title: '节拍器是老师，不是敌人', body: '很多学生讨厌节拍器，因为它"太严格"。但节拍器是唯一不撒谎的老师。练新曲子从"你能弹准的最慢速度"开始，稳定 3 遍才加 5 BPM，这样练一个月，你的节奏感会脱胎换骨。' }
+];
+
+// 用日期哈希，保证同一天返回同一条，跨天自动换新
+function getDailyTipIndex(dateStr) {
+  let h = 0;
+  for (let i = 0; i < dateStr.length; i++) h = ((h << 5) - h + dateStr.charCodeAt(i)) | 0;
+  return Math.abs(h) % PIANO_TIPS.length;
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+let _tipIdx = null;
+function renderDailyTip() {
+  const el = document.getElementById('dailyTip');
+  if (!el) return;
+  const today = todayStr();
+  if (_tipIdx === null) _tipIdx = getDailyTipIndex(today);
+  const tip = PIANO_TIPS[_tipIdx];
+  const dateLabel = today.slice(5).replace('-', '月') + '日';
+  el.innerHTML = `
+    <div class="tip-head">
+      <span>🎁 今日钢琴小知识</span>
+      <span class="tag">${tip.cat}</span>
+    </div>
+    <h4>${tip.title}</h4>
+    <p>${tip.body}</p>
+    <div class="tip-actions">
+      <button id="tipNext">🎲 换一条</button>
+      <button id="tipSpeak">🔊 朗读</button>
+      <span class="tip-date" style="margin-left:auto; align-self:center; font-size:11px;">📅 ${dateLabel}</span>
+    </div>
+  `;
+  document.getElementById('tipNext').addEventListener('click', () => {
+    _tipIdx = (_tipIdx + 1) % PIANO_TIPS.length;
+    renderDailyTip();
+  });
+  document.getElementById('tipSpeak').addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(tip.title + '。' + tip.body);
+    u.lang = 'zh-CN';
+    u.rate = 0.95;
+    speechSynthesis.speak(u);
+  });
+}
+
+/* ---------- 7. 路由 ---------- */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('backBtn').style.visibility = (id === 'homeScreen') ? 'hidden' : 'visible';
+}
+document.getElementById('backBtn').addEventListener('click', () => {
+  showScreen('homeScreen');
+  document.getElementById('titleBar').textContent = '钢琴启蒙';
+});
+
+function openModule(id) {
+  const m = MODULES.find(x => x.id === id);
+  if (!m || m.locked) return;
+  document.getElementById('titleBar').textContent = m.title;
+  ensureAudio();
+  if (id === 'lesson-basic') return renderLessonBasic();
+  if (id === 'quiz-note') return renderQuizNoteToKey();
+  if (id === 'quiz-name') return renderQuizNameChoice();
+  if (id === 'quiz-speak') return renderQuizSpeak();
+  if (id === 'quiz-duration') return renderQuizDuration();
+  if (id === 'quiz-rhythm') return renderRhythmTrainer();
+  if (id === 'quiz-interval') return renderIntervalTrainer();
+  if (id === 'play-song') return renderSongPlayer();
+  // 进阶
+  if (id === 'quiz-speed') return renderQuizSpeed();
+  if (id === 'quiz-sharp') return renderQuizSharp();
+  if (id === 'quiz-chord') return renderQuizChord();
+  if (id === 'quiz-bass') return renderQuizBass();
+  if (id === 'quiz-twohand') return renderQuizTwoHand();
+  if (id === 'quiz-keysig') return renderQuizKeySig();
+  if (id === 'play-song2') return renderSongPlayer2();
+}
+
+/* ---------- 8. 模块 1: 认识五线谱（教学） ---------- */
+function renderLessonBasic() {
+  showScreen('lessonScreen');
+  const s = document.getElementById('lessonScreen');
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>1. 五线谱有 5 条线 + 4 个间</h3>
+      <p>从下往上数：第一线、第一间、第二线、第二间……音符可以画在线上或间里。</p>
+      <div class="staff-container large" id="demoStaff1"></div>
+      <div class="staff-hint rotate-tip">音符上方是<b style="color:#0f172a">音名</b>，下方紫色是<b style="color:#6366f1">唱名</b></div>
+    </div>
+    <div class="lesson-card">
+      <h3>2. 高音谱号 𝄞（右手弹）</h3>
+      <p>看到 𝄞 就用右手弹。<b>中央 C</b> 在下加一线（第一线下面加一小横线）。</p>
+      <div class="mnemonic">📌 口诀「线上」EGBDF：<b>E</b>very <b>G</b>ood <b>B</b>oy <b>D</b>oes <b>F</b>ine</div>
+      <div class="mnemonic">📌 口诀「间中」FACE：正好拼成"脸"</div>
+      <div class="staff-container large" id="demoStaff2"></div>
+      <div class="staff-hint rotate-tip">每个音下面标了<b style="color:#6366f1">Do Re Mi Fa Sol La Si</b>方便记忆</div>
+    </div>
+    <div class="lesson-card">
+      <h3>3. 低音谱号 𝄢（左手弹）</h3>
+      <p>看到 𝄢 就用左手弹。中央 C 在低音谱表<b>上加一线</b>（最上一根线上面）。</p>
+      <div class="mnemonic">📌 线上 GBDFA：<b>G</b>ood <b>B</b>oys <b>D</b>o <b>F</b>ine <b>A</b>lways</div>
+      <div class="mnemonic">📌 间中 ACEG：<b>A</b>ll <b>C</b>ows <b>E</b>at <b>G</b>rass</div>
+      <div class="staff-container large" id="demoStaff3"></div>
+      <div class="staff-hint rotate-tip">低音谱号的 Do Re Mi 在琴键上位置偏左（左手区）</div>
+    </div>
+    <div class="lesson-card">
+      <h3>4. 音名 vs 唱名</h3>
+      <p>白键 7 个音循环：<b>C D E F G A B</b>，中文唱名是 <b>Do Re Mi Fa Sol La Si</b>（哆来咪发嗖拉西）。</p>
+      <p>点下面钢琴键盘，听听中央 C（Do）在哪里 👇</p>
+      <div class="keyboard" id="demoKeyboard"></div>
+    </div>
+    <button class="primary-btn" id="lessonDone">我懂了，开始练习 →</button>
+  `;
+  document.getElementById('demoStaff1').innerHTML = renderStaff('treble', [
+    TREBLE_NOTES[2], TREBLE_NOTES[4], TREBLE_NOTES[6], TREBLE_NOTES[8]
+  ], { size: 'large', labelType: 'both' });
+  document.getElementById('demoStaff2').innerHTML = renderStaff('treble', TREBLE_NOTES, { size: 'large', labelType: 'both' });
+  document.getElementById('demoStaff3').innerHTML = renderStaff('bass', BASS_NOTES, { size: 'large', labelType: 'both' });
+  renderKeyboard(document.getElementById('demoKeyboard'), {
+    range: [60, 84], labelMode: 'all'
+  });
+  document.getElementById('lessonDone').addEventListener('click', () => {
+    updateModuleProgress('lesson-basic', 1, 1);
+    showScreen('homeScreen');
+  });
+}
+
+/* ---------- 9. 模块 2: 看谱 → 找键（核心） ---------- */
+function renderQuizNoteToKey() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="stage-header">
+      <span id="qCounter">1/10</span>
+      <div class="progress-bar"><div class="fill" id="qFill"></div></div>
+      <span id="qScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="qStaff"></div>
+    <div class="prompt big" id="qPrompt">请在钢琴上找到这个音</div>
+    <div class="feedback" id="qFb"></div>
+    <div class="keyboard" id="qKeyboard"></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="secondary-btn" id="qHint">💡 提示</button>
+      <button class="secondary-btn" id="qHear">🔊 再听</button>
+      <button class="secondary-btn" id="qLabel">👁 隐唱名</button>
+    </div>
+  `;
+  let showLabel = true;
+  const total = 10;
+  let idx = 0, correct = 0, current = null, answered = false;
+
+  function nextQ() {
+    answered = false;
+    document.getElementById('qFb').textContent = '';
+    document.getElementById('qFb').className = 'feedback';
+    // 从 C4-C5 之间挑（初学者友好范围）
+    const pool = TREBLE_NOTES.slice(0, 8);
+    current = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('qStaff').innerHTML = renderStaff('treble', [current], {
+      labelType: showLabel ? 'both' : 'none'
+    });
+    document.getElementById('qPrompt').textContent = `找到这个音（${SOLFEGE[current.letter]}）`;
+    document.getElementById('qCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('qFill').style.width = ((idx / total) * 100) + '%';
+    document.getElementById('qScore').textContent = '✓ ' + correct;
+    // 重置键盘
+    renderKeyboard(document.getElementById('qKeyboard'), {
+      range: [60, 77],
+      labelMode: 'all',
+      onKey: (midi, keyEl) => {
+        if (answered) return;
+        answered = true;
+        // 只判断同一音名 (跨八度也算对)
+        if (midi % 12 === current.midi % 12) {
+          correct++;
+          keyEl.classList.add('correct');
+          document.getElementById('qFb').textContent = `✓ 对了！这是 ${current.letter} (${SOLFEGE[current.letter]})`;
+          document.getElementById('qFb').className = 'feedback good';
+          setTimeout(nextOrEnd, 900);
+        } else {
+          keyEl.classList.add('wrong');
+          document.getElementById('qFb').textContent = `✗ 这是 ${['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][midi%12]}，正确答案是 ${current.letter}`;
+          document.getElementById('qFb').className = 'feedback bad';
+          // 标出正确键
+          document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
+            if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+          });
+          setTimeout(nextOrEnd, 1800);
+        }
+      }
+    });
+    playNote(current.midi);
+  }
+  function nextOrEnd() {
+    idx++;
+    if (idx >= total) {
+      updateModuleProgress('quiz-note', correct, total);
+      state.streak = correct >= total * 0.8 ? state.streak + 1 : 0;
+      saveState();
+      alert(`本轮完成！\n答对 ${correct}/${total}\n正确率 ${Math.round(correct/total*100)}%`);
+      showScreen('homeScreen');
+    } else {
+      nextQ();
+    }
+  }
+  document.getElementById('qHint').addEventListener('click', () => {
+    document.querySelectorAll('#qKeyboard .white-key').forEach(k => {
+      if (parseInt(k.dataset.midi) === current.midi) k.classList.add('hint');
+    });
+  });
+  document.getElementById('qHear').addEventListener('click', () => {
+    if (current) playNote(current.midi);
+  });
+  document.getElementById('qLabel').addEventListener('click', (e) => {
+    showLabel = !showLabel;
+    e.currentTarget.textContent = showLabel ? '👁 隐唱名' : '👁 显唱名';
+    // 重绘当前题（不换题）
+    document.getElementById('qStaff').innerHTML = renderStaff('treble', [current], {
+      labelType: showLabel ? 'both' : 'none'
+    });
+  });
+  nextQ();
+}
+
+/* ---------- 10. 模块 3: 4 选 1 音符名称 ---------- */
+function renderQuizNameChoice() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="stage-header">
+      <span id="cCounter">1/10</span>
+      <div class="progress-bar"><div class="fill" id="cFill"></div></div>
+      <span id="cScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="cStaff"></div>
+    <div class="prompt big">这个音是什么？</div>
+    <div class="feedback" id="cFb"></div>
+    <div class="choices" id="cChoices"></div>
+  `;
+  const total = 10;
+  let idx = 0, correct = 0, current = null, answered = false;
+  function nextQ() {
+    answered = false;
+    const pool = Math.random() > 0.5 ? TREBLE_NOTES.slice(0,8) : BASS_NOTES;
+    current = pool[Math.floor(Math.random() * pool.length)];
+    const clef = TREBLE_NOTES.includes(current) ? 'treble' : 'bass';
+    // 4 选 1 不显唱名（避免直接给答案），但可显加线位置
+    document.getElementById('cStaff').innerHTML = renderStaff(clef, [current]);
+    document.getElementById('cCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('cFill').style.width = ((idx / total) * 100) + '%';
+    document.getElementById('cScore').textContent = '✓ ' + correct;
+    document.getElementById('cFb').textContent = '';
+    document.getElementById('cFb').className = 'feedback';
+    // 4 个选项
+    const opts = new Set([current.letter]);
+    while (opts.size < 4) opts.add(NOTE_NAMES[Math.floor(Math.random()*7)]);
+    const shuffled = [...opts].sort(() => Math.random() - 0.5);
+    const cc = document.getElementById('cChoices');
+    cc.innerHTML = '';
+    shuffled.forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<div>${letter}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">${SOLFEGE[letter]}</div>`;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (letter === current.letter) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('cFb').textContent = `✓ 正确！`;
+          document.getElementById('cFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('cFb').textContent = `✗ 应该是 ${current.letter}`;
+          document.getElementById('cFb').className = 'feedback bad';
+          // 高亮正确
+          cc.querySelectorAll('.choice-btn').forEach(b => {
+            if (b.textContent.trim().startsWith(current.letter)) b.classList.add('correct');
+          });
+        }
+        playNote(current.midi);
+        setTimeout(nextOrEnd, 1000);
+      });
+      cc.appendChild(btn);
+    });
+    playNote(current.midi);
+  }
+  function nextOrEnd() {
+    idx++;
+    if (idx >= total) {
+      updateModuleProgress('quiz-name', correct, total);
+      alert(`完成！答对 ${correct}/${total}`);
+      showScreen('homeScreen');
+    } else nextQ();
+  }
+  nextQ();
+}
+
+/* ---------- 10.5 模块 3.5: 开口唱唱名（语音识别） ---------- */
+// 唱名到可能识别文本的映射（宽松匹配 · 中英文都收）
+const SPEAK_ALIAS = {
+  Do:  ['do','doe','dough','duo','都','嘟','哆','读'],
+  Re:  ['re','ray','rei','来','瑞','蕊','热'],
+  Mi:  ['mi','me','mee','咪','米','蜜'],
+  Fa:  ['fa','fah','far','发','法','花','fu'],
+  Sol: ['sol','sole','so','soul','嗖','梭','搜','扫'],
+  La:  ['la','lah','啦','拉','辣'],
+  Si:  ['si','see','ti','tea','西','是','此','四','七']
+};
+function matchSolfege(transcript, target) {
+  const t = (transcript || '').toLowerCase().replace(/[\s,.!?，。！？·]/g, '');
+  if (!t) return false;
+  const aliases = SPEAK_ALIAS[target] || [target.toLowerCase()];
+  return aliases.some(a => t.includes(a.toLowerCase()));
+}
+function detectSolfege(transcript) {
+  // 返回识别到的第一个匹配唱名
+  const t = (transcript || '').toLowerCase().replace(/[\s,.!?，。！？·]/g, '');
+  for (const key of Object.keys(SPEAK_ALIAS)) {
+    if (SPEAK_ALIAS[key].some(a => t.includes(a.toLowerCase()))) return key;
+  }
+  return null;
+}
+
+function renderQuizSpeak() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const supported = !!SR;
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🎤 看谱/点键 → 开口唱</h3>
+      <p>屏幕出音符，你对着手机麦克风念它的<b>唱名</b>（Do / Re / Mi / Fa / Sol / La / Si）。系统会自动识别打分。</p>
+      ${supported ? '' : '<p style="color:#fbbf24">⚠️ 当前浏览器不支持语音识别（Safari 14.5+ / Chrome 都可以）。会自动切换成"点按钮自答模式"。</p>'}
+    </div>
+    <div class="stage-header">
+      <span id="spkCounter">1/10</span>
+      <div class="progress-bar"><div class="fill" id="spkFill"></div></div>
+      <span id="spkScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="spkStaff"></div>
+    <div class="prompt big" id="spkPrompt">请念出这个音的唱名</div>
+    <div class="feedback" id="spkFb">点下方按钮开始</div>
+    <button class="primary-btn" id="spkMic">🎤 长按说话（或点击开始录音 2 秒）</button>
+    <div class="row" style="margin-top:8px;">
+      <button class="secondary-btn" id="spkHear">🔊 听正确读音</button>
+      <button class="secondary-btn" id="spkSkip">⏭ 跳过</button>
+    </div>
+    ${!supported ? `
+    <div style="margin-top:12px;">
+      <p style="text-align:center;color:#94a3b8;font-size:12px;">兜底模式：点击你念出的唱名</p>
+      <div class="choices" id="spkManual"></div>
+    </div>` : ''}
+  `;
+  const total = 10;
+  let idx = 0, correct = 0, current, answered = false;
+  let recognition = null;
+  if (supported) {
+    recognition = new SR();
+    recognition.lang = 'zh-CN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+  }
+
+  function speakName(letter) {
+    // 使用 TTS 念出正确唱名
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(SOLFEGE[letter]);
+    u.lang = 'en-US';
+    u.rate = 0.8;
+    speechSynthesis.speak(u);
+  }
+
+  function nextQ() {
+    answered = false;
+    const pool = TREBLE_NOTES.slice(0, 8);
+    current = pool[Math.floor(Math.random()*pool.length)];
+    document.getElementById('spkStaff').innerHTML = renderStaff('treble', [current]);
+    document.getElementById('spkPrompt').innerHTML = `念出这个音 · <span style="color:#6366f1">${SOLFEGE[current.letter]}</span>`;
+    document.getElementById('spkCounter').textContent = `${idx+1}/${total}`;
+    document.getElementById('spkFill').style.width = ((idx/total)*100)+'%';
+    document.getElementById('spkScore').textContent = '✓ '+correct;
+    document.getElementById('spkFb').textContent = '按住麦克风按钮说话';
+    document.getElementById('spkFb').className = 'feedback';
+    playNote(current.midi);
+    if (!supported) renderManualChoices();
+  }
+
+  function renderManualChoices() {
+    const holder = document.getElementById('spkManual');
+    if (!holder) return;
+    holder.innerHTML = '';
+    const opts = new Set([current.letter]);
+    while (opts.size < 4) opts.add(NOTE_NAMES[Math.floor(Math.random()*7)]);
+    [...opts].sort(()=>Math.random()-0.5).forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<div>${SOLFEGE[letter]}</div>`;
+      btn.addEventListener('click', () => grade(SOLFEGE[letter]));
+      holder.appendChild(btn);
+    });
+  }
+
+  function grade(spokenSolfege) {
+    if (answered) return;
+    answered = true;
+    const isRight = spokenSolfege === SOLFEGE[current.letter];
+    if (isRight) {
+      correct++;
+      document.getElementById('spkFb').textContent = `✓ 正确！这是 ${current.letter} · ${SOLFEGE[current.letter]}`;
+      document.getElementById('spkFb').className = 'feedback good';
+    } else {
+      document.getElementById('spkFb').textContent = `✗ 你说的是"${spokenSolfege || '?'}"，正确答案是 ${SOLFEGE[current.letter]}`;
+      document.getElementById('spkFb').className = 'feedback bad';
+      speakName(current.letter);
+    }
+    setTimeout(() => {
+      idx++;
+      if (idx >= total) {
+        updateModuleProgress('quiz-speak', correct, total);
+        alert(`完成！答对 ${correct}/${total}`);
+        showScreen('homeScreen');
+      } else nextQ();
+    }, 1400);
+  }
+
+  function startListening() {
+    if (!recognition || answered) return;
+    document.getElementById('spkFb').textContent = '🎤 正在听… 请念出唱名';
+    document.getElementById('spkFb').className = 'feedback';
+    try { recognition.start(); } catch(e){}
+    // 2 秒后自动停止
+    setTimeout(() => { try { recognition.stop(); } catch(e){} }, 2200);
+  }
+
+  if (supported) {
+    recognition.onresult = (event) => {
+      let best = '';
+      for (let i = 0; i < event.results[0].length; i++) {
+        best += event.results[0][i].transcript + ' ';
+      }
+      const detected = detectSolfege(best);
+      const isRight = matchSolfege(best, SOLFEGE[current.letter]);
+      if (isRight) {
+        grade(SOLFEGE[current.letter]);
+      } else {
+        grade(detected || best.trim().slice(0, 6));
+      }
+    };
+    recognition.onerror = (e) => {
+      document.getElementById('spkFb').textContent = '⚠️ 识别失败：' + (e.error || '未知') + '（请检查麦克风权限）';
+      document.getElementById('spkFb').className = 'feedback bad';
+    };
+    recognition.onend = () => {
+      if (!answered) {
+        document.getElementById('spkFb').textContent = '没听清，请再点麦克风重试';
+      }
+    };
+    document.getElementById('spkMic').addEventListener('click', startListening);
+  } else {
+    document.getElementById('spkMic').textContent = '⚠️ 本机不支持识别，请用下方按钮';
+    document.getElementById('spkMic').disabled = true;
+  }
+  document.getElementById('spkHear').addEventListener('click', () => {
+    if (current) { playNote(current.midi); speakName(current.letter); }
+  });
+  document.getElementById('spkSkip').addEventListener('click', () => {
+    if (!answered) grade('(跳过)');
+  });
+  nextQ();
+}
+
+/* ---------- 11. 模块 4: 音符时值 ---------- */
+function renderQuizDuration() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  const durations = [
+    { symbol: '𝅝', name: '全音符', beats: 4 },
+    { symbol: '𝅗𝅥', name: '二分音符', beats: 2 },
+    { symbol: '♩', name: '四分音符', beats: 1 },
+    { symbol: '♪', name: '八分音符', beats: 0.5 },
+    { symbol: '𝅘𝅥𝅯', name: '十六分音符', beats: 0.25 }
+  ];
+  s.innerHTML = `
+    <div class="stage-header">
+      <span id="dCounter">1/8</span>
+      <div class="progress-bar"><div class="fill" id="dFill"></div></div>
+      <span id="dScore">✓ 0</span>
+    </div>
+    <div class="rhythm-canvas" id="dSymbol" style="font-size:80px;"></div>
+    <div class="prompt big">这个音符持续几拍？</div>
+    <div class="feedback" id="dFb"></div>
+    <div class="choices" id="dChoices"></div>
+  `;
+  const total = 8;
+  let idx = 0, correct = 0, current, answered = false;
+  function nextQ() {
+    answered = false;
+    current = durations[Math.floor(Math.random()*durations.length)];
+    document.getElementById('dSymbol').textContent = current.symbol;
+    document.getElementById('dCounter').textContent = `${idx+1}/${total}`;
+    document.getElementById('dFill').style.width = ((idx/total)*100)+'%';
+    document.getElementById('dScore').textContent = '✓ '+correct;
+    document.getElementById('dFb').textContent = '';
+    document.getElementById('dFb').className = 'feedback';
+    const opts = new Set([current.beats]);
+    while (opts.size < 4) opts.add(durations[Math.floor(Math.random()*durations.length)].beats);
+    const shuffled = [...opts].sort(() => Math.random()-0.5);
+    const cc = document.getElementById('dChoices');
+    cc.innerHTML = '';
+    shuffled.forEach(v => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML = `<div>${v}</div><div style="font-size:11px;opacity:0.7;margin-top:2px;">拍</div>`;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (v === current.beats) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('dFb').textContent = `✓ ${current.name}=${current.beats}拍`;
+          document.getElementById('dFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('dFb').textContent = `✗ 这是${current.name}, 应该是${current.beats}拍`;
+          document.getElementById('dFb').className = 'feedback bad';
+        }
+        setTimeout(nextOrEnd, 900);
+      });
+      cc.appendChild(btn);
+    });
+  }
+  function nextOrEnd() {
+    idx++;
+    if (idx>=total) {
+      updateModuleProgress('quiz-duration', correct, total);
+      alert(`完成！答对 ${correct}/${total}`);
+      showScreen('homeScreen');
+    } else nextQ();
+  }
+  nextQ();
+}
+
+/* ---------- 12. 模块 5: 节奏拍击 ---------- */
+function renderRhythmTrainer() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🎯 目标：跟着节拍器点击"打拍板"</h3>
+      <p>选择速度，节拍器响起时同步点击下方紫色区域。系统会评估你的节拍稳定性。</p>
+    </div>
+    <div class="row" style="margin-bottom:12px;">
+      <button class="secondary-btn" data-bpm="60">慢 60</button>
+      <button class="secondary-btn" data-bpm="80">中 80</button>
+      <button class="secondary-btn" data-bpm="100">快 100</button>
+    </div>
+    <div class="rhythm-canvas" id="rDots" style="gap:6px;font-size:14px;">
+      <span class="metronome-dot"></span>
+      <span class="metronome-dot"></span>
+      <span class="metronome-dot"></span>
+      <span class="metronome-dot"></span>
+    </div>
+    <div class="tap-pad" id="rTap">👉 点这里打拍子</div>
+    <div class="feedback" id="rFb">选择速度开始</div>
+  `;
+  let bpm = 0, timer = null, currentBeat = 0, expectedTimes = [], tapTimes = [];
+  const dots = s.querySelectorAll('.metronome-dot');
+  s.querySelectorAll('[data-bpm]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (timer) clearInterval(timer);
+      bpm = parseInt(btn.dataset.bpm);
+      currentBeat = 0; expectedTimes = []; tapTimes = [];
+      const interval = 60000 / bpm;
+      const startTime = performance.now() + 500;
+      // 生成 16 拍
+      for (let i = 0; i < 16; i++) expectedTimes.push(startTime + i * interval);
+      document.getElementById('rFb').textContent = `${bpm} BPM 开始…`;
+      document.getElementById('rFb').className = 'feedback';
+      let tickIdx = 0;
+      const tick = () => {
+        if (tickIdx >= 16) {
+          clearInterval(timer); timer = null;
+          evaluate();
+          return;
+        }
+        dots.forEach(d => d.classList.remove('on'));
+        dots[tickIdx % 4].classList.add('on');
+        playClick();
+        tickIdx++;
+      };
+      // 第一拍延迟 500ms
+      setTimeout(() => {
+        tick();
+        timer = setInterval(tick, interval);
+      }, 500);
+    });
+  });
+  document.getElementById('rTap').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    tapTimes.push(performance.now());
+    playNote(72, 0.1);
+  });
+  function evaluate() {
+    if (tapTimes.length === 0) {
+      document.getElementById('rFb').textContent = '没检测到点击，再试试';
+      return;
+    }
+    // 计算平均偏差
+    const errors = [];
+    tapTimes.forEach(t => {
+      let minErr = Infinity;
+      expectedTimes.forEach(e => { const d = Math.abs(t - e); if (d < minErr) minErr = d; });
+      errors.push(minErr);
+    });
+    const avg = errors.reduce((a,b)=>a+b,0) / errors.length;
+    const grade = avg < 80 ? '🎯 极稳' : avg < 150 ? '👍 不错' : avg < 250 ? '🙂 还行' : '😅 加油';
+    document.getElementById('rFb').textContent = `${grade}  平均偏差 ${Math.round(avg)}ms  共 ${tapTimes.length} 击`;
+    document.getElementById('rFb').className = 'feedback ' + (avg < 150 ? 'good' : 'bad');
+    // 计入进度：偏差<150 视为一次成功
+    updateModuleProgress('quiz-rhythm', avg < 150 ? 8 : 4, 8);
+  }
+}
+
+/* ---------- 13. 模块 6: 音程听辨 ---------- */
+function renderIntervalTrainer() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  const intervals = [
+    { semi: 2, name: '大二度' },
+    { semi: 4, name: '大三度' },
+    { semi: 5, name: '纯四度' },
+    { semi: 7, name: '纯五度' },
+    { semi: 12, name: '纯八度' }
+  ];
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🎧 音程听辨</h3>
+      <p>点"播放"听两个连续的音，判断它们之间的距离（音程）。</p>
+    </div>
+    <div class="prompt big" id="iPrompt">按下方按钮播放</div>
+    <button class="primary-btn" id="iPlay">▶ 播放</button>
+    <div class="feedback" id="iFb"></div>
+    <div class="choices" id="iChoices"></div>
+    <div class="stage-header" style="margin-top:14px;">
+      <span id="iCounter">0/8</span>
+      <div class="progress-bar"><div class="fill" id="iFill"></div></div>
+      <span id="iScore">✓ 0</span>
+    </div>
+  `;
+  const total = 8;
+  let idx = 0, correct = 0, current, answered = false;
+  function nextQ() {
+    answered = false;
+    current = intervals[Math.floor(Math.random()*intervals.length)];
+    document.getElementById('iCounter').textContent = `${idx+1}/${total}`;
+    document.getElementById('iFill').style.width = ((idx/total)*100)+'%';
+    document.getElementById('iScore').textContent = '✓ '+correct;
+    document.getElementById('iFb').textContent = '';
+    document.getElementById('iFb').className = 'feedback';
+    document.getElementById('iPrompt').textContent = '听两个音…';
+    const cc = document.getElementById('iChoices');
+    cc.innerHTML = '';
+    const opts = new Set([current.name]);
+    while (opts.size < 4) opts.add(intervals[Math.floor(Math.random()*intervals.length)].name);
+    [...opts].sort(()=>Math.random()-0.5).forEach(n => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.style.gridColumn = 'span 2';
+      btn.style.fontSize = '15px';
+      btn.textContent = n;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (n === current.name) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('iFb').textContent = `✓ 正确！${current.name}`;
+          document.getElementById('iFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('iFb').textContent = `✗ 是 ${current.name}`;
+          document.getElementById('iFb').className = 'feedback bad';
+        }
+        setTimeout(() => {
+          idx++;
+          if (idx>=total) {
+            updateModuleProgress('quiz-interval', correct, total);
+            alert(`完成！答对 ${correct}/${total}`);
+            showScreen('homeScreen');
+          } else nextQ();
+        }, 1200);
+      });
+      cc.appendChild(btn);
+    });
+  }
+  document.getElementById('iPlay').addEventListener('click', () => {
+    if (!current) return;
+    playNote(60, 0.8);
+    setTimeout(() => playNote(60 + current.semi, 0.8), 700);
+  });
+  nextQ();
+}
+
+/* ---------- 14. 模块 7: 视奏小星星 ---------- */
+function renderSongPlayer() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  // 《小星星》右手旋律 (C 大调)
+  const song = [
+    { letter: 'C', midi: 60 }, { letter: 'C', midi: 60 },
+    { letter: 'G', midi: 67 }, { letter: 'G', midi: 67 },
+    { letter: 'A', midi: 69 }, { letter: 'A', midi: 69 },
+    { letter: 'G', midi: 67 },
+    { letter: 'F', midi: 65 }, { letter: 'F', midi: 65 },
+    { letter: 'E', midi: 64 }, { letter: 'E', midi: 64 },
+    { letter: 'D', midi: 62 }, { letter: 'D', midi: 62 },
+    { letter: 'C', midi: 60 }
+  ];
+  const songStaff = song.map(n => {
+    const t = TREBLE_NOTES.find(x => x.midi === n.midi);
+    return t || { letter: n.letter, staffPos: 0, midi: n.midi };
+  });
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🌟 视奏《小星星》</h3>
+      <p>按顺序在钢琴上找到高亮音符对应的白键。左侧红色音符=当前要弹的音。</p>
+    </div>
+    <div class="staff-container" id="sStaff"></div>
+    <div class="prompt" id="sPrompt">当前音: <b id="sCur">C (Do)</b></div>
+    <div class="feedback" id="sFb"></div>
+    <div class="keyboard" id="sKb"></div>
+    <div class="row" style="margin-top:12px;">
+      <button class="secondary-btn" id="sReset">↺ 重来</button>
+      <button class="secondary-btn" id="sHear">🎧 听全曲</button>
+    </div>
+  `;
+  let step = 0;
+  function updateView() {
+    document.getElementById('sStaff').innerHTML = renderStaff('treble', songStaff, { highlight: step, labelType: 'solfege' });
+    if (step >= song.length) {
+      document.getElementById('sPrompt').innerHTML = '🎉 完成！';
+      document.getElementById('sFb').textContent = '你弹完了整首小星星！';
+      document.getElementById('sFb').className = 'feedback good';
+      updateModuleProgress('play-song', 1, 1);
+      return;
+    }
+    const cur = song[step];
+    document.getElementById('sCur').textContent = `${cur.letter} (${SOLFEGE[cur.letter]})`;
+  }
+  renderKeyboard(document.getElementById('sKb'), {
+    range: [60, 77],
+    labelMode: 'all',
+    onKey: (midi, keyEl) => {
+      if (step >= song.length) return;
+      const target = song[step].midi;
+      if (midi % 12 === target % 12) {
+        keyEl.classList.add('correct');
+        setTimeout(() => keyEl.classList.remove('correct'), 300);
+        document.getElementById('sFb').textContent = '✓';
+        document.getElementById('sFb').className = 'feedback good';
+        step++;
+        updateView();
+      } else {
+        keyEl.classList.add('wrong');
+        setTimeout(() => keyEl.classList.remove('wrong'), 400);
+        document.getElementById('sFb').textContent = `✗ 应该是 ${song[step].letter}`;
+        document.getElementById('sFb').className = 'feedback bad';
+      }
+    }
+  });
+  document.getElementById('sReset').addEventListener('click', () => { step = 0; updateView(); });
+  document.getElementById('sHear').addEventListener('click', () => {
+    song.forEach((n, i) => setTimeout(() => playNote(n.midi, 0.5), i * 500));
+  });
+  updateView();
+}
+
+/* ============================================================
+ * 进阶乐园 · 7 个高难度模块
+ * ============================================================ */
+
+/* ---------- 进阶 1: ⚡ 极速识谱挑战 ---------- */
+function renderQuizSpeed() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>⚡ 极速识谱挑战</h3>
+      <p>30 秒内答对越多越好，连击越高分数越高。<b>五线谱不显示唱名</b>，只能靠位置判断。</p>
+    </div>
+    <div class="stage-header">
+      <span id="spTimer" style="color:#f43f5e;font-weight:700;font-size:16px;">⏱ 30s</span>
+      <div class="progress-bar"><div class="fill" id="spTimeFill" style="width:100%;background:linear-gradient(90deg,#fde047,#f43f5e);"></div></div>
+      <span id="spScore" style="font-weight:700;color:#fbbf24;">✓ 0 · x1</span>
+    </div>
+    <div class="staff-container" id="spStaff"></div>
+    <div class="prompt" id="spFb">出题中…</div>
+    <div class="choices" id="spChoices"></div>
+  `;
+  const notesPool = TREBLE_NOTES.concat(BASS_NOTES);
+  let time = 30, correct = 0, combo = 0, best = 0, current, currentClef;
+  let running = true;
+  const timer = setInterval(() => {
+    time -= 0.1;
+    document.getElementById('spTimeFill').style.width = (time / 30 * 100) + '%';
+    document.getElementById('spTimer').textContent = '⏱ ' + Math.max(0, time).toFixed(1) + 's';
+    if (time <= 0) {
+      clearInterval(timer); running = false;
+      const score = Math.round(correct * 100 / 15); // 15 题满分基线
+      updateModuleProgress('quiz-speed', Math.min(score, 100), 100);
+      alert(`时间到！答对 ${correct} 题，最高连击 ×${best}`);
+      showScreen('homeScreen');
+    }
+  }, 100);
+  function nextQ() {
+    if (!running) return;
+    current = notesPool[Math.floor(Math.random() * notesPool.length)];
+    currentClef = TREBLE_NOTES.includes(current) ? 'treble' : 'bass';
+    document.getElementById('spStaff').innerHTML = renderStaff(currentClef, [current], { labelType: 'none' });
+    const cc = document.getElementById('spChoices');
+    cc.innerHTML = '';
+    const opts = new Set([current.letter]);
+    while (opts.size < 4) opts.add(NOTE_NAMES[Math.floor(Math.random() * 7)]);
+    [...opts].sort(() => Math.random() - 0.5).forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = letter;
+      btn.addEventListener('click', () => {
+        if (!running) return;
+        if (letter === current.letter) {
+          correct++; combo++; best = Math.max(best, combo);
+          btn.classList.add('correct');
+          document.getElementById('spFb').textContent = combo > 1 ? `🔥 连击 ×${combo}！` : '✓ 对了！';
+        } else {
+          combo = 0;
+          btn.classList.add('wrong');
+          document.getElementById('spFb').textContent = `✗ 是 ${current.letter}`;
+        }
+        document.getElementById('spScore').textContent = `✓ ${correct} · x${combo}`;
+        setTimeout(nextQ, 350);
+      });
+      cc.appendChild(btn);
+    });
+  }
+  nextQ();
+}
+
+/* ---------- 进阶 2: ⚫ 升降号 & 黑键 ---------- */
+function renderQuizSharp() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  // 黑键对应 12 音：C#=61, D#=63, F#=66, G#=68, A#=70
+  const blackNotes = [
+    { midi: 61, sharp: 'C', flat: 'D', label: 'C♯ / D♭' },
+    { midi: 63, sharp: 'D', flat: 'E', label: 'D♯ / E♭' },
+    { midi: 66, sharp: 'F', flat: 'G', label: 'F♯ / G♭' },
+    { midi: 68, sharp: 'G', flat: 'A', label: 'G♯ / A♭' },
+    { midi: 70, sharp: 'A', flat: 'B', label: 'A♯ / B♭' }
+  ];
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>⚫ 升降号 & 黑键</h3>
+      <p>五线谱上带 <b style="color:#f43f5e">♯</b>（升号）或 <b style="color:#0ea5e9">♭</b>（降号）的音符，在钢琴上点对应的<b>黑键</b>。</p>
+      <div class="mnemonic">📌 F♯ 和 G♭ 是<b>同一个黑键</b>（等音异名），点哪个方向来记都算对。</div>
+    </div>
+    <div class="stage-header">
+      <span id="shCounter">1/10</span>
+      <div class="progress-bar"><div class="fill" id="shFill"></div></div>
+      <span id="shScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="shStaff"></div>
+    <div class="prompt big" id="shPrompt">找到这个黑键</div>
+    <div class="feedback" id="shFb"></div>
+    <div class="keyboard" id="shKb"></div>
+  `;
+  const total = 10;
+  let idx = 0, correct = 0, current, useSharp;
+  renderKeyboard(document.getElementById('shKb'), {
+    range: [60, 77],
+    labelMode: 'letter',
+    onKey: (midi, keyEl) => {
+      if (!current) return;
+      if (midi === current.midi) {
+        correct++;
+        keyEl.classList.add('correct');
+        setTimeout(() => keyEl.classList.remove('correct'), 400);
+        document.getElementById('shFb').textContent = '✓ 正确！';
+        document.getElementById('shFb').className = 'feedback good';
+        setTimeout(nextQ, 700);
+      } else {
+        keyEl.classList.add('wrong');
+        setTimeout(() => keyEl.classList.remove('wrong'), 400);
+        document.getElementById('shFb').textContent = `✗ 再试试（这是 ${current.label}）`;
+        document.getElementById('shFb').className = 'feedback bad';
+      }
+    }
+  });
+  function nextQ() {
+    if (idx >= total) {
+      updateModuleProgress('quiz-sharp', correct, total);
+      alert(`完成！答对 ${correct}/${total}`);
+      showScreen('homeScreen');
+      return;
+    }
+    current = blackNotes[Math.floor(Math.random() * blackNotes.length)];
+    useSharp = Math.random() < 0.5;
+    // 用相邻白键的 staffPos 显示
+    const anchor = useSharp
+      ? TREBLE_NOTES.find(n => n.letter === current.sharp && n.midi === current.midi - 1)
+      : TREBLE_NOTES.find(n => n.letter === current.flat && n.midi === current.midi + 1);
+    const noteObj = { ...anchor, accidental: useSharp ? '#' : 'b', midi: current.midi };
+    document.getElementById('shStaff').innerHTML = renderStaff('treble', [noteObj], { labelType: 'none' });
+    document.getElementById('shPrompt').innerHTML = `找到 <b style="color:${useSharp ? '#f43f5e' : '#0ea5e9'}">${useSharp ? current.sharp + '♯' : current.flat + '♭'}</b> 对应的黑键`;
+    document.getElementById('shFb').textContent = '';
+    document.getElementById('shCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('shFill').style.width = (idx / total * 100) + '%';
+    document.getElementById('shScore').textContent = '✓ ' + correct;
+    playNote(current.midi, 0.5);
+    idx++;
+  }
+  nextQ();
+}
+
+/* ---------- 进阶 3: 🎶 和弦识别 ---------- */
+function renderQuizChord() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  const chords = [
+    { name: '大三和弦', semis: [0, 4, 7], hint: '明亮 · 大三度 + 小三度' },
+    { name: '小三和弦', semis: [0, 3, 7], hint: '忧郁 · 小三度 + 大三度' },
+    { name: '减三和弦', semis: [0, 3, 6], hint: '紧张 · 两个小三度' },
+    { name: '增三和弦', semis: [0, 4, 8], hint: '奇异 · 两个大三度' }
+  ];
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🎶 和弦识别</h3>
+      <p>点"播放"听三个同时按下的音，判断它是<b>大 / 小 / 减 / 增</b>哪种三和弦。</p>
+      <div class="mnemonic">📌 大 = 快乐、小 = 悲伤、减 = 悬念、增 = 神秘。多听几次找感觉。</div>
+    </div>
+    <div class="stage-header">
+      <span id="chCounter">1/8</span>
+      <div class="progress-bar"><div class="fill" id="chFill"></div></div>
+      <span id="chScore">✓ 0</span>
+    </div>
+    <div class="prompt big" id="chPrompt">按下方按钮听和弦</div>
+    <button class="primary-btn" id="chPlay">▶ 播放和弦</button>
+    <div class="row" style="margin-top:8px;">
+      <button class="secondary-btn" id="chArp">🎵 分解听（分别听三个音）</button>
+    </div>
+    <div class="feedback" id="chFb"></div>
+    <div class="choices" id="chChoices"></div>
+  `;
+  const total = 8;
+  let idx = 0, correct = 0, current, root, answered = false;
+  function playChord(arpeggio = false) {
+    if (!current) return;
+    if (arpeggio) {
+      current.semis.forEach((s, i) => setTimeout(() => playNote(root + s, 0.6), i * 400));
+    } else {
+      current.semis.forEach(s => playNote(root + s, 1.2));
+    }
+  }
+  function nextQ() {
+    answered = false;
+    current = chords[Math.floor(Math.random() * chords.length)];
+    root = 60 + Math.floor(Math.random() * 5); // C4-E4 之间
+    document.getElementById('chCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('chFill').style.width = (idx / total * 100) + '%';
+    document.getElementById('chScore').textContent = '✓ ' + correct;
+    document.getElementById('chFb').textContent = '';
+    document.getElementById('chFb').className = 'feedback';
+    document.getElementById('chPrompt').textContent = '这是什么和弦？';
+    const cc = document.getElementById('chChoices');
+    cc.innerHTML = '';
+    chords.sort(() => Math.random() - 0.5).forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.style.gridColumn = 'span 2';
+      btn.style.fontSize = '15px';
+      btn.innerHTML = `${c.name}<br><span style="font-size:11px;opacity:0.7;">${c.hint}</span>`;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (c.name === current.name) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('chFb').textContent = `✓ 正确！${current.name} · ${current.hint}`;
+          document.getElementById('chFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('chFb').textContent = `✗ 是 ${current.name} · ${current.hint}`;
+          document.getElementById('chFb').className = 'feedback bad';
+        }
+        setTimeout(() => {
+          idx++;
+          if (idx >= total) {
+            updateModuleProgress('quiz-chord', correct, total);
+            alert(`完成！答对 ${correct}/${total}`);
+            showScreen('homeScreen');
+          } else nextQ();
+        }, 1500);
+      });
+      cc.appendChild(btn);
+    });
+    setTimeout(() => playChord(false), 400);
+  }
+  document.getElementById('chPlay').addEventListener('click', () => playChord(false));
+  document.getElementById('chArp').addEventListener('click', () => playChord(true));
+  nextQ();
+}
+
+/* ---------- 进阶 4: 🖐️ 低音谱号专项 ---------- */
+function renderQuizBass() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  // 低音谱号扩展范围（含加线）：F2 ~ E4
+  const extBass = [
+    { name: 'F2', letter: 'F', midi: 41, staffPos: -3, label: 'F2(下加二线)' },
+    { name: 'G2', letter: 'G', midi: 43, staffPos: -2, label: 'G2(下加一线下)' },
+    { name: 'A2', letter: 'A', midi: 45, staffPos: -2, label: 'A2(下加一间)' },
+    { name: 'B2', letter: 'B', midi: 47, staffPos: -1, label: 'B2(下加一线)' },
+    ...BASS_NOTES,
+    { name: 'D4', letter: 'D', midi: 62, staffPos: 7, label: 'D4(上加一间)' }
+  ];
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🖐️ 低音谱号专项</h3>
+      <p>低音谱号是<b>左手区</b>，很多初学者只练右手不熟左手。这一关强化训练 F2-D4 范围，包含加线。</p>
+      <div class="mnemonic">📌 线上 GBDFA / 间中 ACEG · 中央 C 在低音谱表上加一线</div>
+    </div>
+    <div class="stage-header">
+      <span id="bsCounter">1/12</span>
+      <div class="progress-bar"><div class="fill" id="bsFill"></div></div>
+      <span id="bsScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="bsStaff"></div>
+    <div class="prompt big" id="bsPrompt">这是什么音？</div>
+    <div class="feedback" id="bsFb"></div>
+    <div class="choices" id="bsChoices"></div>
+  `;
+  const total = 12;
+  let idx = 0, correct = 0, current, answered = false;
+  function nextQ() {
+    answered = false;
+    current = extBass[Math.floor(Math.random() * extBass.length)];
+    document.getElementById('bsStaff').innerHTML = renderStaff('bass', [current], { labelType: 'none' });
+    document.getElementById('bsCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('bsFill').style.width = (idx / total * 100) + '%';
+    document.getElementById('bsScore').textContent = '✓ ' + correct;
+    document.getElementById('bsFb').textContent = '';
+    document.getElementById('bsFb').className = 'feedback';
+    const cc = document.getElementById('bsChoices');
+    cc.innerHTML = '';
+    const opts = new Set([current.letter]);
+    while (opts.size < 4) opts.add(NOTE_NAMES[Math.floor(Math.random() * 7)]);
+    [...opts].sort(() => Math.random() - 0.5).forEach(letter => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = letter;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (letter === current.letter) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('bsFb').textContent = `✓ 是 ${current.letter}（${current.label}）`;
+          document.getElementById('bsFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('bsFb').textContent = `✗ 是 ${current.letter}（${current.label}）`;
+          document.getElementById('bsFb').className = 'feedback bad';
+        }
+        playNote(current.midi, 0.6);
+        setTimeout(() => {
+          idx++;
+          if (idx >= total) {
+            updateModuleProgress('quiz-bass', correct, total);
+            alert(`完成！答对 ${correct}/${total}`);
+            showScreen('homeScreen');
+          } else nextQ();
+        }, 1200);
+      });
+      cc.appendChild(btn);
+    });
+  }
+  nextQ();
+}
+
+/* ---------- 进阶 5: 🙌 双手协调 ---------- */
+function renderQuizTwoHand() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🙌 双手协调</h3>
+      <p>屏幕同时显示高音谱和低音谱各一个音。<b>先点低音（左手）</b>再点<b>高音（右手）</b>，模拟真实弹奏顺序。</p>
+      <div class="mnemonic">📌 键盘扩展为 C3-C6（跨 3 个八度），中央 C 有金色 ★ 标记。</div>
+    </div>
+    <div class="stage-header">
+      <span id="thCounter">1/8</span>
+      <div class="progress-bar"><div class="fill" id="thFill"></div></div>
+      <span id="thScore">✓ 0</span>
+    </div>
+    <div class="row" style="gap:8px;margin-bottom:10px;">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:#a78bfa;text-align:center;margin-bottom:4px;font-weight:600;">👉 右手 / 高音</div>
+        <div class="staff-container" id="thStaffT" style="margin-bottom:0;"></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:#0ea5e9;text-align:center;margin-bottom:4px;font-weight:600;">👈 左手 / 低音</div>
+        <div class="staff-container" id="thStaffB" style="margin-bottom:0;"></div>
+      </div>
+    </div>
+    <div class="prompt" id="thPrompt">先点左手（低音），再点右手（高音）</div>
+    <div class="feedback" id="thFb"></div>
+    <div class="keyboard" id="thKb"></div>
+  `;
+  const total = 8;
+  let idx = 0, correct = 0, currentT, currentB, phase = 0; // 0=等左手 1=等右手
+  renderKeyboard(document.getElementById('thKb'), {
+    range: [48, 84],
+    labelMode: 'letter',
+    onKey: (midi, keyEl) => {
+      if (phase === 0) {
+        if (midi % 12 === currentB.midi % 12 && midi < 60) {
+          keyEl.classList.add('correct');
+          setTimeout(() => keyEl.classList.remove('correct'), 300);
+          phase = 1;
+          document.getElementById('thPrompt').innerHTML = '✓ 左手完成，现在<b style="color:#a78bfa">点右手（高音）</b>';
+        } else {
+          keyEl.classList.add('wrong');
+          setTimeout(() => keyEl.classList.remove('wrong'), 400);
+          document.getElementById('thFb').textContent = `✗ 先点左手区（低音谱：${currentB.letter}）`;
+          document.getElementById('thFb').className = 'feedback bad';
+        }
+      } else if (phase === 1) {
+        if (midi % 12 === currentT.midi % 12 && midi >= 60) {
+          correct++;
+          keyEl.classList.add('correct');
+          setTimeout(() => keyEl.classList.remove('correct'), 300);
+          document.getElementById('thFb').textContent = '✓ 双手完成！';
+          document.getElementById('thFb').className = 'feedback good';
+          setTimeout(nextQ, 800);
+        } else {
+          keyEl.classList.add('wrong');
+          setTimeout(() => keyEl.classList.remove('wrong'), 400);
+          document.getElementById('thFb').textContent = `✗ 右手要弹 ${currentT.letter}`;
+          document.getElementById('thFb').className = 'feedback bad';
+        }
+      }
+    }
+  });
+  function nextQ() {
+    if (idx >= total) {
+      updateModuleProgress('quiz-twohand', correct, total);
+      alert(`完成！答对 ${correct}/${total}`);
+      showScreen('homeScreen');
+      return;
+    }
+    phase = 0;
+    currentT = TREBLE_NOTES[Math.floor(Math.random() * TREBLE_NOTES.length)];
+    currentB = BASS_NOTES[Math.floor(Math.random() * BASS_NOTES.length)];
+    document.getElementById('thStaffT').innerHTML = renderStaff('treble', [currentT], { labelType: 'letter' });
+    document.getElementById('thStaffB').innerHTML = renderStaff('bass', [currentB], { labelType: 'letter' });
+    document.getElementById('thPrompt').innerHTML = '先点<b style="color:#0ea5e9">左手（低音）</b>，再点<b style="color:#a78bfa">右手（高音）</b>';
+    document.getElementById('thFb').textContent = '';
+    document.getElementById('thCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('thFill').style.width = (idx / total * 100) + '%';
+    document.getElementById('thScore').textContent = '✓ ' + correct;
+    idx++;
+  }
+  nextQ();
+}
+
+/* ---------- 进阶 6: 🔑 调号识别 ---------- */
+function renderQuizKeySig() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  // 常见大调：升号顺序 F#C#G#D#A#，降号顺序 BbEbAbDbGb
+  const keys = [
+    { name: 'C 大调', count: 0, type: 'none', hint: '没有升降号' },
+    { name: 'G 大调', count: 1, type: 'sharp', hint: '1 个升号 (F♯)' },
+    { name: 'D 大调', count: 2, type: 'sharp', hint: '2 个升号 (F♯ C♯)' },
+    { name: 'A 大调', count: 3, type: 'sharp', hint: '3 个升号' },
+    { name: 'F 大调', count: 1, type: 'flat', hint: '1 个降号 (B♭)' },
+    { name: 'B♭ 大调', count: 2, type: 'flat', hint: '2 个降号 (B♭ E♭)' },
+    { name: 'E♭ 大调', count: 3, type: 'flat', hint: '3 个降号' }
+  ];
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🔑 调号识别</h3>
+      <p>五线谱开头的<b>升号数量</b>决定了曲子的调。这一关训练你一眼看出"这是什么调"。</p>
+      <div class="mnemonic">📌 <b>升号顺序</b> F♯ C♯ G♯ D♯ A♯ E♯ B♯（每加一个升号，主音上五度）</div>
+      <div class="mnemonic">📌 <b>降号顺序</b> B♭ E♭ A♭ D♭ G♭ C♭ F♭（每加一个降号，主音下五度）</div>
+    </div>
+    <div class="stage-header">
+      <span id="ksCounter">1/10</span>
+      <div class="progress-bar"><div class="fill" id="ksFill"></div></div>
+      <span id="ksScore">✓ 0</span>
+    </div>
+    <div class="staff-container" id="ksStaff"></div>
+    <div class="prompt big" id="ksPrompt">这是什么调？</div>
+    <div class="feedback" id="ksFb"></div>
+    <div class="choices" id="ksChoices"></div>
+  `;
+  // 画简单的调号 SVG
+  function renderKeySigStaff(key) {
+    const W = 320, H = 130, top = 40, gap = 10;
+    const posToY = pos => top + 40 - pos * (gap / 2);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="background:#f8fafc;border-radius:12px;">`;
+    for (let i = 0; i < 5; i++) svg += `<line x1="10" y1="${top + i * gap}" x2="${W - 10}" y2="${top + i * gap}" stroke="#0f172a" stroke-width="1.2"/>`;
+    svg += `<text x="14" y="${top + 38}" font-size="60" fill="#0f172a" font-family="serif" font-weight="bold">𝄞</text>`;
+    // 升号位置（谱表位置，高音谱号 F#=8 C#=5.5 G#=9 D#=6.5 A#=4）
+    const sharpPos = [8, 5.5, 9, 6.5, 4];
+    const flatPos  = [4, 7, 3.5, 6, 2.5];
+    const startX = 70;
+    if (key.type === 'sharp') {
+      for (let i = 0; i < key.count; i++) {
+        svg += `<text x="${startX + i * 14}" y="${posToY(sharpPos[i]) + 5}" font-size="22" fill="#f43f5e" font-weight="bold">♯</text>`;
+      }
+    } else if (key.type === 'flat') {
+      for (let i = 0; i < key.count; i++) {
+        svg += `<text x="${startX + i * 14}" y="${posToY(flatPos[i]) + 5}" font-size="22" fill="#0ea5e9" font-weight="bold">♭</text>`;
+      }
+    } else {
+      svg += `<text x="${W/2}" y="${top + 45}" text-anchor="middle" font-size="14" fill="#94a3b8">(没有升降号)</text>`;
+    }
+    svg += `</svg>`;
+    return svg;
+  }
+  const total = 10;
+  let idx = 0, correct = 0, current, answered = false;
+  function nextQ() {
+    answered = false;
+    current = keys[Math.floor(Math.random() * keys.length)];
+    document.getElementById('ksStaff').innerHTML = renderKeySigStaff(current);
+    document.getElementById('ksCounter').textContent = `${idx + 1}/${total}`;
+    document.getElementById('ksFill').style.width = (idx / total * 100) + '%';
+    document.getElementById('ksScore').textContent = '✓ ' + correct;
+    document.getElementById('ksFb').textContent = '';
+    document.getElementById('ksFb').className = 'feedback';
+    const cc = document.getElementById('ksChoices');
+    cc.innerHTML = '';
+    const opts = new Set([current.name]);
+    while (opts.size < 4) opts.add(keys[Math.floor(Math.random() * keys.length)].name);
+    [...opts].sort(() => Math.random() - 0.5).forEach(name => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.style.gridColumn = 'span 2';
+      btn.style.fontSize = '15px';
+      btn.textContent = name;
+      btn.addEventListener('click', () => {
+        if (answered) return;
+        answered = true;
+        if (name === current.name) {
+          correct++;
+          btn.classList.add('correct');
+          document.getElementById('ksFb').textContent = `✓ ${current.name} · ${current.hint}`;
+          document.getElementById('ksFb').className = 'feedback good';
+        } else {
+          btn.classList.add('wrong');
+          document.getElementById('ksFb').textContent = `✗ 是 ${current.name} · ${current.hint}`;
+          document.getElementById('ksFb').className = 'feedback bad';
+        }
+        setTimeout(() => {
+          idx++;
+          if (idx >= total) {
+            updateModuleProgress('quiz-keysig', correct, total);
+            alert(`完成！答对 ${correct}/${total}`);
+            showScreen('homeScreen');
+          } else nextQ();
+        }, 1500);
+      });
+      cc.appendChild(btn);
+    });
+  }
+  nextQ();
+}
+
+/* ---------- 进阶 7: 🌟 进阶视奏曲库 ---------- */
+const ADV_SONGS = {
+  ode: {
+    title: '欢乐颂 · 贝多芬',
+    notes: [
+      { letter: 'E', midi: 64 }, { letter: 'E', midi: 64 }, { letter: 'F', midi: 65 }, { letter: 'G', midi: 67 },
+      { letter: 'G', midi: 67 }, { letter: 'F', midi: 65 }, { letter: 'E', midi: 64 }, { letter: 'D', midi: 62 },
+      { letter: 'C', midi: 60 }, { letter: 'C', midi: 60 }, { letter: 'D', midi: 62 }, { letter: 'E', midi: 64 },
+      { letter: 'E', midi: 64 }, { letter: 'D', midi: 62 }, { letter: 'D', midi: 62 }
+    ]
+  },
+  bday: {
+    title: '生日快乐',
+    notes: [
+      { letter: 'C', midi: 60 }, { letter: 'C', midi: 60 }, { letter: 'D', midi: 62 }, { letter: 'C', midi: 60 },
+      { letter: 'F', midi: 65 }, { letter: 'E', midi: 64 },
+      { letter: 'C', midi: 60 }, { letter: 'C', midi: 60 }, { letter: 'D', midi: 62 }, { letter: 'C', midi: 60 },
+      { letter: 'G', midi: 67 }, { letter: 'F', midi: 65 }
+    ]
+  },
+  canon: {
+    title: '卡农 · 帕赫贝尔 (片段)',
+    notes: [
+      { letter: 'D', midi: 74 }, { letter: 'C', midi: 72 }, { letter: 'B', midi: 71 }, { letter: 'A', midi: 69 },
+      { letter: 'G', midi: 67 }, { letter: 'F', midi: 65 }, { letter: 'G', midi: 67 }, { letter: 'A', midi: 69 },
+      { letter: 'F', midi: 65 }, { letter: 'E', midi: 64 }, { letter: 'D', midi: 62 }, { letter: 'C', midi: 60 },
+      { letter: 'B', midi: 59 }, { letter: 'A', midi: 57 }, { letter: 'G', midi: 55 }, { letter: 'A', midi: 57 }
+    ]
+  }
+};
+
+function renderSongPlayer2() {
+  showScreen('quizScreen');
+  const s = document.getElementById('quizScreen');
+  s.innerHTML = `
+    <div class="lesson-card">
+      <h3>🌟 进阶视奏曲库</h3>
+      <p>选一首曲子，按顺序在钢琴上找到高亮音符。进阶模式<b>默认不显示唱名</b>——只显示音名，帮你脱离唱名依赖。</p>
+    </div>
+    <div class="row" id="songPicker" style="margin-bottom:10px;flex-wrap:wrap;">
+      <button class="secondary-btn" data-song="ode">🎼 欢乐颂</button>
+      <button class="secondary-btn" data-song="bday">🎂 生日快乐</button>
+      <button class="secondary-btn" data-song="canon">🕰 卡农片段</button>
+    </div>
+    <div id="songArea" style="display:none;">
+      <div class="staff-container" id="s2Staff"></div>
+      <div class="prompt" id="s2Prompt">当前音: <b id="s2Cur">—</b></div>
+      <div class="feedback" id="s2Fb"></div>
+      <div class="keyboard" id="s2Kb"></div>
+      <div class="row" style="margin-top:12px;">
+        <button class="secondary-btn" id="s2Reset">↺ 重来</button>
+        <button class="secondary-btn" id="s2Hear">🎧 听全曲</button>
+        <button class="secondary-btn" id="s2Solfege">👁 显唱名</button>
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('#songPicker [data-song]').forEach(btn => {
+    btn.addEventListener('click', () => startSong(btn.dataset.song));
+  });
+  let step = 0, currentSong = null, songStaff = null, showSolfege = false;
+  function startSong(id) {
+    currentSong = ADV_SONGS[id];
+    document.getElementById('songPicker').style.display = 'none';
+    document.getElementById('songArea').style.display = 'block';
+    songStaff = currentSong.notes.map(n => {
+      let t = TREBLE_NOTES.find(x => x.midi === n.midi);
+      if (t) return t;
+      t = BASS_NOTES.find(x => x.midi === n.midi);
+      return t || { letter: n.letter, staffPos: -3, midi: n.midi };
+    });
+    step = 0;
+    // 键盘范围根据曲子最大最小 MIDI 自动展开
+    const midis = currentSong.notes.map(n => n.midi);
+    const lo = Math.min(...midis, 55), hi = Math.max(...midis, 77);
+    renderKeyboard(document.getElementById('s2Kb'), {
+      range: [Math.max(48, lo - 2), Math.min(84, hi + 2)],
+      labelMode: 'letter',
+      onKey: (midi, keyEl) => {
+        if (step >= currentSong.notes.length) return;
+        const target = currentSong.notes[step].midi;
+        if (midi % 12 === target % 12) {
+          keyEl.classList.add('correct');
+          setTimeout(() => keyEl.classList.remove('correct'), 300);
+          document.getElementById('s2Fb').textContent = '✓';
+          document.getElementById('s2Fb').className = 'feedback good';
+          step++;
+          updateView();
+        } else {
+          keyEl.classList.add('wrong');
+          setTimeout(() => keyEl.classList.remove('wrong'), 400);
+          document.getElementById('s2Fb').textContent = `✗ 应该是 ${currentSong.notes[step].letter}`;
+          document.getElementById('s2Fb').className = 'feedback bad';
+        }
+      }
+    });
+    updateView();
+  }
+  function updateView() {
+    // 选合适的谱号：如果最低音 < 60 就用低音谱号
+    const clef = currentSong.notes.some(n => n.midi < 60) ? 'bass' : 'treble';
+    document.getElementById('s2Staff').innerHTML = renderStaff(clef, songStaff, {
+      highlight: step,
+      labelType: showSolfege ? 'both' : 'letter'
+    });
+    if (step >= currentSong.notes.length) {
+      document.getElementById('s2Prompt').innerHTML = '🎉 完成！';
+      document.getElementById('s2Fb').textContent = `你弹完了《${currentSong.title}》！`;
+      document.getElementById('s2Fb').className = 'feedback good';
+      updateModuleProgress('play-song2', 1, 1);
+      return;
+    }
+    const cur = currentSong.notes[step];
+    document.getElementById('s2Cur').textContent = `${cur.letter} (${SOLFEGE[cur.letter] || '?'})`;
+  }
+  // 因为按钮此时还没渲染，用事件委托
+  document.getElementById('songArea').addEventListener('click', (e) => {
+    const t = e.target;
+    if (t.id === 's2Reset') { step = 0; updateView(); }
+    else if (t.id === 's2Hear') {
+      currentSong.notes.forEach((n, i) => setTimeout(() => playNote(n.midi, 0.45), i * 450));
+    } else if (t.id === 's2Solfege') {
+      showSolfege = !showSolfege;
+      t.textContent = showSolfege ? '👁 隐唱名' : '👁 显唱名';
+      updateView();
+    }
+  });
+}
+
+/* ---------- 启动 ---------- */
+loadState();
+refreshHome();
+
+// 音频解锁：多重触发（触摸/点击/按键都试），直到 ctx.state === 'running'
+function tryUnlockAudio() {
+  const ctx = ensureAudio();
+  if (ctx && ctx.state === 'running') {
+    // 播一个 0 音量的短音，强制激活输出（iOS 有时需要）
+    try {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      g.gain.value = 0.0001;
+      osc.connect(g).connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  }
+}
+['touchstart', 'touchend', 'click', 'pointerdown', 'keydown'].forEach(ev => {
+  document.addEventListener(ev, tryUnlockAudio, { capture: true, passive: true });
+});
+// 手动兜底按钮：点击顶栏 🔇 强制解锁 + 播一声测试音
+document.getElementById('audioBtn').addEventListener('click', () => {
+  tryUnlockAudio();
+  setTimeout(() => {
+    if (audioCtx && audioCtx.state === 'running') {
+      playNote(60, 0.6); // 播中央 C 作为测试
+    } else {
+      alert('音频仍无法启用。可能原因：\n1) iPhone 侧边静音开关拨到了静音（拨回来）\n2) 手机媒体音量为 0（按音量+）\n3) 蓝牙耳机/AirPods 未正确连接\n4) 浏览器权限被禁用（Safari 设置 → 网站 → 自动播放）');
+    }
+  }, 100);
+});
+// 页面可见性变化时重试（切后台再切回来 iOS 会 suspend）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) tryUnlockAudio();
+});
+updateAudioBadge();
+</script>
+</body>
+</html>
