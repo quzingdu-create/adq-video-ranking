@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260810e"></script>
+<script src="sc_logger.js?v=20260810f"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -50,7 +50,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20260810e')
+    return fetch('data/manual_attr_override.json?v=20260810f')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -86,33 +86,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260810e"></script>
-<script defer src="api_client.js?v=20260810e"></script>
-<script defer src="data_adapter.js?v=20260810e"></script>
+<script defer src="cloud_gray_switch.js?v=20260810f"></script>
+<script defer src="api_client.js?v=20260810f"></script>
+<script defer src="data_adapter.js?v=20260810f"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20260810e"></script> -->
-<script src="data/center_sales_summary.js?v=20260810e"></script>
-<script src="data/center_quarter_summary.js?v=20260810e"></script>
-<script src="data/center_daily_kpi.js?v=20260810e"></script>
-<script src="data/top80_effective_metrics.js?v=20260810e"></script>
-<script src="data/top_status_data.js?v=20260810e"></script>
-<script src="data/enough_candidates.js?v=20260810e"></script>
-<script src="data/handover_customers_519.js?v=20260810e"></script>
-<script src="data/target_brand_pool.js?v=20260810e"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20260810f"></script> -->
+<script src="data/center_sales_summary.js?v=20260810f"></script>
+<script src="data/center_quarter_summary.js?v=20260810f"></script>
+<script src="data/center_daily_kpi.js?v=20260810f"></script>
+<script src="data/top80_effective_metrics.js?v=20260810f"></script>
+<script src="data/top_status_data.js?v=20260810f"></script>
+<script src="data/enough_candidates.js?v=20260810f"></script>
+<script src="data/handover_customers_519.js?v=20260810f"></script>
+<script src="data/target_brand_pool.js?v=20260810f"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20260810e" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20260810f" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260810e"></script>
-<script defer src="dual_check.js?v=20260810e"></script>
-<script defer src="big_data_dual_check.js?v=20260810e"></script>
+<script defer src="cloud_sync.js?v=20260810f"></script>
+<script defer src="dual_check.js?v=20260810f"></script>
+<script defer src="big_data_dual_check.js?v=20260810f"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -915,7 +915,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260810e`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20260810f`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
   }
@@ -1114,7 +1114,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260810e" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20260810f" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1130,7 +1130,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260810e" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20260810f" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1215,7 +1215,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260810e" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20260810f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3052,7 +3052,7 @@ function latestRecordDate(records) {
     const ts = Number((r && r._createdAt) || 0);
     if (ts > 0) {
       const d = new Date(ts).toISOString().slice(0,10);
-      if (d <= todayStr && ts > maxTs) { maxTs = ts; maxDate = d; }
+      if (d <= todayStr &&ts > maxTs) { maxTs = ts; maxDate = d; }
     }
   });
   if (maxDate) return maxDate;
@@ -3168,9 +3168,10 @@ function currentRecordList() {
     .map(r => applyRecordOverride(r, overrideMap));
   if (state.view === 'mine') list = list.filter(r => r.sale === CURRENT_USER);
   const todayStr = new Date().toISOString().slice(0,10);  // P0修复2026-07-27: 今日=真实日历今天, 不再锚定数据最新日
-  // R36 (2026-08-07 子青拍板): "今日/近7天"过滤器改用 _createdAt (云端上传时间) 而不是业务 date
-  //   之前销售补历史客户填 date=2026-07-31 就永远不出现在"今日"tab → 让人以为系统没同步
-  //   现在只要销售今天在云端登记(不管业务 date 填哪天), 都算今日新增
+  // R36 (2026-08-07 子青拍板): "今日/近7天"过滤器改用「_createdAt (云端上传时间)」而不是业务 date
+  //   之前销售补历史客户填date=2026-07-31, 就永远不出现在"今日"tab, 让人以为系统没同步 →
+  //   现在只要销售今天在云端登记 (不管业务 date 填的是哪天), 都算今日新增
+  //   兜底: _createdAt 缺失 (老底表数据) 就 fallback 业务 date
   const _uploadDay = (r) => {
     const ts = Number((r && r._createdAt) || 0);
     if (ts > 0) return new Date(ts).toISOString().slice(0,10);
@@ -3190,7 +3191,8 @@ function currentRecordList() {
   if (state.recordSales) list = list.filter(r => r.sale === state.recordSales);
   if (state.recordCategory) list = list.filter(r => r.cat === state.recordCategory);
   if (state.recordRising) list = list.filter(r => r.isRising === state.recordRising);
-  // R36 主排序 _createdAt desc, 次排序业务 date desc
+  // R36 (2026-08-07): 主排序 _createdAt desc (上传时间), 次排序业务 date desc
+  //   最新上传的登记浮到顶部, 销售刷新看板立即看到自己刚登记的客户
   list.sort((a,b)=> {
     const ta = Number((a && a._createdAt) || 0);
     const tb = Number((b && b._createdAt) || 0);
@@ -3211,7 +3213,8 @@ function exportRecordsCsv() {
     const linkText = (Array.isArray(linkArr) && linkArr.length)
       ? linkArr.map(x => x.bold ? `*${x.link}*` : x.link).join(' / ')
       : (r.link || (Array.isArray(r.links) && r.links.length ? r.links.join('、') : ''));
-    // R36d 严格按登记日期单列
+    // R36d (2026-08-07 子青拍板): CSV 只留"登记日期"单列 (=云端 _createdAt), 不再输出业务 date
+    //   业务 date 是销售补录时填的历史投放日, 对下游用户没意义, 严格按当天实际登记日就好
     const _ts = Number((r && r._createdAt) || 0);
     const _upl = _ts > 0 ? new Date(_ts).toISOString().slice(0,10) : (r.date || '');
     const vals = [_upl, r.sale, r.name, r.shortName, r.cat, linkText, r.deliverySide,
@@ -3333,7 +3336,7 @@ function renderRecords() {
     return `
       <tr class="record-row" data-rid="${r.id}" style="cursor:pointer;">
         <td>${(function(){
-          // R36d严格按登记日期(_createdAt)
+          // R36d (2026-08-07 子青拍板): 严格按登记日期(_createdAt), 不再挂业务 date tooltip
           var ts = Number((r && r._createdAt) || 0);
           var upl = ts > 0 ? new Date(ts).toISOString().slice(0,10) : '';
           return display(upl || String(r.date || '').slice(0,10));
@@ -4672,7 +4675,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20260810e';
+  s.src = 'data/bulk_import_rows.js?v=20260810f';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -5022,10 +5025,11 @@ document.addEventListener('click', e => {
     var CACHE_MS = 30 * 1000;   // 2026-06-02 5分钟→30秒，让别人登记后更快可见
     var last = 0;
     try { last = parseInt(sessionStorage.getItem(TS_KEY) || '0', 10) || 0; } catch(_){}
-    // R37 (2026-08-09): 首次进入页面强制拉最新, 不受 30s cache 拦
+    // R37 (2026-08-09): 首次进入页面(sessionStorage 无历史)强制拉最新, 不受 30s cache 拦
+    //   之前 boot 时若 sessionStorage 里有其他 tab 30s 内写的 ts, 就会 skip → 用户以为"没同步"
     var isFirstLoad = !sessionStorage.getItem(TS_KEY);
-    if (!force && !isFirstLoad && Date.now() - last < CACHE_MS) {
-    console.info('[cloud] pull skipped (30s cache)');
+   if (!force && !isFirstLoad && Date.now() - last < CACHE_MS) {
+      console.info('[cloud] pull skipped (30s cache)');
       return;
     }
     window.cloud.callFunction('salesCenterApi', { action: 'listUserRecords', params: { limit: 3000 } }).then(function(res){
@@ -5157,9 +5161,11 @@ document.addEventListener('click', e => {
       // 3) 重渲染 — R38: 只在有新增/更新时才重绘, 避免 45s 空轮询打断用户操作
       if ((fresh.length || updated > 0) && typeof renderAll === 'function') {
         try { renderAll(); } catch(e){ console.warn('[cloud] renderAll fail', e); }
+        // R38: 自动同步标签闪一下"刚更新", 让用户感知系统在自动拉
         try {
           var _tag = document.getElementById('autoSyncTag');
           if (_tag && fresh.length) {
+            var _orig = _tag.textContent;
             _tag.textContent = '🟢 已同步 +' + fresh.length;
             setTimeout(function(){ _tag.textContent = '🟢 自动同步中'; }, 4000);
           }
@@ -5203,13 +5209,16 @@ document.addEventListener('click', e => {
   };
   doPull(false);
   // R38 (2026-08-09 子青拍板): 自动轮询, 不要手动刷新按钮
-  //   每 45 秒静默拉云端最新, fresh>0 时 doPull 内部自动 renderAll → 明细自动更新
+  //   每 45 秒静默拉一次云端最新登记, fresh>0 时doPull 内部自动 renderAll → 明细自动更新
+  //   走 doPull(true) 强制跳过 30s cache; 不设 __CLOUD_REFRESH_USER_CLICK__ → 失败静默不弹 alert
+  //   页面隐藏(切后台)时不轮询, 省资源; 切回来立即拉一次
   if (!window.__CLOUD_AUTO_POLL_TIMER__) {
     window.__CLOUD_AUTO_POLL_TIMER__ = setInterval(function(){
-      if (document.hidden) return;
+      if (document.hidden) return;   // 后台标签页不轮询
       if (!window.cloud || typeof window.cloud.callFunction !== 'function') return;
       doPull(true);
     }, 45 * 1000);
+    // 从后台切回前台立即拉一次(销售登记完切回看板马上看到)
     document.addEventListener('visibilitychange', function(){
       if (!document.hidden && window.cloud && typeof window.cloud.callFunction === 'function') {
         doPull(true);
