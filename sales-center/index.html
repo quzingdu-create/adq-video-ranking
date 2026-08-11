@@ -7,34 +7,34 @@
 <!-- 版本自动重定向（固定链接永远最新，必须最先加载；自身不带?v=避免被缓存锁死） -->
 <script src="version-guard.js"></script>
 <!-- 分级日志（生产 info+，本地 debug；必须最先，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20260810i"></script>
+<script src="sc_logger.js?v=20260811a"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260810i"></script>
+<script src="auth-guard.js?v=20260811a"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260810i"></script>
-<script defer src="api_client.js?v=20260810i"></script>
-<script defer src="data_adapter.js?v=20260810i"></script>
+<script defer src="cloud_gray_switch.js?v=20260811a"></script>
+<script defer src="api_client.js?v=20260811a"></script>
+<script defer src="data_adapter.js?v=20260811a"></script>
 <!-- 2026-06-13 性能优化：echarts 在 index.html 无任何调用（死引用），已删除；按需库加载器见下 -->
-<script defer src="lib_loader.js?v=20260810i"></script>
-<script src="data/current_rising_data.js?v=20260810i"></script>
+<script defer src="lib_loader.js?v=20260811a"></script>
+<script src="data/current_rising_data.js?v=20260811a"></script>
 <!-- PC 总入口卡片所需数据：首屏只加载轻量数据，tuoke_real_records 等大文件延后到 kanban iframe 内使用 -->
-<script src="data/dashboard_runtime_summary.js?v=20260810i"></script>
-<script src="data/center_quarter_summary.js?v=20260810i"></script>
-<script src="data/center_daily_kpi.js?v=20260810i"></script>
-<script src="data/top80_effective_metrics.js?v=20260810i"></script>
+<script src="data/dashboard_runtime_summary.js?v=20260811a"></script>
+<script src="data/center_quarter_summary.js?v=20260811a"></script>
+<script src="data/center_daily_kpi.js?v=20260811a"></script>
+<script src="data/top80_effective_metrics.js?v=20260811a"></script>
 <!-- 2026-06-13 子青：今日概览板块所需（潜力起量 + 红黑榜涨跌Top3） -->
-<script src="data/top_rising_data.js?v=20260810i"></script>
-<script src="data/redblack_data.js?v=20260810i"></script>
+<script src="data/top_rising_data.js?v=20260811a"></script>
+<script src="data/redblack_data.js?v=20260811a"></script>
 <!-- CloudBase SDK v2（用户名密码登录）+ 云端同步（提供右上角下拉菜单按钮） -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20260810i"></script>
-<script defer src="cloud_data_adapter.js?v=20260810i"></script>
-<script defer src="cloud_diff_probe.js?v=20260810i"></script>
-<script defer src="dual_check.js?v=20260810i"></script>
-<script defer src="big_data_dual_check.js?v=20260810i"></script>
-<script defer src="login_guard_banner.js?v=20260810i"></script>
+<script defer src="cloud_sync.js?v=20260811a"></script>
+<script defer src="cloud_data_adapter.js?v=20260811a"></script>
+<script defer src="cloud_diff_probe.js?v=20260811a"></script>
+<script defer src="dual_check.js?v=20260811a"></script>
+<script defer src="big_data_dual_check.js?v=20260811a"></script>
+<script defer src="login_guard_banner.js?v=20260811a"></script>
 <!-- 拓新组双导出按钮（公共逻辑 v1.0） -->
-<script defer src="export_tuoke.js?v=20260810i"></script>
+<script defer src="export_tuoke.js?v=20260811a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -764,7 +764,7 @@
     </div>
     <iframe
       id="homeMobileFrame"
-      src="mobile.html?embed=1&user=kinsleyjin&v=20260810i"
+      src="mobile.html?embed=1&user=kinsleyjin&v=20260811a"
       style="width:100%; height:calc(100vh - 120px); border:0; border-radius:14px; box-shadow:0 4px 16px rgba(15,23,42,0.06); background:#f4f7fb;"
       title="今日待办小红点（PC 多栏自适应）"
       onerror="this.outerHTML='<div style=padding:40px;text-align:center;color:#6b7280>加载失败，请<a href=&quot;../sales-center-mobile/&quot;>点击直接打开手机端页面</a></div>'"
@@ -1338,7 +1338,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="battleFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260810i" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
+      <iframe id="battleFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=ops&user=kinsleyjin&v=20260811a" scrolling="no" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:hidden;" title="作战中心深度页"></iframe>
     </div>
   </div>
 </div>
@@ -1354,7 +1354,7 @@ window.__CASE_DATA__ = [
           <button class="frame-retry" type="button" data-retry-frame="lifeFrame">重新加载</button>
         </div>
       </div>
-      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260810i" scrolling="auto" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:auto;" title="客户生命周期管理"></iframe>
+      <iframe id="lifeFrame" src="about:blank" data-src="kanban_embed.html?embed=1&mode=life&user=kinsleyjin&v=20260811a" scrolling="auto" style="width:100%;height:900px;min-height:760px;border:0;display:block;background:#f5f7fb;border-radius:12px;overflow:auto;" title="客户生命周期管理"></iframe>
     </div>
   </div>
 </div>
@@ -1712,9 +1712,9 @@ function updateHomeMobileFrameUser(forceReload){
   const frame = document.getElementById('homeMobileFrame');
   if (!frame) return;
   const user = encodeURIComponent(syncCurrentUserFromCloud() || 'kinsleyjin');
-  const target = `mobile.html?embed=1&user=${user}&v=20260810i`;
+  const target = `mobile.html?embed=1&user=${user}&v=20260811a`;
   const src = frame.getAttribute('src') || '';
-  if (forceReload || src === 'about:blank' || !src.includes(`user=${user}`) || !src.includes('20260623a')) frame.setAttribute('src', target);
+  if (forceReload || src === 'about:blank' || !src.includes(`user=${user}`) || !src.includes('20260811a')) frame.setAttribute('src', target);
   try { frame.contentWindow && frame.contentWindow.postMessage({type:'set-mobile-sale', sale: CURRENT_USER}, '*'); } catch(e){}
 }
 syncCurrentUserFromCloud();
@@ -2142,7 +2142,7 @@ function ensureKanbanFrameLoaded(frameId, mode, forceUser) {
   const minH = 760;
   bindKanbanFrameResize(frameId, minH);
   const user = forceUser || CURRENT_USER || 'kinsleyjin';
-  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260810i`;
+  const target = `kanban_embed.html?embed=1&mode=${encodeURIComponent(mode)}&user=${encodeURIComponent(user)}&v=20260811a`;
   frame.setAttribute('data-src', target);
   const src = frame.getAttribute('src') || '';
   if (!src || src === 'about:blank' || !src.includes(`mode=${encodeURIComponent(mode)}`) || !src.includes(`user=${encodeURIComponent(user)}`)) {
@@ -2164,7 +2164,7 @@ function openLifecycleCustomer(name) {
   const title = document.getElementById('homeLifecycleName');
   if (!mask || !frame) return;
   if (title) title.textContent = customer;
-  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260810i`;
+  const target = `lifecycle-system/index.html?embed=1&single=1&sales=all&customer=${encodeURIComponent(customer)}&v=20260811a`;
   const send = () => {
     try { frame.contentWindow && frame.contentWindow.postMessage({type:'open-lifecycle-customer', name: customer, single:true}, '*'); } catch(e) {}
   };
@@ -2248,12 +2248,12 @@ function updateBattleFrameUser() {
   if (battleActive) ensureBattleFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('battleFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260810i`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=ops&user=${encodeURIComponent(CURRENT_USER)}&v=20260811a`);
   }
   if (lifeActive) ensureLifeFrameLoaded(CURRENT_USER);
   else {
     const frame = document.getElementById('lifeFrame');
-    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260810i`);
+    if (frame) frame.setAttribute('data-src', `kanban_embed.html?embed=1&mode=life&user=${encodeURIComponent(CURRENT_USER)}&v=20260811a`);
   }
 }
 function updateViewToggle() {
@@ -3654,7 +3654,7 @@ function renderAll() {
 renderAll();
 // 2026-06-15 子青：今日待办首屏 3 秒优先，主营商品标签后置加载，加载后补渲染。
 (function loadMainProductAfterFirstPaint(){
-  const run = () => fetch('data/customer_main_product.js?v=20260810i', {cache:'force-cache'})
+  const run = () => fetch('data/customer_main_product.js?v=20260811a', {cache:'force-cache'})
     .then(r => r.ok ? r.text() : '')
     .then(code => { if (code) (0, eval)(code); try { renderSummaryBoard(); } catch(e){} })
     .catch(e => console.warn('[lazy-product]', e));
