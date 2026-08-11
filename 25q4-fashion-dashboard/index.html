@@ -1128,7 +1128,6 @@ function _renderSkuHtml(l4){
           <td class="num" style="text-align:left;color:var(--mute)">${i+1}</td>
           <td class="name" title="${escapeHtml((s.sample_names||[]).join(' | '))}">
             ${escapeHtml(s.display_name)}<span class="badge">×${s.sku_count}</span>
-            <div class="samples">${escapeHtml((s.sample_names||[])[0]||'')}</div>
           </td>
           <td class="num">${((s.cost||0)/_l4Total*100).toFixed(1)}%</td>
           <td class="num ${cls(s.roi,[3,5])}">${fmtF(s.roi,2)}${rngTxt(s.roi_range)}</td>
