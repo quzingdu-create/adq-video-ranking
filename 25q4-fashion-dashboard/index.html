@@ -1127,7 +1127,7 @@ function _renderSkuHtml(l4){
         <tr>
           <td class="num" style="text-align:left;color:var(--mute)">${i+1}</td>
           <td class="name" title="${escapeHtml((s.sample_names||[]).join(' | '))}">
-            ${s.image?`<img src="${s.image}" style="width:72px;height:108px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:6px;border:1px solid var(--border)">`:''}
+            ${s.image?`<img src="${s.image}" style="width:72px;height:auto;max-height:108px;object-fit:contain;border-radius:4px;vertical-align:middle;margin-right:6px;border:1px solid var(--border)">`:''}
             ${escapeHtml(s.display_name)}<span class="badge">×${s.sku_count}</span>
           </td>
           <td class="num">${((s.cost||0)/_l4Total*100).toFixed(1)}%</td>
