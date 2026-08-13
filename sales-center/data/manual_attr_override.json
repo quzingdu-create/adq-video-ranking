@@ -3531,9 +3531,9 @@
       "date": "2026-06-22"
     },
     "杭州卡路里体育有限公司": {
-      "sale": "kaikaigenli",
-      "reason": "2026-06-22 修正归属.xlsx 非其他归属写死",
-      "date": "2026-06-22"
+      "sale": "Jonzhu",
+      "reason": "2026-08-13 子青主动拍板归 Jonzhu",
+      "date": "2026-08-13"
     },
     "杭州吉诗科技有限公司": {
       "sale": "kaikaigenli",
@@ -13013,6 +13013,6 @@
       "date": "2026-08-13"
     }
   },
-  "updatedAt": "2026-08-13T18:28:13.102014+08:00",
-  "note": " | 2026-08-11: +2条(广州众集五号 lijunwu→yvaineechen; 杭州飞比特 kinsleyjin→yvaineechen)"
+  "updatedAt": "2026-08-13T19:10:32.987+08:00",
+  "note": " | 2026-08-11: +2条(广州众集五号 lijunwu→yvaineechen; 杭州飞比特 kinsleyjin→yvaineechen)\n | 2026-08-13: 杭州卡路里体育有限公司 kaikaigenli→Jonzhu"
 }
