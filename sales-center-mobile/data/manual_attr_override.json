@@ -13011,8 +13011,18 @@
       "sale": "ruilingzhan",
       "reason": "2026-08-13 子青主动拍板归 ruilingzhan（归属修订，可溯源）",
       "date": "2026-08-13"
+    },
+    "衢州搜宝科技有限公司": {
+      "sale": "yvaineechen",
+      "reason": "2026-08-14 云端tuoke_user_records登记(销售直写)补入底表",
+      "date": "2026-08-14"
+    },
+    "大猫文化传媒(石家庄)有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-08-14 云端tuoke_user_records登记(销售直写)补入底表",
+      "date": "2026-08-14"
     }
   },
-  "updatedAt": "2026-08-13T19:10:32.987+08:00",
+  "updatedAt": "2026-08-14T11:58:00.530+08:00",
   "note": " | 2026-08-11: +2条(广州众集五号 lijunwu→yvaineechen; 杭州飞比特 kinsleyjin→yvaineechen)\n | 2026-08-13: 杭州卡路里体育有限公司 kaikaigenli→Jonzhu"
 }
