@@ -35,8 +35,11 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(21,42,90,.06)}
 
-.insight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.insight-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-bottom:14px}
 .insight-card{border:1.5px solid #dce6f6;border-radius:11px;padding:11px 12px;background:linear-gradient(135deg,#f8fbff,#eff4ff)}
+.insight-card:nth-child(1){background:linear-gradient(135deg,#eef4ff,#dfeaff)}
+.insight-card:nth-child(2){background:linear-gradient(135deg,#f6f9ff,#edf4ff)}
+.insight-card:nth-child(3){background:linear-gradient(135deg,#f9fbff,#f2f7ff)}
 .insight-title{font-size:13px;color:var(--sub);font-weight:800;margin-bottom:4px}
 .insight-value{font-size:16px;color:#1d4ed8;font-weight:900}
 
@@ -59,32 +62,37 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .direction li{margin:2px 0}
 
 .cards{display:grid;grid-template-columns:1fr;gap:10px}
-.card{background:#fff;border:1.5px solid #dce6f6;border-radius:12px;padding:13px 14px;transition:.2s}
+.card{background:#fff;border:1.5px solid #dce6f6;border-radius:12px;padding:12px;transition:.2s}
 .card:hover{border-color:#8db0ff;box-shadow:0 8px 20px rgba(33,83,184,.12)}
-.card-name{font-size:24px;font-weight:900;color:#12315f;line-height:1.35;margin-bottom:3px}
-.card-meta{font-size:14px;color:#2b4f83;font-weight:700;margin-bottom:8px}
-.chain-row{font-size:13px;color:#4b6286;background:#f7faff;border:1px solid #e1ebff;border-radius:8px;padding:6px 9px;margin-bottom:8px}
-.metric{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-bottom:8px}
-.metric .box{border:1px solid #dce6f6;border-radius:8px;padding:8px;background:linear-gradient(135deg,#fbfdff,#f4f8ff)}
+.card-wrap{display:grid;grid-template-columns:1.3fr 0.7fr;gap:10px;align-items:stretch}
+.card-left{min-width:0}
+.card-right{border:1px solid #d9e6ff;border-radius:10px;background:linear-gradient(135deg,#f8fbff,#eff5ff);padding:10px}
+.card-name{font-size:20px;font-weight:900;color:#12315f;line-height:1.35;margin-bottom:3px}
+.card-meta{font-size:13px;color:#2b4f83;font-weight:700;margin-bottom:7px}
+.metric{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:7px}
+.metric .box{border:1px solid #dce6f6;border-radius:8px;padding:7px;background:linear-gradient(135deg,#fbfdff,#f4f8ff)}
 .metric .k{font-size:11px;color:#6f85a9}
-.metric .v{font-size:20px;font-weight:850;color:#132f5f}
+.metric .v{font-size:18px;font-weight:850;color:#132f5f}
 
-.sell{font-size:14px;color:#173b74;background:#f2f7ff;border:1px solid #d9e7ff;border-radius:8px;padding:8px 10px;margin-bottom:8px;font-weight:750}
+.sell{font-size:13px;color:#173b74;background:#f2f7ff;border:1px solid #d9e7ff;border-radius:8px;padding:7px 9px;margin-bottom:7px;font-weight:750}
 
-.extra{border:1px solid #e7edf8;border-radius:9px;overflow:hidden}
-.extra .row{display:flex;gap:8px;padding:8px 10px;border-bottom:1px solid #eef3fb}
-.extra .row:last-child{border-bottom:none}
-.extra .row:nth-child(odd){background:#fbfdff}
-.extra .row:nth-child(even){background:#f7faff}
-.extra .key{min-width:74px;color:#4c6285;font-weight:850}
-.extra .val{flex:1;color:#1d3359}
-.aud{display:flex;gap:6px;flex-wrap:wrap}
-.aud span{background:#f0ecff;color:#6942d9;border:1px solid #dbd1ff;border-radius:12px;padding:2px 8px;font-weight:700}
+.points{border:1px solid #e7edf8;border-radius:9px;background:#fbfdff;padding:8px 10px}
+.points .title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:4px}
+.points ol{margin:0;padding-left:18px;color:#1d3359}
+.points li{margin:2px 0}
+
+.material-title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:6px}
+.material-img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;border:1px solid #d8e4fa;background:#f2f6ff;margin-bottom:8px}
+.material-links{display:flex;flex-direction:column;gap:6px}
+.material-links a{display:inline-block;border:1px solid #cfe0ff;background:#fff;border-radius:8px;padding:6px 8px;color:#2155b6;text-decoration:none;font-size:12px;font-weight:700}
+.material-links a:hover{background:#edf4ff}
+.material-empty{font-size:12px;color:#6c82a6;background:#fff;border:1px dashed #cfe0ff;border-radius:8px;padding:8px}
 
 @media (max-width:980px) {
   .insight-grid{grid-template-columns:1fr}
+  .card-wrap{grid-template-columns:1fr}
   .metric{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .card-name{font-size:20px}
+  .card-name{font-size:18px}
 }
 </style>
 </head>
@@ -92,7 +100,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 <div class="wrap">
   <div class="hero">
     <h1>女装三平台爆品榜单</h1>
-    <div class="sub">三大Tab：AMS投放爆品 / 视频号爆品 / 机会爆品（抖音） · 已移除潜力品 · 按品类展示Top30</div>
+    <div class="sub">AMS投放爆品 / 视频号爆品 / 机会爆品（抖音）</div>
   </div>
 
   <div class="main-tabs" id="mainTabs"></div>
@@ -100,7 +108,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787056207';
+const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787058478';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -148,18 +156,20 @@ function renderContent() {
 
   let summaryHtml = '<div class="empty">无数据</div>';
   if (summary) {
+    const metricItems = [
+      {k:'商品数(全量)', v:String(summary.item_count)},
+      {k:`${tab.metric_name}(全量)`, v:fmtMoney(summary.total_value)}
+    ];
+    if (summary.ctr !== null && summary.ctr !== undefined) metricItems.push({k:'CTR', v:fmtPct(summary.ctr)});
+    if (summary.cvr !== null && summary.cvr !== undefined) metricItems.push({k:'CVR', v:fmtPct(summary.cvr)});
+    if (summary.roi !== null && summary.roi !== undefined) metricItems.push({k:'ROI', v:fmtNum(summary.roi)});
+    if (summary.refund !== null && summary.refund !== undefined) metricItems.push({k:'退款率', v:fmtPct(summary.refund)});
+    if (summary.aov !== null && summary.aov !== undefined) metricItems.push({k:'客单价', v:fmtMoney(summary.aov)});
+
     summaryHtml = `
       <div class="cat-summary">
-        <div class="cat-title">${state.category}（TOP30）</div>
-        <div class="m-grid">
-          <div class="m-item"><div class="k">商品数</div><div class="v">${summary.item_count}</div></div>
-          <div class="m-item"><div class="k">${tab.metric_name}</div><div class="v">${fmtMoney(summary.total_value)}</div></div>
-          <div class="m-item"><div class="k">CTR</div><div class="v">${fmtPct(summary.ctr)}</div></div>
-          <div class="m-item"><div class="k">CVR</div><div class="v">${fmtPct(summary.cvr)}</div></div>
-          <div class="m-item"><div class="k">ROI</div><div class="v">${fmtNum(summary.roi)}</div></div>
-          <div class="m-item"><div class="k">退款率</div><div class="v">${fmtPct(summary.refund)}</div></div>
-          <div class="m-item"><div class="k">客单价</div><div class="v">${fmtMoney(summary.aov)}</div></div>
-        </div>
+        <div class="cat-title">${state.category}（品类全量）</div>
+        <div class="m-grid">${metricItems.map(m => `<div class="m-item"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('')}</div>
 
         <div><b>商品关键词词云</b></div>
         <div class="cloud">${(summary.keyword_cloud || []).map(k => `<span class="kw">${k.word}(${k.count})</span>`).join('') || '<span class="kw">暂无</span>'}</div>
@@ -169,39 +179,59 @@ function renderContent() {
 
         <div><b>开品方向</b></div>
         <ol class="direction">${(summary.direction || []).map(x => `<li>${x}</li>`).join('')}</ol>
+        <div style="margin-top:8px;color:#5f7398;font-size:12px;">爆品清单：以下仅展示该品类TOP30商品</div>
       </div>
     `;
   }
 
   const cards = items.map(it => {
-    const chain = Object.entries(it.chain_costs || {})
-      .sort((a,b)=>b[1]-a[1])
-      .map(([k,v]) => `${k} ${((v/Math.max(it.value,1))*100).toFixed(1)}%`)
-      .join(' ｜ ');
-
     const extra = it.insight || {};
+    const points = (extra.selling_points || []).map(x => `<li>${x}</li>`).join('');
+
+    const links = [];
+    if (it.product_url) links.push(`<a href="${it.product_url}" target="_blank">查看商品链接</a>`);
+    if (it.material_url) links.push(`<a href="${it.material_url}" target="_blank">查看相关素材</a>`);
+
+    const imageHtml = it.image_url
+      ? `<img class="material-img" src="${it.image_url}" alt="商品图" referrerpolicy="no-referrer" />`
+      : `<div class="material-empty">该平台源数据未提供商品图片</div>`;
+
+    const linksHtml = links.length
+      ? `<div class="material-links">${links.join('')}</div>`
+      : `<div class="material-empty" style="margin-top:8px;">该平台源数据未提供可跳转链接</div>`;
+
+    const metricItems = [
+      {k:tab.metric_name, v:fmtMoney(it.value)}
+    ];
+    if (it.ctr !== null && it.ctr !== undefined) metricItems.push({k:'CTR', v:fmtPct(it.ctr)});
+    if (it.cvr !== null && it.cvr !== undefined) metricItems.push({k:'CVR', v:fmtPct(it.cvr)});
+    if (it.roi !== null && it.roi !== undefined) metricItems.push({k:'下单ROI', v:fmtNum(it.roi)});
+    if (it.refund !== null && it.refund !== undefined) metricItems.push({k:'退款率', v:fmtPct(it.refund)});
+    if (it.aov !== null && it.aov !== undefined) metricItems.push({k:'客单价', v:fmtMoney(it.aov)});
+    const metricHtml = metricItems.map(m => `<div class="box"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('');
+
     return `
       <div class="card">
-        <div class="card-name">${it.name}</div>
-        <div class="card-meta">商品信息：商品品类：<b>${it.category}</b> ｜ 来源：${it.video || '—'} ｜ 主投链路：${it.main_chain || '—'}</div>
-        <div class="chain-row"><b>产品×链路占比：</b>${chain || '暂无'}</div>
+        <div class="card-wrap">
+          <div class="card-left">
+            <div class="card-name">${it.name}</div>
+            <div class="card-meta">商品信息：品类 <b>${it.category}</b> ｜ 来源：${it.video || '—'} ｜ 主投链路x产品：${it.main_chain || '—'}</div>
 
-        <div class="metric">
-          <div class="box"><div class="k">${tab.metric_name}</div><div class="v">${fmtMoney(it.value)}</div></div>
-          <div class="box"><div class="k">CTR</div><div class="v">${fmtPct(it.ctr)}</div></div>
-          <div class="box"><div class="k">CVR</div><div class="v">${fmtPct(it.cvr)}</div></div>
-          <div class="box"><div class="k">下单ROI</div><div class="v">${fmtNum(it.roi)}</div></div>
-          <div class="box"><div class="k">客单价</div><div class="v">${fmtMoney(it.aov)}</div></div>
-        </div>
+            <div class="metric">${metricHtml}</div>
 
-        <div class="sell">商品来源：${it.source || '—'}${it.material_url ? ` ｜ 素材链接：<a href="${it.material_url}" target="_blank">查看</a>` : ''}</div>
+            <div class="sell">数据来源：${it.source || '—'}</div>
 
-        <div class="extra">
-          <div class="row"><div class="key">行动建议</div><div class="val">${extra.action || '持续观察数据并优化素材结构'}</div></div>
-          <div class="row"><div class="key">场景</div><div class="val">${extra.scene || '日常通勤'}</div></div>
-          <div class="row"><div class="key">用户痛点</div><div class="val">${(extra.pain_points || []).join('；')}</div></div>
-          <div class="row"><div class="key">风格关键词</div><div class="val">${(extra.styles || []).join(' ｜ ')}</div></div>
-          <div class="row"><div class="key">目标人群</div><div class="val"><div class="aud">${(extra.audience || []).map(x => `<span>${x}</span>`).join('')}</div></div></div>
+            <div class="points">
+              <div class="title">卖点</div>
+              <ol>${points || '<li>该商品暂无可提炼卖点</li>'}</ol>
+            </div>
+          </div>
+
+          <div class="card-right">
+            <div class="material-title">相关素材</div>
+            ${imageHtml}
+            ${linksHtml}
+          </div>
         </div>
       </div>
     `;
@@ -216,6 +246,7 @@ function renderContent() {
 
     <div class="cat-tabs" id="catTabs">${catTabs}</div>
     ${summaryHtml}
+    <div style="font-weight:900;color:#13366d;margin:6px 0 8px;">爆品清单（TOP30）</div>
     <div class="cards">${cards || '<div>当前品类无数据</div>'}</div>
   `;
 
