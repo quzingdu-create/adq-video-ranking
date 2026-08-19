@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>女装三平台爆品榜单</title>
+<title>女装爆品榜单</title>
 <style>
 :root {
   --bg:#f4f7fb;
@@ -44,13 +44,16 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(21,42,90,.06)}
 
-.insight-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.insight-card{border:1.5px solid #dce6f6;border-radius:11px;padding:11px 12px;background:linear-gradient(135deg,#f8fbff,#eff4ff)}
-.insight-card:nth-child(1){background:linear-gradient(135deg,#eef4ff,#dfeaff)}
-.insight-card:nth-child(2){background:linear-gradient(135deg,#f6f9ff,#edf4ff)}
-.insight-card:nth-child(3){background:linear-gradient(135deg,#f9fbff,#f2f7ff)}
-.insight-title{font-size:13px;color:var(--sub);font-weight:800;margin-bottom:4px}
-.insight-value{font-size:16px;color:#1d4ed8;font-weight:900}
+.top-grid{display:grid;grid-template-columns:1.05fr 1fr 1fr 1.55fr;gap:10px;margin-bottom:14px}
+.top-card{border:1.5px solid #dce6f6;border-radius:11px;padding:11px 12px}
+.top-card.t-trend{background:linear-gradient(135deg,#eef4ff,#dfeaff)}
+.top-card.t-price{background:linear-gradient(135deg,#fff6ee,#ffe8d6)}
+.top-card.t-age{background:linear-gradient(135deg,#eaf7f1,#d6f0e3)}
+.top-card.t-cloud{background:linear-gradient(135deg,#f7efff,#ece4ff)}
+.top-title{font-size:13px;color:var(--sub);font-weight:800;margin-bottom:5px}
+.top-value{font-size:16px;color:#1d4ed8;font-weight:900;line-height:1.4}
+.top-cloud{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;min-height:88px;padding-top:4px}
+.top-cloud .kw{display:inline-block;line-height:1;font-weight:900}
 
 .cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 14px}
 .cat-tab{padding:6px 12px;border-radius:9px;border:1px solid #d7e2f5;background:#f7faff;color:#40618f;font-size:12.5px;font-weight:800;cursor:pointer}
@@ -63,6 +66,13 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .m-item .k{font-size:11px;color:#6c82a6}
 .m-item .v{font-size:16px;font-weight:850;color:#12345f}
 
+.cat-panes{display:grid;grid-template-columns:1fr 1fr 1.05fr 1.1fr;gap:10px;margin-top:6px}
+.cat-pane{background:#fff;border:1px solid #dbe6f7;border-radius:10px;padding:10px 12px;min-width:0}
+.cat-pane h4{margin:0 0 6px;font-size:13px;color:#1d3c75;font-weight:900}
+.pain-list{margin:0;padding-left:18px;color:#2d476f;font-size:12.5px;line-height:1.7}
+.pain-list li{margin:2px 0}
+.direction{margin:0;padding-left:18px;color:#2d476f;font-size:12.5px;line-height:1.7}
+.direction li{margin:3px 0}
 .cloud{margin:8px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;min-height:170px;padding:8px 6px;background:#fff;border:1px dashed #d6e2f8;border-radius:10px}
 .cloud .kw{display:inline-block;line-height:1;font-weight:900}
 .chain{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
@@ -75,32 +85,31 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .bar-track{height:10px;background:#e8f0ff;border-radius:999px;position:relative;overflow:hidden}
 .bar-fill{height:100%;background:linear-gradient(90deg,#2f66ff,#7ea6ff);border-radius:999px}
 .bar-val{font-size:12px;color:#274f90;font-weight:800;text-align:right}
-.direction{margin-top:6px;padding-left:18px;color:#2d476f}
-.direction li{margin:2px 0}
+.chain-donut-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.donut{width:108px;height:108px;border-radius:50%;position:relative;flex:0 0 auto}
+.donut-hole{position:absolute;inset:26px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#385a8f;font-size:11px;text-align:center;line-height:1.3;padding:4px}
+.chain-legend{display:flex;flex-direction:column;gap:5px;min-width:140px;flex:1;min-width:0}
+.chain-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#305384;font-weight:700;line-height:1.4}
+.chain-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px}
 
-.summary-split{display:grid;grid-template-columns:1.05fr .95fr;gap:10px;align-items:start;margin-top:8px}
-.summary-left,.summary-right{background:#fff;border:1px solid #dce6f6;border-radius:10px;padding:10px}
-.cloud{margin:6px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;min-height:140px;padding:6px;background:#fff;border:1px dashed #d6e2f8;border-radius:8px}
-.cloud .kw{display:inline-block;line-height:1;font-weight:900}
-.chain-donut-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
-.donut{width:118px;height:118px;border-radius:50%;position:relative;flex:0 0 auto}
-.donut-hole{position:absolute;inset:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#385a8f;font-size:11px;text-align:center;line-height:1.3;padding:4px}
-.chain-legend{display:flex;flex-direction:column;gap:5px;min-width:170px}
-.chain-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#305384;font-weight:700}
-.chain-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-
-.cards{display:grid;grid-template-columns:1fr;gap:10px}
+.cards{display:grid;gap:10px}
+.cards.cols-1{grid-template-columns:1fr}
+.cards.cols-2{grid-template-columns:1fr 1fr}
 .card{background:linear-gradient(135deg,#ffffff,#f8fbff);border:1.5px solid #dce6f6;border-radius:12px;padding:12px;transition:.2s;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--accent-4),var(--brand),var(--accent-1));opacity:.9}
 .card:hover{border-color:#8db0ff;box-shadow:0 8px 20px rgba(33,83,184,.12)}
 .card-wrap{display:grid;grid-template-columns:1.6fr 0.4fr;gap:10px;align-items:stretch}
+.cards.cols-2 .card-wrap{grid-template-columns:1.55fr 0.45fr;gap:8px}
 .card-left{min-width:0}
 .card-right{border:1px solid #d9e6ff;border-radius:10px;background:linear-gradient(135deg,#f8fbff,#eff5ff);padding:9px}
+.cards.cols-2 .card-right{padding:7px}
 .card-name{font-size:20px;font-weight:900;color:#12315f;line-height:1.35;margin-bottom:3px}
+.cards.cols-2 .card-name{font-size:17px;line-height:1.3}
 .meta-title{font-size:12px;color:#6a83a9;font-weight:800;margin-bottom:4px}
 .meta-cards{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
 .meta-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;background:#f2f7ff;border:1px solid #d6e5ff;color:#244a84;font-size:12px;font-weight:700;line-height:1.2}
 .meta-chip b{color:#1a3f76}
+.cards.cols-2 .meta-chip{font-size:11.5px;padding:3px 7px}
 .metric{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:7px}
 .metric .box{border:1px solid #dce6f6;border-radius:8px;padding:7px;background:linear-gradient(135deg,#fbfdff,#f4f8ff)}
 .metric .box:nth-child(1){background:linear-gradient(135deg,#fff7f8,#ffeef1);border-color:#ffd2dd}
@@ -127,21 +136,30 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .copy-btn:hover{background:#edf4ff}
 .material-empty{font-size:12px;color:#6c82a6;background:#fff;border:1px dashed #cfe0ff;border-radius:8px;padding:8px}
 
+.cards.cols-2 .card-right .img-wrap{max-width:96px}
+.cards.cols-2 .card-right img{width:100%;height:auto;display:block}
+
+@media (max-width:1280px) {
+  .top-grid{grid-template-columns:1fr 1fr}
+  .cat-panes{grid-template-columns:1fr 1fr}
+  .cards.cols-2{grid-template-columns:1fr}
+}
 @media (max-width:980px) {
-  .insight-grid{grid-template-columns:1fr}
+  .top-grid{grid-template-columns:1fr}
+  .cat-panes{grid-template-columns:1fr}
   .chart-wrap{grid-template-columns:1fr}
-  .summary-split{grid-template-columns:1fr}
   .card-wrap{grid-template-columns:1fr}
   .metric{grid-template-columns:repeat(2,minmax(0,1fr))}
   .material-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
   .card-name{font-size:18px}
+  .cards.cols-2 .card-name{font-size:18px}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1>女装三平台爆品榜单</h1>
+    <h1>女装爆品榜单</h1>
     <div class="sub">AMS投放爆品 / 视频号爆品 / 机会爆品（抖音）</div>
   </div>
 
@@ -150,7 +168,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787125807';
+const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787148846';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -206,6 +224,20 @@ function buildChainDonut(list) {
   return `<div><b>产品×链路占比</b></div><div class="chain-donut-wrap"><div class="donut" style="background:conic-gradient(${segs.join(',')})"><div class="donut-hole">产品×链路</div></div><div class="chain-legend">${legend}</div></div>`;
 }
 
+function renderPainLines(text) {
+  if (!text) return '<li>暂无痛点数据</li>';
+  const seen = new Set();
+  const items = [];
+  String(text).split(/\r?\n|·/).forEach(seg => {
+    const t = (seg || '').trim();
+    if (!t || seen.has(t)) return;
+    seen.add(t);
+    items.push(t);
+  });
+  if (items.length === 0) return '<li>暂无痛点数据</li>';
+  return items.map(t => `<li>${t}</li>`).join('');
+}
+
 function tabByKey(key) {
   return store.tabs.find(t => t.key === key);
 }
@@ -247,20 +279,28 @@ function renderContent() {
     if (summary.refund !== null && summary.refund !== undefined) metricItems.push({k:'退款率', v:fmtPct(summary.refund)});
     if (summary.aov !== null && summary.aov !== undefined) metricItems.push({k:'客单价', v:fmtMoney(summary.aov)});
 
+    const directionHtml = (summary.direction || []).map(x => `<li>${x}</li>`).join('');
+
     summaryHtml = `
       <div class="cat-summary">
         <div class="cat-title">${state.category}（品类全量）</div>
-        <div class="m-grid">${metricItems.map(m => `<div class="m-item"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('')}</div>
 
-        <div class="summary-split">
-          <div class="summary-left">
-            <div><b>商品关键词词云</b></div>
-            <div class="cloud">${(summary.keyword_cloud || []).map(k => `<span class="kw" style="font-size:${k.size}px;color:${['var(--cloud-c1)','var(--cloud-c2)','var(--cloud-c3)','var(--cloud-c4)','var(--cloud-c5)'][k.idx % 5]}">${k.word}</span>`).join('') || '<span class="kw">暂无</span>'}</div>
+        <div class="cat-panes">
+          <div class="cat-pane">
+            <h4>品类数据</h4>
+            <div class="m-grid">${metricItems.map(m => `<div class="m-item"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('')}</div>
           </div>
-          <div class="summary-right">
-            ${tab.key === 'ams' ? buildChainDonut(summary.chain_share || []) : ''}
-            <div><b>开品方向</b></div>
-            <ol class="direction">${(summary.direction || []).map(x => `<li>${x}</li>`).join('')}</ol>
+          <div class="cat-pane">
+            <h4>消费者痛点</h4>
+            <ol class="pain-list">${renderPainLines(summary.pain_text)}</ol>
+          </div>
+          <div class="cat-pane">
+            <h4>卖点洞察（建议选品方向）</h4>
+            <ol class="direction">${directionHtml || '<li>暂无选品建议</li>'}</ol>
+          </div>
+          <div class="cat-pane">
+            <h4>产品×链路占比</h4>
+            ${tab.key === 'ams' ? buildChainDonut(summary.chain_share || []) : '<div style="font-size:12px;color:#6c82a6;">该数据源未提供链路维度</div>'}
           </div>
         </div>
         <div style="margin-top:8px;color:#5f7398;font-size:12px;">爆品清单：以下仅展示该品类TOP30商品</div>
@@ -274,30 +314,44 @@ function renderContent() {
     const painLine = (extra.pain_points || []).join('、') || '版型不稳、搭配门槛高';
     const peopleLine = (extra.target_people || []).join('、') || '女装核心消费人群';
 
-    const metricItems = [];
-    if (tab.key === 'ams') {
+    const isAms = tab.key === 'ams';
+
+    // 仅 AMS 显示投放效率指标矩阵；非 AMS 改用 chips 表达，避免与商品信息 chips 重复
+    let metricHtml = '';
+    if (isAms) {
+      const metricItems = [];
       if (it.ctr !== null && it.ctr !== undefined) metricItems.push({k:'CTR', v:fmtPct(it.ctr)});
       if (it.cvr !== null && it.cvr !== undefined) metricItems.push({k:'CVR', v:fmtPct(it.cvr)});
       if (it.aov !== null && it.aov !== undefined) metricItems.push({k:'下单单价', v:fmtMoney(it.aov)});
       if (it.roi !== null && it.roi !== undefined) metricItems.push({k:'下单ROI', v:fmtNum(it.roi)});
       if (it.refund !== null && it.refund !== undefined) metricItems.push({k:'退款率', v:fmtPct(it.refund)});
-    } else {
-      metricItems.push({k:'销售额', v: ((Number(it.value)||0)/10000).toFixed(1) + 'w'});
-      if (it.aov !== null && it.aov !== undefined) metricItems.push({k:'客单价', v:fmtMoney(it.aov)});
+      metricHtml = metricItems.map(m => `<div class="box"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('');
     }
-    const metricHtml = metricItems.map(m => `<div class="box"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('');
 
     let meta = '';
-    if (tab.key === 'ams') {
-      meta = `<div class="meta-title">商品信息</div><div class="meta-cards"><span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span><span class="meta-chip"><b>视频号</b>${it.video || '—'}</span><span class="meta-chip"><b>主投链路x产品</b>${it.main_chain || '—'}</span></div>`;
+    if (isAms) {
+      meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
+        <span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span>
+        <span class="meta-chip"><b>视频号</b>${it.video || '—'}</span>
+        <span class="meta-chip"><b>主投链路×产品</b>${it.main_chain || '—'}</span>
+        ${it.merge_count && it.merge_count > 1 ? `<span class="meta-chip" style="background:#fff3ed;border-color:#ffcaa8;color:#9a3a14;"><b>合并</b>${it.merge_count}款</span>` : ''}
+      </div>`;
     } else {
-      meta = `<div class="meta-title">商品信息</div><div class="meta-cards"><span class="meta-chip"><b>销售额</b>${((Number(it.value||0)/10000).toFixed(1))}w</span><span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span><span class="meta-chip"><b>店铺名称</b>${it.video || '—'}</span><span class="meta-chip"><b>主投链路x产品</b>${it.main_chain || '—'}</span></div>`;
+      const salesStr = ((Number(it.value||0)/10000).toFixed(1)) + 'w';
+      // 商品信息 chips：销售额/客单价/店铺名称/主投链路×产品/品类 — 每项仅一处
+      meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
+        <span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span>
+        <span class="meta-chip"><b>销售额</b>${salesStr}</span>
+        <span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>
+        <span class="meta-chip"><b>店铺名称</b>${it.video || '—'}</span>
+        <span class="meta-chip"><b>主投链路×产品</b>${it.main_chain || '—'}</span>
+      </div>`;
     }
 
     let rightMain = '';
     let rightLinks = '';
 
-    if (tab.key === 'ams') {
+    if (isAms) {
       const mats = (it.material_urls && it.material_urls.length) ? it.material_urls.slice(0,3) : ((it.material_url ? [it.material_url] : []).slice(0,3));
       if (mats.length) {
         rightMain = `<div class="material-gallery">${mats.map((u,i)=>buildMaterialUnit(u,i)).join('')}</div>`;
@@ -308,7 +362,8 @@ function renderContent() {
       }
     } else {
       if (it.image_url) {
-        rightMain = `<div style="max-width:124px;margin:0 auto 6px;"><a class="material-thumb" href="${escAttr(it.image_url)}" target="_blank"><img src="${escAttr(it.image_url)}" referrerpolicy="no-referrer" /></a></div>`;
+        // 主图缩小到 ~96px；保持 3:4 比例
+        rightMain = `<div class="img-wrap" style="max-width:96px;margin:0 auto 6px;"><a class="material-thumb" style="aspect-ratio:3/4;min-height:120px;" href="${escAttr(it.image_url)}" target="_blank"><img src="${escAttr(it.image_url)}" referrerpolicy="no-referrer" /></a></div>`;
       } else {
         rightMain = `<div class="material-empty">该平台源数据未提供商品图片</div>`;
       }
@@ -324,11 +379,11 @@ function renderContent() {
           <div class="card-left">
             <div class="card-name">${it.name}</div>
             ${meta}
-            <div class="metric">${metricHtml}</div>
+            ${isAms ? `<div class="metric">${metricHtml}</div>` : ''}
             <div class="points">
               <div class="title">商品卖点：</div>
               <div>${sellingLine}</div>
-              ${tab.key === 'ams' ? `<div style="margin-top:6px;"><b>用户痛点：</b>${painLine}</div><div style="margin-top:4px;"><b>目标人群：</b>${peopleLine}</div>` : ''}
+              ${isAms ? `<div style="margin-top:6px;"><b>用户痛点：</b>${painLine}</div><div style="margin-top:4px;"><b>目标人群：</b>${peopleLine}</div>` : ''}
             </div>
           </div>
 
@@ -356,12 +411,36 @@ function renderContent() {
     return `<div class="chart-card"><div class="chart-title">近周期销售额趋势</div><svg viewBox="0 0 420 130" width="100%" height="130"><polyline points="${points}" fill="none" stroke="#2f66ff" stroke-width="3" /></svg></div>`;
   })();
 
-  panel.innerHTML = `
-    <div class="insight-grid">
-      <div class="insight-card"><div class="insight-title">趋势洞察</div><div class="insight-value">${tab.insights.trend}</div></div>
-      <div class="insight-card"><div class="insight-title">主力品类洞察</div><div class="insight-value">${tab.insights.category}</div></div>
-      <div class="insight-card"><div class="insight-title">价格带洞察</div><div class="insight-value">${tab.insights.price}</div></div>
+  // 顶部四角度
+  const tabCloud = (tab.insights.keyword_cloud || []);
+  const cloudHtml = tabCloud.map(k => `<span class="kw" style="font-size:${Math.min(36, Math.max(13, k.size - 8))}px;color:${['var(--cloud-c1)','var(--cloud-c2)','var(--cloud-c3)','var(--cloud-c4)','var(--cloud-c5)'][k.idx % 5]}">${k.word}</span>`).join('') || '<span class="kw">暂无</span>';
+  const topGridHtml = `
+    <div class="top-grid">
+      <div class="top-card t-trend">
+        <div class="top-title">品类趋势洞察</div>
+        <div class="top-value">${tab.insights.trend}</div>
+        <div style="margin-top:6px;color:#5f7398;font-size:11.5px;">${tab.insights.category}</div>
+      </div>
+      <div class="top-card t-price">
+        <div class="top-title">价格带洞察</div>
+        <div class="top-value">${tab.insights.price}</div>
+      </div>
+      <div class="top-card t-age">
+        <div class="top-title">年龄段洞察</div>
+        <div class="top-value">${tab.insights.age}</div>
+      </div>
+      <div class="top-card t-cloud">
+        <div class="top-title">商品关键词词云</div>
+        <div class="top-cloud">${cloudHtml}</div>
+      </div>
     </div>
+  `;
+
+  // 双列展示：仅对 wechat/douyin（视频号、机会爆品）启用；AMS 仍单列
+  const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
+
+  panel.innerHTML = `
+    ${topGridHtml}
 
     <div class="chart-wrap">
       ${trendChart || `<div class="chart-card"><div class="chart-title">近周期趋势图</div><div style="color:#6a7fa3;font-size:12px;">当前数据源无日维度趋势，暂不绘制折线</div></div>`}
@@ -372,7 +451,7 @@ function renderContent() {
     <div class="cat-tabs" id="catTabs">${catTabs}</div>
     ${summaryHtml}
     <div style="font-weight:900;color:#13366d;margin:6px 0 8px;">爆品清单（TOP30）</div>
-    <div class="cards">${cards || '<div>当前品类无数据</div>'}</div>
+    <div class="${cardsClass}">${cards || '<div>当前品类无数据</div>'}</div>
   `;
 
   const catEl = document.getElementById('catTabs');
