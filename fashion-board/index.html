@@ -24,6 +24,10 @@
   --cloud-c3:#f59e0b;
   --cloud-c4:#ef4444;
   --cloud-c5:#8b5cf6;
+  --accent-1:#ff6b6b;
+  --accent-2:#ffd166;
+  --accent-3:#06d6a0;
+  --accent-4:#4cc9f0;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif}
@@ -74,20 +78,38 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .direction{margin-top:6px;padding-left:18px;color:#2d476f}
 .direction li{margin:2px 0}
 
+.summary-split{display:grid;grid-template-columns:1.05fr .95fr;gap:10px;align-items:start;margin-top:8px}
+.summary-left,.summary-right{background:#fff;border:1px solid #dce6f6;border-radius:10px;padding:10px}
+.cloud{margin:6px 0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;min-height:140px;padding:6px;background:#fff;border:1px dashed #d6e2f8;border-radius:8px}
+.cloud .kw{display:inline-block;line-height:1;font-weight:900}
+.chain-donut-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.donut{width:118px;height:118px;border-radius:50%;position:relative;flex:0 0 auto}
+.donut-hole{position:absolute;inset:28px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#385a8f;font-size:11px;text-align:center;line-height:1.3;padding:4px}
+.chain-legend{display:flex;flex-direction:column;gap:5px;min-width:170px}
+.chain-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#305384;font-weight:700}
+.chain-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
 .cards{display:grid;grid-template-columns:1fr;gap:10px}
-.card{background:#fff;border:1.5px solid #dce6f6;border-radius:12px;padding:12px;transition:.2s}
+.card{background:linear-gradient(135deg,#ffffff,#f8fbff);border:1.5px solid #dce6f6;border-radius:12px;padding:12px;transition:.2s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--accent-4),var(--brand),var(--accent-1));opacity:.9}
 .card:hover{border-color:#8db0ff;box-shadow:0 8px 20px rgba(33,83,184,.12)}
-.card-wrap{display:grid;grid-template-columns:1.45fr 0.55fr;gap:10px;align-items:stretch}
+.card-wrap{display:grid;grid-template-columns:1.6fr 0.4fr;gap:10px;align-items:stretch}
 .card-left{min-width:0}
-.card-right{border:1px solid #d9e6ff;border-radius:10px;background:linear-gradient(135deg,#f8fbff,#eff5ff);padding:10px}
+.card-right{border:1px solid #d9e6ff;border-radius:10px;background:linear-gradient(135deg,#f8fbff,#eff5ff);padding:9px}
 .card-name{font-size:20px;font-weight:900;color:#12315f;line-height:1.35;margin-bottom:3px}
-.card-meta{font-size:13px;color:#2b4f83;font-weight:700;margin-bottom:7px}
+.meta-title{font-size:12px;color:#6a83a9;font-weight:800;margin-bottom:4px}
+.meta-cards{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
+.meta-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;background:#f2f7ff;border:1px solid #d6e5ff;color:#244a84;font-size:12px;font-weight:700;line-height:1.2}
+.meta-chip b{color:#1a3f76}
 .metric{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:7px}
 .metric .box{border:1px solid #dce6f6;border-radius:8px;padding:7px;background:linear-gradient(135deg,#fbfdff,#f4f8ff)}
+.metric .box:nth-child(1){background:linear-gradient(135deg,#fff7f8,#ffeef1);border-color:#ffd2dd}
+.metric .box:nth-child(2){background:linear-gradient(135deg,#fffaf0,#fff1d6);border-color:#ffe3a8}
+.metric .box:nth-child(3){background:linear-gradient(135deg,#f2fffb,#e4fff5);border-color:#bbf7df}
+.metric .box:nth-child(4){background:linear-gradient(135deg,#f3f9ff,#e9f2ff);border-color:#cfe0ff}
+.metric .box:nth-child(5){background:linear-gradient(135deg,#f8f3ff,#f1e8ff);border-color:#dec9ff}
 .metric .k{font-size:11px;color:#6f85a9}
 .metric .v{font-size:18px;font-weight:850;color:#132f5f}
-
-.sell{font-size:13px;color:#173b74;background:#f2f7ff;border:1px solid #d9e7ff;border-radius:8px;padding:7px 9px;margin-bottom:7px;font-weight:750}
 
 .points{border:1px solid #e7edf8;border-radius:9px;background:#fbfdff;padding:8px 10px}
 .points .title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:4px}
@@ -95,18 +117,20 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .points li{margin:2px 0}
 
 .material-title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:6px}
-.material-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px}
-.material-thumb{position:relative;display:block;border-radius:8px;overflow:hidden;border:1px solid #d8e4fa;background:#f2f6ff;aspect-ratio:9/14}
-.material-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.material-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.material-unit{display:flex;flex-direction:column;gap:6px}
+.material-thumb{position:relative;display:block;border-radius:10px;overflow:hidden;border:1px solid #c9dafd;background:#eaf2ff;aspect-ratio:3/4;min-height:150px}
+.material-thumb img,.material-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 .material-tag{position:absolute;top:4px;left:4px;background:rgba(32,88,190,.92);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:800}
 .material-links{display:flex;flex-direction:column;gap:6px}
-.material-links a{display:inline-block;border:1px solid #cfe0ff;background:#fff;border-radius:8px;padding:6px 8px;color:#2155b6;text-decoration:none;font-size:12px;font-weight:700}
-.material-links a:hover{background:#edf4ff}
+.copy-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cfe0ff;background:#fff;border-radius:7px;padding:5px 6px;color:#2155b6;font-size:11px;font-weight:700;cursor:pointer;line-height:1.2;white-space:nowrap;width:100%}
+.copy-btn:hover{background:#edf4ff}
 .material-empty{font-size:12px;color:#6c82a6;background:#fff;border:1px dashed #cfe0ff;border-radius:8px;padding:8px}
 
 @media (max-width:980px) {
   .insight-grid{grid-template-columns:1fr}
   .chart-wrap{grid-template-columns:1fr}
+  .summary-split{grid-template-columns:1fr}
   .card-wrap{grid-template-columns:1fr}
   .metric{grid-template-columns:repeat(2,minmax(0,1fr))}
   .material-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -126,7 +150,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787061109';
+const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787123094';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -141,6 +165,45 @@ function fmtPct(v) {
 function fmtNum(v) {
   if (v === null || v === undefined) return '—';
   return Number(v).toFixed(2);
+}
+
+function isVideoUrl(u) {
+  if (!u) return false;
+  const s = String(u).toLowerCase();
+  return s.includes('.mp4') || s.includes('.mov') || s.includes('.m3u8');
+}
+
+function escAttr(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function buildMaterialThumb(u, i) {
+  const tag = `TOP${i+1}`;
+  const safe = escAttr(u);
+  if (isVideoUrl(u)) {
+    return `<a class="material-thumb" href="${safe}" target="_blank"><span class="material-tag">${tag}</span><video src="${safe}" muted autoplay loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" controls></video></a>`;
+  }
+  return `<a class="material-thumb" href="${safe}" target="_blank"><span class="material-tag">${tag}</span><img src="${safe}" referrerpolicy="no-referrer" loading="lazy" /></a>`;
+}
+
+function buildMaterialUnit(u, i) {
+  return `<div class="material-unit">${buildMaterialThumb(u, i)}<button type="button" class="copy-btn" data-url="${escAttr(u)}">复制TOP${i+1}素材</button></div>`;
+}
+
+function buildChainDonut(list) {
+  if (!list || !list.length) return '<div style="font-size:12px;color:#6c82a6;margin-bottom:6px;">产品×链路占比：暂无</div>';
+  const colors = ['#2f66ff','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+  const top = list.slice(0, 6);
+  let acc = 0;
+  const segs = top.map((x, i) => {
+    const start = acc;
+    acc += Number(x.share || 0);
+    const end = Math.min(100, acc);
+    return `${colors[i % colors.length]} ${start}% ${end}%`;
+  });
+  if (acc < 100) segs.push(`#e2e8f0 ${acc}% 100%`);
+  const legend = top.map((x, i) => `<div class="chain-legend-item"><span class="chain-dot" style="background:${colors[i % colors.length]}"></span><span>${x.name} ${x.share}%</span></div>`).join('');
+  return `<div><b>产品×链路占比</b></div><div class="chain-donut-wrap"><div class="donut" style="background:conic-gradient(${segs.join(',')})"><div class="donut-hole">产品×链路</div></div><div class="chain-legend">${legend}</div></div>`;
 }
 
 function tabByKey(key) {
@@ -189,13 +252,17 @@ function renderContent() {
         <div class="cat-title">${state.category}（品类全量）</div>
         <div class="m-grid">${metricItems.map(m => `<div class="m-item"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('')}</div>
 
-        <div><b>商品关键词词云</b></div>
-        <div class="cloud">${(summary.keyword_cloud || []).map(k => `<span class="kw" style="font-size:${k.size}px;color:${['var(--cloud-c1)','var(--cloud-c2)','var(--cloud-c3)','var(--cloud-c4)','var(--cloud-c5)'][k.idx % 5]}">${k.word}</span>`).join('') || '<span class="kw">暂无</span>'}</div>
-
-        ${tab.key === 'ams' ? `<div><b>产品×链路占比</b></div><div class="chain">${(summary.chain_share || []).map(k => `<span class="chip">${k.name} ${k.share}%</span>`).join('') || '<span class="chip">暂无</span>'}</div>` : ''}
-
-        <div><b>开品方向</b></div>
-        <ol class="direction">${(summary.direction || []).map(x => `<li>${x}</li>`).join('')}</ol>
+        <div class="summary-split">
+          <div class="summary-left">
+            <div><b>商品关键词词云</b></div>
+            <div class="cloud">${(summary.keyword_cloud || []).map(k => `<span class="kw" style="font-size:${k.size}px;color:${['var(--cloud-c1)','var(--cloud-c2)','var(--cloud-c3)','var(--cloud-c4)','var(--cloud-c5)'][k.idx % 5]}">${k.word}</span>`).join('') || '<span class="kw">暂无</span>'}</div>
+          </div>
+          <div class="summary-right">
+            ${tab.key === 'ams' ? buildChainDonut(summary.chain_share || []) : ''}
+            <div><b>开品方向</b></div>
+            <ol class="direction">${(summary.direction || []).map(x => `<li>${x}</li>`).join('')}</ol>
+          </div>
+        </div>
         <div style="margin-top:8px;color:#5f7398;font-size:12px;">爆品清单：以下仅展示该品类TOP30商品</div>
       </div>
     `;
@@ -222,9 +289,9 @@ function renderContent() {
 
     let meta = '';
     if (tab.key === 'ams') {
-      meta = `商品信息：商品品类：<b>${it.category}</b> ｜ 视频号：${it.video || '—'} ｜ 主投链路x产品：${it.main_chain || '—'}`;
+      meta = `<div class="meta-title">商品信息</div><div class="meta-cards"><span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span><span class="meta-chip"><b>视频号</b>${it.video || '—'}</span><span class="meta-chip"><b>主投链路x产品</b>${it.main_chain || '—'}</span></div>`;
     } else {
-      meta = `商品信息：销售额 ${(Number(it.value||0)/10000).toFixed(1)}w ｜ 客单价 ${fmtMoney(it.aov)} ｜ 店铺名称：${it.video || '—'} ｜ 主投链路x产品：${it.main_chain || '—'}`;
+      meta = `<div class="meta-title">商品信息</div><div class="meta-cards"><span class="meta-chip"><b>销售额</b>${((Number(it.value||0)/10000).toFixed(1))}w</span><span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span><span class="meta-chip"><b>店铺名称</b>${it.video || '—'}</span><span class="meta-chip"><b>主投链路x产品</b>${it.main_chain || '—'}</span></div>`;
     }
 
     let rightMain = '';
@@ -233,22 +300,22 @@ function renderContent() {
     if (tab.key === 'ams') {
       const mats = (it.material_urls && it.material_urls.length) ? it.material_urls.slice(0,3) : ((it.material_url ? [it.material_url] : []).slice(0,3));
       if (mats.length) {
-        rightMain = `<div class="material-gallery">${mats.map((u,i)=>`<a class="material-thumb" href="${u}" target="_blank"><span class="material-tag">TOP${i+1}</span><img src="${u}" referrerpolicy="no-referrer" /></a>`).join('')}</div>`;
-        rightLinks = `<div class="material-links">${mats.map((u,i)=>`<a href="${u}" target="_blank">复制链接 TOP${i+1}</a>`).join('')}</div>`;
+        rightMain = `<div class="material-gallery">${mats.map((u,i)=>buildMaterialUnit(u,i)).join('')}</div>`;
+        rightLinks = '';
       } else {
         rightMain = `<div class="material-empty">该商品暂无可用素材链接</div>`;
         rightLinks = '';
       }
     } else {
       if (it.image_url) {
-        rightMain = `<div style="max-width:190px;margin:0 auto 8px;"><a class="material-thumb" href="${it.image_url}" target="_blank"><img src="${it.image_url}" referrerpolicy="no-referrer" /></a></div>`;
+        rightMain = `<div style="max-width:124px;margin:0 auto 6px;"><a class="material-thumb" href="${escAttr(it.image_url)}" target="_blank"><img src="${escAttr(it.image_url)}" referrerpolicy="no-referrer" /></a></div>`;
       } else {
         rightMain = `<div class="material-empty">该平台源数据未提供商品图片</div>`;
       }
       const links = [];
-      if (it.product_url) links.push(`<a href="${it.product_url}" target="_blank">查看商品链接</a>`);
-      if (it.material_url) links.push(`<a href="${it.material_url}" target="_blank">查看相关素材</a>`);
-      rightLinks = links.length ? `<div class="material-links">${links.join('')}</div>` : `<div class="material-empty" style="margin-top:8px;">该平台源数据未提供可跳转链接</div>`;
+      if (it.product_url) links.push(`<a href="${escAttr(it.product_url)}" target="_blank">查看商品链接</a>`);
+      if (it.material_url) links.push(`<a href="${escAttr(it.material_url)}" target="_blank">查看相关素材</a>`);
+      rightLinks = links.length ? `<div class="material-links">${links.join('')}</div>` : '';
     }
 
     return `
@@ -256,7 +323,7 @@ function renderContent() {
         <div class="card-wrap">
           <div class="card-left">
             <div class="card-name">${it.name}</div>
-            <div class="card-meta">${meta}</div>
+            ${meta}
             <div class="metric">${metricHtml}</div>
             <div class="points">
               <div class="title">商品卖点：</div>
@@ -314,6 +381,32 @@ function renderContent() {
       state.category = btn.dataset.c;
       renderContent();
     };
+  });
+
+  panel.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const url = btn.dataset.url || '';
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        const old = btn.textContent;
+        btn.textContent = '已复制';
+        setTimeout(() => btn.textContent = old, 900);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    };
+  });
+
+  panel.querySelectorAll('video').forEach(v => {
+    v.muted = true;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {});
   });
 }
 
