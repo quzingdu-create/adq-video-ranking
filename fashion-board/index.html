@@ -168,7 +168,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787148846';
+const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787150836';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -298,10 +298,7 @@ function renderContent() {
             <h4>卖点洞察（建议选品方向）</h4>
             <ol class="direction">${directionHtml || '<li>暂无选品建议</li>'}</ol>
           </div>
-          <div class="cat-pane">
-            <h4>产品×链路占比</h4>
-            ${tab.key === 'ams' ? buildChainDonut(summary.chain_share || []) : '<div style="font-size:12px;color:#6c82a6;">该数据源未提供链路维度</div>'}
-          </div>
+          ${tab.key === 'ams' ? `<div class="cat-pane"><h4>产品×链路占比</h4>${buildChainDonut(summary.chain_share || [])}</div>` : ''}
         </div>
         <div style="margin-top:8px;color:#5f7398;font-size:12px;">爆品清单：以下仅展示该品类TOP30商品</div>
       </div>
@@ -338,13 +335,11 @@ function renderContent() {
       </div>`;
     } else {
       const salesStr = ((Number(it.value||0)/10000).toFixed(1)) + 'w';
-      // 商品信息 chips：销售额/客单价/店铺名称/主投链路×产品/品类 — 每项仅一处
+      // 商品信息 chips：仅保留 销售额/客单价/店铺名称
       meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
-        <span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span>
         <span class="meta-chip"><b>销售额</b>${salesStr}</span>
         <span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>
         <span class="meta-chip"><b>店铺名称</b>${it.video || '—'}</span>
-        <span class="meta-chip"><b>主投链路×产品</b>${it.main_chain || '—'}</span>
       </div>`;
     }
 
