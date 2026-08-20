@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>女装爆品榜单</title>
+<title>女装选品榜单</title>
 <style>
 :root {
   --bg:#f4f7fb;
@@ -90,6 +90,16 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .donut-hole{position:absolute;inset:26px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#385a8f;font-size:11px;text-align:center;line-height:1.3;padding:4px}
 .chain-legend{display:flex;flex-direction:column;gap:5px;min-width:140px;flex:1;min-width:0}
 .chain-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#305384;font-weight:700;line-height:1.4}
+.chain-blocks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.chain-block{border:1px solid #d8e4f8;border-radius:9px;padding:9px 10px;background:linear-gradient(135deg,#f9fbff,#eef4ff)}
+.chain-block-max{background:linear-gradient(135deg,#1f4fb0,#2f66ff);border-color:#1f4fb0}
+.chain-block-max .cb-name,.chain-block-max .cb-share{color:#fff}
+.chain-block-max .cb-track{background:rgba(255,255,255,.28)}
+.chain-block-max .cb-fill{background:#fff}
+.cb-name{font-size:12px;color:#274f90;font-weight:800;margin-bottom:3px}
+.cb-share{font-size:19px;font-weight:900;color:#12315f;line-height:1.1;margin-bottom:5px}
+.cb-track{height:6px;background:#e6eefc;border-radius:999px;overflow:hidden}
+.cb-fill{height:100%;background:linear-gradient(90deg,#2f66ff,#7ea6ff);border-radius:999px}
 .chain-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px}
 
 .cards{display:grid;gap:10px}
@@ -159,7 +169,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 <body>
 <div class="wrap">
   <div class="hero">
-    <h1>女装爆品榜单</h1>
+    <h1>女装选品榜单</h1>
     <div class="sub">AMS投放爆品 / 视频号爆品 / 机会爆品（抖音）</div>
   </div>
 
@@ -168,7 +178,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './女装投放端链路商品榜单_数据.json?v=1787150836';
+const dataUrl = './data.json?v=1787198784';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -208,20 +218,26 @@ function buildMaterialUnit(u, i) {
   return `<div class="material-unit">${buildMaterialThumb(u, i)}<button type="button" class="copy-btn" data-url="${escAttr(u)}">复制TOP${i+1}素材</button></div>`;
 }
 
-function buildChainDonut(list) {
-  if (!list || !list.length) return '<div style="font-size:12px;color:#6c82a6;margin-bottom:6px;">产品×链路占比：暂无</div>';
-  const colors = ['#2f66ff','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
-  const top = list.slice(0, 6);
-  let acc = 0;
-  const segs = top.map((x, i) => {
-    const start = acc;
-    acc += Number(x.share || 0);
-    const end = Math.min(100, acc);
-    return `${colors[i % colors.length]} ${start}% ${end}%`;
-  });
-  if (acc < 100) segs.push(`#e2e8f0 ${acc}% 100%`);
-  const legend = top.map((x, i) => `<div class="chain-legend-item"><span class="chain-dot" style="background:${colors[i % colors.length]}"></span><span>${x.name} ${x.share}%</span></div>`).join('');
-  return `<div><b>产品×链路占比</b></div><div class="chain-donut-wrap"><div class="donut" style="background:conic-gradient(${segs.join(',')})"><div class="donut-hole">产品×链路</div></div><div class="chain-legend">${legend}</div></div>`;
+const CHAIN_LABEL = {
+  'ADQ×小店': '小店链路×ADQ',
+  '小店广告×小店': '小店链路×小店广告',
+  'ADQ×直播': '直播链路×ADQ',
+  '小店广告×直播': '直播链路×小店广告',
+};
+function buildChainBlocks(list) {
+  if (!list || !list.length) return '<div style="font-size:12px;color:#6c82a6;">产品×链路占比：暂无</div>';
+  const maxShare = Math.max(...list.map(x => Number(x.share || 0)));
+  const blocks = list.map(x => {
+    const name = CHAIN_LABEL[x.name] || x.name;
+    const share = Number(x.share || 0);
+    const isMax = share >= maxShare && maxShare > 0;
+    return `<div class="chain-block ${isMax ? 'chain-block-max' : ''}">
+      <div class="cb-name">${name}</div>
+      <div class="cb-share">${share}%</div>
+      <div class="cb-track"><div class="cb-fill" style="width:${Math.min(100, share)}%"></div></div>
+    </div>`;
+  }).join('');
+  return `<div class="chain-blocks">${blocks}</div>`;
 }
 
 function renderPainLines(text) {
@@ -298,7 +314,7 @@ function renderContent() {
             <h4>卖点洞察（建议选品方向）</h4>
             <ol class="direction">${directionHtml || '<li>暂无选品建议</li>'}</ol>
           </div>
-          ${tab.key === 'ams' ? `<div class="cat-pane"><h4>产品×链路占比</h4>${buildChainDonut(summary.chain_share || [])}</div>` : ''}
+          ${tab.key === 'ams' ? `<div class="cat-pane"><h4>产品×链路占比</h4>${buildChainBlocks(summary.chain_share || [])}</div>` : ''}
         </div>
         <div style="margin-top:8px;color:#5f7398;font-size:12px;">爆品清单：以下仅展示该品类TOP30商品</div>
       </div>
@@ -307,9 +323,12 @@ function renderContent() {
 
   const cards = items.map(it => {
     const extra = it.insight || {};
-    const sellingLine = (extra.selling_points || [])[0] || '版型:常规 | 季节:四季 | 关键词:百搭 | 风格:日常通勤';
-    const painLine = (extra.pain_points || []).join('、') || '版型不稳、搭配门槛高';
-    const peopleLine = (extra.target_people || []).join('、') || '女装核心消费人群';
+    const spList = (extra.selling_points || []).filter(Boolean);
+    const ppList = (extra.pain_points || []).filter(Boolean);
+    const tpList = (extra.target_people || []).filter(Boolean);
+    const sellingLine = spList.join('；');
+    const painLine = ppList.join('、');
+    const peopleLine = tpList.join('、');
 
     const isAms = tab.key === 'ams';
 
@@ -328,7 +347,6 @@ function renderContent() {
     let meta = '';
     if (isAms) {
       meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
-        <span class="meta-chip"><b>商品品类</b>${it.category || '—'}</span>
         <span class="meta-chip"><b>视频号</b>${it.video || '—'}</span>
         <span class="meta-chip"><b>主投链路×产品</b>${it.main_chain || '—'}</span>
         ${it.merge_count && it.merge_count > 1 ? `<span class="meta-chip" style="background:#fff3ed;border-color:#ffcaa8;color:#9a3a14;"><b>合并</b>${it.merge_count}款</span>` : ''}
@@ -376,9 +394,9 @@ function renderContent() {
             ${meta}
             ${isAms ? `<div class="metric">${metricHtml}</div>` : ''}
             <div class="points">
-              <div class="title">商品卖点：</div>
-              <div>${sellingLine}</div>
-              ${isAms ? `<div style="margin-top:6px;"><b>用户痛点：</b>${painLine}</div><div style="margin-top:4px;"><b>目标人群：</b>${peopleLine}</div>` : ''}
+              ${sellingLine ? `<div class="title">商品卖点</div><div>${sellingLine}</div>` : ''}
+              ${isAms && painLine ? `<div style="margin-top:6px;"><b>用户痛点：</b>${painLine}</div>` : ''}
+              ${isAms && peopleLine ? `<div style="margin-top:4px;"><b>目标人群：</b>${peopleLine}</div>` : ''}
             </div>
           </div>
 
