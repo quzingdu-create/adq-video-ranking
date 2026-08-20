@@ -178,7 +178,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787198784';
+const dataUrl = './data.json?v=1787201817';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -453,14 +453,6 @@ function renderContent() {
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
   panel.innerHTML = `
-    ${topGridHtml}
-
-    <div class="chart-wrap">
-      ${trendChart || `<div class="chart-card"><div class="chart-title">近周期趋势图</div><div style="color:#6a7fa3;font-size:12px;">当前数据源无日维度趋势，暂不绘制折线</div></div>`}
-      <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
-      <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
-    </div>
-
     <div class="cat-tabs" id="catTabs">${catTabs}</div>
     ${summaryHtml}
     <div style="font-weight:900;color:#13366d;margin:6px 0 8px;">爆品清单（TOP30）</div>
