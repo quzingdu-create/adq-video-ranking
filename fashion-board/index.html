@@ -178,7 +178,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787201817';
+const dataUrl = './data.json?v=1787205540';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -453,6 +453,27 @@ function renderContent() {
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
   panel.innerHTML = `
+    <div class="top-grid">
+      <div class="top-card t-trend">
+        <div class="top-title">品类趋势洞察</div>
+      </div>
+      <div class="top-card t-price">
+        <div class="top-title">价格带洞察</div>
+      </div>
+      <div class="top-card t-age">
+        <div class="top-title">年龄段洞察</div>
+      </div>
+      <div class="top-card t-cloud">
+        <div class="top-title">商品关键词词云</div>
+        <div class="top-cloud">${cloudHtml}</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
+      <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
+    </div>
+
     <div class="cat-tabs" id="catTabs">${catTabs}</div>
     ${summaryHtml}
     <div style="font-weight:900;color:#13366d;margin:6px 0 8px;">爆品清单（TOP30）</div>
