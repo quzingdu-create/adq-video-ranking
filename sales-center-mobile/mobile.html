@@ -40,19 +40,19 @@
 <title>服饰增长组作战系统 · 移动端</title>
 <script src="version-guard.js"></script>
 <!-- 密码门 v1.1（必须最先加载，iframe 自动跳过） -->
-<script src="auth-guard.js?v=20260820m"></script>
+<script src="auth-guard.js?v=20260821n"></script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20260820m"></script>
-<script defer src="api_client.js?v=20260820m"></script>
-<script defer src="data_adapter.js?v=20260820m"></script>
-<script src="data/center_quarter_summary.js?v=20260820m"></script>
-<script src="data/center_daily_kpi.js?v=20260820m"></script>
+<script defer src="cloud_gray_switch.js?v=20260821n"></script>
+<script defer src="api_client.js?v=20260821n"></script>
+<script defer src="data_adapter.js?v=20260821n"></script>
+<script src="data/center_quarter_summary.js?v=20260821n"></script>
+<script src="data/center_daily_kpi.js?v=20260821n"></script>
 <!-- 2026-07-28 删内联 __TOP80_EFFECTIVE_METRICS__，改走下方 data/top80_effective_metrics.js -->
-<script src="data/top80_effective_metrics.js?v=20260820m"></script>
+<script src="data/top80_effective_metrics.js?v=20260821n"></script>
 <script>window.__TUOKE_REAL_RECORDS__ = window.__TUOKE_REAL_RECORDS__ || []; window.__MOBILE_TUOKE_READY__ = false;</script>
-<script src="data/redblack_data.js?v=20260820m"></script>
-<script src="data/top_rising_data.js?v=20260820m"></script>
-<script src="data/yest_new_customer_tasks.js?v=20260820m"></script>
+<script src="data/redblack_data.js?v=20260821n"></script>
+<script src="data/top_rising_data.js?v=20260821n"></script>
+<script src="data/yest_new_customer_tasks.js?v=20260821n"></script>
 <style>
   :root {
     --bg: #f4f7fb;
@@ -436,13 +436,13 @@
 </style>
   <!-- ☁️ 云端同步 + 拓新组双导出按钮（v3.2 死规矩三件套） -->
   <!-- 2026-06-13 性能优化：xlsx 改按需加载（见 lib_loader.js），删除首屏同步脚本 -->
-  <script defer src="lib_loader.js?v=20260820m"></script>
+  <script defer src="lib_loader.js?v=20260821n"></script>
   <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-  <script defer src="cloud_sync.js?v=20260820m"></script>
-  <script defer src="dual_check.js?v=20260820m"></script>
-  <script defer src="big_data_dual_check.js?v=20260820m"></script>
-  <script defer src="login_guard_banner.js?v=20260820m"></script>
-  <script defer src="export_tuoke.js?v=20260820m"></script>
+  <script defer src="cloud_sync.js?v=20260821n"></script>
+  <script defer src="dual_check.js?v=20260821n"></script>
+  <script defer src="big_data_dual_check.js?v=20260821n"></script>
+  <script defer src="login_guard_banner.js?v=20260821n"></script>
+  <script defer src="export_tuoke.js?v=20260821n"></script>
 </head>
 <body>
   <header class="hero">
@@ -1400,10 +1400,10 @@
           if (window.parent && window.parent !== window) {
             window.parent.postMessage({type:'open-lifecycle-customer', name: customerName}, '*');
           } else {
-            location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260820m`;
+            location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260821n`;
           }
         } catch(e) {
-          location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260820m`;
+          location.href = `./lifecycle-system/index.html?embed=1&single=1&customer=${encodeURIComponent(customerName)}&v=20260821n`;
         }
       })
     );
@@ -1554,9 +1554,9 @@
     if (records && records.length) return Promise.resolve(records);
     const box = document.getElementById('yestTopList');
     if (box) box.innerHTML = '<div class="empty">昨日消耗Top客户加载中…</div>';
-    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260820m', '__MOBILE_TUOKE_READY__').then(() => {
+    return loadMobileScriptOnce('data/tuoke_real_records.js?v=20260821n', '__MOBILE_TUOKE_READY__').then(() => {
       // R3.3 (2026-06-29): 加载 manual_attr_override 锁
-      return fetch('data/manual_attr_override.json?v=20260820m').then(r=>r.json()).then(j=>{ window.__MANUAL_ATTR_OVERRIDE__ = j; }).catch(()=>{}).then(()=>{
+      return fetch('data/manual_attr_override.json?v=20260821n').then(r=>r.json()).then(j=>{ window.__MANUAL_ATTR_OVERRIDE__ = j; }).catch(()=>{}).then(()=>{
         var raw = Array.isArray(window.__TUOKE_REAL_RECORDS__) ? window.__TUOKE_REAL_RECORDS__ : [];
         // 套 override(只改展示,改副本不改原数组)
         var _ov = (window.__MANUAL_ATTR_OVERRIDE__ && window.__MANUAL_ATTR_OVERRIDE__.overrides) || {};
@@ -1578,7 +1578,7 @@
     if (data && Array.isArray(data.list)) return Promise.resolve(data);
     const box = document.getElementById('yestNewList');
     if (box) box.innerHTML = '<div class="empty">新增投放客户加载中…</div>';
-    return loadMobileScriptOnce('data/yest_new_customer_tasks.js?v=20260820m', '__MOBILE_YEST_NEW_READY__').then(() => window.__YEST_NEW_CUSTOMER_TASKS__ || { list: [] });
+    return loadMobileScriptOnce('data/yest_new_customer_tasks.js?v=20260821n', '__MOBILE_YEST_NEW_READY__').then(() => window.__YEST_NEW_CUSTOMER_TASKS__ || { list: [] });
   }
   function refreshYestNewNow(){
     const data = window.__YEST_NEW_CUSTOMER_TASKS__;
@@ -1587,8 +1587,8 @@
   }
   function loadDiagAndProductAfterFirstPaint(){
     const run = () => Promise.all([
-      loadMobileScriptOnce('data/customer_main_product.js?v=20260820m', '__MOBILE_PRODUCT_READY__'),
-      loadMobileScriptOnce('data/customer_diag_metrics.js?v=20260820m', '__MOBILE_DIAG_READY__')
+      loadMobileScriptOnce('data/customer_main_product.js?v=20260821n', '__MOBILE_PRODUCT_READY__'),
+      loadMobileScriptOnce('data/customer_diag_metrics.js?v=20260821n', '__MOBILE_DIAG_READY__')
     ]).then(() => { try { renderTop(); renderStable(); renderRedblack(); renderRising(); refreshYestNewNow(); } catch(e){} });
     if ('requestIdleCallback' in window) requestIdleCallback(run, {timeout: 2500});
     else setTimeout(run, 1200);
