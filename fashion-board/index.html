@@ -132,8 +132,12 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .metric .k{font-size:11px;color:#6f85a9}
 .metric .v{font-size:18px;font-weight:850;color:#132f5f}
 
-.points{border:1px solid #e7edf8;border-radius:9px;background:#fbfdff;padding:8px 10px}
-.points .title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:4px}
+.points{border:1px solid #e7edf8;border-radius:9px;background:#fbfdff;padding:10px 12px}
+.points .title{font-size:12px;color:#4b6286;font-weight:800;margin-bottom:6px}
+.points .sp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.points .sp-card{background:#fff;border:1px solid #dce6f5;border-radius:7px;padding:5px 8px;display:flex;flex-direction:column;gap:1px}
+.points .sp-card .sp-k{font-size:10px;color:#7a92b2;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.points .sp-card .sp-v{font-size:12px;color:#1d3359;font-weight:700;line-height:1.3}
 .points ol{margin:0;padding-left:18px;color:#1d3359}
 .points li{margin:2px 0}
 
@@ -181,7 +185,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787217197';
+const dataUrl = './data.json?v=1787629175';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -288,14 +292,7 @@ function renderContent() {
 
   let summaryHtml = '<div class="empty">无数据</div>';
   if (summary) {
-    const metricItems = [
-      {k:'商品数(全量)', v:String(summary.item_count)}
-    ];
-    if (tab.key !== 'ams') metricItems.push({k:`${tab.metric_name}(全量)`, v:fmtMoney(summary.total_value)});
-    if (summary.ctr !== null && summary.ctr !== undefined) metricItems.push({k:'CTR', v:fmtPct(summary.ctr)});
-    if (summary.cvr !== null && summary.cvr !== undefined) metricItems.push({k:'CVR', v:fmtPct(summary.cvr)});
-    if (summary.roi !== null && summary.roi !== undefined) metricItems.push({k:'ROI', v:fmtNum(summary.roi)});
-    if (summary.refund !== null && summary.refund !== undefined) metricItems.push({k:'退款率', v:fmtPct(summary.refund)});
+    const metricItems = [];
     if (summary.aov !== null && summary.aov !== undefined) metricItems.push({k:'客单价', v:fmtMoney(summary.aov)});
 
     const directionHtml = (summary.direction || []).map(x => `<li>${x}</li>`).join('');
@@ -327,9 +324,9 @@ function renderContent() {
   const cards = items.map(it => {
     const extra = it.insight || {};
     const spList = (extra.selling_points || []).filter(Boolean);
+    const spCards = extra.selling_cards || [];
     const ppList = (extra.pain_points || []).filter(Boolean);
     const tpList = (extra.target_people || []).filter(Boolean);
-    const sellingLine = spList.join('；');
     const painLine = ppList.join('、');
     const peopleLine = tpList.join('、');
 
@@ -397,7 +394,7 @@ function renderContent() {
             ${meta}
             ${isAms ? `<div class="metric">${metricHtml}</div>` : ''}
             <div class="points">
-              ${sellingLine ? `<div class="title">商品卖点</div><div>${sellingLine}</div>` : ''}
+              ${spCards.length ? `<div class="title">商品卖点</div><div class="sp-grid">${spCards.map(c => `<div class="sp-card"><div class="sp-k">${c.k}</div><div class="sp-v">${c.v}</div></div>`).join('')}</div>` : ''}
               ${isAms && painLine ? `<div style="margin-top:6px;"><b>用户痛点：</b>${painLine}</div>` : ''}
               ${isAms && peopleLine ? `<div style="margin-top:4px;"><b>目标人群：</b>${peopleLine}</div>` : ''}
             </div>
