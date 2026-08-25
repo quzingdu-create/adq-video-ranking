@@ -69,6 +69,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .m-item .v{font-size:16px;font-weight:850;color:#12345f}
 
 .cat-panes{display:grid;grid-template-columns:1fr 1fr 1.05fr 1.1fr;gap:10px;margin-top:6px}
+.cat-panes.two{grid-template-columns:1fr 1.2fr}
 .cat-pane{background:#fff;border:1px solid #dbe6f7;border-radius:10px;padding:10px 12px;min-width:0}
 .cat-pane h4{margin:0 0 6px;font-size:13px;color:#1d3c75;font-weight:900}
 .pain-list{margin:0;padding-left:18px;color:#2d476f;font-size:12.5px;line-height:1.7}
@@ -185,7 +186,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787647057';
+const dataUrl = './data.json?v=1787656925';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -301,11 +302,11 @@ function renderContent() {
       <div class="cat-summary">
         <div class="cat-title">${state.category}（品类全量）</div>
 
-        <div class="cat-panes">
-          <div class="cat-pane">
+        <div class="cat-panes ${tab.key === 'ams' ? '' : 'two'}">
+          ${tab.key === 'ams' ? `<div class="cat-pane">
             <h4>品类数据</h4>
             <div class="m-grid">${metricItems.map(m => `<div class="m-item"><div class="k">${m.k}</div><div class="v">${m.v}</div></div>`).join('')}</div>
-          </div>
+          </div>` : ''}
           <div class="cat-pane">
             <h4>消费者痛点</h4>
             <ol class="pain-list">${renderPainLines(summary.pain_text)}</ol>
