@@ -134,7 +134,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 
 .points{border:1px solid #e7edf8;border-radius:8px;background:#fbfdff;padding:6px 8px}
 .points .title{font-size:11.5px;color:#4b6286;font-weight:800;margin-bottom:4px}
-.points .sp-grid{display:flex;flex-wrap:wrap;gap:3px 6px}
+.points .sp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px 8px}
 .points .sp-card{background:#eff4fa;border-radius:4px;padding:1px 6px;display:inline-flex;align-items:center;gap:2px}
 .points .sp-card .sp-k{font-size:10px;color:#6b85ab;font-weight:600}
 .points .sp-card .sp-v{font-size:11px;color:#1a3a66;font-weight:700}
@@ -185,7 +185,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787638518';
+const dataUrl = './data.json?v=1787639485';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -286,7 +286,7 @@ function renderContent() {
   if (!state.category) state.category = tab.categories[0] || '';
   const panel = document.getElementById('contentPanel');
 
-  const catTabs = tab.categories.map(c => `<div class="cat-tab ${c===state.category?'active':''}" data-c="${c}">${c}</div>`).join('');
+  const catTabs = tab.categories.map(c => `<div class="cat-tab ${c===state.category?'active':''}" data-c="${c}">${c.split('-').pop()}</div>`).join('');
   const summary = tab.category_summary[state.category] || null;
   const items = tab.items_by_category[state.category] || [];
 
@@ -353,11 +353,8 @@ function renderContent() {
       </div>`;
     } else {
       const isDouyin = tab.key === 'douyin';
-      const valStr = isDouyin ? fmtNum(it.value) : ((Number(it.value||0)/10000).toFixed(1)) + 'w';
-      const valLabel = isDouyin ? '销量' : '销售额';
-      // 商品信息 chips：抖音显示销量+渠道占比；视频号显示销售额+客单价
+      // 商品信息 chips：抖音显示渠道占比+店铺；视频号显示客单价+店铺（不显示销售额/销量）
       meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
-        <span class="meta-chip"><b>${valLabel}</b>${valStr}</span>
         ${isDouyin ? `<span class="meta-chip"><b>渠道</b>${it.main_chain || '—'}</span>` : `<span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>`}
         <span class="meta-chip"><b>店铺</b>${it.video || '—'}</span>
       </div>`;
