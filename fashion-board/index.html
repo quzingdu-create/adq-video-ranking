@@ -185,7 +185,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787639485';
+const dataUrl = './data.json?v=1787640641';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -353,9 +353,10 @@ function renderContent() {
       </div>`;
     } else {
       const isDouyin = tab.key === 'douyin';
-      // 商品信息 chips：抖音显示渠道占比+店铺；视频号显示客单价+店铺（不显示销售额/销量）
+      // 商品信息 chips：抖音显示客单价+渠道占比+店铺；视频号显示客单价+店铺
       meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
-        ${isDouyin ? `<span class="meta-chip"><b>渠道</b>${it.main_chain || '—'}</span>` : `<span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>`}
+        <span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>
+        ${isDouyin ? `<span class="meta-chip"><b>渠道</b>${it.main_chain || '—'}</span>` : ''}
         <span class="meta-chip"><b>店铺</b>${it.video || '—'}</span>
       </div>`;
     }
@@ -400,7 +401,6 @@ function renderContent() {
           </div>
 
           <div class="card-right">
-            <div class="material-title">相关素材</div>
             ${rightMain}
             ${rightLinks}
           </div>
