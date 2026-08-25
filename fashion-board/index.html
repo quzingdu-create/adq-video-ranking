@@ -185,7 +185,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787640641';
+const dataUrl = './data.json?v=1787644238';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -353,9 +353,12 @@ function renderContent() {
       </div>`;
     } else {
       const isDouyin = tab.key === 'douyin';
-      // 商品信息 chips：抖音显示客单价+渠道占比+店铺；视频号显示客单价+店铺
+      // 商品信息 chips：抖音客单价用区间（源数据为区间值，单点不可靠）；视频号用精确客单价
+      const aovHtml = isDouyin
+        ? (it.aov_range && it.aov_range.length === 2 ? `¥${it.aov_range[0]}~${it.aov_range[1]}` : '—')
+        : fmtMoney(it.aov);
       meta = `<div class="meta-title">商品信息</div><div class="meta-cards">
-        <span class="meta-chip"><b>客单价</b>${fmtMoney(it.aov)}</span>
+        <span class="meta-chip"><b>客单价</b>${aovHtml}</span>
         ${isDouyin ? `<span class="meta-chip"><b>渠道</b>${it.main_chain || '—'}</span>` : ''}
         <span class="meta-chip"><b>店铺</b>${it.video || '—'}</span>
       </div>`;
