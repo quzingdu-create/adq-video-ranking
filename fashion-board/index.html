@@ -192,7 +192,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787747183';
+const dataUrl = './data.json?v=1787747802';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -545,23 +545,25 @@ function renderContent() {
     // 表头
     const th = `<tr><th>品类</th><th>CTR(%)</th><th>下单ROI</th><th>下单率(%)</th><th>客单价(元)</th><th>退款率(%)</th></tr>`;
     // 数据行：整体指标 + 各链路
+    const metricCell = (v) => `<td>${fmtNum(v)}</td>`;
+    const aovCell = (v) => `<td>${v > 0 ? fmtMoney(v) : '—'}</td>`;
     const trs = rows.map(r => {
       const o = r.overall || {};
       const ov = `<td style="font-weight:700;color:#13366d;">${r.category}</td>
-        <td>${o.ctr !== null ? o.ctr.toFixed(2) : '—'}</td>
-        <td>${o.roi !== null && o.roi !== undefined ? o.roi.toFixed(2) : '—'}</td>
-        <td>${o.order_rate !== null ? o.order_rate.toFixed(2) : '—'}</td>
-        <td>${o.aov > 0 ? fmtMoney(o.aov) : '—'}</td>
-        <td>${o.refund_rate !== null ? o.refund_rate.toFixed(2) : '—'}</td>`;
+        ${metricCell(o.ctr)}
+        ${metricCell(o.roi)}
+        ${metricCell(o.order_rate)}
+        ${aovCell(o.aov)}
+        ${metricCell(o.refund_rate)}`;
       // 链路子行
       const subRows = (r.channels || []).map(ch => `
         <tr style="background:#f7f9fc;">
           <td style="padding-left:20px;color:#6a7fa3;font-size:11.5px;">→ ${ch.channel || ch.name}</td>
-          <td style="color:#5f7398;">${ch.ctr != null ? ch.ctr.toFixed(2) : '—'}</td>
-          <td style="color:#5f7398;">${ch.roi != null && ch.roi != undefined ? ch.roi.toFixed(2) : '—'}</td>
-          <td style="color:#5f7398;">${ch.order_rate != null ? ch.order_rate.toFixed(2) : '—'}</td>
+          <td style="color:#5f7398;">${fmtNum(ch.ctr)}</td>
+          <td style="color:#5f7398;">${fmtNum(ch.roi)}</td>
+          <td style="color:#5f7398;">${fmtNum(ch.order_rate)}</td>
           <td style="color:#5f7398;">${ch.aov > 0 ? fmtMoney(ch.aov) : '—'}</td>
-          <td style="color:#5f7398;">${ch.refund_rate != null ? ch.refund_rate.toFixed(2) : '—'}</td>
+          <td style="color:#5f7398;">${fmtNum(ch.refund_rate)}</td>
         </tr>`).join('');
       return `<tr>${ov}</tr>${subRows}`;
     }).join('');
@@ -570,11 +572,11 @@ function renderContent() {
       const o = ch.overall || {};
       if (!Object.keys(o).length) return '';
       return `<tr style="background:#eef3fc;font-weight:700;"><td>整体（全品类）</td>
-        <td>${o.ctr != null ? o.ctr.toFixed(2) : '—'}</td>
-        <td>${o.roi != null && o.roi != undefined ? o.roi.toFixed(2) : '—'}</td>
-        <td>${o.order_rate != null ? o.order_rate.toFixed(2) : '—'}</td>
-        <td>${o.aov > 0 ? fmtMoney(o.aov) : '—'}</td>
-        <td>${o.refund_rate != null ? o.refund_rate.toFixed(2) : '—'}</td></tr>`;
+        ${metricCell(o.ctr)}
+        ${metricCell(o.roi)}
+        ${metricCell(o.order_rate)}
+        ${aovCell(o.aov)}
+        ${metricCell(o.refund_rate)}</tr>`;
     })();
 
     return `
