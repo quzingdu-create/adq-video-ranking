@@ -110,6 +110,8 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 .ch-metric-table th{background:#eef3fc;color:#1d3c75;font-weight:800;padding:7px 10px;border-bottom:2px solid #c5d4ed;text-align:left;white-space:nowrap}
 .ch-metric-table td{padding:6px 10px;border-bottom:1px solid #eef1f7;color:#3d4f6d;white-space:nowrap}
 .ch-metric-table tr:hover td{background:#f5f9ff}
+.ch-cat-row:hover td{background:#eef4ff !important}
+.ch-sub-row:hover td{background:#eef3f9 !important}
 
 .cards{display:grid;gap:10px}
 .cards.cols-1{grid-template-columns:1fr}
@@ -192,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787747802';
+const dataUrl = './data.json?v=1787748407';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -477,62 +479,66 @@ function renderContent() {
     </div>
   `;
 
-  // ── AMS 专属：Top5品类30天走势图 + 分链路指标表 ──
+  // ── AMS 专属：Top5品类30天走势图（美化版） ──
   const amsTrendHtml = (() => {
     if (tab.key !== 'ams' || !tab.ams_trend) return '';
     const td = tab.ams_trend;
     const dates = td.dates || [];
     const series = td.series || {};
-    const cats = Object.keys(series);
+    // 排除 'overall' 键（它是汇总线，不应作为品类折线渲染）
+    const cats = Object.keys(series).filter(k => k !== 'overall');
     if (!cats.length || !dates.length) return '';
-    // 取前5个日期标签（太密会重叠）
     const showEvery = Math.max(1, Math.floor(dates.length / 10));
     const xLabels = dates.map((d,i) => i % showEvery === 0 ? (d.slice(5) || '') : '');
-    const W = 680, H = 220, padL = 45, padR = 20, padT = 20, padB = 40;
+    // 呼吸感：加大画布和内边距
+    const W = 680, H = 260, padL = 48, padR = 24, padT = 28, padB = 44;
     const plotW = W - padL - padR, plotH = H - padT - padB;
-    // 找全局最大值（不含整体行）
     let maxV = 1;
     cats.forEach(c => { const arr = series[c] || []; arr.forEach(v => { if (v > maxV) maxV = v; }); });
-    maxV = Math.ceil(maxV * 1.08);
-    // 颜色
-    const colors = ['#2f66ff','#e85a3f','#10b981','#f59e0b','#8b5cf6'];
-    // 构建折线
+    maxV = Math.ceil(maxV * 1.1);
+    const colors = ['#4f7cff','#e86a4a','#2db88a','#f5a623','#9b7cf6'];
+    // 折线：圆角连接 + 渐变面积填充
     const lines = cats.map((c, ci) => {
       const vals = series[c] || [];
       const pts = vals.map((v, i) => `${padL + (i / Math.max(vals.length-1,1)) * plotW},${padT + plotH - (v/maxV) * plotH}`).join(' ');
-      return `<polyline points="${pts}" fill="none" stroke="${colors[ci%colors.length]}" stroke-width="2.2" />`;
+      // 面积填充路径（闭合到底部）
+      const areaPts = pts + ` ${padL + plotW},${padT + plotH} ${padL},${padT + plotH}`;
+      const col = colors[ci%colors.length];
+      return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` +
+        `<polygon points="${areaPts}" fill="${col}" fill-opacity="0.05"/>';
     }).join('');
     // X轴刻度
     const xTicks = dates.map((d, i) => {
       const x = padL + (i / Math.max(dates.length-1,1)) * plotW;
       const lbl = xLabels[i];
-      return lbl ? `<text x="${x}" y="${H-8}" text-anchor="middle" fill="#8899ae" font-size="10">${lbl}</text>` : '';
+      return lbl ? `<text x="${x}" y="${H-10}" text-anchor="middle" fill="#99aabb" font-size="10.5">${lbl}</text>` : '';
     }).join('');
-    // Y轴网格线 + 刻度
-    const yTicksCount = 5;
-    let yGrid = '';
-    for (let yi = 0; yi <= yTicksCount; yi++) {
-      const yv = (maxV / yTicksCount) * yi;
-      const y = padT + plotH - (yv / maxV) * plotH;
-      yGrid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e8ecf2" stroke-width="1"/>`;
-      yGrid += `<text x="${padL-6}" y="${y+3}" text-anchor="end" fill="#8899ae" font-size="10">${fmtK(yv)}</text>`;
-    }
-    // 图例
-    const legend = cats.map((c, i) =>
-      `<line x1="${padL + i*90}" y1="${12}" x2="${padL + i*90+18}" y2="${12}" stroke="${colors[i%colors.length]}" stroke-width="3"/>` +
-      `<text x="${padL + i*90+22}" y="${16}" fill="#3d4f6d" font-size="11">${c}</text>`
-    ).join('');
+    // Y轴网格线（仅横线，不标数字）
+    const yGrid = (() => {
+      let g = '';
+      for (let yi = 1; yi <= 4; yi++) {
+        const y = padT + plotH - (yi/5) * plotH;
+        g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eaeef5" stroke-width="1" stroke-dasharray="3,3"/>`;
+      }
+      return g;
+    })();
+    // 图例（底部居中）
+    const legendHtml = `<g transform="translate(${Math.max(0,(W - cats.length*95)/2)},8)">` +
+      cats.map((c, i) =>
+        `<circle cx="${i*95+8}" cy="7" r="4.5" fill="${colors[i%colors.length]}"/>` +
+        `<text x="${i*95+18}" y="11" fill="#4a5d78" font-size="11" font-weight="500">${c}</text>`
+      ).join('') + '</g>';
 
     return `
-    <div class="chart-card" style="grid-column:1/-1;">
+    <div class="chart-card" style="grid-column:1/-1;padding:18px 20px 14px;">
       <div class="chart-title">Top5 消耗品类 · 近30天消耗走势</div>
-      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="background:#fafcff;border-radius:8px;">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="background:linear-gradient(180deg,#fcfdff 0%,#f7f9fc 100%);border-radius:10px;">
+        ${legendHtml}
         ${yGrid}
         ${lines}
         ${xTicks}
-        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#c5cee0" stroke-width="1"/>
-        <line x1="${padL}" y2="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#c5cee0" stroke-width="1"/>
-        ${legend}
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#dde3ed" stroke-width="1.2"/>
+        <line x1="${padL}" y2="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#dde3ed" stroke-width="1.2"/>
       </svg>
     </div>`;
   })();
@@ -547,45 +553,42 @@ function renderContent() {
     // 数据行：整体指标 + 各链路
     const metricCell = (v) => `<td>${fmtNum(v)}</td>`;
     const aovCell = (v) => `<td>${v > 0 ? fmtMoney(v) : '—'}</td>`;
-    const trs = rows.map(r => {
+    // 折叠式链路指标表：默认折叠，点击品类行展开→再点展开链路子行
+    const catRows = rows.map((r, ri) => {
       const o = r.overall || {};
-      const ov = `<td style="font-weight:700;color:#13366d;">${r.category}</td>
-        ${metricCell(o.ctr)}
-        ${metricCell(o.roi)}
-        ${metricCell(o.order_rate)}
-        ${aovCell(o.aov)}
-        ${metricCell(o.refund_rate)}`;
-      // 链路子行
-      const subRows = (r.channels || []).map(ch => `
-        <tr style="background:#f7f9fc;">
-          <td style="padding-left:20px;color:#6a7fa3;font-size:11.5px;">→ ${ch.channel || ch.name}</td>
-          <td style="color:#5f7398;">${fmtNum(ch.ctr)}</td>
-          <td style="color:#5f7398;">${fmtNum(ch.roi)}</td>
-          <td style="color:#5f7398;">${fmtNum(ch.order_rate)}</td>
-          <td style="color:#5f7398;">${ch.aov > 0 ? fmtMoney(ch.aov) : '—'}</td>
-          <td style="color:#5f7398;">${fmtNum(ch.refund_rate)}</td>
-        </tr>`).join('');
-      return `<tr>${ov}</tr>${subRows}`;
+      const hasData = Object.keys(o).length > 0;
+      const subCount = (r.channels || []).length;
+      // 品类行（可点击展开）
+      return `<tr class="ch-cat-row" data-idx="${ri}" style="cursor:pointer;background:#fafcff;border-bottom:1px solid #eef2f8;">
+        <td style="font-weight:600;color:#1a365d;padding:9px 10px;">
+          <span class="ch-arrow" style="display:inline-block;transition:transform .2s;margin-right:4px;font-size:11px;color:#8899ae;">▸</span>${r.category}
+          ${subCount > 0 ? `<span style="color:#99aabb;font-size:10.5px;margin-left:6px;">(${subCount}条链路)</span>` : ''}
+        </td>
+        <td style="color:#5f7398;">${hasData ? fmtNum(o.ctr) : '—'}</td>
+        <td style="color:#5f7398;">${hasData ? fmtNum(o.roi) : '—'}</td>
+        <td style="color:#5f7398;">${hasData ? fmtNum(o.order_rate) : '—'}</td>
+        <td style="color:#5f7398;">${hasData && o.aov > 0 ? fmtMoney(o.aov) : '—'}</td>
+        <td style="color:#5f7398;">${hasData ? fmtNum(o.refund_rate) : '—'}</td>
+      </tr>
+      ${(r.channels || []).map((ch, si) => `<tr class="ch-sub-row ch-sub-${ri}" style="display:none;background:#f5f7fc;">
+        <td style="padding-left:28px;color:#788aa3;font-size:11.5px;">
+          <span style="margin-right:4px;color:#b0bccf;">└</span>${ch.channel || ch.name}
+        </td>
+        <td style="color:#8899ab;">${fmtNum(ch.ctr)}</td>
+        <td style="color:#8899ab;">${fmtNum(ch.roi)}</td>
+        <td style="color:#8899ab;">${fmtNum(ch.order_rate)}</td>
+        <td style="color:#8899ab;">${ch.aov > 0 ? fmtMoney(ch.aov) : '—'}</td>
+        <td style="color:#8899ab;">${fmtNum(ch.refund_rate)}</td>
+      </tr>`).join('')}`;
     }).join('');
-    // 整体行（如果有）
-    const overallRow = (() => {
-      const o = ch.overall || {};
-      if (!Object.keys(o).length) return '';
-      return `<tr style="background:#eef3fc;font-weight:700;"><td>整体（全品类）</td>
-        ${metricCell(o.ctr)}
-        ${metricCell(o.roi)}
-        ${metricCell(o.order_rate)}
-        ${aovCell(o.aov)}
-        ${metricCell(o.refund_rate)}</tr>`;
-    })();
 
     return `
-    <div class="chart-card" style="grid-column:1/-1;">
-      <div class="chart-title">Top5 消耗品类 · 分链路核心指标（整体不分链路）</div>
-      <div style="overflow-x:auto;">
-        <table class="ch-metric-table">
-          <thead>${th}</thead>
-          <tbody>${overallRow + trs}</tbody>
+    <div class="chart-card" style="grid-column:1/-1;padding:14px 18px 12px;">
+      <div class="chart-title">Top5 消耗品类 · 分链路核心指标（点击展开）</div>
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid #e8ecf3;">
+        <table class="ch-metric-table" style="margin:0;">
+          <thead><tr style="background:#f0f4fa;">${th}</tr></thead>
+          <tbody>${overallRow + catRows}</tbody>
         </table>
       </div>
     </div>`;
@@ -595,11 +598,6 @@ function renderContent() {
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
   panel.innerHTML = `
-    ${tab.key === 'ams' ? `
-    <div class="chart-wrap" style="grid-template-columns:1fr;">
-      ${amsTrendHtml}
-      ${amsChannelHtml}
-    </div>` : `
     <div class="top-grid">
       <div class="top-card t-trend">
         <div class="top-title">品类趋势洞察</div>
@@ -620,6 +618,11 @@ function renderContent() {
       </div>
     </div>
 
+    ${tab.key === 'ams' ? `
+    <div class="chart-wrap" style="grid-template-columns:1fr;">
+      ${amsTrendHtml}
+      ${amsChannelHtml}
+    </div>` : `
     <div class="chart-wrap">
       <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
       <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
@@ -664,6 +667,19 @@ function renderContent() {
     v.muted = true;
     const p = v.play();
     if (p && p.catch) p.catch(() => {});
+  });
+
+  // 折叠链路表：点击品类行展开/收起子行
+  panel.querySelectorAll('.ch-cat-row').forEach(row => {
+    row.onclick = () => {
+      const idx = row.dataset.idx;
+      const arrow = row.querySelector('.ch-arrow');
+      const subRows = panel.querySelectorAll(`.ch-sub-${idx}`);
+      const visible = subRows[0] && subRows[0].style.display !== 'none';
+      subRows.forEach(sr => { sr.style.display = visible ? 'none' : ''; });
+      if (arrow) arrow.style.transform = visible ? '' : 'rotate(90deg)';
+      arrow.style.color = visible ? '#8899ae' : '#4f7cff';
+    };
   });
 }
 
