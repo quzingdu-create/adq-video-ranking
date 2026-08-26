@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787748407';
+const dataUrl = './data.json?v=1787753136';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -505,7 +505,7 @@ function renderContent() {
       const areaPts = pts + ` ${padL + plotW},${padT + plotH} ${padL},${padT + plotH}`;
       const col = colors[ci%colors.length];
       return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<polygon points="${areaPts}" fill="${col}" fill-opacity="0.05"/>';
+        `<polygon points="${areaPts}" fill="${col}" fill-opacity="0.05"/>`;
     }).join('');
     // X轴刻度
     const xTicks = dates.map((d, i) => {
