@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787761378';
+const dataUrl = './data.json?v=1787762501';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -584,6 +584,61 @@ function renderContent() {
     </div>`;
   })();
 
+  // ── 抖音专属：Top5 品类近30天销售额走势（与 AMS amsTrendHtml 同款风格） ──
+  const douyinTrendHtml = (() => {
+    if (tab.key !== 'douyin' || !tab.douyin_trend) return '';
+    const td = tab.douyin_trend;
+    const dates = td.dates || [];
+    const series = td.series || {};
+    const cats = Object.keys(series);
+    if (!cats.length || !dates.length) return '';
+    const showEvery = Math.max(1, Math.floor(dates.length / 10));
+    const xLabels = dates.map((d,i) => i % showEvery === 0 ? d : '');
+    const W = 680, H = 260, padL = 48, padR = 24, padT = 28, padB = 44;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    let maxV = 1;
+    cats.forEach(c => { const arr = series[c] || []; arr.forEach(v => { if (v > maxV) maxV = v; }); });
+    maxV = Math.ceil(maxV * 1.1);
+    const colors = ['#4f7cff','#e86a4a','#2db88a','#f5a623','#9b7cf6'];
+    const lines = cats.map((c, ci) => {
+      const vals = series[c] || [];
+      const pts = vals.map((v, i) => `${padL + (i / Math.max(vals.length-1,1)) * plotW},${padT + plotH - (v/maxV) * plotH}`).join(' ');
+      const col = colors[ci%colors.length];
+      return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }).join('');
+    const xTicks = dates.map((d, i) => {
+      const x = padL + (i / Math.max(dates.length-1,1)) * plotW;
+      const lbl = xLabels[i];
+      return lbl ? `<text x="${x}" y="${H-10}" text-anchor="middle" fill="#99aabb" font-size="10.5">${lbl}</text>` : '';
+    }).join('');
+    const yGrid = (() => {
+      let g = '';
+      for (let yi = 1; yi <= 4; yi++) {
+        const y = padT + plotH - (yi/5) * plotH;
+        g += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eaeef5" stroke-width="1" stroke-dasharray="3,3"/>`;
+      }
+      return g;
+    })();
+    const legendHtml = `<g transform="translate(${Math.max(0,(W - cats.length*95)/2)},8)">` +
+      cats.map((c, i) =>
+        `<circle cx="${i*95+8}" cy="7" r="4.5" fill="${colors[i%colors.length]}"/>` +
+        `<text x="${i*95+18}" y="11" fill="#4a5d78" font-size="11" font-weight="500">${c}</text>`
+      ).join('') + '</g>';
+
+    return `
+    <div class="chart-card" style="grid-column:1/-1;padding:18px 20px 14px;">
+      <div class="chart-title">Top5 品类 · 近30天销售额走势（万元）</div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="background:linear-gradient(180deg,#fcfdff 0%,#f7f9fc 100%);border-radius:10px;">
+        ${legendHtml}
+        ${yGrid}
+        ${lines}
+        ${xTicks}
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#dde3ed" stroke-width="1.2"/>
+        <line x1="${padL}" y2="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#dde3ed" stroke-width="1.2"/>
+      </svg>
+    </div>`;
+  })();
+
   // 双列展示：仅对 wechat/douyin（视频号、机会爆品）启用；AMS 仍单列
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
@@ -599,6 +654,16 @@ function renderContent() {
     ${amsTrendHtml}
     ${amsChannelHtml}
     ` : `
+    <!-- 抖音/视频号：词云 + Top5 品类销售额走势 并排 -->
+    <div class="top-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="top-card t-cloud">
+        <div class="top-title">商品关键词词云</div>
+        <div class="top-cloud">${cloudHtml}</div>
+      </div>
+      <div class="top-card" style="overflow:hidden;">
+        ${douyinTrendHtml}
+      </div>
+    </div>
     <div class="chart-wrap">
       <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
       <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
