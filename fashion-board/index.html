@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787758739';
+const dataUrl = './data.json?v=1787760294';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -504,8 +504,7 @@ function renderContent() {
       // 面积填充路径（闭合到底部）
       const areaPts = pts + ` ${padL + plotW},${padT + plotH} ${padL},${padT + plotH}`;
       const col = colors[ci%colors.length];
-      return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<polygon points="${areaPts}" fill="${col}" fill-opacity="0.05"/>`;
+      return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
     }).join('');
     // X轴刻度
     const xTicks = dates.map((d, i) => {
@@ -546,7 +545,9 @@ function renderContent() {
   const amsChannelHtml = (() => {
     if (tab.key !== 'ams' || !tab.ams_channel) return '';
     const ch = tab.ams_channel;
-    const rows = ch.top5 || [];
+    let rows = ch.top5 || [];
+    // 过滤掉无分链路明细的聚合类目（如"童装"，overall 为空且 channels 为空）
+    rows = rows.filter(r => (r.channels && r.channels.length > 0) || (r.overall && Object.keys(r.overall).length > 0));
     if (!rows.length) return '';
     // 表头
     const th = `<tr><th>品类</th><th>CTR(%)</th><th>下单ROI</th><th>下单率(%)</th><th>客单价(元)</th><th>退款率(%)</th></tr>`;
@@ -608,31 +609,11 @@ function renderContent() {
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
   panel.innerHTML = `
-    <div class="top-grid">
-      <div class="top-card t-trend">
-        <div class="top-title">品类趋势洞察</div>
-        <div class="top-value">${tab.insights.trend || '—'}</div>
-        <div style="margin-top:6px;color:#5f7398;font-size:11.5px;">${tab.insights.category || ''}</div>
-      </div>
-      <div class="top-card t-price">
-        <div class="top-title">价格带洞察</div>
-        <div class="top-value">${tab.insights.price || '—'}</div>
-      </div>
-      <div class="top-card t-age">
-        <div class="top-title">年龄段洞察</div>
-        <div class="top-value">${tab.insights.age || '—'}</div>
-      </div>
-      <div class="top-card t-cloud">
-        <div class="top-title">商品关键词词云</div>
-        <div class="top-cloud">${cloudHtml}</div>
-      </div>
-    </div>
-
     ${tab.key === 'ams' ? `
-    <div class="chart-wrap" style="grid-template-columns:1fr;">
-      ${amsTrendHtml}
-      ${amsChannelHtml}
-    </div>` : `
+    <!-- AMS：消耗走势图作为顶部主视觉（替代原品类/价格带/年龄段三张洞察卡片） -->
+    ${amsTrendHtml}
+    ${amsChannelHtml}
+    ` : `
     <div class="chart-wrap">
       <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
       <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
