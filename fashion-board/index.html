@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787753136';
+const dataUrl = './data.json?v=1787758739';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -553,6 +553,16 @@ function renderContent() {
     // 数据行：整体指标 + 各链路
     const metricCell = (v) => `<td>${fmtNum(v)}</td>`;
     const aovCell = (v) => `<td>${v > 0 ? fmtMoney(v) : '—'}</td>`;
+    // 整体汇总行（顶部固定，不折叠）
+    const ov = ch.overall || {};
+    const overallRow = `<tr style="background:#eef4ff;font-weight:700;">
+      <td style="color:#13366d;">整体</td>
+      <td style="color:#13366d;">${fmtNum(ov.ctr)}</td>
+      <td style="color:#13366d;">${fmtNum(ov.roi)}</td>
+      <td style="color:#13366d;">${fmtNum(ov.order_rate)}</td>
+      <td style="color:#13366d;">${ov.aov > 0 ? fmtMoney(ov.aov) : '—'}</td>
+      <td style="color:#13366d;">${fmtNum(ov.refund_rate)}</td>
+    </tr>`;
     // 折叠式链路指标表：默认折叠，点击品类行展开→再点展开链路子行
     const catRows = rows.map((r, ri) => {
       const o = r.overall || {};
