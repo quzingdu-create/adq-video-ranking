@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787798801';
+const dataUrl = './data.json?v=1787799456';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -718,7 +718,7 @@ function renderContent() {
     const volDots = volume.map((v, i) => {
       const x = padL + (i / Math.max(volume.length-1,1)) * plotW;
       const y = padT + plotH - (v/maxV) * plotH;
-      return `<circle cx="${x}" cy="${y}" r="2.5" fill="#fff" stroke="#e86a4a" stroke-width="1.5"/>';
+      return `<circle cx="${x}" cy="${y}" r="2.5" fill="#fff" stroke="#e86a4a" stroke-width="1.5"/>`;
     }).join('');
 
     return `
