@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787795736';
+const dataUrl = './data.json?v=1787796925';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -476,12 +476,10 @@ function renderContent() {
     cats.forEach(c => { const arr = series[c] || []; arr.forEach(v => { if (v > maxV) maxV = v; }); });
     maxV = Math.ceil(maxV * 1.1);
     const colors = ['#4f7cff','#e86a4a','#2db88a','#f5a623','#9b7cf6'];
-    // 折线：圆角连接 + 渐变面积填充
+    // 折线：圆角连接（无面积填充，避免斜线伪影）
     const lines = cats.map((c, ci) => {
       const vals = series[c] || [];
       const pts = vals.map((v, i) => `${padL + (i / Math.max(vals.length-1,1)) * plotW},${padT + plotH - (v/maxV) * plotH}`).join(' ');
-      // 面积填充路径（闭合到底部）
-      const areaPts = pts + ` ${padL + plotW},${padT + plotH} ${padL},${padT + plotH}`;
       const col = colors[ci%colors.length];
       return `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
     }).join('');
@@ -639,36 +637,45 @@ function renderContent() {
     </div>`;
   })();
 
-  // 双列展示：仅对 wechat/douyin（视频号、机会爆品）启用；AMS 仍单列
+  // 三个 tab 统一布局：趋势图左(2/3) + 词云右(1/3) 并排
   const cardsClass = (tab.key === 'ams') ? 'cards cols-1' : 'cards cols-2';
 
+  // 趋势图 HTML（AMS 用 amsTrend，抖音用 douyinTrend，视频号暂无趋势数据则词云占满）
+  const trendHtml = (tab.key === 'ams') ? amsTrendHtml :
+                     (tab.key === 'douyin') ? douyinTrendHtml : '';
+
+  // 是否有趋势图（决定词云是占 1/3 还是 full）
+  const hasTrend = !!trendHtml;
+
   panel.innerHTML = `
-    ${tab.key === 'ams' ? `
-    <!-- AMS：词云保留 + 消耗走势图替代原品类/价格带/年龄段三张洞察卡片 -->
+    ${(tab.key === 'ams' || tab.key === 'douyin') ? `
+    <!-- AMS/抖音：趋势图左(2/3) + 词云右(1/3) 并排 -->
+    <div class="top-grid" style="grid-template-columns:${hasTrend ? '2fr 1fr' : '1fr'};gap:14px;align-items:stretch;">
+      ${hasTrend ? `<div class="top-card" style="overflow:hidden;grid-row:span 2;">
+        ${trendHtml}
+      </div>` : ''}
+      <div class="top-card t-cloud">
+        <div class="top-title">商品关键词词云</div>
+        <div class="top-cloud">${cloudHtml}</div>
+      </div>
+    </div>
+    ` : `
+    <!-- 视频号：暂无趋势数据，词云独占 -->
     <div class="top-grid" style="grid-template-columns:1fr;">
       <div class="top-card t-cloud">
         <div class="top-title">商品关键词词云</div>
         <div class="top-cloud">${cloudHtml}</div>
       </div>
     </div>
-    ${amsTrendHtml}
-    ${amsChannelHtml}
-    ` : `
-    <!-- 抖音/视频号：词云 + Top5 品类销售额走势 并排（趋势图加宽） -->
-    <div class="top-grid" style="grid-template-columns:0.82fr 2.18fr;gap:14px;align-items:stretch;">
-      <div class="top-card t-cloud">
-        <div class="top-title">商品关键词词云</div>
-        <div class="top-cloud">${cloudHtml}</div>
-      </div>
-      <div class="top-card" style="overflow:hidden;">
-        ${douyinTrendHtml}
-      </div>
-    </div>
+    `}
+
+    <!-- 品类占比 + 价格带占比（三个 tab 都有） -->
     <div class="chart-wrap">
       <div class="chart-card"><div class="chart-title">主力品类占比（Top6）</div>${catBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
       <div class="chart-card"><div class="chart-title">价格带占比（Top6）</div>${priceBars || '<div style="color:#6a7fa3;font-size:12px;">暂无</div>'}</div>
     </div>
-    `}
+
+    ${tab.key === 'ams' ? `${amsChannelHtml}` : ''}
 
     <div class="cat-tabs" id="catTabs">${catTabs}</div>
     ${summaryHtml}
