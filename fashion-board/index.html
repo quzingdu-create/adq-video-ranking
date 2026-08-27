@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787799456';
+const dataUrl = './data.json?v=1787800844';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -696,17 +696,11 @@ function renderContent() {
       return i % showEvery === 0 ? `<text x="${x}" y="${H-12}" text-anchor="middle" fill="#99aabb" font-size="10.5">${d}</text>` : '';
     }).join('');
 
-    // Y轴网格 + 左侧标签(销售额)
-    let yGrid = '', leftLabels = '', rightLabels = '';
+    // Y轴网格（仅横线，不标数字）
+    let yGrid = '';
     for (let yi = 0; yi <= 5; yi++) {
       const y = padT + plotH - (yi/5) * plotH;
       if (yi > 0) yGrid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#eaeef5" stroke-width="1" stroke-dasharray="3,3"/>`;
-      // 左轴：销售额(万元)
-      const sVal = (maxS * yi / 5).toFixed(0);
-      leftLabels += `<text x="${padL-6}" y="${y+3}" text-anchor="end" fill="#4f7cff" font-size="10" font-weight="600">${sVal}</text>`;
-      // 右轴：销量
-      const vVal = (maxV * yi / 5).toFixed(0);
-      rightLabels += `<text x="${W-padR+6}" y="${y+3}" text-anchor="start" fill="#e86a4a" font-size="10" font-weight="600">${vVal}</text>`;
     }
 
     // 数据点标记
@@ -730,8 +724,6 @@ function renderContent() {
       </div>
       <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="background:linear-gradient(180deg,#fcfdff 0%,#f7f9fc 100%);border-radius:10px;">
         ${yGrid}
-        ${leftLabels}
-        ${rightLabels}
         <polyline points="${salesPts}" fill="none" stroke="#4f7cff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         <polyline points="${volPts}" fill="none" stroke="#e86a4a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,4"/>
         ${salesDots}
