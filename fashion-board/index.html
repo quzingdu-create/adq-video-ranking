@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1787762501';
+const dataUrl = './data.json?v=1787795736';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -654,8 +654,8 @@ function renderContent() {
     ${amsTrendHtml}
     ${amsChannelHtml}
     ` : `
-    <!-- 抖音/视频号：词云 + Top5 品类销售额走势 并排 -->
-    <div class="top-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+    <!-- 抖音/视频号：词云 + Top5 品类销售额走势 并排（趋势图加宽） -->
+    <div class="top-grid" style="grid-template-columns:0.82fr 2.18fr;gap:14px;align-items:stretch;">
       <div class="top-card t-cloud">
         <div class="top-title">商品关键词词云</div>
         <div class="top-cloud">${cloudHtml}</div>
