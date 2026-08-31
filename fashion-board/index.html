@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1788138928';
+const dataUrl = './data.json?v=1788142842';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -747,6 +747,43 @@ function renderContent() {
   const hasTrend = !!trendHtml;
 
   panel.innerHTML = `
+    ${tab.key === 'ams' ? `
+<div style="margin:0 0 16px;padding:16px 18px;background:linear-gradient(135deg,#fff6ef 0%,#fffdfb 70%);border:1px solid #ffd2b8;border-radius:14px;box-shadow:0 3px 12px rgba(255,130,70,.10);">
+  <div style="font-weight:900;color:#c2410c;font-size:15px;margin-bottom:12px;">近期 AMS 女装投放亮点（近 14 天）</div>
+
+  <div style="margin-bottom:11px;">
+    <div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 五分袖 · 秋换季刚需爆发</div>
+    <div style="font-size:12.5px;color:#33415c;line-height:1.75;">
+      ✅ 数据亮点：日耗 3～5 万，ROI 达 3～3.5，退货率 45%<br>
+      ✅ 品类 女装 T恤、价格带 主力 40～100 元<br>
+      ✅ 卖点：秋换季过渡刚需、外穿内搭两用、纯棉挺括质感，适配人群 25–45 岁通勤女性换季叠穿
+    </div>
+  </div>
+
+  <div style="margin-bottom:11px;">
+    <div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 校服神器 · 童装黑马杀出</div>
+    <div style="font-size:12.5px;color:#33415c;line-height:1.75;">
+      ✅ 数据亮点：日耗 2～4 万，ROI 达 2～3，退货率仅 17.3%<br>
+      ✅ 品类 童装保暖裤 / 卫衣、价格带 主力 50–120 元（中位 90 元）<br>
+      ✅ 卖点：羊毛蚕丝保暖、内穿不臃肿、买一送一高性价比，适配人群 中小学生家长，入秋刚需、复购强<br>
+      <span style="color:#6a7fa3;">。这类「内穿校服」刚需复购强、客单低好转化，是入秋后最值得跟的童装细分。</span>
+    </div>
+  </div>
+
+  <div style="margin-bottom:11px;">
+    <div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 打底衫 · 内搭基本盘起量</div>
+    <div style="font-size:12.5px;color:#33415c;line-height:1.75;">
+      ✅ 数据亮点：日耗 5～8 万，ROI 达 2.5～3，退货率 30%<br>
+      ✅ 品类 女装打底衫 / 针织内搭、价格带 主力 50–100 元<br>
+      ✅ 卖点：百搭内搭、亲肤不起球、多色基础款，适配人群 全龄女性秋冬叠穿打底刚需
+    </div>
+  </div>
+
+  <div style="font-size:12.5px;color:#1f3a5f;font-weight:700;line-height:1.7;padding-top:10px;border-top:1px dashed #ffd2b8;">
+    一句话总结：秋装换季窗口下，五分袖打头阵、校服神器抢童装、打底衫稳基本盘——三个方向消耗与转化都在上行，建议优先蓄水、提前占量。
+  </div>
+</div>
+` : ''}
     ${(tab.key === 'ams' || tab.key === 'douyin' || tab.key === 'wechat') ? `
     <!-- AMS/抖音/视频号：趋势图左(2/3) + 词云右(1/3) 并排 -->
     <div class="top-grid" style="grid-template-columns:${hasTrend ? '2fr 1fr' : '1fr'};gap:14px;align-items:stretch;">
