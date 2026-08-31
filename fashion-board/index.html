@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1788147272';
+const dataUrl = './data.json?v=1788148470';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -542,8 +542,7 @@ function renderContent() {
     if (tab.key !== 'ams' || !tab.ams_channel) return '';
     const ch = tab.ams_channel;
     let rows = ch.top5 || [];
-    // 过滤掉无分链路明细的聚合类目（如"童装"，overall 为空且 channels 为空）
-    rows = rows.filter(r => (r.channels && r.channels.length > 0) || (r.overall && Object.keys(r.overall).length > 0));
+    // 统一 Top6 后不再过滤——即使某品类暂缺分链路数据也展示（显示 — 占位）
     if (!rows.length) return '';
     // 表头
     const th = `<tr><th>品类</th><th>CTR(%)</th><th>下单ROI</th><th>下单率(%)</th><th>客单价(元)</th><th>退款率(%)</th></tr>`;
@@ -591,7 +590,7 @@ function renderContent() {
 
     return `
     <div class="chart-card" style="grid-column:1/-1;padding:14px 18px 12px;">
-      <div class="chart-title">Top5 消耗品类 · 分链路核心指标（点击展开）</div>
+      <div class="chart-title">Top6 消耗品类 · 分链路核心指标（点击展开）</div>
       <div style="overflow-x:auto;border-radius:8px;border:1px solid #e8ecf3;">
         <table class="ch-metric-table" style="margin:0;">
           <thead><tr style="background:#f0f4fa;">${th}</tr></thead>
