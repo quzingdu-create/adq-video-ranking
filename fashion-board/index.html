@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1788153132';
+const dataUrl = './data.json?v=1788154020';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -226,13 +226,41 @@ function escAttr(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// 素材视频降码率：adsmind 的 .f0.mp4 原始码率约 89MB/条，移动端会被海量请求拖垮。
+// .f10 为低码率版本（约 1.8~5.8MB/条），仅在用户点击播放时才拉取（preload=none）。
+function toSmallVideo(u) {
+  return String(u).replace(/\.f0\.mp4$/i, '.f10.mp4');
+}
+
 function buildMaterialThumb(u, i) {
   const tag = `TOP${i+1}`;
   const safe = escAttr(u);
   if (isVideoUrl(u)) {
-    return `<a class="material-thumb" href="${safe}" target="_blank"><span class="material-tag">${tag}</span><video src="${safe}" muted autoplay loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous" controls></video></a>`;
+    const small = escAttr(toSmallVideo(u));
+    // 真·懒加载：初始不带 src（0 请求），滚动进视口由 lazyVideoObserver 赋值 data-src 才拉取
+    return `<a class="material-thumb" href="${safe}" target="_blank" onclick="event.preventDefault();"><span class="material-tag">${tag}</span><video data-src="${small}" muted loop playsinline webkit-playsinline preload="none" controls style="background:#000;"></video></a>`;
   }
   return `<a class="material-thumb" href="${safe}" target="_blank"><span class="material-tag">${tag}</span><img src="${safe}" referrerpolicy="no-referrer" loading="lazy" /></a>`;
+}
+
+// 进入视口才给 video 赋 src（移动端首屏 0 视频请求）
+const lazyVideoObserver = ('IntersectionObserver' in window) ? new IntersectionObserver((entries, obs) => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    const v = en.target;
+    const src = v.getAttribute('data-src');
+    if (src) { v.src = src; v.removeAttribute('data-src'); }
+    obs.unobserve(v);
+  });
+}, { rootMargin: '300px' }) : null;
+
+function observeLazyVideos(root) {
+  const vids = (root || document).querySelectorAll('video[data-src]');
+  if (!lazyVideoObserver) {
+    vids.forEach(v => { const s = v.getAttribute('data-src'); if (s) { v.src = s; v.removeAttribute('data-src'); } });
+    return;
+  }
+  vids.forEach(v => lazyVideoObserver.observe(v));
 }
 
 function buildMaterialUnit(u, i) {
@@ -291,6 +319,7 @@ function renderMainTabs() {
       state.category = tab.categories[0] || '';
       renderMainTabs();
       renderContent();
+      observeLazyVideos(document);
     };
   });
 }
@@ -845,6 +874,7 @@ function renderContent() {
     btn.onclick = () => {
       state.category = btn.dataset.c;
       renderContent();
+      observeLazyVideos(document);
     };
   });
 
@@ -895,6 +925,7 @@ fetch(dataUrl).then(r => r.json()).then(d => {
   state.category = tabByKey(state.tabKey).categories[0] || '';
   renderMainTabs();
   renderContent();
+  observeLazyVideos(document);
 }).catch(err => {
   document.getElementById('contentPanel').innerHTML = '数据加载失败：' + err.message;
 });
