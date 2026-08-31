@@ -514,12 +514,15 @@ const _BASE_COST = P.overall.cost_wan;
 const _BASE_CUST = P.n_total;
 function renderPenetrationKpi(elId, d, colorClass='') {
   // d: {cost_wan, cost_pct, cost_delta_wan, cust_n, cust_pct}
-  const penCost = (d.cost_wan / _BASE_COST) * 100;
-  const penCust = (d.cust_n   / _BASE_CUST) * 100;
+  // null 容错：数据缺失(如当日未导出直播实时文件)时，渗透率与客户数均显示 '-'，避免输出 0.00% / null
+  const _hasCost = (d.cost_wan !== null && d.cost_wan !== undefined && !isNaN(d.cost_wan));
+  const _hasCust = (d.cust_n   !== null && d.cust_n   !== undefined && !isNaN(d.cust_n));
+  const penCost = _hasCost ? (d.cost_wan / _BASE_COST) * 100 : null;
+  const penCust = _hasCust ? (d.cust_n   / _BASE_CUST) * 100 : null;
   const items = [
     { lb:'消耗',         val:fmt(d.cost_wan, 2),un:'万', dd: deltaHtml(d.cost_pct, d.cost_delta_wan, '万') },
     { lb:'消耗渗透率',val:fmt(penCost, 2),     un:'%',  dd: `<span style="font-size:10px;color:#5B7A9E;">占大盘 ${fmt(_BASE_COST,2)} 万</span>` },
-    { lb:'客户数',       val:d.cust_n,            un:'家', dd: deltaHtml(d.cust_pct, null, '') },
+    { lb:'客户数',       val:fmt(d.cust_n, 0),    un:'家', dd: deltaHtml(d.cust_pct, null, '') },
     { lb:'客户渗透率',   val:fmt(penCust, 1),     un:'%',  dd: `<span style="font-size:10px;color:#5B7A9E;">占大盘 ${_BASE_CUST} 家</span>` },
   ];
   document.getElementById(elId).innerHTML = items.map(it => `
