@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1788152727';
+const dataUrl = './data.json?v=1788153132';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -716,7 +716,7 @@ function renderContent() {
 
     return `
     <div class="chart-card" style="grid-column:1/-1;padding:18px 20px 14px;">
-      <div class="chart-title">近30天销售额 &amp; 销量走势</div>
+      <div class="chart-title">近${dates.length}天销售额 &amp; 销量走势（${dates[0]||''} ~ ${dates[dates.length-1]||''}）</div>
       <div style="display:flex;gap:16px;margin-bottom:6px;font-size:11px;">
         <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:18px;height:3px;background:#4f7cff;border-radius:2px;"></span> 销售额(万元)</span>
         <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:18px;height:3px;background:#e86a4a;border-radius:2px;"></span> 销量</span>
