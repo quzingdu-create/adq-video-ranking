@@ -162,6 +162,12 @@
     });
     return _readyPromise;
   }
+  // 2026-09-01: 登录态失效重试入口 —— 重置后重新走一次 ensureReady(内部会要求密码或复用 token)
+  function _ensureReadyRetry() {
+    try { if (typeof _readyPromise !== 'undefined') { _readyPromise = null; } } catch(_){}
+    return ensureReady();
+  }
+
   var _currentRtx = null;
   var _isV2 = false;
 
@@ -736,6 +742,8 @@
       clearRtx();
       _currentRtx = null;
       _readyPromise = null;
+      // 2026-09-01 修复: 退出时必须清掉自制登录标记, 否则下次进入仍被判定"已登录"而跳过登录
+      try { localStorage.removeItem('TCB_AUTH_STATE'); } catch(_){}
       if (_auth && _auth.signOut) {
         try { _auth.signOut(); } catch (e) {}
       }
@@ -786,6 +794,9 @@
               }
               _keysToDel.forEach(function(k){ try { localStorage.removeItem(k); } catch(_){} });
               if (_keysToDel.length) console.info('[cloud] R32 cleaned', _keysToDel.length, 'stale tcb tokens');
+              // 2026-09-01 修复: 删掉了 SDK 真实 token, 必须同步清掉自制登录标记 TCB_AUTH_STATE。
+              // 否则 ensureReady() 看到标记还在 → 跳过真正登录 → callFunction 必然 unauthenticated。
+              if (_keysToDel.length) { try { localStorage.removeItem('TCB_AUTH_STATE'); } catch(_){} }
               window.__TCB_TOKEN_CLEAN_DONE__ = true;
             } catch(_){}
           }
@@ -808,6 +819,28 @@
             if (e && !e.message) {
               var _m = e.errMsg || e.msg || e.error || e.code || '';
               if (_m) e = new Error('CloudBase API: ' + _m +' (code=' + (e.code || 'unknown') + ')');
+            }
+            // 2026-09-01 修复: 登录态失效(unauthenticated)时, 清掉自制标记并重置登录态后重试一次。
+            // 重试会重新走 ensureReady → 走真正登录(无密码则抛 NEED_PASSWORD 让上层弹密码框)。
+            var _em = String((e && (e.message || e.code)) || '');
+            if (/unauthenticated|UNAUTHENTICATED|INVALID_LOGIN|\b401\b/i.test(_em) && !(data && data.__retry)) {
+              try { console.warn('[cloud] 登录态失效, 重置后重试一次:', _em); } catch(_){}
+              try { localStorage.removeItem('TCB_AUTH_STATE'); } catch(_){}
+              try { if (typeof _readyPromise !== 'undefined') { _readyPromise = null; } } catch(_){}
+              try {
+                _ensureReadyRetry().then(function () {
+                  return _app.callFunction({ name: name, data: (data ? Object.assign({}, data, { __retry: 1 }) : { __retry: 1 }) });
+                }).then(function (r2) {
+                  resolve(r2 && r2.result !== undefined ? r2.result : r2);
+                }).catch(function (e2) {
+                  if (e2 && !e2.message) {
+                    var _m2 = e2.errMsg || e2.msg || e2.error || e2.code || '';
+                    if (_m2) e2 = new Error('CloudBase API: ' + _m2 + ' (code=' + (e2.code || 'unknown') + ')');
+                  }
+                  reject(e2);
+                });
+                return;
+              } catch (_) {}
             }
             reject(e);
           });
