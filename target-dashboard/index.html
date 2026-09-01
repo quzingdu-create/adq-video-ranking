@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>靶向客户监控看板 · 总览</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <div class="page-head">
+    <h1>靶向客户投放监控 <span class="period">QTD · 截至 2026-08-18</span></h1>
+    <p>26 家靶向引入客户 · 覆盖 6 个二级行业 · 10 家渠道服务商 · 数据每周一更新</p>
+  </div>
+
+  <!-- ① KPI（用 list 随筛选变）+ 右上角浮动过滤器 -->
+  <div class="kpi-section">
+    <div class="kpi-grid" id="kpiGrid"></div>
+    <div class="filter-floater" id="filterFloater">
+      <button class="filter-btn" id="filterBtn" type="button">
+        <span class="filter-icon">⌘</span>
+        <span class="filter-btn-body">
+          <span class="filter-btn-title" id="filterTitle">全部客户</span>
+          <span class="filter-btn-sel" id="filterSelected">未设筛选 · 26 家</span>
+        </span>
+        <span class="filter-caret">▾</span>
+      </button>
+      <div class="filter-panel" id="filterPanel">
+        <div class="filter-section">
+          <div class="filter-section-title">行业</div>
+          <div class="filter-chips" id="indChips"></div>
+        </div>
+        <div class="filter-section">
+          <div class="filter-section-title">服务商</div>
+          <div class="filter-chips" id="agentChips"></div>
+        </div>
+        <div class="filter-footer">
+          <button class="filter-clear" id="filterClear" type="button">清除全部</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ Top 建议 + 行业消耗（卡 row 上移，在客户表上面） -->
+  <div class="card-row" style="margin-top:8px">
+    <div class="card">
+      <h2>需优先介入 · Top 建议</h2>
+      <div class="sub">规则引擎输出 · 按优先级 P0 → P2 排序</div>
+      <div id="topAdvice"></div>
+    </div>
+    <div class="card">
+      <h2>行业消耗结构</h2>
+      <div class="sub">靶向客户在各二级行业的消耗分布（饼图）</div>
+      <div id="industryDist"></div>
+    </div>
+  </div>
+
+  <!-- ④ 客户健康度总表（前 5 + 更多按钮） -->
+  <div class="card" style="margin-top:8px">
+    <h2>客户健康度总表</h2>
+    <div class="sub" id="custSummarySub">按 QTD 消耗排序 · 默认展示前 5 家 · 点击"更多"展开全部</div>
+    <div id="customerTbl"></div>
+    <div id="moreBtn" style="margin-top:14px;text-align:center"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async()=>{
+  await initTopbar("index");
+  // 过滤浮动按钮全局交互（每个页面只绑一次）
+  const fb = document.getElementById("filterBtn");
+  const fp = document.getElementById("filterPanel");
+  fb.onclick = e => { e.stopPropagation(); fp.classList.toggle("open"); fb.classList.toggle("open"); };
+  document.addEventListener("click", e => { if(!document.getElementById("filterFloater").contains(e.target)){ fp.classList.remove("open"); fb.classList.remove("open"); } });
+  document.getElementById("filterClear").onclick = ()=>{ currentInds.clear(); currentAgents.clear(); showAll=false; render(); };
+  // chip 点击代理（容器内容每次 render 重建，但代理绑在容器上，永久有效）
+  document.getElementById("indChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-fkind='ind']");
+    if(!b) return;
+    const v = b.dataset.fkey;
+    if(v==="__all__") currentInds.clear();
+    else if(currentInds.has(v)) currentInds.delete(v);
+    else currentInds.add(v);
+    showAll=false; render();
+  });
+  document.getElementById("agentChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-fkind='agent']");
+    if(!b) return;
+    const v = b.dataset.fkey;
+    if(v==="__all__") currentAgents.clear();
+    else{
+      const key = v==="空"?"":v;
+      if(currentAgents.has(key)) currentAgents.delete(key);
+      else currentAgents.add(key);
+    }
+    showAll=false; render();
+  });
+  render();
+})();
+
+let currentInds = new Set();      // 多选行业
+let currentAgents = new Set();    // 多选服务商
+let showAll = false;
+
+async function render(){
+  const d = await loadData();
+  const all = filterByRole(d.customers, window.ROLE);
+  all.forEach(refreshAdvice);
+
+  // 筛选 chip → 浮动过滤器面板
+  const inds = [...new Set(all.map(c=>c.industry))];
+  const agents = [...new Set(all.map(c=>c.agent).filter(a=>a && a!=="空"))];
+  const indCount = currentInds.size;
+  const agentCount = currentAgents.size;
+  document.getElementById("indChips").innerHTML = `
+    <button class="chip ${indCount===0?'on':''}" data-fkind="ind" data-fkey="__all__">全部</button>
+    ${inds.map(i=>`<button class="chip ${currentInds.has(i)?'on':''}" data-fkind="ind" data-fkey="${i}">${i}</button>`).join("")}
+  `;
+  document.getElementById("agentChips").innerHTML = `
+    <button class="chip ${agentCount===0?'on':''}" data-fkind="agent" data-fkey="__all__">全部</button>
+    ${[...agents,"空"].map(a=>{
+      const label = a==="空"?"直客/内部":a;
+      const key = a==="空"?"":a;
+      return `<button class="chip ${currentAgents.has(key)?'on':''}" data-fkind="agent" data-fkey="${a}">${label}</button>`;
+    }).join("")}
+  `;
+
+  // 应用筛选（交集）
+  const list = all.filter(c=>{
+    if(currentInds.size>0 && !currentInds.has(c.industry)) return false;
+    if(currentAgents.size>0){
+      const cAgents = new Set();
+      cAgents.add(c.agent||"");
+      (c.shops||[]).forEach(s=>cAgents.add(s.agent||""));
+      let hit = false;
+      for(const a of currentAgents){ if(cAgents.has(a)){hit=true;break;} }
+      if(!hit) return false;
+    }
+    return true;
+  });
+
+  /* 筛选按钮：把已选项完整列出来 */
+  (function(){
+    const indArr = [...currentInds];
+    const agentArr = [...currentAgents].map(a=>a===""?"直客/内部":a);
+    const parts = [];
+    if(indArr.length)   parts.push(`行业：${indArr.join("、")}`);
+    if(agentArr.length) parts.push(`服务商：${agentArr.join("、")}`);
+    const btn   = document.getElementById("filterBtn");
+    const title = document.getElementById("filterTitle");
+    const selEl = document.getElementById("filterSelected");
+    if(parts.length){
+      btn.classList.add("has-filter");
+      title.textContent = `已筛选 ${list.length} / ${all.length} 家`;
+      selEl.textContent = parts.join("  ·  ");
+      selEl.title = parts.join("  ·  ");
+    } else {
+      btn.classList.remove("has-filter");
+      title.textContent = "全部客户";
+      selEl.textContent = `未设筛选 · ${all.length} 家`;
+      selEl.title = "";
+    }
+  })();
+
+  /* KPI —— 用 list 跟随筛选 */
+  const consume = list.reduce((s,c)=>s+c.consume,0);
+  const gmv = list.reduce((s,c)=>s+c.gmv,0);
+  const roi = consume>0 ? gmv/consume : 0;
+  const active = list.filter(c=>c.consume>=100).length;
+  const silent = list.filter(c=>c.consume<100).length;
+  const highRisk = list.filter(c=> (c.advice||[]).some(a=>a.level==="P0"||a.level==="P1")).length;
+
+  document.getElementById("kpiGrid").innerHTML = `
+    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">QTD</span></div>
+      <div class="kpi-val">${fmtMoney(consume,0)}<span class="unit">元</span></div>
+      <div class="kpi-hint">${list.length} 家客户合计${list.length!==all.length?` / 总 ${all.length} 家`:''}</div></div>
+    <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>
+      <div class="kpi-val">${fmtMoney(gmv,0)}<span class="unit">元</span></div>
+      <div class="kpi-hint">来自广告归因</div></div>
+    <div class="kpi ${roi>=3?'k-ok':'k-warn'}"><div class="kpi-label">整体 ROI</div>
+      <div class="kpi-val">${fmtNum(roi,2)}</div>
+      <div class="kpi-hint">${roi>=3?'<span class="up">达标 ≥ 3.0</span>':'<span class="dn">低于健康线 3.0</span>'}</div></div>
+    <div class="kpi ${silent>0?'k-warn':'k-ok'}"><div class="kpi-label">活跃 / 未起量</div>
+      <div class="kpi-val">${active}<span class="unit">/${silent}</span></div>
+      <div class="kpi-hint">${silent>0?'未起量客户需优先介入':'全部客户已起量'}</div></div>
+    <div class="kpi k-danger"><div class="kpi-label">高风险客户</div>
+      <div class="kpi-val">${highRisk}<span class="unit">家</span></div>
+      <div class="kpi-hint">带 P0 或 P1 建议</div></div>
+  `;
+
+  /* Top 建议 —— 用 list */
+  const flat = [];
+  list.forEach(c=>{
+    (c.advice||[]).forEach(a=>{ flat.push({...a, sub:c.sub, industry:c.industry, agent:c.agent}); });
+  });
+  const rank = {P0:0, P1:1, P2:2};
+  flat.sort((a,b)=>(rank[a.level]||9)-(rank[b.level]||9));
+  const top = flat.slice(0, 8);
+  document.getElementById("topAdvice").innerHTML = top.length ? `
+    <div class="advice">${top.map(a=>`
+      <div class="advice-item ${a.level.toLowerCase()}">
+        <div class="advice-head">
+          <span class="level">${a.level}</span>
+          <span class="tag-name">${a.tag}</span>
+          <a href="detail.html?sub=${encodeURIComponent(a.sub)}">${a.sub} →</a>
+        </div>
+        <div class="advice-reason">${a.reason}</div>
+        <div class="advice-action">建议 · <b>${a.action}</b></div>
+      </div>`).join("")}
+    </div>
+    <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 展示前 8 条</div>
+  ` : '<div class="empty">当前筛选下暂无建议</div>';
+
+  /* 行业消耗 —— 饼图，用 list */
+  const indMap = {};
+  list.forEach(c=>{ indMap[c.industry] = (indMap[c.industry]||0) + c.consume; });
+  document.getElementById("industryDist").innerHTML = Object.keys(indMap).length
+    ? `<div class="ind-pie-wrap">${renderIndustryPie(indMap, consume, d.industry_benchmark)}</div>
+      <div class="ind-d-wrap"><div class="sub" style="margin:14px 0 6px">行业明细</div>${renderIndustryDetail(indMap, consume, d.industry_benchmark)}</div>`
+    : '<div class="empty">无数据</div>';
+
+  /* 客户健康度总表 —— Card Grid 前 5 + 更多 */
+  const SHOW_N = 5;
+  const sortedList = list.slice().sort((a,b)=>b.consume-a.consume);
+  const showList = showAll ? sortedList : sortedList.slice(0, SHOW_N);
+  document.getElementById("customerTbl").innerHTML = showList.length
+    ? `<div class="cg-grid">${showList.map(c=>customerGridCard(c)).join("")}</div>`
+    : '<div class="empty">当前筛选下无客户</div>';
+
+  document.getElementById("custSummarySub").textContent = showAll
+    ? `展示全部 ${list.length} 家客户 · 按 QTD 消耗排序 · 点击客户主体进入诊断详情`
+    : `按 QTD 消耗排序 · 展示前 ${Math.min(SHOW_N, sortedList.length)} / ${sortedList.length} 家 · 点击"更多"展开全部`;
+
+  document.getElementById("moreBtn").innerHTML = sortedList.length > SHOW_N ? `
+    <button class="btn ghost" id="toggleMore">${showAll ? '收起 ▲' : `展开全部 ${sortedList.length} 家 ▼`}</button>
+  ` : '';
+  const tog = document.getElementById("toggleMore");
+  if(tog) tog.onclick = ()=>{ showAll = !showAll; render(); };
+}
+</script>
+</body>
+</html>

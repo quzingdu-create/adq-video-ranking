@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>投放自查报告 · 靶向客户监控看板</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="topbar" id="topbar"></div>
+<div class="wrap">
+  <div class="page-head">
+    <h1>投放自查报告 <span class="period" id="cusTag">-</span></h1>
+    <p id="pgSub"></p>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(async()=>{
+  await initTopbar("customer");
+  render();
+})();
+
+async function render(){
+  const d = await loadData();
+  const c = d.customers.find(x=>x.sub===window.ROLE.id) || d.customers[0];
+  document.getElementById("cusTag").textContent = c.industry;
+  document.getElementById("pgSub").textContent = `数据每周一更新 · 行业对标已脱敏 · 当前客户：${c.sub}`;
+
+  document.getElementById("content").innerHTML = renderCustomerDetail(d, c);
+}
+
+window.onRoleChanged = render;
+render();
+</script>
+</body>
+</html>
