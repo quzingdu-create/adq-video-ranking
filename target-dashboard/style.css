@@ -703,3 +703,181 @@ a:hover{text-decoration:underline}
 .kpi-section .filter-floater{padding-top:0;width:300px}
 .kpi-section .filter-btn{width:100%;box-sizing:border-box}
 .kpi-section .filter-btn-sel{max-width:100%}
+
+/* ============================================================
+   移动端适配（≤ 768px）
+   策略：所有多列 grid 降为单列；表格转横向滚动卡；
+        topbar 换行；筛选面板不超屏；字号/间距整体收紧
+   ============================================================ */
+@media (max-width:768px){
+  /* --- 基础容器 --- */
+  html,body{-webkit-text-size-adjust:100%}
+  .wrap{padding:16px 14px 48px}
+  .container{padding-left:14px;padding-right:14px}
+
+  /* --- 顶栏：品牌 + nav 一行，身份切换换到第二行右对齐 --- */
+  .topbar{
+    padding:10px 14px;gap:10px;flex-wrap:wrap;
+    position:sticky;top:0;z-index:60;
+  }
+  .brand{gap:8px}
+  .brand-name{font-size:13.5px}
+  .brand-sub{display:none}
+  .nav{margin-left:0;gap:2px}
+  .nav a{padding:6px 10px;font-size:13px}
+  .topbar-right{
+    margin-left:auto;gap:8px;
+    width:100%;justify-content:flex-end;
+  }
+  .role-switcher{width:100%}
+  .role-chip{width:100%;justify-content:space-between}
+
+  /* --- 页面标题区 --- */
+  .page-head{padding:16px 0 12px}
+  .page-head h1,.detail-title h1{font-size:19px;line-height:1.3}
+  .page-desc,.detail-meta{font-size:12.5px;flex-wrap:wrap;gap:6px}
+
+  /* --- KPI：5 列 → 2 列；筛选按钮独占一行全宽 --- */
+  .kpi-section{flex-direction:column;gap:12px}
+  .kpi-section > .kpi-grid{
+    grid-template-columns:repeat(2,1fr);gap:10px;width:100%;
+  }
+  .kpi-section .filter-floater{width:100%;padding-top:0}
+  .kpi-section .filter-btn{width:100%}
+  .kpi{padding:12px 13px}
+  .kpi-val{font-size:22px}
+  .kpi-label{font-size:11.5px}
+  .kpi-hint{font-size:11px}
+  .kpi:last-child:nth-child(odd){grid-column:1 / -1}   /* 第5格占满整行 */
+
+  /* --- 筛选面板不超屏 --- */
+  .filter-panel{
+    width:calc(100vw - 28px);
+    max-width:400px;
+    right:0;left:auto;
+    padding:12px 14px;
+  }
+  .filter-chips{max-height:180px;overflow-y:auto}
+
+  /* --- 多列 grid 全部降为单列 --- */
+  .card-row,.grid-2,.grid-3{grid-template-columns:1fr;gap:12px}
+  .cg-grid{grid-template-columns:1fr;gap:10px}
+  .advice{grid-template-columns:1fr}
+  .mini-kpi-grid{grid-template-columns:repeat(2,1fr);gap:7px}
+
+  /* --- 卡片内边距收紧 --- */
+  .card{padding:14px 14px 15px;border-radius:12px}
+  .card h2{font-size:15px}
+  .card .sub{font-size:12px}
+  .section-h{font-size:12.5px;margin:20px 0 10px}
+
+  /* --- 表格：转横向滚动，不再撑宽布局 --- */
+  .tbl{
+    display:block;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    white-space:nowrap;
+    font-size:12.5px;
+  }
+  .tbl thead th,.tbl tbody td{padding:9px 10px}
+  .tbl .sub-name{max-width:160px}
+
+  /* --- 行业明细表：6 列 → 精简为 3 列（名 / 消耗 / 占比）--- */
+  .ind-d-head,.ind-d-row,.ind-d-foot{
+    grid-template-columns:10px 1fr 74px 52px;
+    gap:7px;font-size:12px;padding:6px 2px;
+  }
+  .ind-d-head span:nth-child(5),
+  .ind-d-row span:nth-child(5),
+  .ind-d-head span:nth-child(6),
+  .ind-d-row span:nth-child(6),
+  .ind-d-foot span:nth-child(5),
+  .ind-d-foot span:nth-child(6){display:none}
+
+  /* --- 饼图 + 图例：纵向堆叠，饼图居中缩小 --- */
+  .ind-pie{flex-direction:column;gap:12px}
+  .ind-pie-svg{width:170px;align-self:center}
+  .ind-legend{width:100%;min-width:0}
+
+  /* --- 服务商行业分布条 --- */
+  .ind-p-row{grid-template-columns:84px 1fr 96px;gap:8px}
+
+  /* --- 大柱状图：SVG 自适应 + 加滚动（指标多时横滑）--- */
+  .cmp-big-wrap{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  .cmp-big-svg{min-width:520px;height:auto}
+
+  /* --- 客户方块卡 --- */
+  .cg-card{padding:12px 13px 10px}
+  .cg-name{font-size:13px;-webkit-line-clamp:2}
+  .cg-stat-vl{font-size:15px}
+
+  /* --- 建议卡 --- */
+  .advice-item{padding:11px 12px}
+  .advice-head .tag-name{font-size:13px}
+  .advice-reason,.advice-action{font-size:12.5px}
+
+  /* --- 详情 chips --- */
+  .detail-chips{gap:5px}
+  .detail-chips .chip{font-size:11px;padding:3px 8px}
+
+  /* --- 角色菜单 --- */
+  .role-menu{
+    width:calc(100vw - 28px);
+    max-width:340px;
+    right:0;left:auto;
+  }
+  .rm-list{max-height:60vh}
+
+  /* --- 通用：长文本不撑破 --- */
+  h1,h2,h3,.sub,.kpi-hint{overflow-wrap:anywhere}
+  .chip{font-size:12px;padding:5px 10px}
+}
+
+/* 小屏（≤ 420px）再收一档 */
+@media (max-width:420px){
+  .wrap{padding:14px 11px 40px}
+  .kpi-section > .kpi-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi-val{font-size:20px}
+  .mini-kpi-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .cg-stat-vl{font-size:14px}
+  .ind-d-head,.ind-d-row,.ind-d-foot{grid-template-columns:10px 1fr 66px 46px;gap:6px}
+}
+
+/* ============================================================
+   grid 溢出兜底（关键修复）
+   grid track 的 min-width:auto 会被子项 min-content 撑开，
+   导致表格/长文本所在的 grid item 把整页撑宽。
+   解法：所有 grid 容器直接子项 min-width:0
+   ============================================================ */
+.card-row > *,
+.grid-2 > *,
+.grid-3 > *,
+.kpi-grid > *,
+.cg-grid > *,
+.mini-kpi-grid > *,
+.advice > *{min-width:0}
+.card{min-width:0;overflow:hidden}
+.tbl{max-width:100%}
+.ind-p-list,.ind-p-row{min-width:0}
+.ind-p-name,.ind-p-val{min-width:0}
+
+/* ============================================================
+   移动端触控目标：≥ 40px（Apple HIG 建议 44px，这里取 40 兼顾密度）
+   ============================================================ */
+@media (max-width:768px){
+  .chip{
+    min-height:36px;display:inline-flex;align-items:center;
+    padding:8px 13px;font-size:12.5px;
+  }
+  .role-chip{min-height:40px;padding:8px 12px}
+  .filter-clear{min-height:38px;padding:9px 16px;font-size:13px}
+  .filter-btn{min-height:46px}
+  .rm-item{min-height:42px}
+  .nav a{min-height:38px;display:inline-flex;align-items:center}
+  .cg-card{min-height:44px}
+  .cg-more,.more-btn{min-height:44px}
+  /* 详情页返回链接 */
+  .back-link,a.back{min-height:40px;display:inline-flex;align-items:center}
+}
