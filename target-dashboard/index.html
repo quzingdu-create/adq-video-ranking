@@ -139,8 +139,10 @@ async function render(){
     chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
       + inds.map(i=>`<button class="chip ${currentViewSel.has(i)?'on':''}" data-fkey="${i}">${i}</button>`).join('');
   } else if(currentView === 'agent'){
-    // v2 数据无代理商字段（build_data.py c.agent='内部'）→ 显示空态
-    chipsHtml = `<div class="empty" style="padding:20px 10px;color:var(--text-3);font-size:12px">暂无代理商数据<br/><span style="font-size:11px">v2 数据源（销售xlsx + 8份CSV）不含 agent 字段</span></div>`;
+    // v2.6：已接入代理商政策集团对应（154421 副本 csv）
+    const agents = (d.overall && d.overall.agents) || [];
+    chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
+      + agents.map(a=>`<button class="chip ${currentViewSel.has(a)?'on':''}" data-fkey="${a}">${a}</button>`).join('');
   } else if(currentView === 'sales'){
     const sales = [...new Set(all.map(c=>c.sales).filter(Boolean))];
     chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
@@ -181,27 +183,35 @@ async function render(){
     }
   })();
 
-  /* KPI —— 用 list 跟随筛选 */
+  /* KPI —— 双周期数据展示（子青 9.3 拍板）
+   - 8.28-9.1（指标明细 csv 78 客户 26 万元）
+   - qtd（通用分析数据集大盘 401 万元） */
+  const k = d.overall.kpi || {};
+  const k828 = k.period_8_28_9_1 || {};
+  const kqtd = k.period_qtd || {};
   const consume = list.reduce((s,c)=>s+c.consume,0);
   const gmv = list.reduce((s,c)=>s+c.gmv,0);
-  const roi = consume>0 ? gmv/consume : 0;
   const active = list.filter(c=>c.consume>=100).length;
   const silent = list.filter(c=>c.consume<100).length;
   const highRisk = list.filter(c=> (c.advice||[]).some(a=>a.level==="P0"||a.level==="P1")).length;
 
   document.getElementById("kpiGrid").innerHTML = `
-    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">QTD</span></div>
-      <div class="kpi-val">${fmtMoney(consume,0)}<span class="unit">元</span></div>
-      <div class="kpi-hint">${list.length} 家客户合计${list.length!==all.length?` / 总 ${all.length} 家`:''}</div></div>
-    <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>
-      <div class="kpi-val">${fmtMoney(gmv,0)}<span class="unit">元</span></div>
-      <div class="kpi-hint">来自广告归因</div></div>
-    <div class="kpi ${silent>0?'k-warn':'k-ok'}"><div class="kpi-label">活跃 / 未起量</div>
+    <div class="kpi k-brand">
+      <div class="kpi-label">总消耗 <span class="tag brand">8.28-9.1</span></div>
+      <div class="kpi-val">¥${(k828.total_yuan||0).toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit"></span></div>
+      <div class="kpi-hint">${k828.count||0} 家 · 指标明细 csv 口径</div></div>
+    <div class="kpi k-info">
+      <div class="kpi-label">大盘 QTD 消耗 <span class="tag">qtd</span></div>
+      <div class="kpi-val">¥${kqtd.total_wan||0}<span class="unit">万</span></div>
+      <div class="kpi-hint">${kqtd.period||'QTD'} · 通用分析数据集口径</div></div>
+    <div class="kpi ${silent>0?'k-warn':'k-ok'}">
+      <div class="kpi-label">靶向在投 / 待起量</div>
       <div class="kpi-val">${active}<span class="unit">/${silent}</span></div>
       <div class="kpi-hint">${silent>0?'未起量客户需优先介入':'全部客户已起量'}</div></div>
-    <div class="kpi k-danger"><div class="kpi-label">高风险客户</div>
+    <div class="kpi k-danger">
+      <div class="kpi-label">高风险客户</div>
       <div class="kpi-val">${highRisk}<span class="unit">家</span></div>
-      <div class="kpi-hint">带 P0 或 P1 建议</div></div>
+      <div class="kpi-hint">带 P0 或 P1 建议 · 当前筛选共 ${list.length} 家</div></div>
   `;
 
   /* Top 建议 —— 按"建议规则"去重，下方列客户清单

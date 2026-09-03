@@ -2,10 +2,60 @@
 window.DATA = null;
 window.ROLE = { type: "internal", id: "all", label: "内部 · 全量", key: "internal:all" };
 
+// ============================================================
+// SOP 复制按钮（子青 9.3 拍板：5 份产品文档一键复制）
+// ============================================================
+const SOP_KEY_MAP = {
+  '4+m': 'four_plus_m',
+  '潜客优投': 'latent_qianke',
+  '多商品聚合页': 'aggregate_page',
+  '小店艾米智投': 'xiaodian_aimi'
+};
+window.SOP_KEY_MAP = SOP_KEY_MAP;
+
+function copySOP(sopKey){
+  const d = window.__DATA__ || window.DATA || {};
+  const sop = (d.sops||{})[sopKey];
+  if(!sop){ alert('未找到该产品 SOP 文档'); return; }
+  const txt = sop.sections.map(s => '【'+s.title+'】\n'+s.content).join('\n\n');
+  const full = '【'+sop.name+' 一键复制 SOP】\n\n'+txt;
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(full).then(
+      ()=>showToast('✅ 已复制 '+sop.name+' SOP（'+sop.sections.length+' 节）'),
+      (e)=>showToast('❌ 复制失败：'+e.message)
+    );
+  } else {
+    // fallback：临时 textarea + execCommand
+    const ta = document.createElement('textarea');
+    ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('✅ 已复制（兼容模式）'+sop.name); }
+    catch(e){ showToast('❌ 复制失败：'+e.message); }
+    document.body.removeChild(ta);
+  }
+}
+window.copySOP = copySOP;
+
+function showToast(msg){
+  let t = document.getElementById('__toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '__toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1F1F1D;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 4px 18px rgba(0,0,0,0.2);opacity:0;transition:opacity .25s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t.__T);
+  t.__T = setTimeout(()=>{ t.style.opacity='0'; }, 2400);
+}
+
 async function loadData(){
   if(window.DATA) return window.DATA;
   const r = await fetch("data.json");
   window.DATA = await r.json();
+  window.__DATA__ = window.DATA;     // SOP 复制按钮需要访问 data.sops
+  return window.DATA;
   return window.DATA;
 }
 
@@ -1045,7 +1095,7 @@ function renderCustomerDetail(d, c){
     </div>`;
   }
 
-  // 能力类指标（是否使用 + 消耗占比）
+  // 能力类指标（是否使用 + 消耗占比 + SOP 复制按钮）
   // 6 个能力：4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米 / 全域通
   function abilityCell(label, isUsed, consume, totalConsume){
     const ok = isUsed === true;
@@ -1055,8 +1105,11 @@ function renderCustomerDetail(d, c){
       const pct = consume / totalConsume * 100;
       ratioTxt = `${pct.toFixed(1)}%`;
     }
+    // SOP 复制按钮（4+m / 潜客优投 / 多商品聚合页 / 小店艾米 4 类有 SOP）
+    const sopKey = SOP_KEY_MAP[label];
+    const sopBtn = sopKey ? `<button class="btn-sop" onclick="copySOP('${sopKey}');event.stopPropagation();" title="一键复制 SOP">📋 SOP</button>` : '';
     return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
-      <div class="ml">${label}</div>
+      <div class="ml">${label}${sopBtn}</div>
       <div class="mv">${ok?'已使用':'未使用'}</div>
       <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?('已投 消耗占比 '+ratioTxt):'建议开启'}</div>
     </div>`;
@@ -1079,8 +1132,9 @@ function renderCustomerDetail(d, c){
     ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
     ["ctr", c.ctr, "%", 2, b.ctr_p75, "higher"],
     ["cvr", c.cvr, "%", 2, b.cvr_p75, "higher"],
-    ["下单单价(元)", c.aov, "元", 0, b.aov_p75, "higher"],
-    ["下单ROI", c.roi, "", 2, b.roi_p75, "higher"],
+    // 子青 9.3 拍板：下单单价/下单ROI 不对比行业（不同客户无可比性）
+    ["下单单价(元)", c.aov, "元", 0, null, null],
+    ["下单ROI", c.roi, "", 2, null, null],
   ];
   // ② 广告基建
   const buildRows = [
@@ -1111,11 +1165,12 @@ function renderCustomerDetail(d, c){
     ["纠纷率", c.dispute, "%", 2, b.dispute_p25, "lower"],
   ];
   // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
+  // ⑥ 投放端 + 链路（子青 9.3 拍板：链路只看 小店 + 直播）
   const deliveryCells = [
     // 投放端
     abilityCell("全域通", c.is_quan_yu_tong, c.consume_quanyutong, tot),
-    abilityCell("adq", c.adq, tot, tot),  // adq 是主表全部
-    // 链路（暂无独立数据源，先显示是否使用）
+    abilityCell("adq", c.adq, tot, tot),
+    // 链路（仅 小店 + 直播）
     usageCell("小店", c.shop_count>0, c.shop_count+' 个小店'),
     usageCell("直播", c.is_live, ''),
   ];

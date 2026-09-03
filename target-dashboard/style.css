@@ -1074,3 +1074,18 @@ a:hover{text-decoration:underline}
 .cmp-line-svg .grid-line{transition:opacity .15s}
 .cmp-line-svg .dot{transition:r .15s;cursor:pointer}
 .cmp-line-svg .dot:hover{r:5}
+
+/* ============================================================
+   SOP 复制按钮（在能力 cell 的 ml 标题旁边）
+   ============================================================ */
+.btn-sop{
+  float:right;
+  font-size:10.5px;line-height:18px;
+  padding:0 6px;height:18px;border-radius:5px;
+  background:var(--bg-sub);border:0;
+  color:var(--brand);cursor:pointer;
+  font-family:inherit;font-weight:500;
+  transition:background .15s;
+}
+.btn-sop:hover{background:var(--brand-soft)}
+.ml{position:relative}

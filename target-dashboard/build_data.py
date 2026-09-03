@@ -21,6 +21,7 @@ import openpyxl
 
 HOME = Path.home(); SRC = HOME/'Downloads'
 OUT  = HOME/'Downloads/dashboard'
+BUILD = OUT / 'build'
 OLD  = HOME/'Downloads/dashboard.bak-20260831-pre-v2'
 
 def f(x, default=0.0):
@@ -76,6 +77,25 @@ def main():
             name=name.strip()
             if name: sales_map[name] = str(r[0]).strip()
     targets = list(sales_map.keys())
+
+    # === 4.6) 代理商政策集团对应（154421 副本 csv） ===
+    agent_policy_map = {}
+    agent_total_wan = 0.0
+    agent_consume_wan = {}
+    with open(SRC/'通用分析数据集 - 2026-09-03T154421.109_副本.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            sub = (r.get('客户简称') or '').strip()
+            agent = (r.get('代理商政策集团') or '').strip() or '未分配'
+            wan_s = (r.get('消耗(万元)') or '').strip()
+            wan = (fn(wan_s) if wan_s else 0) or 0
+            if sub == '整体':
+                agent_total_wan = wan
+            elif sub:
+                agent_policy_map[sub] = agent
+                if wan > 0:
+                    agent_consume_wan[agent] = agent_consume_wan.get(agent, 0) + wan
+    print(f'[agent] {len(agent_consume_wan)} 家代理商（QTD {agent_total_wan:.1f} 万）')
+
     print(f'[xlsx] 主体 {len(targets)} 条 / 销售 {len(set(sales_map.values()))} 人')
 
     # ─── 2) 主表（微信小店x视频号）→ 索引到白名单 ───
@@ -297,7 +317,7 @@ def main():
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
-                'agent':'内部',
+                'agent':agent_policy_map.get(sub,'内部'),
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
                 'main_consume':main_consume.get(sub, round(consume,2)),
                 # KPI（消耗/双率/ROI）—— 无数据 → None
@@ -335,7 +355,7 @@ def main():
             # 占位（暂无消耗数据）——指标一律 None（前端显示 —），不用 0 冒充
             c = {
                 'sub':sub,'alias':sub_to_alias.get(sub, sub[:6]),
-                'sales':sales_map[sub],'industry':resolve_industry(sub),'agent':'内部',
+                'sales':sales_map[sub],'industry':resolve_industry(sub),'agent':agent_policy_map.get(sub,'内部'),
                 'consume':0.0,'gmv':0.0,'roi':None,
                 'main_consume':main_consume.get(sub,0.0),
                 'ctr':None,'cvr':None,'aov':None,'target_bid':None,
@@ -452,12 +472,28 @@ def main():
             'sales_count':len(set(sales_map.values())),
             'period':'qtd (7.1 - 9.1)',
             'period_days':7,
-            'kpi':kpi_summary,    # 指标明细 csv 算的权威 KPI
+            'kpi': {
+            'period_8_28_9_1': {     # 指标明细 csv 口径
+                'period': '2026-08-28 ~ 2026-09-01',
+                'total_yuan': kpi_summary['all_total'],
+                'count': kpi_summary['all_count'],
+                'avg_yuan': kpi_summary['all_avg'],
+                'source': '指标明细-9.3.csv',
+            },
+            'period_qtd': {         # 通用分析数据集 csv 口径
+                'period': 'QTD (7.1 - 9.1)',
+                'total_wan': round(agent_total_wan or 0, 2),
+                'source': '通用分析数据集 - 2026-09-03T141548.650.csv',
+            },
+        },
+        'agents': sorted(agent_consume_wan.keys()),
+        'agent_policy_map': agent_policy_map,
         },
         'industry_benchmark':ind_bench,
         'target_dashboard_trend':target_trend,
         'qtd_dashboard_trend':qtd_dash,
         'qtd_target_trend':qtd_target,
+        'sops': json.load(open(BUILD/'sops.json', encoding='utf-8')),  # 5 份产品 SOP 文案
         'customers_trend':dict(cust_trend),
         'customers':customers,
     }
