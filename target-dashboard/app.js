@@ -351,12 +351,32 @@ async function initTopbar(currentPage){
     const item = e.target.closest(".rm-item");
     if(!item) return;
     const key = item.dataset.key;
+    const pickedItem = roleSet.items.find(i=>i.key===key);
     currentKey = key;
     localStorage.setItem(lsKey, key);
     applyRole(key, roleSet);
     closeMenu();
+    // 🔴 子青 9.3 拍板：customer 类型切客户时自动跳转新 detail；partner 类型留在当前页只切视角
+    if(pickedItem && pickedItem.type === 'customer'){
+      const newSub = pickedItem.id;
+      const currentSub = new URLSearchParams(location.search).get('sub');
+      if(newSub && newSub !== currentSub){
+        location.href = 'detail.html?sub=' + encodeURIComponent(newSub);
+        return;  // 跳转后无需 onRoleChanged
+      }
+    }
     if(window.onRoleChanged) window.onRoleChanged();
   });
+
+  // 🔴 跳转时同步：URL sub → ROLE（子青 9.3 拍板，点了哪个客户 chip 顶栏就显示哪个）
+  const urlSub = new URLSearchParams(location.search).get('sub');
+  if(urlSub){
+    const found = roleSet.items.find(it => it.id === urlSub || it.label === urlSub);
+    if(found){
+      currentKey = found.key;
+      localStorage.setItem(lsKey, currentKey);
+    }
+  }
 
   applyRole(currentKey, roleSet);
 }
