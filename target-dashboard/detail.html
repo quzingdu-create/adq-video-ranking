@@ -24,16 +24,17 @@ async function render(){
   const d = await loadData();
   const url = new URL(location.href);
   const urlSub = url.searchParams.get("sub");
-  const sub = (window.ROLE.type==="customer" && window.ROLE.id)
-    ? window.ROLE.id
-    : (urlSub || d.customers[0].sub);
+  // 优先级：URL 显式指定的客户 > 身份下拉选中的客户 > 列表第一个
+  // （修正：此前把 localStorage 角色放在 URL 前面，导致点击任何客户都跳到角色默认值）
+  const sub = urlSub
+    || ((window.ROLE && window.ROLE.type==="customer" && window.ROLE.id) ? window.ROLE.id : null)
+    || d.customers[0].sub;
   const c = d.customers.find(x=>x.sub===sub);
   if(!c){ document.getElementById("detail").innerHTML='<div class="empty">未找到客户</div>'; return;}
   document.getElementById("detail").innerHTML = renderCustomerDetail(d, c);
 }
 
 window.onRoleChanged = render;
-render();
 </script>
 </body>
 </html>
