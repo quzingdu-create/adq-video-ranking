@@ -1320,7 +1320,9 @@ function renderCustomerDetail(d, c){
   const headColor = lv==='p0'?'--danger':lv==='p1'?'--warn':lv==='p2'?'--info':'--ok';
 
   // 每指标小卡：含与行业头部对标 + 差于标红
-  function mCell(label, val, unit, digit, bench, mode){
+  // 🔴 子青 9.3 拍板：vs 行业头部 **头部值**（%）改成 "vs 行业头部 X.X% 低/高（-N%）"
+  //   showBench=false 时不显示头部值（用于日均消耗/单价/ROI 这类金额或合成指标）
+  function mCell(label, val, unit, digit, bench, mode, showBench){
     const valid = val!=null && !isNaN(val);
     const hasBench = bench!=null && !isNaN(bench) && bench>0;
     let diff = null, vsTxt = '';
@@ -1329,7 +1331,13 @@ function renderCustomerDetail(d, c){
       const dir = mode==='lower' ? (val<=bench?'高':'低') : (val>=bench?'高':'低');
       // 标注基准来源：行业头部（同行业）还是大盘（全量客户）
       const srcLabel = (window.__BENCH_SRC__ || '行业头部');
-      vsTxt = `vs ${srcLabel} ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
+      const benchTxt = showBench === false ? '' : (
+        unit === '%' ? ` ${(bench||0).toFixed(2)}${unit}` :
+        unit === '秒' ? ` ${(bench||0).toFixed(1)}${unit}` :
+        unit === '' ? ` ${(bench||0).toFixed(2)}` :
+        unit === '元' ? '' : ` ${(bench||0).toFixed(2)}`
+      );
+      vsTxt = `vs ${srcLabel}${benchTxt} ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
     }
     // 🔴 与 genAdvice 的 isRed 保持同一套 5% 容差（否则建议不红但 cell 红，不一致）
     const RED_TOL = 0.05;
@@ -1400,26 +1408,26 @@ function renderCustomerDetail(d, c){
 
   // ① 消耗/双率/ROI —— 5 个核心（去目标出价，按截图）
   const kpiRows = [
-    ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
-    ["ctr", c.ctr, "%", 2, pickBench('ctr'), "higher"],
-    ["cvr", c.cvr, "%", 2, pickBench('cvr'), "higher"],
-    // 子青 9.3 拍板：下单单价/下单ROI 不对比行业（不同客户无可比性）
-    ["下单单价(元)", c.aov, "元", 0, null, null],
-    ["下单ROI", c.roi, "", 2, null, null],
+    ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null, false],     // 消耗不标头部
+    ["ctr", c.ctr, "%", 2, pickBench('ctr'), "higher", true],
+    ["cvr", c.cvr, "%", 2, pickBench('cvr'), "higher", true],
+    // 子青 9.3 拍板：下单单价/下单ROI 不标头部（金额或合成指标对标头部无意义）
+    ["下单单价(元)", c.aov, "元", 0, null, null, false],
+    ["下单ROI", c.roi, "", 2, null, null, false],
   ];
   // ② 广告基建
   const buildRows = [
-    ["有消耗的主体数", c.main_subject, "", 0, null, null],
-    ["有消耗的账户数", c.account, "", 0, pickBench('account'), "higher"],
-    ["有消耗广告数", c.ads, "", 0, pickBench('ads'), "higher"],
-    ["均曝光创意唯一性ID数", c.creative_id, "", 0, pickBench('creative_id'), "higher"],
-    ["新广告占比", c.new_ratio, "%", 1, pickBench('new_ratio'), "higher"],
-    ["一键起量使用占比", c.auto_ratio, "%", 1, pickBench('auto_ratio'), "higher"],
+    ["有消耗的主体数", c.main_subject, "", 0, null, null, false],
+    ["有消耗的账户数", c.account, "", 0, pickBench('account'), "higher", true],
+    ["有消耗广告数", c.ads, "", 0, pickBench('ads'), "higher", true],
+    ["均曝光创意唯一性ID数", c.creative_id, "", 0, pickBench('creative_id'), "higher", true],
+    ["新广告占比", c.new_ratio, "%", 1, pickBench('new_ratio'), "higher", true],
+    ["一键起量使用占比", c.auto_ratio, "%", 1, pickBench('auto_ratio'), "higher", true],
   ];
   // ③ 素材质量/内容质量 —— 只看 3 秒完播和播放时长
   const matNumRows = [
-    ["视频3秒完播率", c["3s_play"], "%", 2, pickBench('3s_play'), "higher"],
-    ["平均播放时长", c.avg_dur, "秒", 1, pickBench('avg_dur'), "higher"],
+    ["视频3秒完播率", c["3s_play"], "%", 2, pickBench('3s_play'), "higher", true],
+    ["平均播放时长", c.avg_dur, "秒", 1, pickBench('avg_dur'), "higher", true],
   ];
   // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米（看是否使用 + 消耗占比）
   const productBools = [
@@ -1433,9 +1441,9 @@ function renderCustomerDetail(d, c){
   // ⑤ 小店三率 —— 用绝对红线（与 genAdvice 的 rateRed 一致）
   // 行业 P25 分位受样本影响大，改用业务红线更稳：品退>1% / 差评>15% / 纠纷>0.5%
   const threeRateRows = [
-    ["品退率", c.ret, "%", 2, 1.0, "lower"],
-    ["差评率", c.bad, "%", 2, 15.0, "lower"],
-    ["纠纷率", c.dispute, "%", 2, 0.5, "lower"],
+    ["品退率", c.ret, "%", 2, 1.0, "lower", true],
+    ["差评率", c.bad, "%", 2, 15.0, "lower", true],
+    ["纠纷率", c.dispute, "%", 2, 0.5, "lower", true],
   ];
   // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
   // ⑥ 投放端 + 链路（子青 9.3 拍板：链路只看 小店 + 直播）
