@@ -969,6 +969,16 @@ function renderCustomerDetail(d, c){
     </div>`;
   }
 
+  // 能力类指标（是否使用 → 未使用则建议开启）
+  const boolCell = (label, val) => {
+    const used = val === true;
+    return `<div class="metric-cell ${used?'m-ok':'m-bad'}">
+      <div class="ml">${label}</div>
+      <div class="mv">${used?'已使用':'未使用'}</div>
+      <div class="mv-vs ${used?'m-ok':'m-bad'}">${used?'已在投':'建议开启'}</div>
+    </div>`;
+  };
+
   const kpiRows = [
     ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
     ["ctr", c.ctr, "%", 2, b.ctr_p75, "higher"],
@@ -985,25 +995,20 @@ function renderCustomerDetail(d, c){
     ["新广告占比", c.new_ratio, "%", 1, b.new_ratio_p75, "higher"],
     ["一键起量使用占比", c.auto_ratio, "%", 1, b.auto_ratio_p75, "higher"],
   ];
-  const matRows = [
+  // 素材质量 / 内容质量（4 个：完播 + 时长 + 4+m + 多商品聚合页）
+  const matNumRows = [
     ["视频3秒完播率", c["3s_play"], "%", 2, b["3s_play_p75"], "higher"],
     ["平均播放时长", c.avg_dur, "秒", 1, b.avg_dur_p75, "higher"],
-    ["是否使用4+m", c.is_4m?"是":"否", "", 0, null, null],
-    ["是否使用多商品聚合页", c.is_aggregate?"是":"否", "", 0, null, null],
   ];
-
-  // ⑤ 链路
-  const linkUse = [
-    {label:"是否使用潜客优投", val:c.is_latent, src:"潜客优投-靶向.csv"},
-    {label:"是否使用原生推广", val:c.is_native, src:"原生推广-靶向.csv"},
-    {label:"是否使用全域通", val:c.is_quan_yu_tong===true, src:"投放端-靶向.csv"},
-  ];
-  // ⑥ 投放端（4 个工具）
-  const productRows = [
-    {label:"4+m", val:c.is_4m},
-    {label:"多商品聚合页", val:c.is_aggregate},
-    {label:"小店艾米智投", val:c.is_smart_ad},
-    {label:"直播", val:c.is_live},
+  // 产品能力（7 个：潜客优投 / 原生推广 / 艾米智投 / 小店 / 直播 / 全域通 / adq）
+  const productBools = [
+    ["是否使用潜客优投", c.is_latent],
+    ["是否使用原生推广", c.is_native],
+    ["是否使用小店艾米", c.is_smart_ad],
+    ["小店", c.shop_count > 0],
+    ["直播", c.is_live],
+    ["全域通", c.is_quan_yu_tong === true],
+    ["adq", c.adq],
   ];
 
   return `
@@ -1037,41 +1042,17 @@ function renderCustomerDetail(d, c){
       </div>
       <div class="card compact">
         <h2>③ 素材质量 / 内容质量</h2>
-        <div class="sub">完播与功能</div>
-        <div class="metric-grid-3">${matRows.map(r=>mCell(...r)).join('')}</div>
+        <div class="sub">完播与时长 + 4+m / 多商品聚合页</div>
+        <div class="metric-grid-3">
+          ${matNumRows.map(r=>mCell(...r)).join('')}
+          ${boolCell("是否使用4+m", c.is_4m)}
+          ${boolCell("是否使用多商品聚合页", c.is_aggregate)}
+        </div>
       </div>
       <div class="card compact">
         <h2>④ 产品能力</h2>
-        <div class="sub">4 个能力使用标记</div>
-        <div class="metric-grid-3">${productRows.map(p=>{
-          const ok = p.val;
-          return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
-            <div class="ml">${p.label}</div>
-            <div class="mv">${ok?'已使用':'未使用'}</div>
-            <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?'已在投':'建议开启'}</div>
-          </div>`;
-        }).join('')}</div>
-      </div>
-      <div class="card compact">
-        <h2>⑤ 链路</h2>
-        <div class="sub">3 类链路 · 未使用建议开启</div>
-        <div class="metric-grid-3">${linkUse.map(p=>{
-          const ok = p.val===true;
-          return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
-            <div class="ml">${p.label}</div>
-            <div class="mv">${p.val===true?'是':(p.val===false?'否':'未知')}</div>
-            <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?'已开启':'建议开启'}</div>
-          </div>`;
-        }).join('')}</div>
-      </div>
-      <div class="card compact">
-        <h2>⑥ 投放端</h2>
-        <div class="sub">adq 投放</div>
-        <div class="metric-grid-3"><div class="metric-cell ${c.adq?'m-ok':'m-bad'}">
-          <div class="ml">adq 投放</div>
-          <div class="mv">${c.adq?'是':'否'}</div>
-          <div class="mv-vs ${c.adq?'m-ok':'m-bad'}">${c.adq?'已投放':'建议接入'}</div>
-        </div></div>
+        <div class="sub">7 个能力使用标记 · 未使用则建议开启</div>
+        <div class="metric-grid-3">${productBools.map(p=>boolCell(p[0], p[1])).join('')}</div>
       </div>
     </div>
 
