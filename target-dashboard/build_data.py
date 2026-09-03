@@ -87,6 +87,19 @@ def main():
             if name: sales_map[name] = str(r[0]).strip()
     targets = list(sales_map.keys())
 
+    # === 4.5) 客户趋势（提前加载，给 customers 用 consume_recent/qtd）===
+    cust_trend = defaultdict(list)
+    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            sub = (r.get('客户简称') or '').strip()
+            d = (r.get('时间') or '').strip()
+            v = f(r.get('日均消耗(元)'))
+            if sub and d and d != '整体' and v is not None and sub in sales_map:
+                cust_trend[sub].append({'date':d, 'value':v})
+    for sub in cust_trend:
+        cust_trend[sub].sort(key=lambda x: x['date'])
+    print(f'[trend] {len(cust_trend)} 客户趋势（每客户 64 天 by 天）')
+
     # === 4.6) 代理商政策集团对应（154421 副本 csv） ===
     agent_policy_map = {}
     agent_total_wan = 0.0
@@ -364,11 +377,18 @@ def main():
             gmv = sum((s['consume'] or 0)*(s['roi'] or 0) for s in roi_rows)
             tw_roi = sum((s['consume'] or 0) for s in roi_rows)
             roi = (gmv/tw_roi) if tw_roi>0 else None
+            # 🔴 子青 9.3 拍板：标注周期——「近期」(8.28-9.1) 和「季度」(QTD) 都开
+            # 用 customers_trend[sub]（64 天 by 天）累加
+            _trend = cust_trend.get(sub, [])
+            _recent = sum(p['value'] for p in _trend if '2026/08/26' <= p['date'] <= '2026/09/01')
+            _qtd    = sum(p['value'] for p in _trend)   # 全部 64 天累计
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
                 'agent':agent_policy_map.get(sub,'内部'),
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
+                'consume_recent':round(_recent,2),   # 近期 7 天累计（8.28-9.1）
+                'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~64 天）
                 'main_consume':main_consume.get(sub, round(consume,2)),
                 # KPI（消耗/双率/ROI）—— 无数据 → None
                 'ctr':rnd(w_avg('ctr'),3),'cvr':rnd(w_avg('cvr'),3),
@@ -497,19 +517,6 @@ def main():
     qtd_target = [{'date':d, 'value':round(v,2)} for d,v in sorted(cust_by_day_total.items())]
     # 防呆：qtd 客户合计必须有数据
     assert len(qtd_target) >= 30, f'qtd 客户合计数据不足 30 天，实际 {len(qtd_target)} 天'
-
-    # === 9) 客户趋势（用 141458.414 csv，每客户 64 天 by 天；之前用 9.3 csv 只有 1 天，浪费了） ===
-    cust_trend = defaultdict(list)
-    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
-        for r in csv.DictReader(fh):
-            sub = (r.get('客户简称') or '').strip()
-            d = (r.get('时间') or '').strip()
-            v = f(r.get('日均消耗(元)'))
-            if sub and d and d != '整体' and v is not None and sub in sales_map:
-                cust_trend[sub].append({'date':d, 'value':v})
-    for sub in cust_trend:
-        cust_trend[sub].sort(key=lambda x: x['date'])
-    print(f'[trend] {len(cust_trend)} 客户趋势（每客户 64 天 by 天）')
 
     # === 10) 输出 ===
     out = {

@@ -65,7 +65,7 @@
     </div>
     <div class="card">
       <h2>行业消耗结构</h2>
-      <div class="sub">靶向客户在各二级行业的消耗分布（饼图）</div>
+      <div class="sub">靶向客户在各二级行业的消耗分布 · <b>近 7 天 (8.28-9.1)</b> vs <b>QTD (7.1-9.1)</b></div>
       <div id="industryDist"></div>
     </div>
   </div>
@@ -271,12 +271,30 @@ async function render(){
     <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 已按规则去重 · 共 ${merged.length} 类问题</div>
   ` : '<div class="empty">当前筛选下暂无建议</div>';
 
-  /* 行业消耗 —— 饼图，用 list */
-  const indMap = {};
-  list.forEach(c=>{ indMap[c.industry] = (indMap[c.industry]||0) + c.consume; });
-  document.getElementById("industryDist").innerHTML = Object.keys(indMap).length
-    ? `<div class="ind-pie-wrap">${renderIndustryPie(indMap, consume, d.industry_benchmark)}</div>
-      <div class="ind-d-wrap"><div class="sub" style="margin:14px 0 6px">行业明细</div>${renderIndustryDetail(indMap, consume, d.industry_benchmark)}</div>`
+  /* 行业消耗 —— 双周期：近期(8.28-9.1) + 季度(QTD 7.1-9.1)
+     子青 9.3 拍板："标注是什么周期的 近期的和季度的都开一个" */
+  function buildIndMap(field){
+    const m = {};
+    list.forEach(c=>{ m[c.industry] = (m[c.industry]||0) + (c[field] || 0); });
+    return m;
+  }
+  const indMapRecent = buildIndMap('consume_recent');
+  const indMapQtd    = buildIndMap('consume_qtd');
+  const consumeRecent = Object.values(indMapRecent).reduce((a,b)=>a+b, 0);
+  const consumeQtd    = Object.values(indMapQtd).reduce((a,b)=>a+b, 0);
+  document.getElementById("industryDist").innerHTML = (Object.keys(indMapRecent).length || Object.keys(indMapQtd).length)
+    ? `<div class="ind-double">
+        <div class="ind-half">
+          <div class="ind-half-h">近 7 天 (8.28-9.1) · 合计 ¥${(consumeRecent).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
+          ${renderIndustryPie(indMapRecent, consumeRecent, d.industry_benchmark)}
+        </div>
+        <div class="ind-half">
+          <div class="ind-half-h">QTD (7.1-9.1) · 合计 ¥${(consumeQtd).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
+          ${renderIndustryPie(indMapQtd, consumeQtd, d.industry_benchmark)}
+        </div>
+      </div>
+      <div class="sub" style="margin:14px 0 6px">行业明细（QTD 周期）</div>
+      ${renderIndustryDetailDual(indMapRecent, consumeRecent, indMapQtd, consumeQtd, d.industry_benchmark)}`
     : '<div class="empty">无数据</div>';
 
   /* ① qtd by 天双线（大盘 + 客户合计）

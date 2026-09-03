@@ -986,6 +986,41 @@ function renderIndustryDetail(map, total, benchMap){
   </div>`;
 }
 
+/* 双周期行业明细表：每行业 2 列（近期 / QTD） */
+function renderIndustryDetailDual(mapR, totR, mapQ, totQ, benchMap){
+  // 合并两个 map 的 keys
+  const keys = Array.from(new Set([...Object.keys(mapR), ...Object.keys(mapQ)]));
+  const arr = keys.map(k => [k, mapR[k]||0, mapQ[k]||0]).sort((a,b)=>b[2]-a[2]);
+  if(!arr.length) return '<div class="empty">无数据</div>';
+  const max = Math.max(totR, totQ, 1);
+  return `<div class="ind-d-list">
+    <div class="ind-d-head">
+      <span></span><span>二级行业</span>
+      <span class="num">近7天</span><span class="num">占比</span>
+      <span class="num">QTD</span><span class="num">占比</span>
+    </div>
+    ${arr.map(([n,r,q])=>{
+      const color = industryColor(n);
+      const p75 = benchMap && benchMap[n] ? benchMap[n].roi_p75 : null;
+      return `<div class="ind-d-row">
+        <span class="ind-d-dot" style="background:${color}"></span>
+        <span class="ind-d-name">${n}</span>
+        <span class="ind-d-val"><b>${fmtMoney(r,0)}</b></span>
+        <span class="ind-d-val">${totR>0?(r/totR*100).toFixed(1)+'%':'—'}</span>
+        <span class="ind-d-val"><b>${fmtMoney(q,0)}</b></span>
+        <span class="ind-d-val">${totQ>0?(q/totQ*100).toFixed(1)+'%':'—'}</span>
+      </div>`;
+    }).join("")}
+    <div class="ind-d-foot">
+      <span></span><span class="ind-d-name"><b>合计</b></span>
+      <span class="ind-d-val"><b>${fmtMoney(totR,0)}</b></span>
+      <span class="ind-d-val"><b>100.0%</b></span>
+      <span class="ind-d-val"><b>${fmtMoney(totQ,0)}</b></span>
+      <span class="ind-d-val"><b>100.0%</b></span>
+    </div>
+  </div>`;
+}
+
 /* ============================================================
    客户 Card Grid 方块（3 列 × N 行）
    ============================================================ */

@@ -1101,3 +1101,44 @@ a:hover{text-decoration:underline}
   white-space:nowrap;
   vertical-align:bottom;
 }
+
+/* ============================================================
+   行业消耗结构 · 双饼图并排
+   ============================================================ */
+.ind-double{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:6px;
+}
+.ind-half{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px 10px 10px;
+  background:var(--bg-card);
+}
+.ind-half-h{
+  font-size:12px;font-weight:600;color:var(--text);
+  margin-bottom:8px;letter-spacing:-0.01em;
+}
+.ind-half-h::before{
+  content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--brand);margin-right:6px;vertical-align:middle;
+}
+.ind-half:nth-child(2) .ind-half-h::before{background:#7C6BD9}
+
+@media (max-width:1100px){
+  .ind-double{grid-template-columns:1fr}
+}
+
+/* 行业明细表新表头（6 列） */
+.ind-d-head,.ind-d-row,.ind-d-foot{
+  display:grid;
+  grid-template-columns:8px 1fr 56px 50px 56px 50px;
+  gap:8px;align-items:center;
+  padding:6px 0;
+  font-size:12px;
+}
+.ind-d-head{color:var(--text-3);font-weight:500;border-bottom:1px solid var(--line)}
+.ind-d-row{border-bottom:1px dashed var(--line)}
+.ind-d-foot{font-weight:600;background:var(--bg-sub);padding:8px 0;margin-top:4px;border-radius:6px}
