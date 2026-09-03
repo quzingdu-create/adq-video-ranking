@@ -3,33 +3,35 @@ window.DATA = null;
 window.ROLE = { type: "internal", id: "all", label: "内部 · 全量", key: "internal:all" };
 
 // ============================================================
-// SOP 复制按钮（子青 9.3 拍板：5 份产品文档一键复制）
+// SOP 一键复制 = 企微链接（子青 9.3 拍板：复制出来是链接）
 // ============================================================
 const SOP_KEY_MAP = {
   '4+m': 'four_plus_m',
   '潜客优投': 'latent_qianke',
   '多商品聚合页': 'aggregate_page',
-  '小店艾米智投': 'xiaodian_aimi'
+  '小店艾米智投': 'xiaodian_aimi',
+  '原生推广': 'native_promote',
+  '全店托管': 'full_store_agent'
 };
 window.SOP_KEY_MAP = SOP_KEY_MAP;
 
 function copySOP(sopKey){
   const d = window.__DATA__ || window.DATA || {};
   const sop = (d.sops||{})[sopKey];
-  if(!sop){ alert('未找到该产品 SOP 文档'); return; }
-  const txt = sop.sections.map(s => '【'+s.title+'】\n'+s.content).join('\n\n');
-  const full = '【'+sop.name+' 一键复制 SOP】\n\n'+txt;
+  if(!sop){ alert('未找到该产品 SOP 文档（key='+sopKey+'）'); return; }
+  // 子青原话"复制出来不是连接"→ 复制 = 纯链接（可粘贴即用）
+  const url = sop.url || '';
+  const full = url ? `【${sop.name}】\n${url}` : `【${sop.name}】（暂无链接）`;
   if (navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(full).then(
-      ()=>showToast('✅ 已复制 '+sop.name+' SOP（'+sop.sections.length+' 节）'),
+    navigator.clipboard.writeText(url || full).then(
+      ()=>showToast('✅ 已复制 ' + sop.name + ' 链接'),
       (e)=>showToast('❌ 复制失败：'+e.message)
     );
   } else {
-    // fallback：临时 textarea + execCommand
     const ta = document.createElement('textarea');
-    ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
+    ta.value = url || full; ta.style.position='fixed'; ta.style.opacity='0';
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); showToast('✅ 已复制（兼容模式）'+sop.name); }
+    try { document.execCommand('copy'); showToast('✅ 已复制 ' + sop.name + ' 链接'); }
     catch(e){ showToast('❌ 复制失败：'+e.message); }
     document.body.removeChild(ta);
   }
@@ -89,10 +91,8 @@ function roleColor(t){
 /* ============================================================
    行业色带 · 8 色循环
    ============================================================ */
-const INDUSTRY_PALETTE = [
-  "#E8734A", "#4C9BE8", "#7C6BD9", "#22916B",
-  "#E0A92B", "#D95F8E", "#35B0A7", "#98A2B3"
-];
+// 行业名 → 颜色（行业映射用色）：子青截图发现 5 行业全橙（INDUSTRY_FIXED 占用 10 色 + palette 只 8 色 → fallback 失败）
+// 修法：扩展 palette + hash 颜色兜底
 const INDUSTRY_FIXED = {
   "贴身衣物":   "#E8734A",
   "其他":       "#98A2B3",
@@ -106,21 +106,30 @@ const INDUSTRY_FIXED = {
   "本土品牌服饰":"#5B8FD9",
 };
 const _indColorCache = {};
+const INDUSTRY_PALETTE = [
+  "#E8734A", "#4C9BE8", "#7C6BD9", "#22916B",
+  "#E0A92B", "#D95F8E", "#35B0A7", "#98A2B3",
+  // 扩展：8 个高饱和色（覆盖未在 FIXED 里的行业）
+  "#5B8FD9", "#B5733A", "#8E6CB3", "#D9744A",
+  "#5BA0C2", "#C25BB3", "#7AC25B", "#C2B45B"
+];
 function industryColor(name){
   if(!name) return INDUSTRY_PALETTE[7];
   if(INDUSTRY_FIXED[name]) return INDUSTRY_FIXED[name];
   if(_indColorCache[name]) return _indColorCache[name];
+  // 优先用 palette 中未占用的颜色
   const used = new Set([...Object.values(INDUSTRY_FIXED), ...Object.values(_indColorCache)]);
-  let c = null;
   for(let i=0;i<INDUSTRY_PALETTE.length;i++){
-    const cand = INDUSTRY_PALETTE[(i + _indFallbackSeq) % INDUSTRY_PALETTE.length];
-    if(!used.has(cand)){ c = cand; break; }
+    const cand = INDUSTRY_PALETTE[i];
+    if(!used.has(cand)){ _indColorCache[name] = cand; return cand; }
   }
-  if(!c) c = INDUSTRY_PALETTE[0];
+  // 兜底：hash 字符串 → HSL 色（保证每个新名字都有独立颜色）
+  let h = 0;
+  for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 360;
+  const c = `hsl(${h}, 65%, 52%)`;
   _indColorCache[name] = c;
   return c;
 }
-let _indFallbackSeq = 0;
 function indDot(name){
   return `<span class="ind-dot"><i style="background:${industryColor(name)}"></i>${name}</span>`;
 }
@@ -500,10 +509,8 @@ function genAdvice(c, bench){
     a.push({level:"P2", tag:"cvr 接近健康线", reason:`cvr ${c.cvr.toFixed(2)}% 接近 4%`, action:"对标头部，丰富直播间促销玩法"});
   }
 
-  // —— P1/P2：出价稳定 ——
-  if(c.target_bid == null && c.consume >= 1000){
-    a.push({level:"P2", tag:"目标出价数据缺失",category:"双率", reason:`缺目标出价数据，无法判断出价稳定性`, action:"补全出价数据；遵循\"小步快跑\"原则（单次调幅 5-10%，日调 ≤ 2 次）"});
-  }
+  // —— P2：目标出价 ——（子青 9.3 拍板：整块删除）
+  // 历史：if(c.target_bid == null && c.consume >= 1000) a.push({...})
 
   // —— P1/P2：基建/规模（按客户阶段不同水位）——
   // 通用标准：广告数<50/日 算薄；<100/日 算可扩
@@ -586,9 +593,9 @@ function genAdvice(c, bench){
     a.push({level:"P2", tag:"未使用原生推广",category:"产品使用类型", reason:"未识别到原生推广投放", action:"接入原生推广，原生信息流场景触达"});
   }
 
-  // —— P2：链路（潜客优投/直播/小店，不再含原生推广）——
+  // —— P2：产品使用类型（潜客优投/原生推广都在这里，不再放链路）——
   if(c.is_latent === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用潜客优投",category:"链路", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
+    a.push({level:"P2", tag:"未使用潜客优投",category:"产品使用类型", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
   }
 
   return a;

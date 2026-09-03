@@ -2,6 +2,7 @@
   "xiaodian_aimi": {
     "name": "小店艾米",
     "key": "is_smart_ad",
+    "url": "https://doc.weixin.qq.com/doc/w3_AZ4A1wZyAN4kVfpjIilTZibAoWwCr?scode=AJEAIQdfAAo00fQExDAckAjAZGAGM",
     "sections": [
       {
         "title": "腾讯广告 - 小店艾米产品介绍",
@@ -44,6 +45,7 @@
   "latent_qianke": {
     "name": "潜客优投",
     "key": "is_latent",
+    "url": "https://doc.weixin.qq.com/doc/w3_ARoAPgaoANUCNtB1LB501QBW0Ij24?scode=AJEAIQdfAAoITIOlgUAckAjAZGAGM",
     "sections": [
       {
         "title": "",
@@ -78,6 +80,7 @@
   "aggregate_page": {
     "name": "多商品聚合页",
     "key": "is_aggregate",
+    "url": "https://doc.weixin.qq.com/doc/w3_AV4A7gZiAPwCNtBLmiLyXTHSLM0dB?scode=AJEAIQdfAAogQ6z30bAckAjAZGAGM",
     "sections": [
       {
         "title": "",
@@ -100,42 +103,11 @@
   "full_store_agent": {
     "name": "全店托管×投放Agent",
     "key": "is_agent_full",
+    "url": "https://doc.weixin.qq.com/(待补)",
     "sections": [
       {
-        "title": "",
-        "content": "全店托管×投放Agent_对客操作指引\n通过投放 Agent，一句话开启全店托管，让系统自动为你的店铺选品、建计划、优化投放，省心又省力\n"
-      },
-      {
-        "title": "一、哪些商家适合用投放Agent进行全店托管？",
-        "content": "如果你符合以下情况，全店托管会很适合你：\n店里商品比较多，但没精力一个个投：系统自动帮你从店铺商品里挑选有潜力的来投，不用你自己建一堆计划。\n人手有限、不太懂投放：不用研究复杂的定向、出价、素材，定个目标就能跑起来。\n想低成本测新品、挖长尾爆款：系统会自动帮你探索哪些商品值得投，帮你发现潜力款。\n对成本比较敏感：我们有一套成本达成保障更稳定的投放策略，让你花得更放心、投得更稳。\n简单说：商品多、人手少、想省心、又在意成本的小店商家，最适合通过投放Agent进行全店托管。\n"
-      },
-      {
-        "title": "二、开始之前：如果你没看到入口",
-        "content": "投放Agent目前处于邀请开放阶段，需要你的账户被加入体验名单后才能看到入口。\n"
-      },
-      {
-        "title": "三、第一步：如何通过投放Agent进行全店托管",
-        "content": ""
-      },
-      {
-        "title": "方式一：通过「妙招」快捷入口（推荐）",
-        "content": "打开 投放 Agent 入口\n在页面下方的 「妙招」 区域，找到 「全店托管」 卡片（标注有 NEW）\n点击卡片，直接进入流程\n"
-      },
-      {
-        "title": "方式二：通过对话自然语言触发",
-        "content": "在对话框里输入下面任意一类描述，Agent 会自动识别并带你进入全店托管：\n「帮我托管店铺」「帮我托管整个店」\n「提升成交」「帮我提升店铺成交」\n「测品」「帮我测试新品」\n「控成本」「帮我控制投放成本」\nAgent 识别到意图后，会弹出 「帮我托管店铺」 的快捷按钮，点击继续即可。\n"
-      },
-      {
-        "title": "四、第二步：选择要托管的店铺",
-        "content": "Agent 会展示 「选择托管店铺」 表单：\n在下拉框中选择你要托管的 微信小店（有多个小店的话，选你想托管的那一个）\n点击 「继续执行」\n之后 Agent 会自动帮你准备：获取品牌形象、生成投放素材、生成最终方案，稍等片刻即可。\n"
-      },
-      {
-        "title": "五、第三步：确认托管方案（关键步骤）",
-        "content": "Agent 会在右侧展示 方案确认面板，你只需重点看这三项：\n其余内容（托管账户、托管店铺、品牌形象、商品范围）系统都已自动填好，无需手动操作。\n不需要调整：直接点确认，Agent 自动为你创建全店托管项目\n需要调整：改好目标 ROI 或预算后再确认\n"
-      },
-      {
-        "title": "五、第三步：确认托管方案（关键步骤）",
-        "content": "Agent 会在右侧展示 方案确认面板，你只需重点看这三项：\n其余内容（托管账户、托管店铺、品牌形象、商品范围）系统都已自动填好，无需手动操作。\n不需要调整：直接点确认，Agent 自动为你创建全店托管项目\n需要调整：改好目标 ROI 或预算后再确认\n"
+        "title": "企微文档",
+        "content": "全店托管×投放 Agent 对客操作指引（待补链接）"
       }
     ]
   },
@@ -147,6 +119,17 @@
       {
         "title": "企微文档",
         "content": "查看 4+m 创意数提升 SOP（企微文档）"
+      }
+    ]
+  },
+  "native_promote": {
+    "name": "原生推广（视频号主页视频推广）",
+    "key": "is_native",
+    "url": "https://doc.weixin.qq.com/doc/w3_ACYACgZ4ACcCNXp4ef7nzQKuNrxLq?scode=AJEAIQdfAAo1Zsq2TrAV8ABQbEAI0",
+    "sections": [
+      {
+        "title": "企微文档",
+        "content": "【腾讯广告-原生推广】视频号主页视频推广-竞价投放指引（能力已全量）"
       }
     ]
   }

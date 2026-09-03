@@ -197,21 +197,21 @@ async function render(){
 
   document.getElementById("kpiGrid").innerHTML = `
     <div class="kpi k-brand">
-      <div class="kpi-label">总消耗 <span class="tag brand">8.28-9.1</span></div>
-      <div class="kpi-val">¥${(k828.total_yuan||0).toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit"></span></div>
-      <div class="kpi-hint">${k828.count||0} 家 · 指标明细 csv 口径</div></div>
+      <div class="kpi-label">当前筛选消耗 <span class="tag brand">8.28-9.1</span></div>
+      <div class="kpi-val">¥${consume.toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit">元</span></div>
+      <div class="kpi-hint">${list.filter(c=>c.consume>0).length} 家伙伴在投 · 跟随筛选变化</div></div>
     <div class="kpi k-info">
-      <div class="kpi-label">大盘 QTD 消耗 <span class="tag">qtd</span></div>
+      <div class="kpi-label">大盘全平台 QTD <span class="tag">qtd</span></div>
       <div class="kpi-val">¥${kqtd.total_wan||0}<span class="unit">万</span></div>
-      <div class="kpi-hint">${kqtd.period||'QTD'} · 通用分析数据集口径</div></div>
+      <div class="kpi-hint">${kqtd.period||'QTD'} · 通用分析数据集（大盘/不随筛选）</div></div>
     <div class="kpi ${silent>0?'k-warn':'k-ok'}">
-      <div class="kpi-label">靶向在投 / 待起量</div>
+      <div class="kpi-label">在投 / 待起量</div>
       <div class="kpi-val">${active}<span class="unit">/${silent}</span></div>
-      <div class="kpi-hint">${silent>0?'未起量客户需优先介入':'全部客户已起量'}</div></div>
+      <div class="kpi-hint">${silent>0?'未起量客户需优先介入':'全部已起量'}</div></div>
     <div class="kpi k-danger">
       <div class="kpi-label">高风险客户</div>
       <div class="kpi-val">${highRisk}<span class="unit">家</span></div>
-      <div class="kpi-hint">带 P0 或 P1 建议 · 当前筛选共 ${list.length} 家</div></div>
+      <div class="kpi-hint">带 P0/P1 建议 · 跟随筛选</div></div>
   `;
 
   /* Top 建议 —— 按"建议规则"去重，下方列客户清单
@@ -274,7 +274,7 @@ async function render(){
   const dashRows = (d.qtd_dashboard_trend||[]);
   const targetRows = (d.qtd_target_trend||[]);
   document.getElementById("dashboardTrendSub").textContent =
-    dashRows.length ? `qtd · ${dashRows.length} 天` : '数据缺失';
+    dashRows.length ? `qtd · ${dashRows.length} 天 · 大盘 vs 靶向合计（全量、不随筛选）` : '数据缺失';
   document.getElementById("dashboardTrend").innerHTML = dashRows.length
     ? renderDualLineChart(dashRows, targetRows, {w:620,h:210})
     : '<div class="empty">大盘数据待上传</div>';
