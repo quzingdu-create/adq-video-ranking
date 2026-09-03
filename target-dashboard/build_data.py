@@ -129,18 +129,122 @@ def main():
     use_4m         = load_uses(SRC/'4+m.csv')
     use_aggregate  = load_uses(SRC/'多商品聚合页-靶向-9.3.csv')
 
-    # ─── 5) 行业继承（从旧 data.json） ───
-    sub_to_industry = {}
+    # 各工具/能力的消耗（用于"消耗占比"展示）
+    def load_consumes(path, has_extra=False):
+        m = {}
+        with open(path, encoding='utf-8-sig') as fh:
+            for r in csv.DictReader(fh):
+                sub = r.get('客户简称','').strip()
+                if not sub: continue
+                v = f(r.get('日均消耗(元)'))
+                if v: m[sub] = m.get(sub,0) + v
+        return m
+    consume_4m         = load_consumes(SRC/'4+m.csv')
+    consume_aggregate  = load_consumes(SRC/'多商品聚合页-靶向-9.3.csv')
+    consume_latent     = load_consumes(SRC/'潜客优投-靶向-9.3.csv')
+    consume_native     = load_consumes(SRC/'原生推广-靶向-9，3.csv')
+    consume_smart_ad   = load_consumes(SRC/'智投广告-9.3.csv')
+    # 全域通：从"是否全域通广告=true"的行累加
+    consume_quanyutong = {}
+    with open(SRC/'投放端-靶向-9.3.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            v = r.get('是否全域通广告','')
+            if str(v).strip().lower() in ('true','是','1','yes','t'):
+                sub = r.get('客户简称','').strip()
+                val = f(r.get('日均消耗(元)'))
+                if sub and val: consume_quanyutong[sub] = consume_quanyutong.get(sub,0) + val
+    # adq 投放：主表 consume 视为 adq 全部消耗
+    # 直播 / 小店：暂无数据源，记为 0
+
+    # ─── 5) 行业映射（用户 9.3 拍板：主体→行业） ───
+    # 来源：用户 9.3 14:21 给的手工对齐表（49 主体 / 含多公司名展开）
+    # 同时也吃旧 data.json 的 fallback（不覆盖用户给的新映射）
+    INDUSTRY_MAP = {
+        # 珠宝配饰
+        '长沙芬尚贸易有限公司':'珠宝配饰',
+        '株洲绅悦传媒有限公司':'珠宝配饰',
+        '开心集藏(南京)网络科技有限公司':'珠宝配饰',
+        '上海聚藏甄选网络科技有限公司':'珠宝配饰',
+        '上海东藏文化传播有限公司':'珠宝配饰',
+        '上海伊碧思电子科技有限公司':'珠宝配饰',
+        '北京卯生文化发展有限公司':'珠宝配饰',
+        '成都翔吉同电子商务有限公司':'珠宝配饰',
+        '萍乡市安源区维洪商贸营业部(个体工商户)':'珠宝配饰',
+        '北京卡路里信息技术有限公司':'珠宝配饰',
+        '大猫文化传媒(石家庄)有限公司':'珠宝配饰',
+        # 服饰配件
+        '广州尊格皮具制品有限公司':'服饰配件',
+        # 箱包鞋靴
+        '广州市花都区狮岭蔡蔡轻复古包包店':'箱包鞋靴',
+        '广州振瑞贸易有限公司':'箱包鞋靴',
+        '青白江师弟商贸部':'箱包鞋靴',
+        '成都伊丽高电子商务有限公司':'箱包鞋靴',
+        '温州碧玉鞋服有限公司':'箱包鞋靴',
+        '广州礼善电子商务有限公司':'箱包鞋靴',
+        '温州和而不同商贸有限公司':'箱包鞋靴',
+        '沈阳市云舒岁月服装商行(个体工商户)':'箱包鞋靴',
+        '广州密丝贸易有限公司':'箱包鞋靴',
+        '杭州酷步科技有限公司':'箱包鞋靴',
+        '厦门炬变引力电子商务有限公司':'箱包鞋靴',
+        '福州青弓运动科技有限公司':'箱包鞋靴',
+        '无锡喜可文化创意有限公司':'箱包鞋靴',
+        '无锡市妃姗电子商务有限公司':'箱包鞋靴',
+        '晋江泰觉科技有限公司':'箱包鞋靴',
+        '石狮市姚幸贸易有限公司':'箱包鞋靴',
+        '石狮市凤坷贸易有限公司':'箱包鞋靴',
+        '石狮市莲卿电子商务有限公司':'箱包鞋靴',
+        '泉州市赫芭电子商务有限公司':'箱包鞋靴',
+        '泉州市誉函电子商务有限公司':'箱包鞋靴',
+        '泉州赤诚相待电子商务有限公司':'箱包鞋靴',
+        '泉州市赫芭品牌管理有限公司':'箱包鞋靴',
+        # 运动户外
+        '义乌市轻练体育用品有限公司':'运动户外',
+        '义乌市炼夏日用品商行':'运动户外',
+        '漳平市成言电子商务店(个体工商户)':'运动户外',
+        '菲罗科技成都有限公司':'运动户外',
+        '广州麦咚咚网络科技有限公司':'运动户外',
+        '义乌市备棱贸易商行（个体工商户）':'运动户外',
+        # 贴身衣物
+        '东莞市道滘木语贸易商行(个体工商户)':'贴身衣物',
+        '东莞市道滘森屿贸易商行(个体工商户)':'贴身衣物',
+        '广州亦非主角传媒有限公司':'贴身衣物',
+        '汕头市康多利内衣有限公司':'贴身衣物',
+        '广州澜悦服饰有限公司':'贴身衣物',
+        '广州悠点美服饰有限公司':'贴身衣物',
+        '深圳千艺美人服饰有限公司':'贴身衣物',
+        '深圳赢时代电子商务有限公司':'贴身衣物',
+        '济南易顺服饰有限公司':'贴身衣物',
+        '杭州萧山素里贸易商行(个体工商户)':'贴身衣物',
+        '义乌市澎茹电子商务商行(个体工商户)':'贴身衣物',
+        '广州占芭啦科技有限公司':'贴身衣物',
+        '上海行径科技有限公司':'贴身衣物',
+        '上海雅裹科技有限公司':'贴身衣物',
+        '上海心裹电子商务有限公司':'贴身衣物',
+        '洛阳嘉思故电子商务有限公司':'贴身衣物',
+        '广州莱思美科技信息有限公司':'贴身衣物',
+        '广州市云感批发有限公司':'贴身衣物',
+        '广州市橙芯批发有限公司':'贴身衣物',
+        # 男装
+        '杭州贝旭服饰有限公司':'男装',
+        '杭州剑卓服饰有限公司':'男装',
+        '沈阳晟行传媒有限公司':'男装',
+        '天津希辰文化传媒有限公司':'男装',
+        '上海瞰上贸易有限公司':'男装',
+        '杭州毅励服饰有限公司':'男装',
+        # 女装
+        '餘发的苏州市姑苏区云舒岁月服装商行(个体工商户)':'女装',
+    }
+    sub_to_industry = dict(INDUSTRY_MAP)
     sub_to_alias = {}
     old_path = OLD/'data.json'
     if old_path.exists():
         old = json.load(open(old_path, encoding='utf-8'))
         for c in old.get('customers', []):
-            sub_to_industry[c['sub']] = c.get('industry','其他')
             sub_to_alias[c['sub']] = c.get('alias','')
-        alias_to_sub = {c['alias']:c['sub'] for c in old.get('customers',[]) if c.get('alias')}
-    else:
-        alias_to_sub = {}
+            # 旧 data.json 里的 industry 仅在新映射表缺失时作为 fallback
+            if c['sub'] not in sub_to_industry:
+                sub_to_industry[c['sub']] = c.get('industry','其他')
+    alias_to_sub = {c['alias']:c['sub'] for c in (old.get('customers',[]) if old_path.exists() else []) if c.get('alias')}
     def resolve_industry(sub):
         if sub in sub_to_industry: return sub_to_industry[sub]
         for alias, full in alias_to_sub.items():
@@ -201,7 +305,13 @@ def main():
                 'shop_count':len(set(s['shop_id'] for s in shops if s['shop_id'])),
                 # 链路
                 'is_quan_yu_tong':use_quanyutong.get(sub,False),
-                # 投放端
+                # 各工具/能力的消耗（来自各 CSV 的日均消耗）与占比
+                'consume_4m':round(consume_4m.get(sub,0),2),
+                'consume_aggregate':round(consume_aggregate.get(sub,0),2),
+                'consume_latent':round(consume_latent.get(sub,0),2),
+                'consume_native':round(consume_native.get(sub,0),2),
+                'consume_smart_ad':round(consume_smart_ad.get(sub,0),2),
+                'consume_quanyutong':round(consume_quanyutong.get(sub,0),2),
                 'adq':True,
                 'shops':shops,
             }
@@ -224,6 +334,8 @@ def main():
                 'is_live':False,
                 'shop_count':0,
                 'is_quan_yu_tong':use_quanyutong.get(sub,False),
+                'consume_4m':0,'consume_aggregate':0,'consume_latent':0,
+                'consume_native':0,'consume_smart_ad':0,'consume_quanyutong':0,
                 'adq':False,
                 'shops':[],
             }
@@ -274,6 +386,26 @@ def main():
         for r in csv.DictReader(fh):
             target_trend.append({'date':r['时间'],'value':f(r['日均消耗(元)'])})
 
+
+    # ─── 8.5) qtd by 天双线（大盘 + 客户合计）───
+    qtd_dash = []
+    with open(SRC/'通用分析数据集 - 2026-09-03T141548.650.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            d = r.get('时间','').strip()
+            v = f(r.get('日均消耗(元)'))
+            if d and d != '整体' and v:
+                qtd_dash.append({'date':d, 'value':v})
+    qtd_dash.sort(key=lambda x:x['date'])
+    cust_by_day_total = defaultdict(float)
+    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            sub = r.get('客户简称','').strip()
+            d = r.get('时间','').strip()
+            v = f(r.get('日均消耗(元)'))
+            if sub and d and d != '整体' and v and sub in sales_map:
+                cust_by_day_total[d] += v
+    qtd_target = [{'date':d, 'value':round(v,2)} for d,v in sorted(cust_by_day_total.items())]
+
     # ─── 9) 客户趋势 ───
     cust_trend = defaultdict(list)
     with open(SRC/'消耗趋势-客户-9.3.csv', encoding='utf-8-sig') as fh:
@@ -299,6 +431,8 @@ def main():
         },
         'industry_benchmark':ind_bench,
         'target_dashboard_trend':target_trend,
+        'qtd_dashboard_trend':qtd_dash,
+        'qtd_target_trend':qtd_target,
         'customers_trend':dict(cust_trend),
         'customers':customers,
     }

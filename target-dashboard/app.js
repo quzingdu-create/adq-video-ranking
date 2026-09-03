@@ -953,6 +953,54 @@ function goCustomer(sub){
   location.href = 'detail.html?sub=' + encodeURIComponent(sub);
 }
 
+/* 双 Y 轴折线：大盘 + 客户合计 by 天
+   rowsA: 大盘 by 天（蓝色，左轴）
+   rowsB: 客户合计 by 天（紫色，右轴） */
+function renderDualLineChart(rowsA, rowsB, opts){
+  opts = opts || {};
+  if(!rowsA || !rowsA.length) return '<div class="empty">大盘数据待上传</div>';
+  // 合并日期
+  const allDates = [...new Set([...rowsA.map(r=>r.date), ...rowsB.map(r=>r.date)])].sort();
+  const mapA = Object.fromEntries(rowsA.map(r=>[r.date, r.value]));
+  const mapB = Object.fromEntries(rowsB.map(r=>[r.date, r.value]));
+  const W = opts.w || 620, H = opts.h || 220;
+  const padL=46, padR=46, padT=28, padB=26;
+  const innerW = W-padL-padR, innerH = H-padT-padB;
+  const xs = (i) => padL + (allDates.length===1?innerW/2 : i*(innerW/(allDates.length-1)));
+  // 大盘为左轴（数值大），客户为右轴（数值小）
+  const vMaxA = Math.max(...rowsA.map(r=>r.value).filter(v=>v>0)) || 1;
+  const vMaxB = Math.max(...rowsB.map(r=>r.value).filter(v=>v>0)) || 1;
+  const yA = (v) => padT + innerH - (v/vMaxA)*innerH;
+  const yB = (v) => padT + innerH - (v/vMaxB)*innerH;
+  // 网格（3 条）
+  const grid = [0, 0.5, 1].map(t => {
+    const y = padT + innerH - t*innerH;
+    const va = (t*vMaxA), vb = (t*vMaxB);
+    return '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)" stroke-dasharray="2 3"/>' +
+      '<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" fill="var(--brand)" font-size="9.5" font-family="var(--font-num)">'+ (va>=1000?(va/1000).toFixed(0)+'k':va.toFixed(0)) +'</text>' +
+      '<text x="'+(W-padR+6)+'" y="'+(y+3)+'" text-anchor="start" fill="#7C6BD9" font-size="9.5" font-family="var(--font-num)">'+ (vb>=1000?(vb/1000).toFixed(1)+'k':vb.toFixed(0)) +'</text>';
+  }).join('');
+  // 大盘线（蓝）+ 客户线（紫）
+  const lineA = allDates.map((d,i) => (i===0?'M':'L')+' '+xs(i)+' '+yA(mapA[d]||0)).join(' ');
+  const lineB = allDates.map((d,i) => (i===0?'M':'L')+' '+xs(i)+' '+yB(mapB[d]||0)).join(' ');
+  // 日期标签（3 个）
+  const xLabels = allDates.map((d,i) => {
+    const show = i===0 || i===allDates.length-1 || i===Math.floor(allDates.length/2);
+    if(!show) return '';
+    return '<text x="'+xs(i)+'" y="'+(H-8)+'" text-anchor="middle" fill="var(--text-3)" font-size="9.5">'+d.slice(5)+'</text>';
+  }).join('');
+  // 图例
+  const legend = '<g transform="translate('+padL+',14)">'
+    + '<rect width="9" height="9" rx="2" fill="var(--brand)"/><text x="13" y="8" fill="var(--text-2)" font-size="10">大盘日均(元)</text>'
+    + '<rect x="100" width="9" height="9" rx="2" fill="#7C6BD9"/><text x="113" y="8" fill="var(--text-2)" font-size="10">靶向合计(元)</text>'
+    + '</g>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg">'
+    + grid + legend
+    + '<path d="'+lineA+'" stroke="var(--brand)" stroke-width="2" fill="none"/>'
+    + '<path d="'+lineB+'" stroke="#7C6BD9" stroke-width="1.8" fill="none" stroke-dasharray="3 2"/>'
+    + xLabels + '</svg>';
+}
+
 /* ============================================================
    mini KPI 网格（紧凑数字展示）
    rows: [[label, value, unit, digit, mode, bad], ...]
@@ -995,12 +1043,8 @@ function renderCustomerDetail(d, c){
     if(valid && hasBench){
       diff = (val - bench) / bench * 100;
       const dir = mode==='lower' ? (val<=bench?'高':'低') : (val>=bench?'高':'低');
-      // 越低越好指标："差于" = val>bench； 越高越好指标："差于" = val<bench
       const worse = mode==='lower' ? val>bench : val<bench;
       vsTxt = `vs 行业头部 ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
-      if(worse && mode){
-        // 差于头部 → 红
-      }
     }
     const cellCls = !valid ? 'm-na' : (!hasBench ? '' : ((mode==='lower' ? val>bench : val<bench) ? 'm-bad' : 'm-ok'));
     return `<div class="metric-cell ${cellCls}">
@@ -1010,16 +1054,36 @@ function renderCustomerDetail(d, c){
     </div>`;
   }
 
-  // 能力类指标（是否使用 → 未使用则建议开启）
-  const boolCell = (label, val) => {
-    const used = val === true;
-    return `<div class="metric-cell ${used?'m-ok':'m-bad'}">
+  // 能力类指标（是否使用 + 消耗占比）
+  // 6 个能力：4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米 / 全域通
+  function abilityCell(label, isUsed, consume, totalConsume){
+    const ok = isUsed === true;
+    // 消耗占比
+    let ratioTxt = '0%';
+    if(ok && totalConsume>0 && consume>0){
+      const pct = consume / totalConsume * 100;
+      ratioTxt = `${pct.toFixed(1)}%`;
+    }
+    return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
       <div class="ml">${label}</div>
-      <div class="mv">${used?'已使用':'未使用'}</div>
-      <div class="mv-vs ${used?'m-ok':'m-bad'}">${used?'已在投':'建议开启'}</div>
+      <div class="mv">${ok?'已使用':'未使用'}</div>
+      <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?('已投 消耗占比 '+ratioTxt):'建议开启'}</div>
     </div>`;
-  };
+  }
 
+  // 投放端/链路 类（同 abilityCell 但不带消耗 —— 小店/直播暂无消耗数据）
+  function usageCell(label, isUsed, dataNote){
+    const ok = isUsed === true;
+    return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
+      <div class="ml">${label}</div>
+      <div class="mv">${ok?'已使用':'未使用'}</div>
+      <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?(dataNote||'已在投'):'建议开启'}</div>
+    </div>`;
+  }
+
+  const tot = c.consume || 0;
+
+  // ① 消耗/双率/ROI —— 5 个核心（去目标出价，按截图）
   const kpiRows = [
     ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
     ["ctr", c.ctr, "%", 2, b.ctr_p75, "higher"],
@@ -1027,6 +1091,7 @@ function renderCustomerDetail(d, c){
     ["下单单价(元)", c.aov, "元", 0, b.aov_p75, "higher"],
     ["下单ROI", c.roi, "", 2, b.roi_p75, "higher"],
   ];
+  // ② 广告基建
   const buildRows = [
     ["有消耗的主体数", c.main_subject, "", 0, null, null],
     ["有消耗的账户数", c.account, "", 0, b.account_p75, "higher"],
@@ -1035,26 +1100,33 @@ function renderCustomerDetail(d, c){
     ["新广告占比", c.new_ratio, "%", 1, b.new_ratio_p75, "higher"],
     ["一键起量使用占比", c.auto_ratio, "%", 1, b.auto_ratio_p75, "higher"],
   ];
-  // 素材质量 / 内容质量（4 个：完播 + 时长 + 4+m + 多商品聚合页）
+  // ③ 素材质量/内容质量 —— 只看 3 秒完播和播放时长
   const matNumRows = [
     ["视频3秒完播率", c["3s_play"], "%", 2, b["3s_play_p75"], "higher"],
     ["平均播放时长", c.avg_dur, "秒", 1, b.avg_dur_p75, "higher"],
   ];
-  // 产品能力（7 个：潜客优投 / 原生推广 / 艾米智投 / 小店 / 直播 / 全域通 / adq）
+  // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 小店艾米（看是否使用 + 消耗占比）
   const productBools = [
-    ["是否使用潜客优投", c.is_latent],
-    ["是否使用原生推广", c.is_native],
-    ["是否使用小店艾米", c.is_smart_ad],
-    ["小店", c.shop_count > 0],
-    ["直播", c.is_live],
-    ["全域通", c.is_quan_yu_tong === true],
-    ["adq", c.adq],
+    ["4+m", c.is_4m, c.consume_4m],
+    ["多商品聚合页", c.is_aggregate, c.consume_aggregate],
+    ["潜客优投", c.is_latent, c.consume_latent],
+    ["小店艾米智投", c.is_smart_ad, c.consume_smart_ad],
   ];
-  // 小店三率（越低越好，对标头部 P25）
+  // ⑤ 小店三率
   const threeRateRows = [
     ["品退率", c.ret, "%", 2, b.ret_p25, "lower"],
     ["差评率", c.bad, "%", 2, b.bad_p25, "lower"],
     ["纠纷率", c.dispute, "%", 2, b.dispute_p25, "lower"],
+  ];
+  // ⑥ 投放端（是否都投了，消耗占比）+ 链路（小店/直播）
+  const deliveryCells = [
+    // 投放端
+    abilityCell("全域通", c.is_quan_yu_tong, c.consume_quanyutong, tot),
+    abilityCell("原生推广", c.is_native, c.consume_native, tot),
+    abilityCell("adq", c.adq, tot, tot),  // adq 是主表全部
+    // 链路（暂无数据源，先显示是否使用）
+    usageCell("小店", c.shop_count>0, c.shop_count+' 个小店'),
+    usageCell("直播", c.is_live, ''),
   ];
 
   return `
@@ -1073,12 +1145,12 @@ function renderCustomerDetail(d, c){
       </div>
     </div>
 
-    <!-- ① 客户投放自查报告（5 模块） -->
+    <!-- ① 客户投放自查报告（6 模块） -->
     <div class="section-h">① 客户投放自查报告</div>
     <div class="grid-2">
       <div class="card compact">
         <h2>① 消耗 / 双率 / ROI</h2>
-        <div class="sub">6 个核心指标 · 每个对标行业头部</div>
+        <div class="sub">5 个核心指标 · 每个对标行业头部</div>
         <div class="metric-grid-3">${kpiRows.map(r=>mCell(...r)).join('')}</div>
       </div>
       <div class="card compact">
@@ -1088,33 +1160,34 @@ function renderCustomerDetail(d, c){
       </div>
       <div class="card compact">
         <h2>③ 素材质量 / 内容质量</h2>
-        <div class="sub">完播与时长 + 4+m / 多商品聚合页</div>
-        <div class="metric-grid-3">
-          ${matNumRows.map(r=>mCell(...r)).join('')}
-          ${boolCell("是否使用4+m", c.is_4m)}
-          ${boolCell("是否使用多商品聚合页", c.is_aggregate)}
-        </div>
+        <div class="sub">只显示 3 秒完播和平均播放时长</div>
+        <div class="metric-grid-3">${matNumRows.map(r=>mCell(...r)).join('')}</div>
       </div>
       <div class="card compact">
         <h2>④ 产品能力</h2>
-        <div class="sub">7 个能力使用标记 · 未使用则建议开启</div>
-        <div class="metric-grid-3">${productBools.map(p=>boolCell(p[0], p[1])).join('')}</div>
+        <div class="sub">是否使用 + 消耗占比（占该客户总消耗）</div>
+        <div class="metric-grid-3">${productBools.map(p=>abilityCell(p[0], p[1], p[2], tot)).join('')}</div>
       </div>
       <div class="card compact">
         <h2>⑤ 小店三率</h2>
         <div class="sub">品退 / 差评 / 纠纷 · 越低越好 · 无数据显示「—」</div>
         <div class="metric-grid-3">${threeRateRows.map(r=>mCell(...r)).join('')}</div>
       </div>
+      <div class="card compact">
+        <h2>⑥ 投放端 + 链路</h2>
+        <div class="sub">投放端看消耗占比 · 链路看是否使用</div>
+        <div class="metric-grid-3">${deliveryCells.join('')}</div>
+      </div>
     </div>
 
-    <!-- ④ 提升建议 -->
+    <!-- ② 提升建议 -->
     <div class="section-h">② 提升建议</div>
     <div class="card">
       <div class="sub">基于数据自动诊断 · 请与您的渠道经理协同落实</div>
       ${renderAdviceByCategory(c.advice)}
     </div>
 
-    <!-- ⑤ 视频号明细 -->
+    <!-- ③ 视频号明细 -->
     <div class="section-h">③ 视频号明细</div>
     <div class="card">
       <div class="sub">${c.shops.length} 个视频号 · 按消耗排序</div>

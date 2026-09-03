@@ -201,17 +201,25 @@ async function render(){
       <div class="kpi-hint">带 P0 或 P1 建议</div></div>
   `;
 
-  /* Top 建议 —— 用 list */
+  /* Top 建议 —— 按"建议规则"去重，下方列客户清单
+     同一规则（tag）下客户只列简称，不再每家客户复读一次 reason */
   const flat = [];
   list.forEach(c=>{
     (c.advice||[]).forEach(a=>{ flat.push({...a, sub:c.sub, industry:c.industry, agent:c.agent}); });
   });
   const rank = {P0:0, P1:1, P2:2};
   flat.sort((a,b)=>(rank[a.level]||9)-(rank[b.level]||9));
-  const top = flat.slice(0, 24); // 多取一些，按类型分组后保留更全
-  // 按类型分组 + 客户聚合
+  // 按 tag 聚合（同类建议合并）
+  const byTag = {};
+  flat.forEach(a=>{
+    const k = a.tag + '|' + a.level;
+    if(!byTag[k]) byTag[k] = {...a, subs:[], actions:new Set()};
+    byTag[k].subs.push(a.sub);
+    byTag[k].actions.add(a.action);
+  });
+  const merged = Object.values(byTag).sort((a,b)=>(rank[a.level]||9)-(rank[b.level]||9));
   const grouped = {};
-  top.forEach(a=>{
+  merged.forEach(a=>{
     const c = a.category || '其他';
     (grouped[c]=grouped[c]||[]).push(a);
   });
@@ -224,19 +232,21 @@ async function render(){
         <div class="cat-head">
           <span class="cat-icon">${desc.icon}</span>
           <span class="cat-name">${cat}</span>
-          <span class="cat-count">${items.length} 条</span>
+          <span class="cat-count">${items.length} 类问题</span>
         </div>
         <div class="cat-items">${items.map(a=>`
-          <a class="cat-item ${a.level.toLowerCase()}" href="detail.html?sub=${encodeURIComponent(a.sub)}">
-            <div class="cat-item-head">
+          <div class="cat-rule ${a.level.toLowerCase()}">
+            <div class="cat-rule-head">
               <span class="cat-item-name">${a.tag}</span>
-              <span class="cat-item-sub">${a.sub.slice(0,8)}</span>
+              <span class="cat-item-level lv-${a.level.toLowerCase()}">${a.level}</span>
+              <span class="cat-item-count">${a.subs.length} 家</span>
             </div>
-            <div class="cat-item-reason">${a.reason}</div>
-          </a>`).join('')}</div>
+            <div class="cat-rule-action">▸ ${[...a.actions][0]}</div>
+            <div class="cat-rule-subs">受影响客户：${a.subs.map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}">${s.slice(0,10)}</a>`).join(' · ')}${a.subs.length>5?` 等 ${a.subs.length} 家`:''}</div>
+          </div>`).join('')}</div>
       </div>`;
     }).join('')}
-    <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 按类型分组 · 点击客户跳详情</div>
+    <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 已按规则去重 · 共 ${merged.length} 类问题</div>
   ` : '<div class="empty">当前筛选下暂无建议</div>';
 
   /* 行业消耗 —— 饼图，用 list */
@@ -247,12 +257,13 @@ async function render(){
       <div class="ind-d-wrap"><div class="sub" style="margin:14px 0 6px">行业明细</div>${renderIndustryDetail(indMap, consume, d.industry_benchmark)}</div>`
     : '<div class="empty">无数据</div>';
 
-  /* ① 大盘日均消耗折线（跳过"整体"行） */
-  const dashRows = (d.target_dashboard_trend||[]).filter(r=>r.date!=='整体');
+  /* ① qtd by 天双线（大盘 + 客户合计） */
+  const dashRows = (d.qtd_dashboard_trend||[]);
+  const targetRows = (d.qtd_target_trend||[]);
   document.getElementById("dashboardTrendSub").textContent =
-    dashRows.length ? `最近 ${dashRows.length} 天` : '数据缺失';
+    dashRows.length ? `qtd by 天 · ${dashRows.length} 天 (大盘 vs 靶向合计)` : '数据缺失';
   document.getElementById("dashboardTrend").innerHTML = dashRows.length
-    ? renderLineChart(dashRows, {w:620,h:200})
+    ? renderDualLineChart(dashRows, targetRows, {w:620,h:210})
     : '<div class="empty">大盘数据待上传</div>';
 
   /* ② 客户趋势折线（按 list 排序取前 5） */

@@ -1002,3 +1002,45 @@ a:hover{text-decoration:underline}
   .kpi-section .filter-floater{position:static;width:100%}
   .filter-panel{width:calc(100vw - 28px)}
 }
+
+/* ============================================================
+   Top 建议 · 去重版（按规则汇总 + 客户列表）
+   ============================================================ */
+.cat-rule{
+  padding:10px 14px 12px;border-top:1px solid var(--line);
+  background:var(--bg-card);
+  transition:background .12s;
+}
+.cat-rule:first-child{border-top:none}
+.cat-rule:hover{background:var(--bg-sub-2)}
+.cat-rule.lv-p0{background:rgba(163,45,45,0.04)}
+.cat-rule.lv-p1{background:rgba(186,117,23,0.04)}
+
+.cat-rule-head{
+  display:flex;align-items:center;gap:9px;margin-bottom:4px;
+}
+.cat-item-level{
+  font-size:10px;padding:1px 7px;border-radius:8px;font-weight:700;
+  font-family:var(--font-num);font-variant-numeric:tabular-nums;
+}
+.cat-item-level.lv-p0{background:var(--danger);color:#fff}
+.cat-item-level.lv-p1{background:var(--warn-soft);color:var(--warn)}
+.cat-item-level.lv-p2{background:var(--info-soft);color:var(--info)}
+.cat-item-count{
+  margin-left:auto;font-size:11px;color:var(--text-3);font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.cat-rule-action{
+  font-size:12.5px;color:var(--text);line-height:1.55;margin:4px 0;
+}
+.cat-rule-subs{
+  font-size:11.5px;color:var(--text-2);line-height:1.6;
+  padding-top:5px;border-top:1px dashed var(--line);
+  margin-top:6px;
+}
+.cat-sub-link{
+  display:inline-block;padding:1px 7px;margin:0 3px 2px 0;
+  background:var(--bg-sub-2);border-radius:10px;color:var(--text);
+  text-decoration:none;font-size:11px;
+}
+.cat-sub-link:hover{background:var(--brand-soft);color:var(--brand)}
