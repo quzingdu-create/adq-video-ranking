@@ -1322,7 +1322,7 @@ function renderCustomerDetail(d, c){
   // 每指标小卡：含与行业头部对标 + 差于标红
   // 🔴 子青 9.3 拍板：vs 行业头部 **头部值**（%）改成 "vs 行业头部 X.X% 低/高（-N%）"
   //   showBench=false 时不显示头部值（用于日均消耗/单价/ROI 这类金额或合成指标）
-  function mCell(label, val, unit, digit, bench, mode, showBench){
+  function mCell(label, val, unit, digit, bench, mode, showBench, mom){
     const valid = val!=null && !isNaN(val);
     const hasBench = bench!=null && !isNaN(bench) && bench>0;
     let diff = null, vsTxt = '';
@@ -1351,9 +1351,17 @@ function renderCustomerDetail(d, c){
     //    这里只在完全没有基准（行业+大盘都无）时提示"无可对标"
     const sampleN = b.sample_size;
     const cellCls = !valid ? 'm-na' : (!hasBench ? '' : (isWorse() ? 'm-bad' : 'm-ok'));
+    // 🔴 子青 9.3：环比标签（涨红跌绿，中国习惯）
+    let momHtml = '';
+    if(mom != null && !isNaN(mom) && Math.abs(mom) >= 0.05){
+      const up = mom > 0;
+      const cls = up ? 'mv-mom up' : 'mv-mom down';
+      const arrow = up ? '↑' : '↓';
+      momHtml = `<span class="${cls}">${arrow}${Math.abs(mom).toFixed(1)}%</span>`;
+    }
     return `<div class="metric-cell ${cellCls}">
       <div class="ml">${label}</div>
-      <div class="mv">${valid?fmtNum(val,digit):'—'}<small>${unit}</small></div>
+      <div class="mv">${valid?fmtNum(val,digit):'—'}<small>${unit}</small>${momHtml}</div>
       ${vsTxt?`<div class="mv-vs ${cellCls}">${vsTxt}</div>`:''}
     </div>`;
   }
@@ -1408,26 +1416,26 @@ function renderCustomerDetail(d, c){
 
   // ① 消耗/双率/ROI —— 5 个核心（去目标出价，按截图）
   const kpiRows = [
-    ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null, false],     // 消耗不标头部
-    ["ctr", c.ctr, "%", 2, pickBench('ctr'), "higher", true],
-    ["cvr", c.cvr, "%", 2, pickBench('cvr'), "higher", true],
+    ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null, false, c.consume_mom],
+    ["ctr", c.ctr, "%", 2, pickBench('ctr'), "higher", true, c.ctr_mom],
+    ["cvr", c.cvr, "%", 2, pickBench('cvr'), "higher", true, c.cvr_mom],
     // 子青 9.3 拍板：下单单价/下单ROI 不标头部（金额或合成指标对标头部无意义）
-    ["下单单价(元)", c.aov, "元", 0, null, null, false],
-    ["下单ROI", c.roi, "", 2, null, null, false],
+    ["下单单价(元)", c.aov, "元", 0, null, null, false, c.aov_mom],
+    ["下单ROI", c.roi, "", 2, null, null, false, c.roi_mom],
   ];
   // ② 广告基建
   const buildRows = [
-    ["有消耗的主体数", c.main_subject, "", 0, null, null, false],
-    ["有消耗的账户数", c.account, "", 0, pickBench('account'), "higher", true],
-    ["有消耗广告数", c.ads, "", 0, pickBench('ads'), "higher", true],
-    ["均曝光创意唯一性ID数", c.creative_id, "", 0, pickBench('creative_id'), "higher", true],
-    ["新广告占比", c.new_ratio, "%", 1, pickBench('new_ratio'), "higher", true],
-    ["一键起量使用占比", c.auto_ratio, "%", 1, pickBench('auto_ratio'), "higher", true],
+    ["有消耗的主体数", c.main_subject, "", 0, null, null, false, null],
+    ["有消耗的账户数", c.account, "", 0, pickBench('account'), "higher", true, c.account_mom],
+    ["有消耗广告数", c.ads, "", 0, pickBench('ads'), "higher", true, c.ads_mom],
+    ["均曝光创意唯一性ID数", c.creative_id, "", 0, pickBench('creative_id'), "higher", true, c.creative_id_mom],
+    ["新广告占比", c.new_ratio, "%", 1, pickBench('new_ratio'), "higher", true, c.new_ratio_mom],
+    ["一键起量使用占比", c.auto_ratio, "%", 1, pickBench('auto_ratio'), "higher", true, c.auto_ratio_mom],
   ];
   // ③ 素材质量/内容质量 —— 只看 3 秒完播和播放时长
   const matNumRows = [
-    ["视频3秒完播率", c["3s_play"], "%", 2, pickBench('3s_play'), "higher", true],
-    ["平均播放时长", c.avg_dur, "秒", 1, pickBench('avg_dur'), "higher", true],
+    ["视频3秒完播率", c["3s_play"], "%", 2, pickBench('3s_play'), "higher", true, c['3s_play_mom']],
+    ["平均播放时长", c.avg_dur, "秒", 1, pickBench('avg_dur'), "higher", true, c.avg_dur_mom],
   ];
   // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米（看是否使用 + 消耗占比）
   const productBools = [
@@ -1441,9 +1449,9 @@ function renderCustomerDetail(d, c){
   // ⑤ 小店三率 —— 用绝对红线（与 genAdvice 的 rateRed 一致）
   // 行业 P25 分位受样本影响大，改用业务红线更稳：品退>1% / 差评>15% / 纠纷>0.5%
   const threeRateRows = [
-    ["品退率", c.ret, "%", 2, 1.0, "lower", true],
-    ["差评率", c.bad, "%", 2, 15.0, "lower", true],
-    ["纠纷率", c.dispute, "%", 2, 0.5, "lower", true],
+    ["品退率", c.ret, "%", 2, 1.0, "lower", true, c.ret_mom],
+    ["差评率", c.bad, "%", 2, 15.0, "lower", true, c.bad_mom],
+    ["纠纷率", c.dispute, "%", 2, 0.5, "lower", true, c.dispute_mom],
   ];
   // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
   // ⑥ 投放端 + 链路（子青 9.3 拍板：链路只看 小店 + 直播）

@@ -1153,3 +1153,15 @@ a:hover{text-decoration:underline}
 }
 .cat-subs-toggle:hover{background:var(--brand-soft)}
 .cat-subs-arrow{display:inline-block;margin-left:2px;font-size:10px}
+
+/* ============================================================
+   mCell 环比标签（涨红跌绿，中国习惯）
+   ============================================================ */
+.mv-mom{
+  display:inline-block;margin-left:5px;
+  font-size:10.5px;font-weight:500;line-height:14px;
+  padding:0 5px;border-radius:4px;vertical-align:middle;
+  font-family:var(--font-num);
+}
+.mv-mom.up{color:#D93025;background:#FCEBEB}
+.mv-mom.down{color:#188038;background:#E6F4EA}

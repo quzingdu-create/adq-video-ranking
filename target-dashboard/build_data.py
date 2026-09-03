@@ -100,6 +100,41 @@ def main():
         cust_trend[sub].sort(key=lambda x: x['date'])
     print(f'[trend] {len(cust_trend)} 客户趋势（每客户 64 天 by 天）')
 
+    # === 4.55) 环比数据（203808.282 csv：客户主体级 + 每指标环比变化率）===
+    # 🔴 子青 9.3 拍板："指标加上环比试试"
+    # 字段映射：新文件 "X环比变化率(%)" → c["X_mom"]
+    MOM_FILE = SRC/'通用分析数据集 - 2026-09-03T203808.282.csv'
+    mom_map = {}   # sub -> {field_mom: value}
+    if MOM_FILE.exists():
+        with open(MOM_FILE, encoding='utf-8-sig') as fh:
+            for r in csv.DictReader(fh):
+                sub = (r.get('客户主体名称(OPS)') or '').strip()
+                if not sub or sub == '整体': continue
+                if sub not in sales_map: continue
+                def mv(col):
+                    v = fn(r.get(col))
+                    return None if v is None else round(v, 2)
+                mom_map[sub] = {
+                    'consume_mom':      mv('消耗(元)环比变化率(%)'),
+                    'ctr_mom':          mv('ctr(%)环比变化率(%)'),
+                    'cvr_mom':          mv('浅层cvr(%)环比变化率(%)'),
+                    'aov_mom':          mv('下单单价(元)环比变化率(%)'),
+                    'roi_mom':          mv('下单ROI环比变化率(%)'),
+                    'account_mom':      mv('有消耗的账户数环比变化率(%)'),
+                    'ads_mom':          mv('有消耗广告数环比变化率(%)'),
+                    'creative_id_mom':  mv('曝光创意唯一性ID数环比变化率(%)'),
+                    'new_ratio_mom':    mv('新广告占比(%)环比变化率(%)'),
+                    'auto_ratio_mom':   mv('天一键起量使用广告占比(%)环比变化率(%)'),
+                    '3s_play_mom':      mv('视频3秒完播率(%)环比变化率(%)'),
+                    'avg_dur_mom':      mv('平均播放时长环比变化率(%)'),
+                    'bad_mom':          mv('小店订单-差评率(%)环比变化率(%)'),
+                    'ret_mom':          mv('小店订单-品退率(%)环比变化率(%)'),
+                    'dispute_mom':      mv('小店订单-纠纷率(%)环比变化率(%)'),
+                }
+        print(f'[环比] {len(mom_map)} 个主体有环比数据（在投全部覆盖）')
+    else:
+        print(f'[环比] ⚠️ 文件不存在: {MOM_FILE.name}')
+
     # === 4.6) 代理商政策集团对应（154421 副本 csv） ===
     agent_policy_map = {}
     agent_total_wan = 0.0
@@ -389,6 +424,14 @@ def main():
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
                 'consume_recent':round(_recent,2),   # 近期 7 天累计（8.28-9.1）
                 'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~64 天）
+                # 🔴 环比（203808.282 csv）：每指标环比变化率(%)，无数据为 None
+                **{k: mom_map.get(sub, {}).get(k) for k in [
+                    'consume_mom','ctr_mom','cvr_mom','aov_mom','roi_mom',
+                    'account_mom','ads_mom','creative_id_mom',
+                    'new_ratio_mom','auto_ratio_mom',
+                    '3s_play_mom','avg_dur_mom',
+                    'bad_mom','ret_mom','dispute_mom'
+                ]},
                 'main_consume':main_consume.get(sub, round(consume,2)),
                 # KPI（消耗/双率/ROI）—— 无数据 → None
                 'ctr':rnd(w_avg('ctr'),3),'cvr':rnd(w_avg('cvr'),3),
