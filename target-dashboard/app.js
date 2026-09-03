@@ -366,55 +366,148 @@ function riskTag(v, threshold, label){
 function genAdvice(c, bench){
   const a = [];
   const b = bench || {};
-  // —— P0：紧急 ——
-  if(c.consume < 100){
-    a.push({level:"P0", tag:"未起量", reason:`QTD 消耗仅 ¥${Math.round(c.consume)}`, action:"渠道经理 3 日内介入排查小店链路+素材，推动首次跑量"});
+
+  // ============================================================
+  // P0：紧急
+  // ============================================================
+  if(c.consume < 100 && c.shops.length===0){
+    a.push({level:"P0", tag:"未起量", reason:`日均消耗仅 ¥${Math.round(c.consume)}，无小店投数据`, action:"渠道经理 3 日内介入排查小店链路+素材，推动首次跑量"});
   }
-  // —— P1：严重超标 ——
-  if(c.roi != null && c.roi < 2 && c.consume >= 100){
-    a.push({level:"P1", tag:"ROI 偏低", reason:`ROI=${c.roi.toFixed(2)}，低于健康线 2.0`, action:"运营复盘素材+定向；建议开启艾米智投并接入分产品出价"});
+  if(c.roi != null && c.roi < 2 && c.consume >= 1000){
+    a.push({level:"P0", tag:"ROI 严重偏低", reason:`ROI=${c.roi.toFixed(2)} < 2.0 警戒线`, action:"立即减少低效计划投放，链路一致性核查+人群定向洗牌"});
   }
+
+  // ============================================================
+  // P1：核心 ROI 治理（4 档：严重/待优化/达标/优秀）
+  // ============================================================
+  if(c.roi != null && c.roi >= 2 && c.roi < 3 && c.consume >= 100){
+    a.push({level:"P1", tag:"ROI 待优化", reason:`ROI=${c.roi.toFixed(2)}，接近达标线 3.0`, action:`对标行业头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'}，继续优化素材+定向+出价`});
+  }
+  if(c.roi != null && c.roi >= 3 && c.roi < 5 && c.consume >= 1000){
+    a.push({level:"P2", tag:"ROI 已达标", reason:`ROI=${c.roi.toFixed(2)} ≥ 3.0 达标`, action:"保持节奏，可考虑优质素材+账户分发扩量"});
+  }
+  if(c.roi != null && c.roi >= 5){
+    a.push({level:"P2", tag:"ROI 优秀", reason:`ROI=${c.roi.toFixed(2)}，可复制扩量`, action:"跨账户/跨主体分发优质素材，规模化复制"});
+  }
+
+  // ============================================================
+  // P1/P2：双率（ctr/cvr）
+  // ============================================================
+  if(c.ctr != null && c.ctr > 0 && c.ctr < 1){
+    a.push({level:"P1", tag:"点击率偏低(ctr)", reason:`ctr ${c.ctr.toFixed(2)}% < 1% 红线`, action:"视觉重构（高反差封面+大字报）、开启数据外显、人群定向洗牌、强制\"痛点+产品+承诺\"3秒结构"});
+  }
+  if(c.cvr != null && c.cvr > 0 && c.cvr < 3){
+    a.push({level:"P1", tag:"转化率偏低(cvr)", reason:`cvr ${c.cvr.toFixed(2)}% < 3% 红线`, action:"链路一致性核查、直播间逼单话术、商详页加倒计时/限时特诱因、及时处理中差评"});
+  }
+  if(c.ctr != null && c.ctr >= 1 && c.ctr < 2){
+    a.push({level:"P2", tag:"ctr 接近健康线", reason:`ctr ${c.ctr.toFixed(2)}% 接近 2% 行业头部`, action:`对标头部 P75 ${b.ctr_p75!=null?b.ctr_p75.toFixed(2):'?'}，加大爆款素材衍生`});
+  }
+  if(c.cvr != null && c.cvr >= 3 && c.cvr < 6){
+    a.push({level:"P2", tag:"cvr 接近健康线", reason:`cvr ${c.cvr.toFixed(2)}% 接近头部`, action:`对标头部 P75 ${b.cvr_p75!=null?b.cvr_p75.toFixed(2):'?'}，丰富直播间促销玩法`});
+  }
+
+  // ============================================================
+  // P1：出价稳定（c.target_bid 为 null 时跳过；可借助 ROI/广告数判断）
+  // ============================================================
+  if(c.target_bid == null && c.consume >= 1000){
+    a.push({level:"P2", tag:"目标出价数据缺失", reason:`缺目标出价数据，无法判断出价稳定性`, action:"补全出价数据；遵循\"小步快跑\"原则（单次调幅 5-10%，日调 ≤ 2 次）"});
+  }
+
+  // ============================================================
+  // P1/P2：基建/规模（账户/广告数/创意）
+  // ============================================================
+  if(c.ads != null && c.ads < 50 && c.consume >= 1000){
+    a.push({level:"P2", tag:"广告基建薄", reason:`日均广告数 ${Math.round(c.ads)}，远低于行业 P75 ${b.ads_p75!=null?Math.round(b.ads_p75):'?'}`, action:`每日新建计划数 ≥ 当前活跃计划数 × 1.5；优质素材跨账户同步`});
+  }
+  if(c.account != null && c.account < 2 && c.consume >= 1000){
+    a.push({level:"P2", tag:"账户数过少", reason:`有消耗的账户数仅 ${c.account}`, action:`多账户分发防单点故障，优质素材至少在 2 个账户同时投放`});
+  }
+  if(c.creative_id != null && b.creative_id_p75 != null && c.creative_id < b.creative_id_p75 * 0.6 && c.consume >= 1000){
+    a.push({level:"P2", tag:"创意数偏低", reason:`均曝光创意 ${Math.round(c.creative_id)} < 头部 P75 的 60%（${Math.round(b.creative_id_p75)}）`, action:`优质素材通过换封面/BGM/开头快速衍生 9 条 新创意`});
+  }
+
+  // ============================================================
+  // P1/P2：新广告/上新
+  // ============================================================
+  if(c.new_ratio != null && c.new_ratio < 5 && c.consume >= 1000){
+    a.push({level:"P1", tag:"上新严重不足", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% < 5% 红线`, action:`强制上新：每日流量高峰前 2 小时批量上新计划；清理低点击、无转化老计划释放额度`});
+  }
+  if(c.new_ratio != null && c.new_ratio >= 5 && c.new_ratio < 20 && c.consume >= 1000){
+    a.push({level:"P2", tag:"素材节奏偏慢", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% 介于 5-20%`, action:`提升素材产出节奏，目标 ≥ 20%（头部 P75 ${b.new_ratio_p75!=null?b.new_ratio_p75.toFixed(1):'?'}%）`});
+  }
+
+  // ============================================================
+  // P1/P2：一键起量
+  // ============================================================
+  if(c.auto_ratio != null && c.auto_ratio < 10 && c.consume >= 1000){
+    a.push({level:"P1", tag:"一键起量严重不足", reason:`一键起量使用占比 ${c.auto_ratio.toFixed(1)}% < 10% 红线`, action:`为重点新计划配 200-500 元一键起量预算；新计划 1-2 小时无展现立即开启`});
+  }
+  if(c.auto_ratio != null && c.auto_ratio >= 10 && c.auto_ratio < 30 && c.consume >= 1000){
+    a.push({level:"P2", tag:"一键起量占比偏低", reason:`一键起量 ${c.auto_ratio.toFixed(1)}% 低于头部 P75 ${b.auto_ratio_p75!=null?b.auto_ratio_p75.toFixed(1):'?'}%`, action:"加大一键起量预算占比"});
+  }
+
+  // ============================================================
+  // P1/P2：3 秒完播率
+  // ============================================================
+  if(c["3s_play"] != null && c["3s_play"] > 0 && c["3s_play"] < 20){
+    a.push({level:"P1", tag:"3秒完播率严重偏低", reason:`完播率 ${c["3s_play"].toFixed(1)}% < 20% 红线`, action:"前 0.5 秒冲击音效+实拍明快画面；用\"难道你还在…？\"反问开场；数字人口播核心利益点"});
+  }
+  if(c["3s_play"] != null && c["3s_play"] >= 20 && c["3s_play"] < 40){
+    a.push({level:"P2", tag:"完播率偏中", reason:`完播率 ${c["3s_play"].toFixed(1)}%，对标头部 P75 ${b["3s_play_p75"]!=null?b["3s_play_p75"].toFixed(1):'?'}%`, action:"首 3 秒强视觉冲击+产品惊艳对比，强化悬念结构"});
+  }
+
+  // ============================================================
+  // P1/P2：平均播放时长
+  // ============================================================
+  if(c.avg_dur != null && c.avg_dur > 0 && c.avg_dur < 20){
+    a.push({level:"P1", tag:"平均播放时长过短", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒 < 20 秒`, action:"每 5-8 秒换视角/特效字幕/产品特写；控制时长 45-60 秒；增加室内外场景切换"});
+  }
+  if(c.avg_dur != null && c.avg_dur >= 20 && c.avg_dur < 40){
+    a.push({level:"P2", tag:"时长偏中", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒`, action:`对比头部 P75 ${b.avg_dur_p75!=null?b.avg_dur_p75.toFixed(1):'?'} 秒，强化节点节奏`});
+  }
+
+  // ============================================================
+  // P1：三率（独立分类：品退/差评/纠纷）
+  // ============================================================
   if(c.ret != null && c.ret > 1){
-    a.push({level:"P1", tag:"品退率超标", reason:`品退率 ${c.ret.toFixed(2)}% > 1% 红线`, action:"客户侧优化 SKU 描述/客服响应/发货时效，必要时培训介入"});
+    a.push({level:"P1", tag:"品退率超标", reason:`品退率 ${c.ret.toFixed(2)}% > 1% 红线`, action:"联系品控排查商品质量/描述一致性；必要时拉闸高品退商品"});
   }
   if(c.bad != null && c.bad > 15){
-    a.push({level:"P1", tag:"差评率超标", reason:`差评率 ${c.bad.toFixed(1)}% > 15% 红线`, action:"复盘高频差评，针对性改进 SKU/物流/客服话术"});
+    a.push({level:"P1", tag:"差评率超标", reason:`差评率 ${c.bad.toFixed(1)}% > 15% 红线`, action:"复盘高频差评，针对性改进 SKU/物流/客服话术；个别品类话术优化"});
   }
   if(c.dispute != null && c.dispute > 0.5){
     a.push({level:"P1", tag:"商责纠纷超标", reason:`纠纷率 ${c.dispute.toFixed(2)}% > 0.5% 红线`, action:"法务/客服介入，排查根因并完善售后流程"});
   }
-  // —— P2：优化建议 ——
-  if(c.roi != null && c.roi >= 2 && c.roi < 3 && c.consume >= 100){
-    a.push({level:"P2", tag:"ROI 待优化", reason:`ROI=${c.roi.toFixed(2)}，接近达标线 3.0`, action:`对标行业头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'}，继续优化素材和定向`});
+
+  // ============================================================
+  // P2：产品能力使用（用户视角：未使用则建议使用）
+  // ============================================================
+  if(c.is_4m === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用 4+m", reason:"未识别到 4+m 投放数据", action:"接入 4+m 投放，覆盖多层级流量场景"});
   }
-  if(c.ads != null && c.ads < 50 && c.consume >= 1000){
-    a.push({level:"P2", tag:"广告基建薄", reason:`日均广告数仅 ${Math.round(c.ads)}`, action:`补计划到行业 Top10 P75 ${b.ads_p75!=null?Math.round(b.ads_p75):'?'} 水位`});
+  if(c.is_aggregate === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用多商品聚合页", reason:"未识别到多商品聚合页投放", action:"接入多商品聚合页，提升单次曝光价值"});
   }
-  if(c.new_ratio != null && c.new_ratio < 5 && c.consume >= 1000){
-    a.push({level:"P2", tag:"素材更新慢", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% < 5%`, action:"每周至少新增 3-5 条素材，防止素材疲劳"});
+  if(c.is_live === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用直播", reason:"未识别到直播投流数据", action:"接入直播间广告投放，借直播间转化高峰"});
   }
-  if(c.new_ratio != null && c.new_ratio >= 5 && c.new_ratio < 20 && c.consume >= 1000){
-    a.push({level:"P2", tag:"素材节奏偏慢", reason:`新广告占比 ${c.new_ratio.toFixed(1)}%，建议 ≥ 20%`, action:"提升素材产出节奏，目标 ≥ 30%"});
+  if(c.is_smart_ad === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用小店艾米智投", reason:"未识别到艾米智投数据", action:"接入艾米智投，自动选品+定向+出价"});
   }
-  if(c.auto_ratio != null && c.auto_ratio < 10 && c.consume >= 1000){
-    a.push({level:"P2", tag:"一键起量占比偏低", reason:`一键起量 ${c.auto_ratio.toFixed(1)}% < 10%`, action:`加大一键起量预算占比（行业 P75 ${b.auto_ratio_p75!=null?b.auto_ratio_p75.toFixed(1):'?'}%）`});
-  }
-  if(c.amy_ratio != null && c.amy_ratio < 10 && c.consume >= 1000){
-    a.push({level:"P2", tag:"艾米智投使用低", reason:`艾米智投占比 ${c.amy_ratio.toFixed(1)}% < 10%`, action:"接入艾米场景化智投，自动选品+定向+出价"});
-  }
-  if(c.aov != null && c.aov < 30 && c.consume >= 100){
-    a.push({level:"P2", tag:"客单价偏低", reason:`客单价 ¥${Math.round(c.aov)} < 30`, action:"考虑组合销售或升级 SKU，提升客单价"});
-  }
-  if(c.refund14 != null && c.refund14 > 15){
-    a.push({level:"P2", tag:"14日退款率高", reason:`14日退款 ${c.refund14.toFixed(1)}% > 15%`, action:"排查商品描述/品质/物流问题，降低退款率"});
-  }
-  const qy = (c.link || []).some(l => l.quan_yu_tong === "是");
-  if(!qy && c.consume >= 1000){
+  if(c.is_quan_yu_tong === false && c.consume >= 1000){
     a.push({level:"P2", tag:"未开全域通", reason:"未识别到全域通投放", action:"接入全域通，扩大流量池（大盘 Top 客户 94% 已开）"});
   }
-  if(!c.bidding || !c.bidding.length){
-    a.push({level:"P2", tag:"未用分产品出价", reason:"未启用小店潜客优投出价", action:"启用分产品出价，提升单品 ROI"});
+
+  // ============================================================
+  // P2：链路
+  // ============================================================
+  if(c.is_latent === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用潜客优投", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
   }
+  if(c.is_native === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用原生推广", reason:"未识别到原生推广投放", action:"接入原生推广，原生信息流场景触达"});
+  }
+
   return a;
 }
 
@@ -721,7 +814,7 @@ function customerGridCard(c){
   const roiColor = c.roi==null ? "var(--text-4)" : c.roi<2 ? "var(--danger)" : c.roi<3 ? "var(--warn)" : "var(--ok)";
   const advCount = (c.advice||[]).length;
   const stripeColor = lv==="p0" ? "var(--danger)" : lv==="p1" ? "var(--warn)" : lv==="p2" ? "var(--info)" : "var(--ok)";
-  return `<div class="cg-card lv-${lv}" onclick="location.href='detail.html?sub=${encodeURIComponent(c.sub)}'">
+  return `<div class="cg-card lv-${lv}" onclick="goCustomer('${(c.sub||'').replace(/'/g,"\\'")}')">
     <div class="cg-stripe" style="background:${stripeColor}"></div>
     <div class="cg-top">
       <div class="cg-name" title="${c.sub}">${c.sub}</div>
@@ -738,6 +831,85 @@ function customerGridCard(c){
       ${advCount>0?`<span class="cg-adv" style="color:${stripeColor}">${advCount} 建议</span>`:`<span class="cg-adv ok">无建议</span>`}
     </div>
   </div>`;
+}
+
+/* ============================================================
+   折线图 · SVG（自渲染，零依赖）
+   rows: [{date:"2026/08/31", value: 1234.5}, ...]
+   ============================================================ */
+function renderLineChart(rows, opts){
+  opts = opts || {};
+  if(!rows || !rows.length) return '<div class="empty">无数据</div>';
+  var W = opts.w || 620, H = opts.h || 200;
+  var padL=44, padR=14, padT=16, padB=26;
+  var innerW = W-padL-padR, innerH = H-padT-padB;
+  var vals = rows.map(function(r){return r.value;}).filter(function(v){return !isNaN(v);});
+  if(!vals.length) return '<div class="empty">无数据</div>';
+  var vMax = Math.max.apply(null, vals), vMin = Math.min.apply(null, vals);
+  var niceMax = vMax<=100?Math.ceil(vMax/10)*10:vMax<=1000?Math.ceil(vMax/100)*100:Math.ceil(vMax/1000)*1000;
+  var niceMin = vMin>=0?0:Math.floor(vMin/100)*100;
+  var xs = rows.map(function(_,i){return padL + (rows.length===1?innerW/2 : i*(innerW/(rows.length-1)));});
+  var ys = rows.map(function(r){return padT + innerH - ((r.value-niceMin)/(niceMax-niceMin||1))*innerH;});
+  var path = rows.map(function(r,i){var x=xs[i],y=ys[i]; return (i===0?'M':'L')+' '+x+' '+y;}).join(' ');
+  var area = 'M '+xs[0]+' '+(padT+innerH)+' '+rows.map(function(_,i){return 'L '+xs[i]+' '+ys[i];}).join(' ')+' L '+xs[rows.length-1]+' '+(padT+innerH)+' Z';
+  var grid = [0,0.25,0.5,0.75,1].map(function(t){
+    var y = padT + innerH - t*innerH;
+    var v = niceMin + t*(niceMax-niceMin);
+    return '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)" stroke-dasharray="2 3"/>' +
+      '<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" fill="var(--text-3)" font-size="9.5" font-family="var(--font-num)">'+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0))+'</text>';
+  }).join('');
+  var pts = rows.map(function(r,i){return '<circle cx="'+xs[i]+'" cy="'+ys[i]+'" r="3" fill="var(--brand)"><title>'+r.date+': '+fmtNum(r.value,0)+'</title></circle>';}).join('');
+  var xLabels = rows.map(function(r,i){
+    var show = i===0 || i===rows.length-1 || i===Math.floor(rows.length/2);
+    if(!show) return '';
+    return '<text x="'+xs[i]+'" y="'+(H-8)+'" text-anchor="middle" fill="var(--text-3)" font-size="9.5">'+r.date.slice(5)+'</text>';
+  }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg">' +
+    grid + '<path d="'+area+'" fill="var(--brand)" fill-opacity="0.08"/>' +
+    '<path d="'+path+'" stroke="var(--brand)" stroke-width="2" fill="none"/>' +
+    pts + xLabels + '</svg>';
+}
+
+function renderMultiLineChart(series, opts){
+  opts = opts || {};
+  if(!series || !series.length) return '<div class="empty">无数据</div>';
+  var W = opts.w || 620, H = opts.h || 220;
+  var padL=44, padR=14, padT=32, padB=26;
+  var innerW = W-padL-padR, innerH = H-padT-padB;
+  var vMax = 0;
+  series.forEach(function(s){s.data.forEach(function(p){if(p.value>vMax) vMax=p.value;});});
+  var niceMax = vMax<=100?Math.ceil(vMax/10)*10:vMax<=1000?Math.ceil(vMax/100)*100:Math.ceil(vMax/1000)*1000;
+  var cols = ["#4C5FD7","#22916B","#E08B24","#D95F8E","#35B0A7","#7C6BD9","#98A2B3","#E8734A"];
+  var allDates = series[0].data.map(function(p){return p.date;});
+  var xAt = function(i){return padL + (allDates.length===1?innerW/2 : i*(innerW/(allDates.length-1)));};
+  var yAt = function(v){return padT + innerH - (v/(niceMax||1))*innerH;};
+  var grid = [0,0.5,1].map(function(t){
+    var y = padT + innerH - t*innerH;
+    var v = t*niceMax;
+    return '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)" stroke-dasharray="2 3"/>' +
+      '<text x="'+(padL-6)+'" y="'+(y+3)+'" text-anchor="end" fill="var(--text-3)" font-size="9.5" font-family="var(--font-num)">'+(v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0))+'</text>';
+  }).join('');
+  var xLabels = allDates.map(function(d,i){
+    var show = i===0 || i===allDates.length-1 || i===Math.floor(allDates.length/2);
+    if(!show) return '';
+    return '<text x="'+xAt(i)+'" y="'+(H-8)+'" text-anchor="middle" fill="var(--text-3)" font-size="9.5">'+d.slice(5)+'</text>';
+  }).join('');
+  var lines = series.map(function(s,si){
+    var c = cols[si%cols.length];
+    var path = s.data.map(function(p,i){return (i===0?'M':'L')+' '+xAt(i)+' '+yAt(p.value);}).join(' ');
+    return '<path d="'+path+'" stroke="'+c+'" stroke-width="1.8" fill="none" opacity="0.85"><title>'+s.name+'</title></path>';
+  }).join('');
+  var legend = series.map(function(s,i){
+    var c = cols[i%cols.length];
+    return '<g transform="translate('+(padL+i*78)+',14)"><rect width="9" height="9" rx="2" fill="'+c+'"/><text x="13" y="8" fill="var(--text-2)" font-size="10">'+s.name.slice(0,8)+'</text></g>';
+  }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg">' +
+    grid + lines + legend + xLabels + '</svg>';
+}
+
+function goCustomer(sub){
+  if(!sub) return;
+  location.href = 'detail.html?sub=' + encodeURIComponent(sub);
 }
 
 /* ============================================================
@@ -771,147 +943,211 @@ function renderMiniKPI(rows){
 function renderCustomerDetail(d, c){
   refreshAdvice(c);
   const b = c.benchmark || {};
+  const lv = riskLevel(c);
+  const headColor = lv==='p0'?'--danger':lv==='p1'?'--warn':lv==='p2'?'--info':'--ok';
+
+  // 每指标小卡：含与行业头部对标 + 差于标红
+  function mCell(label, val, unit, digit, bench, mode){
+    const valid = val!=null && !isNaN(val);
+    const hasBench = bench!=null && !isNaN(bench) && bench>0;
+    let diff = null, vsTxt = '';
+    if(valid && hasBench){
+      diff = (val - bench) / bench * 100;
+      const dir = mode==='lower' ? (val<=bench?'高':'低') : (val>=bench?'高':'低');
+      // 越低越好指标："差于" = val>bench； 越高越好指标："差于" = val<bench
+      const worse = mode==='lower' ? val>bench : val<bench;
+      vsTxt = `vs 行业头部 ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
+      if(worse && mode){
+        // 差于头部 → 红
+      }
+    }
+    const cellCls = !valid ? 'm-na' : (!hasBench ? '' : ((mode==='lower' ? val>bench : val<bench) ? 'm-bad' : 'm-ok'));
+    return `<div class="metric-cell ${cellCls}">
+      <div class="ml">${label}</div>
+      <div class="mv">${valid?fmtNum(val,digit):'—'}<small>${unit}</small></div>
+      ${vsTxt?`<div class="mv-vs ${cellCls}">${vsTxt}</div>`:''}
+    </div>`;
+  }
+
+  const kpiRows = [
+    ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
+    ["ctr", c.ctr, "%", 2, b.ctr_p75, "higher"],
+    ["cvr", c.cvr, "%", 2, b.cvr_p75, "higher"],
+    ["目标出价", c.target_bid, "元", 1, null, null],
+    ["下单单价(元)", c.aov, "元", 0, b.aov_p75, "higher"],
+    ["下单ROI", c.roi, "", 2, b.roi_p75, "higher"],
+  ];
+  const buildRows = [
+    ["有消耗的主体数", c.main_subject, "", 0, null, null],
+    ["有消耗的账户数", c.account, "", 0, b.account_p75, "higher"],
+    ["有消耗广告数", c.ads, "", 0, b.ads_p75, "higher"],
+    ["均曝光创意唯一性ID数", c.creative_id, "", 0, b.creative_id_p75, "higher"],
+    ["新广告占比", c.new_ratio, "%", 1, b.new_ratio_p75, "higher"],
+    ["一键起量使用占比", c.auto_ratio, "%", 1, b.auto_ratio_p75, "higher"],
+  ];
+  const matRows = [
+    ["视频3秒完播率", c["3s_play"], "%", 2, b["3s_play_p75"], "higher"],
+    ["平均播放时长", c.avg_dur, "秒", 1, b.avg_dur_p75, "higher"],
+    ["是否使用4+m", c.is_4m?"是":"否", "", 0, null, null],
+    ["是否使用多商品聚合页", c.is_aggregate?"是":"否", "", 0, null, null],
+  ];
+
+  // ⑤ 链路
+  const linkUse = [
+    {label:"是否使用潜客优投", val:c.is_latent, src:"潜客优投-靶向.csv"},
+    {label:"是否使用原生推广", val:c.is_native, src:"原生推广-靶向.csv"},
+    {label:"是否使用全域通", val:c.is_quan_yu_tong===true, src:"投放端-靶向.csv"},
+  ];
+  // ⑥ 投放端（4 个工具）
+  const productRows = [
+    {label:"4+m", val:c.is_4m},
+    {label:"多商品聚合页", val:c.is_aggregate},
+    {label:"小店艾米智投", val:c.is_smart_ad},
+    {label:"直播", val:c.is_live},
+  ];
 
   return `
-    <div class="detail-head" style="border-left:3px solid var(${riskLevel(c)==='p0'?'--danger':riskLevel(c)==='p1'?'--warn':riskLevel(c)==='p2'?'--info':'--ok'})">
+    <div class="detail-head" style="border-left:3px solid var(${headColor})">
       <div class="detail-title">
         <h1>${c.sub}</h1>
         ${consumeTag(c.consume)}
+        <span class="chip">${c.sales||'未分配'}</span>
         ${(c.advice||[]).some(a=>a.level==='P0')?'<span class="tag bad">P0 高危</span>':''}
         ${(c.advice||[]).some(a=>a.level==='P1')?'<span class="tag warn">P1 关注</span>':''}
       </div>
       <div class="detail-meta">
-        <span class="chip static" style="background:transparent;padding-left:0">${indDot(c.industry)} <b style="margin-left:4px">${c.industry}</b></span>
-        <span class="chip">代理商 <b>${c.agent}</b></span>
+        <span class="chip static">行业 <b>${c.industry}</b></span>
         <span class="chip">视频号 <b>${c.shops.length}</b></span>
-        <span class="chip">下单单价 <b>¥${fmtNum(c.aov,0)}</b></span>
-        <span class="chip">14日退款率 <b>${fmtPct(c.refund14,1)}</b></span>
+        <span class="chip">微信小店 <b>${c.shop_count}</b></span>
       </div>
     </div>
 
-    <div class="section-h">① 结果层</div>
-    <div class="kpi-grid">
-      <div class="kpi k-brand"><div class="kpi-label">QTD 消耗</div>
-        <div class="kpi-val">${fmtMoney(c.consume,1)}<span class="unit">元</span></div>
-        <div class="kpi-hint">艾米智投占比 ${fmtPct(c.amy_ratio,1)}</div></div>
-      <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>
-        <div class="kpi-val">${fmtMoney(c.gmv,1)}<span class="unit">元</span></div>
-        <div class="kpi-hint">${c.shops.length} 个视频号贡献</div></div>
-      <div class="kpi ${c.roi==null?'k-warn':c.roi<2?'k-danger':c.roi<3?'k-warn':'k-ok'}"><div class="kpi-label">下单 ROI</div>
-        <div class="kpi-val">${fmtNum(c.roi,2)}</div>
-        <div class="kpi-hint">行业P50 ${fmtNum(b.roi_p50,2)} · P75 ${fmtNum(b.roi_p75,2)}</div></div>
-      <div class="kpi k-brand"><div class="kpi-label">下单单价</div>
-        <div class="kpi-val">${fmtNum(c.aov,0)}<span class="unit">元</span></div>
-        <div class="kpi-hint">行业P50 ¥${fmtNum(b.aov_p50,0)}</div></div>
-      <div class="kpi ${c.refund14!=null && c.refund14>15?'k-danger':'k-ok'}"><div class="kpi-label">14日退款率</div>
-        <div class="kpi-val">${fmtNum(c.refund14,1)}<span class="unit">%</span></div>
-        <div class="kpi-hint">${c.refund14!=null && c.refund14>15?'高于警戒线 15%':'处于正常区间'}</div></div>
+    <!-- ① 客户投放自查报告（5 模块） -->
+    <div class="section-h">① 客户投放自查报告</div>
+    <div class="grid-2">
+      <div class="card compact">
+        <h2>① 消耗 / 双率 / ROI</h2>
+        <div class="sub">6 个核心指标 · 每个对标行业头部</div>
+        <div class="metric-grid-3">${kpiRows.map(r=>mCell(...r)).join('')}</div>
+      </div>
+      <div class="card compact">
+        <h2>② 广告基建</h2>
+        <div class="sub">规模指标 · 越高越好</div>
+        <div class="metric-grid-3">${buildRows.map(r=>mCell(...r)).join('')}</div>
+      </div>
+      <div class="card compact">
+        <h2>③ 素材质量 / 内容质量</h2>
+        <div class="sub">完播与功能</div>
+        <div class="metric-grid-3">${matRows.map(r=>mCell(...r)).join('')}</div>
+      </div>
+      <div class="card compact">
+        <h2>④ 产品能力</h2>
+        <div class="sub">4 个能力使用标记</div>
+        <div class="metric-grid-3">${productRows.map(p=>{
+          const ok = p.val;
+          return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
+            <div class="ml">${p.label}</div>
+            <div class="mv">${ok?'已使用':'未使用'}</div>
+            <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?'已在投':'建议开启'}</div>
+          </div>`;
+        }).join('')}</div>
+      </div>
+      <div class="card compact">
+        <h2>⑤ 链路</h2>
+        <div class="sub">3 类链路 · 未使用建议开启</div>
+        <div class="metric-grid-3">${linkUse.map(p=>{
+          const ok = p.val===true;
+          return `<div class="metric-cell ${ok?'m-ok':'m-bad'}">
+            <div class="ml">${p.label}</div>
+            <div class="mv">${p.val===true?'是':(p.val===false?'否':'未知')}</div>
+            <div class="mv-vs ${ok?'m-ok':'m-bad'}">${ok?'已开启':'建议开启'}</div>
+          </div>`;
+        }).join('')}</div>
+      </div>
+      <div class="card compact">
+        <h2>⑥ 投放端</h2>
+        <div class="sub">adq 投放</div>
+        <div class="metric-grid-3"><div class="metric-cell ${c.adq?'m-ok':'m-bad'}">
+          <div class="ml">adq 投放</div>
+          <div class="mv">${c.adq?'是':'否'}</div>
+          <div class="mv-vs ${c.adq?'m-ok':'m-bad'}">${c.adq?'已投放':'建议接入'}</div>
+        </div></div>
+      </div>
     </div>
 
+    <!-- ② 大柱状图对标（保留 v1 的 7 指标） -->
     <div class="section-h">② 与行业头部对标</div>
     <div class="card">
       <div class="sub">同二级行业「${c.industry}」消耗前 10 名客户的 P75 分位值 · 您（彩色） vs 行业 P75（灰色）</div>
       ${cmpChartBig(c, b)}
     </div>
 
-    <div class="section-h">③ 广告基建 & 小店三率</div>
-    <div class="grid-2">
-      <div class="card compact">
-        <h2>广告基建</h2>
-        <div class="sub">计划数 / 新广告 / 一键起量</div>
-        ${renderMiniKPI([
-          ["日均广告数", c.ads, "", 0, "higher", 50],
-          ["新广告占比", c.new_ratio, "%", 1, "higher", 5],
-          ["一键起量%", c.auto_ratio, "%", 1, "higher", 10],
-          ["曝光创意", c.creative_show, "", 0, "plain"],
-          ["新建创意", c.creative_new, "", 0, "plain"],
-        ])}
-        <div class="divider"></div>
-        <div class="detail-chips">
-          <span class="chip">链路 <b>${c.link.length}</b></span>
-          <span class="chip">全域通 <b>${c.link.some(l=>l.quan_yu_tong==="是")?"已接入":"未接入"}</b></span>
-          <span class="chip">分产品出价 <b>${c.bidding.length?"已启用":"未启用"}</b></span>
-          <span class="chip">艾米智投 <b>${fmtPct(c.amy_ratio,1)}</b></span>
-        </div>
-      </div>
-      <div class="card compact">
-        <h2>小店三率</h2>
-        <div class="sub">品退率 / 差评率 / 商责纠纷率 / 14日退款率</div>
-        ${renderMiniKPI([
-          ["品退率", c.ret, "%", 2, "lower", 1],
-          ["差评率", c.bad, "%", 2, "lower", 15],
-          ["纠纷率", c.dispute, "%", 2, "lower", 0.5],
-          ["14日退款率", c.refund14, "%", 1, "lower", 15],
-        ])}
-      </div>
-    </div>
-
-    ${(c.link.length || c.bidding.length) ? `
-    <div class="section-h">④ 链路拆分 & 分产品出价</div>
-    <div class="grid-2">
-      ${c.link.length ? `
-      <div class="card compact">
-        <h2>链路拆分（B 表）</h2>
-        <div class="sub">按全域通 × 商品消费链路</div>
-        <table class="tbl">
-          <thead><tr>
-            <th>全域通</th><th>链路</th><th class="num">消耗</th><th>ROI</th><th class="num">广告数</th>
-          </tr></thead>
-          <tbody>${c.link.map(l=>`<tr>
-            <td>${l.quan_yu_tong}</td>
-            <td>${l.link}</td>
-            <td class="num">${fmtMoney(l.consume,1)}</td>
-            <td>${roiTag(l.roi)}</td>
-            <td class="num">${fmtInt(l.ads)}</td>
-          </tr>`).join("")}</tbody>
-        </table>
-      </div>
-      ` : '<div class="card compact"><h2>链路拆分（B 表）</h2><div class="empty">无链路数据</div></div>'}
-      ${c.bidding.length ? `
-      <div class="card compact">
-        <h2>分产品出价（C 表）</h2>
-        <div class="sub">当前使用的出价方式</div>
-        <table class="tbl">
-          <thead><tr><th>出价方式</th><th class="num">消耗</th><th>ROI</th></tr></thead>
-          <tbody>${c.bidding.map(x=>`<tr>
-            <td>${x.product}</td>
-            <td class="num">${fmtMoney(x.consume,2)}</td>
-            <td>${roiTag(x.roi)}</td>
-          </tr>`).join("")}</tbody>
-        </table>
-      </div>
-      ` : '<div class="card compact"><h2>分产品出价（C 表）</h2><div class="empty">未启用分产品出价</div></div>'}
+    <!-- ③ 客户主页图：微信小店 × 视频号 -->
+    ${c.shops.length?`
+    <div class="section-h">③ 客户主页图 · 微信小店 × 视频号</div>
+    <div class="card">
+      <div class="sub">${c.shop_count} 个小店 × ${c.shops.length} 个视频号 · 按消耗降序</div>
+      ${renderShopVideoMap(c)}
     </div>
     ` : ''}
 
-    <div class="section-h">⑤ 提升建议</div>
+    <!-- ④ 提升建议 -->
+    <div class="section-h">④ 提升建议</div>
     <div class="card">
       <div class="sub">基于数据自动诊断 · 请与您的渠道经理协同落实</div>
       ${renderAdvice(c.advice)}
     </div>
 
-    <div class="section-h">⑥ 视频号明细</div>
+    <!-- ⑤ 视频号明细 -->
+    <div class="section-h">⑤ 视频号明细</div>
     <div class="card">
       <div class="sub">${c.shops.length} 个视频号 · 按消耗排序</div>
       <table class="tbl">
         <thead><tr>
-          <th>视频号</th><th>微信小店</th><th>代理商</th>
-          <th class="num">消耗</th><th class="num">GMV</th><th>ROI</th><th class="num">广告数</th>
-          <th class="num">品退%</th><th class="num">差评%</th><th class="num">纠纷%</th>
+          <th>视频号</th><th>微信小店</th>
+          <th class="num">消耗</th><th>ROI</th><th class="num">ctr%</th><th class="num">cvr%</th>
+          <th class="num">广告数</th><th class="num">完播%</th>
         </tr></thead>
-        <tbody>${c.shops.map(s=>`<tr>
-          <td class="sub-name">${s.shop}</td>
-          <td>${s.wx_id||"—"}</td>
-          <td>${s.agent||"—"}</td>
-          <td class="num">${fmtMoney(s.consume,2)}</td>
-          <td class="num">${fmtMoney(s.gmv,2)}</td>
+        <tbody>${c.shops.sort((a,b)=>b.consume-a.consume).map(s=>`<tr>
+          <td class="sub-name">${s.video||'—'}</td>
+          <td>${s.shop_id||"—"}</td>
+          <td class="num">${fmtMoney(s.consume,1)}</td>
           <td>${roiTag(s.roi)}</td>
+          <td class="num">${fmtNum(s.ctr,2)}</td>
+          <td class="num">${fmtNum(s.cvr,2)}</td>
           <td class="num">${fmtInt(s.ads)}</td>
-          <td class="num">${riskTag(s.ret,1)}</td>
-          <td class="num">${riskTag(s.bad,15)}</td>
-          <td class="num">${riskTag(s.dispute,0.5)}</td>
+          <td class="num">${fmtNum(s['3s_play'],1)}</td>
         </tr>`).join("")}</tbody>
       </table>
     </div>
   `;
+}
+
+/* 微信小店 × 视频号 关系图（每店下面列出视频号+指标） */
+function renderShopVideoMap(c){
+  // 按 shop_id 分组
+  const byShop = {};
+  c.shops.forEach(s=>{
+    const k = s.shop_id || '未关联小店';
+    if(!byShop[k]) byShop[k] = {shop_id:k, videos:[], consume:0};
+    byShop[k].videos.push(s);
+    byShop[k].consume += s.consume;
+  });
+  const shops = Object.values(byShop).sort((a,b)=>b.consume-a.consume);
+  return `<div class="sv-map">${shops.map(s=>{
+    const w = c.consume > 0 ? (s.consume / c.consume * 100) : 0;
+    return `<div class="sv-shop">
+      <div class="sv-shop-head">
+        <div class="sv-shop-name" title="${s.shop_id}">📱 ${s.shop_id.slice(-12)||'未关联小店'}</div>
+        <div class="sv-shop-meta">${s.videos.length} 个视频号 · ${fmtMoney(s.consume,1)} 元（${w.toFixed(1)}%）</div>
+      </div>
+      <div class="sv-videos">${s.videos.sort((a,b)=>b.consume-a.consume).map(v=>`
+        <div class="sv-video" style="flex:${Math.max(0.6, v.consume/Math.max(...s.videos.map(x=>x.consume)))}">
+          <div class="sv-video-name">${v.video||'—'}</div>
+          <div class="sv-video-bar"><span style="width:${v.consume/Math.max(1,...s.videos.map(x=>x.consume))*100}%;background:${industryColor(c.industry)}"></span></div>
+          <div class="sv-video-meta">${fmtMoney(v.consume,0)} · ROI ${fmtNum(v.roi,1)}</div>
+        </div>
+      `).join('')}</div>
+    </div>`;
+  }).join('')}</div>`;
 }

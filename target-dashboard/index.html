@@ -42,6 +42,20 @@
     </div>
   </div>
 
+  <!-- ② 趋势折线图（2 张：大盘 + 客户，按客户多选） -->
+  <div class="card-row" style="margin-top:8px">
+    <div class="card">
+      <h2>① 服饰中心大盘日均消耗</h2>
+      <div class="sub" id="dashboardTrendSub">最近 8 天</div>
+      <div id="dashboardTrend"></div>
+    </div>
+    <div class="card">
+      <h2>② 客户日均消耗趋势（按筛选）</h2>
+      <div class="sub">当前筛选下的客户 · 每日日均消耗（最多展示前 5 家）</div>
+      <div id="customerTrend"></div>
+    </div>
+  </div>
+
   <!-- ③ Top 建议 + 行业消耗（卡 row 上移，在客户表上面） -->
   <div class="card-row" style="margin-top:8px">
     <div class="card">
@@ -179,9 +193,6 @@ async function render(){
     <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>
       <div class="kpi-val">${fmtMoney(gmv,0)}<span class="unit">元</span></div>
       <div class="kpi-hint">来自广告归因</div></div>
-    <div class="kpi ${roi>=3?'k-ok':'k-warn'}"><div class="kpi-label">整体 ROI</div>
-      <div class="kpi-val">${fmtNum(roi,2)}</div>
-      <div class="kpi-hint">${roi>=3?'<span class="up">达标 ≥ 3.0</span>':'<span class="dn">低于健康线 3.0</span>'}</div></div>
     <div class="kpi ${silent>0?'k-warn':'k-ok'}"><div class="kpi-label">活跃 / 未起量</div>
       <div class="kpi-val">${active}<span class="unit">/${silent}</span></div>
       <div class="kpi-hint">${silent>0?'未起量客户需优先介入':'全部客户已起量'}</div></div>
@@ -220,6 +231,24 @@ async function render(){
     ? `<div class="ind-pie-wrap">${renderIndustryPie(indMap, consume, d.industry_benchmark)}</div>
       <div class="ind-d-wrap"><div class="sub" style="margin:14px 0 6px">行业明细</div>${renderIndustryDetail(indMap, consume, d.industry_benchmark)}</div>`
     : '<div class="empty">无数据</div>';
+
+  /* ① 大盘日均消耗折线（跳过"整体"行） */
+  const dashRows = (d.target_dashboard_trend||[]).filter(r=>r.date!=='整体');
+  document.getElementById("dashboardTrendSub").textContent =
+    dashRows.length ? `最近 ${dashRows.length} 天` : '数据缺失';
+  document.getElementById("dashboardTrend").innerHTML = dashRows.length
+    ? renderLineChart(dashRows, {w:620,h:200})
+    : '<div class="empty">大盘数据待上传</div>';
+
+  /* ② 客户趋势折线（按 list 排序取前 5） */
+  const top5 = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume).slice(0,5);
+  const series = top5.map(c=>{
+    const pts = (d.customers_trend && d.customers_trend[c.sub]) || [];
+    return {name:c.alias||c.sub.slice(0,6), data:pts.filter(r=>r.date!=='整体')};
+  }).filter(s=>s.data.length>0);
+  document.getElementById("customerTrend").innerHTML = series.length
+    ? renderMultiLineChart(series, {w:620,h:220})
+    : '<div class="empty">当前筛选下客户暂无趋势数据</div>';
 
   /* 客户健康度总表 —— Card Grid 前 5 + 更多 */
   const SHOW_N = 5;
