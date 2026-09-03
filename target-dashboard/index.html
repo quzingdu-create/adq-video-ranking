@@ -51,7 +51,7 @@
     </div>
     <div class="card">
       <h2>② 客户日均消耗趋势（按筛选）</h2>
-      <div class="sub">当前筛选下的客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）</div>
+      <div class="sub">当前筛选下消耗前 10 客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）</div>
       <div id="customerTrend"></div>
     </div>
   </div>
@@ -228,7 +228,7 @@ async function render(){
 
   document.getElementById("kpiGrid").innerHTML = `
     <div class="kpi k-brand">
-      <div class="kpi-label">当前筛选消耗 <span class="tag brand">8.28-9.1</span></div>
+      <div class="kpi-label">当前筛选日耗 <span class="tag brand">8.28-9.1</span></div>
       <div class="kpi-val">¥${consume.toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit">元</span></div>
       <div class="kpi-hint">${list.filter(c=>c.consume>0).length} 家伙伴在投 · 跟随筛选变化</div></div>
     <div class="kpi k-info">
@@ -354,9 +354,10 @@ async function render(){
     document.getElementById("dashboardTrend").innerHTML = '<div class="empty">大盘数据待上传</div>';
   }
 
-  /* ② 客户趋势折线（按 list 排序取前 5） */
-  const top5 = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume).slice(0,5);
-  const series = top5.map(c=>{
+  /* ② 客户趋势折线（按 list 排序取前 10） */
+  const topN = 10;  // 子青 9.3 拍板：从 top5 改成 top10（更多客户）
+  const top10 = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume).slice(0, topN);
+  const series = top10.map(c=>{
     const pts = (d.customers_trend && d.customers_trend[c.sub]) || [];
     return {name:c.alias||c.sub.slice(0,6), data:pts.filter(r=>r.date!=='整体')};
   }).filter(s=>s.data.length>0);
