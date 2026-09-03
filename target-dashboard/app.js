@@ -496,8 +496,21 @@ function genAdvice(c, bench){
   c._roiTh = roiTh;
 
   // —— P0：紧急 ——
-  if(c.consume < 100 && c.shops.length===0){
-    a.push({level:"P0", tag:"未起量", reason:`日均消耗 ¥${Math.round(c.consume)}（新店期）`, action:"3 日内介入排查小店链路+素材，推动首次跑量"});
+  // 🔴 复查发现：原条件要求 shops.length===0（没有视频号），
+  //    导致"已建视频号但日耗<100元"的 12 家客户完全收不到建议（如杭州贝旭：2个号/6个广告/日耗 0.46）
+  if(c.consume < 100){
+    const hasShops = (c.shops||[]).length > 0;
+    a.push({
+      level:"P0",
+      tag: hasShops ? "已建号未跑量" : "未起量",
+      category:"基建",
+      reason: hasShops
+        ? `日均消耗仅 ¥${(c.consume||0).toFixed(2)} · 已建 ${c.shops.length} 个视频号但几乎无消耗`
+        : `日均消耗 ¥${Math.round(c.consume||0)} · 尚未创建视频号`,
+      action: hasShops
+        ? "▸ ① 检查计划是否被限流/审核拒绝 ② 提高出价至行业均值 ③ 扩充计划数到 10+ ④ 素材换 3-5 条新版本测试"
+        : "3 日内介入排查小店链路+素材，推动首次跑量"
+    });
   }
   if(c.roi != null && c.roi < roiTh && c.consume >= 1000){
     a.push({level:"P0", tag:"ROI 严重偏低", reason:`ROI ${c.roi.toFixed(2)} < ${stage}红线 ${roiTh.toFixed(1)} · 客户阶段：${stage}`, action:`▸ 紧急：① 当日关停 ROI<1.0 的计划 ② 保留 ROI≥${roiTh.toFixed(1)} 的优质计划扩量 ③ 排查主表素材与目标出价 ④ 7 天无改善考虑下线整账户`});
@@ -507,9 +520,7 @@ function genAdvice(c, bench){
   if(c.roi != null && c.roi >= roiTh && c.roi < roiTh+0.5 && c.consume >= 100){
     a.push({level:"P1", tag:"ROI 待优化", reason:`ROI ${c.roi.toFixed(2)} 接近${stage}达标线`, action:`▸ ① 关停 ROI<${(roiTh-0.5).toFixed(1)} 的低效计划 ② 优质素材跨账户分发（3+ 账户）③ 提升客单价（关联销售/升级 SKU）④ 排查"广告主在投的消耗"占比是否 >20%`});
   }
-  // 🔴 子青 9.3 拍板删除：「ROI 已达标」「ROI 优秀」是好事不是问题，
-  //    出现在「需优先介入」列表里是错的（原话："这算啥问题？？？"）
-  // —— 只保留低于达标线的 ROI 问题 ——
+  // 已删除：ROI 达标/超标的"报喜"建议（那是好事不是问题，不该出现在需优先介入里）
 
   // —— P1/P2：双率（ctr/cvr）—— 用绝对值阈值，不对标头部 ——
   // 通用标准：ctr ≥ 2% 算正常，<1% 严重偏低；cvr ≥ 4% 正常，<2% 严重偏低

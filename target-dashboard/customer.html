@@ -27,7 +27,7 @@ async function render(){
   const d = await loadData();
   const c = d.customers.find(x=>x.sub===window.ROLE.id) || d.customers[0];
   document.getElementById("cusTag").textContent = c.industry;
-  // 🔴 删除 v1 残留"数据每周一更新"（现在是 qtd 口径，按数据日走）
+  // 旧文案（按周更新）已废弃，改为跟随 data.json 的数据周期
   document.getElementById("pgSub").textContent = `数据周期 ${(d.meta&&d.meta.data_period)||'qtd'} · 当前客户：${c.sub}`;
 
   document.getElementById("content").innerHTML = renderCustomerDetail(d, c);
