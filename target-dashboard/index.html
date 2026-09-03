@@ -27,13 +27,13 @@
         <span class="filter-caret">▾</span>
       </button>
       <div class="filter-panel" id="filterPanel">
-        <div class="filter-section">
-          <div class="filter-section-title">行业</div>
-          <div class="filter-chips" id="indChips"></div>
+        <div class="filter-tabs" id="viewTabs">
+          <button class="view-tab on" data-view="industry">行业视角</button>
+          <button class="view-tab" data-view="agent">服务商视角</button>
+          <button class="view-tab" data-view="sales">销售视角</button>
         </div>
         <div class="filter-section">
-          <div class="filter-section-title">服务商</div>
-          <div class="filter-chips" id="agentChips"></div>
+          <div class="filter-chips" id="viewChips"></div>
         </div>
         <div class="filter-footer">
           <button class="filter-clear" id="filterClear" type="button">清除全部</button>
@@ -88,34 +88,31 @@
   const fp = document.getElementById("filterPanel");
   fb.onclick = e => { e.stopPropagation(); fp.classList.toggle("open"); fb.classList.toggle("open"); };
   document.addEventListener("click", e => { if(!document.getElementById("filterFloater").contains(e.target)){ fp.classList.remove("open"); fb.classList.remove("open"); } });
-  document.getElementById("filterClear").onclick = ()=>{ currentInds.clear(); currentAgents.clear(); showAll=false; render(); };
-  // chip 点击代理（容器内容每次 render 重建，但代理绑在容器上，永久有效）
-  document.getElementById("indChips").addEventListener("click", e => {
-    const b = e.target.closest("[data-fkind='ind']");
-    if(!b) return;
-    const v = b.dataset.fkey;
-    if(v==="__all__") currentInds.clear();
-    else if(currentInds.has(v)) currentInds.delete(v);
-    else currentInds.add(v);
+  document.getElementById("filterClear").onclick = ()=>{ currentViewSel.clear(); showAll=false; render(); };
+  // 视角 tab 切换
+  document.getElementById("viewTabs").addEventListener("click", e => {
+    const t = e.target.closest("[data-view]");
+    if(!t) return;
+    currentView = t.dataset.view;
+    currentViewSel.clear();
     showAll=false; render();
   });
-  document.getElementById("agentChips").addEventListener("click", e => {
-    const b = e.target.closest("[data-fkind='agent']");
+  // 视角下的 chip 点击
+  document.getElementById("viewChips").addEventListener("click", e => {
+    const b = e.target.closest("[data-fkey]");
     if(!b) return;
     const v = b.dataset.fkey;
-    if(v==="__all__") currentAgents.clear();
-    else{
-      const key = v==="空"?"":v;
-      if(currentAgents.has(key)) currentAgents.delete(key);
-      else currentAgents.add(key);
-    }
+    if(v==="__all__") currentViewSel.clear();
+    else if(currentViewSel.has(v)) currentViewSel.delete(v);
+    else currentViewSel.add(v);
     showAll=false; render();
   });
+  document.getElementById("agentChips")?.parentElement?.remove();  // 旧 agent 块删除
   render();
 })();
 
-let currentInds = new Set();      // 多选行业
-let currentAgents = new Set();    // 多选服务商
+let currentView = 'industry';         // 视角：industry / agent / sales
+let currentViewSel = new Set();       // 当前视角下选中的项（多选交集）
 let showAll = false;
 
 async function render(){
@@ -123,52 +120,49 @@ async function render(){
   const all = filterByRole(d.customers, window.ROLE);
   all.forEach(refreshAdvice);
 
-  // 筛选 chip → 浮动过滤器面板
-  const inds = [...new Set(all.map(c=>c.industry))];
-  const agents = [...new Set(all.map(c=>c.agent).filter(a=>a && a!=="空"))];
-  const indCount = currentInds.size;
-  const agentCount = currentAgents.size;
-  document.getElementById("indChips").innerHTML = `
-    <button class="chip ${indCount===0?'on':''}" data-fkind="ind" data-fkey="__all__">全部</button>
-    ${inds.map(i=>`<button class="chip ${currentInds.has(i)?'on':''}" data-fkind="ind" data-fkey="${i}">${i}</button>`).join("")}
-  `;
-  document.getElementById("agentChips").innerHTML = `
-    <button class="chip ${agentCount===0?'on':''}" data-fkind="agent" data-fkey="__all__">全部</button>
-    ${[...agents,"空"].map(a=>{
-      const label = a==="空"?"直客/内部":a;
-      const key = a==="空"?"":a;
-      return `<button class="chip ${currentAgents.has(key)?'on':''}" data-fkind="agent" data-fkey="${a}">${label}</button>`;
-    }).join("")}
-  `;
+  // 视角 chip 渲染
+  const tabs = document.querySelectorAll('.view-tab');
+  tabs.forEach(t => t.classList.toggle('on', t.dataset.view === currentView));
+  let chipsHtml = '';
+  if(currentView === 'industry'){
+    const inds = [...new Set(all.map(c=>c.industry))];
+    chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
+      + inds.map(i=>`<button class="chip ${currentViewSel.has(i)?'on':''}" data-fkey="${i}">${i}</button>`).join('');
+  } else if(currentView === 'agent'){
+    const agents = [...new Set(all.map(c=>c.agent).filter(a=>a && a!=='空'))];
+    chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
+      + agents.map(a=>`<button class="chip ${currentViewSel.has(a)?'on':''}" data-fkey="${a}">${a}</button>`).join('');
+  } else if(currentView === 'sales'){
+    const sales = [...new Set(all.map(c=>c.sales).filter(Boolean))];
+    chipsHtml = `<button class="chip ${currentViewSel.size===0?'on':''}" data-fkey="__all__">全部</button>`
+      + sales.map(s=>`<button class="chip ${currentViewSel.has(s)?'on':''}" data-fkey="${s}">${s}</button>`).join('');
+  }
+  document.getElementById("viewChips").innerHTML = chipsHtml;
 
   // 应用筛选（交集）
   const list = all.filter(c=>{
-    if(currentInds.size>0 && !currentInds.has(c.industry)) return false;
-    if(currentAgents.size>0){
-      const cAgents = new Set();
-      cAgents.add(c.agent||"");
-      (c.shops||[]).forEach(s=>cAgents.add(s.agent||""));
-      let hit = false;
-      for(const a of currentAgents){ if(cAgents.has(a)){hit=true;break;} }
-      if(!hit) return false;
+    if(currentViewSel.size>0){
+      const sel = [...currentViewSel];
+      if(currentView==='industry' && !sel.includes(c.industry)) return false;
+      else if(currentView==='agent' && !sel.includes(c.agent)) return false;
+      else if(currentView==='sales' && !sel.includes(c.sales)) return false;
     }
     return true;
   });
 
   /* 筛选按钮：把已选项完整列出来 */
   (function(){
-    const indArr = [...currentInds];
-    const agentArr = [...currentAgents].map(a=>a===""?"直客/内部":a);
+    const sel = [...currentViewSel];
+    const viewName = {industry:'行业',agent:'服务商',sales:'销售'}[currentView];
     const parts = [];
-    if(indArr.length)   parts.push(`行业：${indArr.join("、")}`);
-    if(agentArr.length) parts.push(`服务商：${agentArr.join("、")}`);
+    if(sel.length) parts.push(`${viewName}: ${sel.join(", ")}`);
     const btn   = document.getElementById("filterBtn");
     const title = document.getElementById("filterTitle");
     const selEl = document.getElementById("filterSelected");
     if(parts.length){
       btn.classList.add("has-filter");
       title.textContent = `已筛选 ${list.length} / ${all.length} 家`;
-      selEl.textContent = parts.join("  ·  ");
+      selEl.textContent = `${parts[0]} · 视角：${viewName}`;
       selEl.title = parts.join("  ·  ");
     } else {
       btn.classList.remove("has-filter");
@@ -187,7 +181,7 @@ async function render(){
   const highRisk = list.filter(c=> (c.advice||[]).some(a=>a.level==="P0"||a.level==="P1")).length;
 
   document.getElementById("kpiGrid").innerHTML = `
-    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">QTD</span></div>
+    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">截至 9.2</span></div>
       <div class="kpi-val">${fmtMoney(consume,0)}<span class="unit">元</span></div>
       <div class="kpi-hint">${list.length} 家客户合计${list.length!==all.length?` / 总 ${all.length} 家`:''}</div></div>
     <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>

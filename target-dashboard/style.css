@@ -1044,3 +1044,33 @@ a:hover{text-decoration:underline}
   text-decoration:none;font-size:11px;
 }
 .cat-sub-link:hover{background:var(--brand-soft);color:var(--brand)}
+
+/* ============================================================
+   三视角筛选 tab
+   ============================================================ */
+.filter-tabs{
+  display:flex;gap:4px;padding:4px;
+  background:var(--bg-sub);border-radius:10px;margin-bottom:12px;
+}
+.view-tab{
+  flex:1;padding:7px 9px;border:0;background:transparent;
+  font-size:12px;font-weight:500;color:var(--text-2);
+  border-radius:7px;cursor:pointer;font-family:inherit;
+  transition:all .15s;
+}
+.view-tab:hover{color:var(--text);background:var(--bg-card)}
+.view-tab.on{
+  background:var(--bg-card);color:var(--brand);
+  box-shadow:var(--shadow);font-weight:600;
+}
+
+/* ============================================================
+   折线图动态效果：hover 高亮 + 工具提示
+   ============================================================ */
+.cmp-line-svg{transition:opacity .2s}
+.cmp-line-svg .path-line{transition:stroke-width .2s, opacity .2s}
+.cmp-line-svg:hover .path-line{opacity:0.4}
+.cmp-line-svg .path-line.hovered{opacity:1;stroke-width:2.6}
+.cmp-line-svg .grid-line{transition:opacity .15s}
+.cmp-line-svg .dot{transition:r .15s;cursor:pointer}
+.cmp-line-svg .dot:hover{r:5}

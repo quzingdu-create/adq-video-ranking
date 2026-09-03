@@ -425,12 +425,6 @@ function genAdvice(c, bench){
   if(c.roi != null && c.roi >= 2 && c.roi < 3 && c.consume >= 100){
     a.push({level:"P1", tag:"ROI 待优化", reason:`ROI=${c.roi.toFixed(2)}，接近达标线 3.0`, action:`对标行业头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'}，继续优化素材+定向+出价`});
   }
-  if(c.roi != null && c.roi >= 3 && c.roi < 5 && c.consume >= 1000){
-    a.push({level:"P2", tag:"ROI 已达标", reason:`ROI=${c.roi.toFixed(2)} ≥ 3.0 达标`, action:"保持节奏，可考虑优质素材+账户分发扩量", category:"双率"});
-  }
-  if(c.roi != null && c.roi >= 5){
-    a.push({level:"P2", tag:"ROI 优秀", reason:`ROI=${c.roi.toFixed(2)}，可复制扩量`, action:"跨账户/跨主体分发优质素材，规模化复制", category:"双率"});
-  }
 
   // ============================================================
   // P1/P2：双率（ctr/cvr）
@@ -1105,11 +1099,12 @@ function renderCustomerDetail(d, c){
     ["视频3秒完播率", c["3s_play"], "%", 2, b["3s_play_p75"], "higher"],
     ["平均播放时长", c.avg_dur, "秒", 1, b.avg_dur_p75, "higher"],
   ];
-  // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 小店艾米（看是否使用 + 消耗占比）
+  // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米（看是否使用 + 消耗占比）
   const productBools = [
     ["4+m", c.is_4m, c.consume_4m],
     ["多商品聚合页", c.is_aggregate, c.consume_aggregate],
     ["潜客优投", c.is_latent, c.consume_latent],
+    ["原生推广", c.is_native, c.consume_native],
     ["小店艾米智投", c.is_smart_ad, c.consume_smart_ad],
   ];
   // ⑤ 小店三率
