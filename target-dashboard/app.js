@@ -1322,7 +1322,7 @@ function renderCustomerDetail(d, c){
   // 每指标小卡：含与行业头部对标 + 差于标红
   // 🔴 子青 9.3 拍板：vs 行业头部 **头部值**（%）改成 "vs 行业头部 X.X% 低/高（-N%）"
   //   showBench=false 时不显示头部值（用于日均消耗/单价/ROI 这类金额或合成指标）
-  function mCell(label, val, unit, digit, bench, mode, showBench, mom){
+  function mCell(label, val, unit, digit, bench, mode, showBench, mom, momInvert){
     const valid = val!=null && !isNaN(val);
     const hasBench = bench!=null && !isNaN(bench) && bench>0;
     let diff = null, vsTxt = '';
@@ -1355,7 +1355,12 @@ function renderCustomerDetail(d, c){
     let momHtml = '';
     if(mom != null && !isNaN(mom) && Math.abs(mom) >= 0.05){
       const up = mom > 0;
-      const cls = up ? 'mv-mom up' : 'mv-mom down';
+      // 🔴 子青 9.3 拍板：三率（品退/差评/纠纷，越低越好）颜色反转
+      //    普通指标：涨=红(up) 跌=绿(down)
+      //    三率反转：涨=绿(坏) 跌=红(好)
+      const cls = momInvert
+        ? (up ? 'mv-mom down' : 'mv-mom up')     // 反转：涨→绿，跌→红
+        : (up ? 'mv-mom up' : 'mv-mom down');    // 正常：涨→红，跌→绿
       const arrow = up ? '↑' : '↓';
       momHtml = `<span class="${cls}">${arrow}${Math.abs(mom).toFixed(1)}%</span>`;
     }
@@ -1449,9 +1454,9 @@ function renderCustomerDetail(d, c){
   // ⑤ 小店三率 —— 用绝对红线（与 genAdvice 的 rateRed 一致）
   // 行业 P25 分位受样本影响大，改用业务红线更稳：品退>1% / 差评>15% / 纠纷>0.5%
   const threeRateRows = [
-    ["品退率", c.ret, "%", 2, 1.0, "lower", true, c.ret_mom],
-    ["差评率", c.bad, "%", 2, 15.0, "lower", true, c.bad_mom],
-    ["纠纷率", c.dispute, "%", 2, 0.5, "lower", true, c.dispute_mom],
+    ["品退率", c.ret, "%", 2, 1.0, "lower", true, c.ret_mom, true],
+    ["差评率", c.bad, "%", 2, 15.0, "lower", true, c.bad_mom, true],
+    ["纠纷率", c.dispute, "%", 2, 0.5, "lower", true, c.dispute_mom, true],
   ];
   // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
   // ⑥ 投放端 + 链路（子青 9.3 拍板：链路只看 小店 + 直播）
