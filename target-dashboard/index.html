@@ -115,6 +115,28 @@ let currentView = 'industry';         // 视角：industry / agent / sales
 let currentViewSel = new Set();       // 当前视角下选中的项（多选交集）
 let showAll = false;
 
+// 🔴 子青 9.3：Top 建议客户列表默认折叠前 3 个，点展开按钮 toggle
+function toggleRuleSubs(ruleId, btn){
+  const rule = document.getElementById(ruleId);
+  if(!rule) return;
+  const preview = rule.querySelector('.cat-subs-preview');
+  const full    = rule.querySelector('.cat-subs-full');
+  const state   = btn.dataset.state || 'collapsed';
+  if(state === 'collapsed'){
+    preview.style.display = 'none';
+    full.style.display = 'inline';
+    btn.dataset.state = 'expanded';
+    btn.innerHTML = '收起 <span class="cat-subs-arrow">▴</span>';
+  } else {
+    preview.style.display = 'inline';
+    full.style.display = 'none';
+    btn.dataset.state = 'collapsed';
+    const n = (rule.querySelector('.cat-item-count')?.textContent || '').replace(/\D/g,'');
+    btn.innerHTML = '… 等 ' + n + ' 家 <span class="cat-subs-arrow">▾</span>';
+  }
+}
+window.toggleRuleSubs = toggleRuleSubs;
+
 async function render(){
   const d = await loadData();
   const all = filterByRole(d.customers, window.ROLE);
@@ -256,16 +278,27 @@ async function render(){
           <span class="cat-name">${cat}</span>
           <span class="cat-count">${items.length} 类问题</span>
         </div>
-        <div class="cat-items">${items.map(a=>`
-          <div class="cat-rule ${a.level.toLowerCase()}">
+        <div class="cat-items">${items.map(a=>{
+          const PREVIEW = 3;  // 🔴 子青 9.3：默认只展示前 3 个客户，其余折叠
+          const isLong = a.subs.length > PREVIEW;
+          const ruleId = 'rule-' + Math.random().toString(36).slice(2,9);
+          const subLinks = a.subs.map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}" title="${s}">${s}</a>`).join(' · ');
+          const previewHtml = a.subs.slice(0, PREVIEW).map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}" title="${s}">${s}</a>`).join(' · ');
+          const moreCount = a.subs.length - PREVIEW;
+          return `
+          <div class="cat-rule ${a.level.toLowerCase()}" id="${ruleId}" data-ruleid="${ruleId}">
             <div class="cat-rule-head">
               <span class="cat-item-name">${a.tag}</span>
               <span class="cat-item-level lv-${a.level.toLowerCase()}">${a.level}</span>
               <span class="cat-item-count">${a.subs.length} 家</span>
             </div>
             <div class="cat-rule-action">▸ ${[...a.actions][0]}</div>
-            <div class="cat-rule-subs">受影响客户：${a.subs.map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}" title="${s}">${s}</a>`).join(' · ')}${a.subs.length>5?` 等 ${a.subs.length} 家`:''}</div>
-          </div>`).join('')}</div>
+            <div class="cat-rule-subs">
+              受影响客户：<span class="cat-subs-preview">${previewHtml}</span>${isLong?`<span class="cat-subs-toggle" data-state="collapsed" onclick="toggleRuleSubs('${ruleId}', this)">… 等 ${a.subs.length} 家 <span class="cat-subs-arrow">▾</span></span>`:''}
+              <span class="cat-subs-full" style="display:none">${subLinks}</span>
+            </div>
+          </div>`;
+        }).join('')}</div>
       </div>`;
     }).join('')}
     <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 已按规则去重 · 共 ${merged.length} 类问题</div>

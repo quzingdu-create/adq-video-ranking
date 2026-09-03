@@ -1138,3 +1138,18 @@ a:hover{text-decoration:underline}
 .ind-d-head{color:var(--text-3);font-weight:500;border-bottom:1px solid var(--line)}
 .ind-d-row{border-bottom:1px dashed var(--line)}
 .ind-d-foot{font-weight:600;background:var(--bg-sub);padding:8px 0;margin-top:4px;border-radius:6px}
+
+/* ============================================================
+   Top 建议客户列表：默认折叠前 3 个 + toggle 按钮
+   ============================================================ */
+.cat-subs-preview{display:inline}
+.cat-subs-full{display:none}
+.cat-subs-toggle{
+  display:inline-block;margin-left:6px;
+  font-size:11px;color:var(--brand);cursor:pointer;
+  padding:1px 7px;border-radius:8px;
+  background:var(--bg-sub);user-select:none;
+  transition:background .15s;
+}
+.cat-subs-toggle:hover{background:var(--brand-soft)}
+.cat-subs-arrow{display:inline-block;margin-left:2px;font-size:10px}
