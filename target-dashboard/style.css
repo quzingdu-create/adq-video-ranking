@@ -1089,3 +1089,15 @@ a:hover{text-decoration:underline}
 }
 .btn-sop:hover{background:var(--brand-soft)}
 .ml{position:relative}
+
+/* ============================================================
+   Top 建议客户 chip · 不截断显示，溢出用省略号
+   ============================================================ */
+.cat-sub-link{
+  display:inline-block;
+  max-width:200px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  vertical-align:bottom;
+}

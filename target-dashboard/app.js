@@ -91,19 +91,24 @@ function roleColor(t){
 /* ============================================================
    行业色带 · 8 色循环
    ============================================================ */
-// 行业名 → 颜色（行业映射用色）：子青截图发现 5 行业全橙（INDUSTRY_FIXED 占用 10 色 + palette 只 8 色 → fallback 失败）
-// 修法：扩展 palette + hash 颜色兜底
+// 行业名 → 颜色：子青截图发现 贴身衣物+珠宝配饰 都是橙红（#E8734A vs #D9744A 色相几乎一致）
+// 修法：7 行业一一对应独立色（色相差 ≥ 30°），不用 palette 顺序
 const INDUSTRY_FIXED = {
-  "贴身衣物":   "#E8734A",
-  "其他":       "#98A2B3",
+  "贴身衣物":   "#E8734A",  // 橙红
+  "箱包鞋靴":   "#4C9BE8",  // 蓝
+  "珠宝配饰":   "#7C6BD9",  // 紫
+  "运动户外":   "#22916B",  // 绿
+  "男装":       "#E0A92B",  // 黄
+  "服饰配件":   "#D95F8E",  // 粉红
+  "其他":       "#98A2B3",  // 灰
+  // 兼容旧名字（之前 v1 用过，避免 0 显示）
   "跑品客户":   "#4C9BE8",
-  "鞋靴":       "#22916B",
-  "运动鞋服":   "#E0A92B",
-  "男装":       "#7C6BD9",
+  "鞋靴":       "#4C9BE8",
+  "运动鞋服":   "#22916B",
   "女装":       "#D95F8E",
-  "配饰闭环":   "#35B0A7",
-  "箱包":       "#B5733A",
-  "本土品牌服饰":"#5B8FD9",
+  "配饰闭环":   "#7C6BD9",
+  "箱包":       "#4C9BE8",
+  "本土品牌服饰":"#E0A92B"
 };
 const _indColorCache = {};
 const INDUSTRY_PALETTE = [
@@ -114,16 +119,9 @@ const INDUSTRY_PALETTE = [
   "#5BA0C2", "#C25BB3", "#7AC25B", "#C2B45B"
 ];
 function industryColor(name){
-  if(!name) return INDUSTRY_PALETTE[7];
+  if(!name) return INDUSTRY_FIXED['其他'];
   if(INDUSTRY_FIXED[name]) return INDUSTRY_FIXED[name];
-  if(_indColorCache[name]) return _indColorCache[name];
-  // 优先用 palette 中未占用的颜色
-  const used = new Set([...Object.values(INDUSTRY_FIXED), ...Object.values(_indColorCache)]);
-  for(let i=0;i<INDUSTRY_PALETTE.length;i++){
-    const cand = INDUSTRY_PALETTE[i];
-    if(!used.has(cand)){ _indColorCache[name] = cand; return cand; }
-  }
-  // 兜底：hash 字符串 → HSL 色（保证每个新名字都有独立颜色）
+  // 兜底：hash 字符串 → HSL（保证任何新行业名都有独立色）
   let h = 0;
   for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 360;
   const c = `hsl(${h}, 65%, 52%)`;

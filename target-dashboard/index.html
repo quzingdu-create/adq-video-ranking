@@ -255,7 +255,7 @@ async function render(){
               <span class="cat-item-count">${a.subs.length} 家</span>
             </div>
             <div class="cat-rule-action">▸ ${[...a.actions][0]}</div>
-            <div class="cat-rule-subs">受影响客户：${a.subs.map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}">${s.slice(0,10)}</a>`).join(' · ')}${a.subs.length>5?` 等 ${a.subs.length} 家`:''}</div>
+            <div class="cat-rule-subs">受影响客户：${a.subs.map(s=>`<a class="cat-sub-link" href="detail.html?sub=${encodeURIComponent(s)}" title="${s}">${s}</a>`).join(' · ')}${a.subs.length>5?` 等 ${a.subs.length} 家`:''}</div>
           </div>`).join('')}</div>
       </div>`;
     }).join('')}
