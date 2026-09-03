@@ -208,20 +208,35 @@ async function render(){
   });
   const rank = {P0:0, P1:1, P2:2};
   flat.sort((a,b)=>(rank[a.level]||9)-(rank[b.level]||9));
-  const top = flat.slice(0, 8);
-  document.getElementById("topAdvice").innerHTML = top.length ? `
-    <div class="advice">${top.map(a=>`
-      <div class="advice-item ${a.level.toLowerCase()}">
-        <div class="advice-head">
-          <span class="level">${a.level}</span>
-          <span class="tag-name">${a.tag}</span>
-          <a href="detail.html?sub=${encodeURIComponent(a.sub)}">${a.sub} →</a>
+  const top = flat.slice(0, 24); // 多取一些，按类型分组后保留更全
+  // 按类型分组 + 客户聚合
+  const grouped = {};
+  top.forEach(a=>{
+    const c = a.category || '其他';
+    (grouped[c]=grouped[c]||[]).push(a);
+  });
+  const orderedCats = ADVICE_CATEGORIES.filter(c=>grouped[c]);
+  document.getElementById("topAdvice").innerHTML = orderedCats.length ? `
+    ${orderedCats.map(cat=>{
+      const items = grouped[cat];
+      const desc = CATEGORY_DESC[cat] || {icon:'·', hint:''};
+      return `<div class="cat-group">
+        <div class="cat-head">
+          <span class="cat-icon">${desc.icon}</span>
+          <span class="cat-name">${cat}</span>
+          <span class="cat-count">${items.length} 条</span>
         </div>
-        <div class="advice-reason">${a.reason}</div>
-        <div class="advice-action">建议 · <b>${a.action}</b></div>
-      </div>`).join("")}
-    </div>
-    <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 展示前 8 条</div>
+        <div class="cat-items">${items.map(a=>`
+          <a class="cat-item ${a.level.toLowerCase()}" href="detail.html?sub=${encodeURIComponent(a.sub)}">
+            <div class="cat-item-head">
+              <span class="cat-item-name">${a.tag}</span>
+              <span class="cat-item-sub">${a.sub.slice(0,8)}</span>
+            </div>
+            <div class="cat-item-reason">${a.reason}</div>
+          </a>`).join('')}</div>
+      </div>`;
+    }).join('')}
+    <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 按类型分组 · 点击客户跳详情</div>
   ` : '<div class="empty">当前筛选下暂无建议</div>';
 
   /* 行业消耗 —— 饼图，用 list */
