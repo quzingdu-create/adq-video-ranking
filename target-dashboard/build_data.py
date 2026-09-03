@@ -444,15 +444,20 @@ def main():
     # 防呆：qtd 客户合计必须有数据
     assert len(qtd_target) >= 30, f'qtd 客户合计数据不足 30 天，实际 {len(qtd_target)} 天'
 
-    # ─── 9) 客户趋势 ───
+    # === 9) 客户趋势（用 141458.414 csv，每客户 64 天 by 天；之前用 9.3 csv 只有 1 天，浪费了） ===
     cust_trend = defaultdict(list)
-    with open(SRC/'消耗趋势-客户-9.3.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
-            sub=r.get('客户简称','').strip()
-            if sub in sales_map:
-                cust_trend[sub].append({'date':r['时间'],'value':f(r['日均消耗(元)'])})
+            sub = (r.get('客户简称') or '').strip()
+            d = (r.get('时间') or '').strip()
+            v = f(r.get('日均消耗(元)'))
+            if sub and d and d != '整体' and v is not None and sub in sales_map:
+                cust_trend[sub].append({'date':d, 'value':v})
+    for sub in cust_trend:
+        cust_trend[sub].sort(key=lambda x: x['date'])
+    print(f'[trend] {len(cust_trend)} 客户趋势（每客户 64 天 by 天）')
 
-    # ─── 10) 输出 ───
+    # === 10) 输出 ===
     out = {
         'meta': {
             'data_date':'2026-09-01',

@@ -190,6 +190,15 @@ async function render(){
   const k828 = k.period_8_28_9_1 || {};
   const kqtd = k.period_qtd || {};
   const consume = list.reduce((s,c)=>s+c.consume,0);
+  // 提前算 targetRows（list 实时累加 by 天）
+  const _targetMap = d.customers_trend || {};
+  const _dayAgg = {};
+  list.forEach(c=>{
+    (_targetMap[c.sub] || []).forEach(p=>{
+      _dayAgg[p.date] = (_dayAgg[p.date] || 0) + (p.value || 0);
+    });
+  });
+  const targetRows = Object.keys(_dayAgg).sort().map(d=>({date:d, value:Math.round(_dayAgg[d]*100)/100}));
   const gmv = list.reduce((s,c)=>s+c.gmv,0);
   const active = list.filter(c=>c.consume>=100).length;
   const silent = list.filter(c=>c.consume<100).length;
@@ -201,9 +210,9 @@ async function render(){
       <div class="kpi-val">¥${consume.toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit">元</span></div>
       <div class="kpi-hint">${list.filter(c=>c.consume>0).length} 家伙伴在投 · 跟随筛选变化</div></div>
     <div class="kpi k-info">
-      <div class="kpi-label">大盘全平台 QTD <span class="tag">qtd</span></div>
-      <div class="kpi-val">¥${kqtd.total_wan||0}<span class="unit">万</span></div>
-      <div class="kpi-hint">${kqtd.period||'QTD'} · 通用分析数据集（大盘/不随筛选）</div></div>
+      <div class="kpi-label">靶向合计 QTD <span class="tag">qtd</span></div>
+      <div class="kpi-val">¥${Math.round((targetRows.reduce((s,r)=>s+r.value,0))/10000*10)/10}<span class="unit">万</span></div>
+      <div class="kpi-hint">qtd · 当前筛选下 ${list.filter(c=>c.consume>0).length} 家伙伴</div></div>
     <div class="kpi ${silent>0?'k-warn':'k-ok'}">
       <div class="kpi-label">在投 / 待起量</div>
       <div class="kpi-val">${active}<span class="unit">/${silent}</span></div>
@@ -270,11 +279,12 @@ async function render(){
       <div class="ind-d-wrap"><div class="sub" style="margin:14px 0 6px">行业明细</div>${renderIndustryDetail(indMap, consume, d.industry_benchmark)}</div>`
     : '<div class="empty">无数据</div>';
 
-  /* ① qtd by 天双线（大盘 + 客户合计） */
+  /* ① qtd by 天双线（大盘 + 客户合计）
+     大盘不随筛选（永远是全平台）；客户合计 = list 实时累加，跟筛选 */
   const dashRows = (d.qtd_dashboard_trend||[]);
-  const targetRows = (d.qtd_target_trend||[]);
+  // 复用前面算的 targetRows
   document.getElementById("dashboardTrendSub").textContent =
-    dashRows.length ? `qtd · ${dashRows.length} 天 · 大盘 vs 靶向合计（全量、不随筛选）` : '数据缺失';
+    `qtd · ${dashRows.length} 天 · 大盘（全平台） vs 靶向合计（当前筛选 ${list.filter(c=>c.consume>0).length} 家）`;
   document.getElementById("dashboardTrend").innerHTML = dashRows.length
     ? renderDualLineChart(dashRows, targetRows, {w:620,h:210})
     : '<div class="empty">大盘数据待上传</div>';

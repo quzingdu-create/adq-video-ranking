@@ -10,8 +10,8 @@ const SOP_KEY_MAP = {
   '潜客优投': 'latent_qianke',
   '多商品聚合页': 'aggregate_page',
   '小店艾米智投': 'xiaodian_aimi',
-  '原生推广': 'native_promote',
-  '全店托管': 'full_store_agent'
+  '原生推广': 'native_promote'
+  // '全店托管' 子青未给链接，不显示按钮
 };
 window.SOP_KEY_MAP = SOP_KEY_MAP;
 
@@ -595,6 +595,64 @@ function genAdvice(c, bench){
   if(c.is_latent === false && c.consume >= 1000){
     a.push({level:"P2", tag:"未使用潜客优投",category:"产品使用类型", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
   }
+
+  // === 子青 9.3 拍板：所有"标红指标"必须给具体建议 ===
+  // 复用 mCell 的标红判断逻辑（mode=lower 看 val>bench；mode=higher 看 val<bench）
+  function isRed(val, bench, mode){
+    if(val==null || bench==null || bench<=0) return false;
+    return mode==='lower' ? val>bench : val<bench;
+  }
+  function vsTxt(val, bench, mode){
+    if(!isRed(val,bench,mode)) return '';
+    const diff = ((val-bench)/bench*100);
+    return `vs 行业头部 ${(diff>=0?'+':'')+diff.toFixed(0)}%`;
+  }
+  // ① 消耗/双率/ROI 标红
+  const kpiRed = [
+    {label:'ctr', val:c.ctr, bench:b.ctr_p75, mode:'higher', cat:'双率',
+     rule:'① 视觉重构：封面大字报+数字人冲击开场 ② 强制痛点+产品+承诺 3秒结构 ③ 1 周素材更新 ≥ 30%'},
+    {label:'cvr', val:c.cvr, bench:b.cvr_p75, mode:'higher', cat:'双率',
+     rule:'① 链路一致性核查（不流失） ② 直播间话术逼单（每 30 秒一次） ③ 商详页加倒计时/限时特 ④ 处理中差评'},
+  ];
+  // ② 广告基建 标红
+  const buildRed = [
+    {label:'有消耗的账户数', val:c.account, bench:b.account_p75, mode:'higher', cat:'基建',
+     rule:'多账户分发：单账户抗风险能力差，至少在 2 个账户同时投'},
+    {label:'有消耗广告数', val:c.ads, bench:b.ads_p75, mode:'higher', cat:'基建',
+     rule:`补计划到行业 P75 ${b.ads_p75!=null?Math.round(b.ads_p75):'?'} 水位 · 优质素材跨账户同步`},
+    {label:'均曝光创意唯一性ID数', val:c.creative_id, bench:b.creative_id_p75, mode:'higher', cat:'基建',
+     rule:'通过换封面/BGM/开头快速衍生 9 条新创意'},
+    {label:'新广告占比', val:c.new_ratio, bench:b.new_ratio_p75, mode:'higher', cat:'素材质量',
+     rule:`新广告占比 ${(c.new_ratio||0).toFixed(1)}% 低于行业 P75 ${(b.new_ratio_p75||0).toFixed(1)}% · 强制上新节奏`},
+    {label:'一键起量使用占比', val:c.auto_ratio, bench:b.auto_ratio_p75, mode:'higher', cat:'素材质量',
+     rule:`一键起量占比偏低 · 重点新计划配 200-500 元一键起量预算`},
+  ];
+  // ③ 素材质量 标红
+  const matRed = [
+    {label:'视频3秒完播率', val:c['3s_play'], bench:b['3s_play_p75'], mode:'higher', cat:'素材质量',
+     rule:'前 0.5 秒强视觉冲击 · 反问开场 · 数字人口播核心利益点'},
+    {label:'平均播放时长', val:c.avg_dur, bench:b.avg_dur_p75, mode:'higher', cat:'素材质量',
+     rule:'每 5-8 秒换镜头/特效字幕/产品特写 · 时长控制 45-60 秒 · 3-5 个关键利益点'},
+  ];
+  // ⑤ 小店三率（mode='lower' 越低越好，>bench 标红）
+  const rateRed = [
+    {label:'品退率', val:c.ret, bench:1.0, mode:'lower', cat:'小店三率',
+     rule:'联系品控排查商品质量/描述一致性 · 高品退商品拉闸下架'},
+    {label:'差评率', val:c.bad, bench:15.0, mode:'lower', cat:'小店三率',
+     rule:'复盘高频差评词 · 改进 SKU/物流/客服话术 · 重点品类运营培训'},
+    {label:'纠纷率', val:c.dispute, bench:0.5, mode:'lower', cat:'小店三率',
+     rule:'法务/客服介入排查根因 · 完善售后流程 · 必要时退款快返'},
+  ];
+  const allRed = [...kpiRed, ...buildRed, ...matRed, ...rateRed];
+  allRed.forEach(r=>{
+    if(isRed(r.val, r.bench, r.mode)){
+      a.push({
+        level:'P1', tag:`${r.label} 标红`, category:r.cat,
+        reason:`${r.label} ${(r.val||0).toFixed(2)} · 行业头部 P75 ${r.bench} · ${vsTxt(r.val,r.bench,r.mode)}`,
+        action: r.rule
+      });
+    }
+  });
 
   return a;
 }
