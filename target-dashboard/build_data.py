@@ -24,13 +24,34 @@ OUT  = HOME/'Downloads/dashboard'
 OLD  = HOME/'Downloads/dashboard.bak-20260831-pre-v2'
 
 def f(x, default=0.0):
+    """求和/计数类字段：无效值 → 0（如消耗、广告数）"""
     if x is None: return default
     s = str(x).strip()
     if s in ('','~','-','nan','NaN','null','None'): return default
     try: return float(s)
     except: return default
+
+def fn(x):
+    """指标类字段：无效值 → None（缺失）。
+    ⚠️ 关键：CSV 里 '~' 表示平台"无数据/不适用"，不能当 0 用。
+    主表实测 '~' 占比：差评率 84.8% / 单价 62.3% / ROI 58.4% /
+    新广告占比 58.4% / 品退率·纠纷率 58.5%。
+    若按 0 处理会：① 前端显示 0 误导；② 拉低 P75 行业标杆；
+    ③ 建议引擎误报（如"一键起量 0% → P1 建议开启"，实际是没数据）。
+    """
+    if x is None: return None
+    s = str(x).strip()
+    if s in ('','~','-','nan','NaN','null','None'): return None
+    try:
+        v = float(s)
+        return None if v != v else v   # NaN → None
+    except: return None
+
 def i(x, default=0):
     v = f(x, default); return int(v) if v==v else default
+def inn(x):
+    """计数类字段：无效值 → None"""
+    v = fn(x); return None if v is None else int(v)
 def b(x):
     s = str(x or '').strip().lower()
     if s in ('true','是','1','yes','t'): return True
@@ -69,17 +90,18 @@ def main():
             by_sub[sub]['consume_total'] += consume
             by_sub[sub]['shops'].append({
                 'shop_id':shop_id,'video':video,'consume':consume,
-                'ctr':f(r.get('ctr(%)')),'cvr':f(r.get('浅层cvr(%)')),
-                'aov':f(r.get('下单单价(元)')),'roi':f(r.get('下单ROI')),
-                'ads':i(r.get('有消耗广告数')),'account':i(r.get('有消耗的账户数')),
-                'new_ratio':f(r.get('新广告占比(%)')),
-                'auto_ratio':f(r.get('天一键起量使用广告占比(%)')),
-                'creative_id':i(r.get('日均曝光创意唯一性ID数')),
-                '3s_play':f(r.get('视频3秒完播率(%)')),
-                'avg_dur':f(r.get('平均播放时长')),
-                'bad':f(r.get('小店订单-差评率(%)')),
-                'ret':f(r.get('小店订单-品退率(%)')),
-                'dispute':f(r.get('小店订单-纠纷率(%)')),
+                # 指标类用 fn/inn —— '~' 保留为 None（无数据），不当 0
+                'ctr':fn(r.get('ctr(%)')),'cvr':fn(r.get('浅层cvr(%)')),
+                'aov':fn(r.get('下单单价(元)')),'roi':fn(r.get('下单ROI')),
+                'ads':inn(r.get('有消耗广告数')),'account':inn(r.get('有消耗的账户数')),
+                'new_ratio':fn(r.get('新广告占比(%)')),
+                'auto_ratio':fn(r.get('天一键起量使用广告占比(%)')),
+                'creative_id':inn(r.get('日均曝光创意唯一性ID数')),
+                '3s_play':fn(r.get('视频3秒完播率(%)')),
+                'avg_dur':fn(r.get('平均播放时长')),
+                'bad':fn(r.get('小店订单-差评率(%)')),
+                'ret':fn(r.get('小店订单-品退率(%)')),
+                'dispute':fn(r.get('小店订单-纠纷率(%)')),
             })
     print(f'[主] 命中白名单 {len(by_sub)} / {len(targets)}')
 
@@ -133,31 +155,43 @@ def main():
         shops = agg['shops']
         consume = agg['consume_total']
         if shops:
-            tot_w = sum(s['consume'] for s in shops if s['consume']>0) or 1
             def w_avg(field):
-                vs = [s for s in shops if s.get(field) is not None and s['consume']>0]
-                if not vs: return 0
-                return sum(s[field]*s['consume'] for s in vs) / sum(s['consume'] for s in vs)
-            gmv = sum(s['consume']*s['roi'] for s in shops)
-            roi = gmv / max(1, sum(s['consume'] for s in shops))
+                """按消耗加权平均。跳过 None（无数据）与 0 消耗行。
+                全部无效 → 返回 None（而不是 0），让前端显示 '—'"""
+                vs = [s for s in shops if s.get(field) is not None and (s['consume'] or 0)>0]
+                if not vs: return None
+                tw = sum(s['consume'] for s in vs)
+                if tw <= 0: return None
+                return sum(s[field]*s['consume'] for s in vs) / tw
+            def rnd(v, n):
+                return None if v is None else round(v, n)
+            def sum_or_none(field):
+                """计数类求和：全 None → None"""
+                vs = [s[field] for s in shops if s.get(field) is not None]
+                return sum(vs) if vs else None
+            # GMV/ROI：只用有 roi 数据的行
+            roi_rows = [s for s in shops if s.get('roi') is not None]
+            gmv = sum((s['consume'] or 0)*(s['roi'] or 0) for s in roi_rows)
+            tw_roi = sum((s['consume'] or 0) for s in roi_rows)
+            roi = (gmv/tw_roi) if tw_roi>0 else None
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
                 'agent':'内部',
-                'consume':round(consume,2),'gmv':round(gmv,2),'roi':round(roi,2),
+                'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
                 'main_consume':main_consume.get(sub, round(consume,2)),
-                # KPI（消耗/双率/ROI）
-                'ctr':round(w_avg('ctr'),3),'cvr':round(w_avg('cvr'),3),
-                'aov':round(w_avg('aov'),1),'target_bid':None,
+                # KPI（消耗/双率/ROI）—— 无数据 → None
+                'ctr':rnd(w_avg('ctr'),3),'cvr':rnd(w_avg('cvr'),3),
+                'aov':rnd(w_avg('aov'),1),'target_bid':None,
                 # 基建
-                'ads':sum(s['ads'] for s in shops),'account':sum(s['account'] for s in shops),
-                'main_subject':1,'creative_id':sum(s['creative_id'] for s in shops),
-                'new_ratio':round(w_avg('new_ratio'),2),
-                'auto_ratio':round(w_avg('auto_ratio'),2),
+                'ads':sum_or_none('ads'),'account':sum_or_none('account'),
+                'main_subject':1,'creative_id':sum_or_none('creative_id'),
+                'new_ratio':rnd(w_avg('new_ratio'),2),
+                'auto_ratio':rnd(w_avg('auto_ratio'),2),
                 # 素材/内容质量
-                '3s_play':round(w_avg('3s_play'),2),'avg_dur':round(w_avg('avg_dur'),1),
+                '3s_play':rnd(w_avg('3s_play'),2),'avg_dur':rnd(w_avg('avg_dur'),1),
                 # 三率（越低越好）
-                'ret':round(w_avg('ret'),3),'bad':round(w_avg('bad'),3),'dispute':round(w_avg('dispute'),3),
+                'ret':rnd(w_avg('ret'),3),'bad':rnd(w_avg('bad'),3),'dispute':rnd(w_avg('dispute'),3),
                 # 产品能力（默认 False；直播/4+m/聚合页 无数据源 → 默认 False）
                 'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
                 'is_latent':bool(use_latent.get(sub,False)),
@@ -172,17 +206,17 @@ def main():
                 'shops':shops,
             }
         else:
-            # 占位（暂无消耗数据）
+            # 占位（暂无消耗数据）——指标一律 None（前端显示 —），不用 0 冒充
             c = {
                 'sub':sub,'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub],'industry':resolve_industry(sub),'agent':'内部',
-                'consume':0.0,'gmv':0.0,'roi':0.0,
+                'consume':0.0,'gmv':0.0,'roi':None,
                 'main_consume':main_consume.get(sub,0.0),
-                'ctr':0,'cvr':0,'aov':0,'target_bid':None,
-                'ads':0,'account':0,'main_subject':1,'creative_id':0,
-                'new_ratio':0,'auto_ratio':0,
-                '3s_play':0,'avg_dur':0,
-                'ret':0,'bad':0,'dispute':0,
+                'ctr':None,'cvr':None,'aov':None,'target_bid':None,
+                'ads':None,'account':None,'main_subject':1,'creative_id':None,
+                'new_ratio':None,'auto_ratio':None,
+                '3s_play':None,'avg_dur':None,
+                'ret':None,'bad':None,'dispute':None,
                 'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
                 'is_latent':bool(use_latent.get(sub,False)),
                 'is_native':bool(use_native.get(sub,False)),
@@ -204,20 +238,20 @@ def main():
         by_ind[c['industry']].append(c)
     ind_bench = {}
     for ind, lst in by_ind.items():
-        ctr   = [c['ctr']   for c in lst if c['ctr']>0]
-        cvr   = [c['cvr']   for c in lst if c['cvr']>0]
-        roi   = [c['roi']   for c in lst if c['roi']>0]
-        aov   = [c['aov']   for c in lst if c['aov']>0]
-        ads   = [c['ads']   for c in lst if c['ads']>0]
-        acc   = [c['account'] for c in lst if c['account']>0]
-        cid   = [c['creative_id'] for c in lst if c['creative_id']>0]
-        new_r = [c['new_ratio'] for c in lst if c['new_ratio']>0]
-        auto_r= [c['auto_ratio'] for c in lst if c['auto_ratio']>0]
-        p3s   = [c['3s_play'] for c in lst if c['3s_play']>0]
-        dur   = [c['avg_dur'] for c in lst if c['avg_dur']>0]
-        ret   = [c['ret']    for c in lst if c['ret']>0]
-        bad   = [c['bad']    for c in lst if c['bad']>0]
-        dsp   = [c['dispute']for c in lst if c['dispute']>0]
+        ctr   = [c['ctr']   for c in lst if c['ctr']   is not None and c['ctr']>0]
+        cvr   = [c['cvr']   for c in lst if c['cvr']   is not None and c['cvr']>0]
+        roi   = [c['roi']   for c in lst if c['roi']   is not None and c['roi']>0]
+        aov   = [c['aov']   for c in lst if c['aov']   is not None and c['aov']>0]
+        ads   = [c['ads']   for c in lst if c['ads']   is not None and c['ads']>0]
+        acc   = [c['account'] for c in lst if c['account'] is not None and c['account']>0]
+        cid   = [c['creative_id'] for c in lst if c['creative_id'] is not None and c['creative_id']>0]
+        new_r = [c['new_ratio'] for c in lst if c['new_ratio'] is not None and c['new_ratio']>0]
+        auto_r= [c['auto_ratio'] for c in lst if c['auto_ratio'] is not None and c['auto_ratio']>0]
+        p3s   = [c['3s_play'] for c in lst if c['3s_play'] is not None and c['3s_play']>0]
+        dur   = [c['avg_dur'] for c in lst if c['avg_dur'] is not None and c['avg_dur']>0]
+        ret   = [c['ret']    for c in lst if c['ret']    is not None and c['ret']>0]
+        bad   = [c['bad']    for c in lst if c['bad']    is not None and c['bad']>0]
+        dsp   = [c['dispute']for c in lst if c['dispute']is not None and c['dispute']>0]
         ind_bench[ind] = {
             'top10_count':len(lst),'industry_customer_count':len(lst),
             'ctr_p75':round(p75(ctr),3),'cvr_p75':round(p75(cvr),3),

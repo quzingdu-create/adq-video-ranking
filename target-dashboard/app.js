@@ -1050,6 +1050,12 @@ function renderCustomerDetail(d, c){
     ["全域通", c.is_quan_yu_tong === true],
     ["adq", c.adq],
   ];
+  // 小店三率（越低越好，对标头部 P25）
+  const threeRateRows = [
+    ["品退率", c.ret, "%", 2, b.ret_p25, "lower"],
+    ["差评率", c.bad, "%", 2, b.bad_p25, "lower"],
+    ["纠纷率", c.dispute, "%", 2, b.dispute_p25, "lower"],
+  ];
 
   return `
     <div class="detail-head" style="border-left:3px solid var(${headColor})">
@@ -1094,17 +1100,22 @@ function renderCustomerDetail(d, c){
         <div class="sub">7 个能力使用标记 · 未使用则建议开启</div>
         <div class="metric-grid-3">${productBools.map(p=>boolCell(p[0], p[1])).join('')}</div>
       </div>
+      <div class="card compact">
+        <h2>⑤ 小店三率</h2>
+        <div class="sub">品退 / 差评 / 纠纷 · 越低越好 · 无数据显示「—」</div>
+        <div class="metric-grid-3">${threeRateRows.map(r=>mCell(...r)).join('')}</div>
+      </div>
     </div>
 
     <!-- ④ 提升建议 -->
-    <div class="section-h">④ 提升建议</div>
+    <div class="section-h">② 提升建议</div>
     <div class="card">
       <div class="sub">基于数据自动诊断 · 请与您的渠道经理协同落实</div>
       ${renderAdviceByCategory(c.advice)}
     </div>
 
     <!-- ⑤ 视频号明细 -->
-    <div class="section-h">⑤ 视频号明细</div>
+    <div class="section-h">③ 视频号明细</div>
     <div class="card">
       <div class="sub">${c.shops.length} 个视频号 · 按消耗排序</div>
       <table class="tbl">
