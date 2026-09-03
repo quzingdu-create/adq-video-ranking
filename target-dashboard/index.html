@@ -51,8 +51,9 @@
     </div>
     <div class="card">
       <h2>② 客户日均消耗趋势（按筛选）</h2>
-      <div class="sub">当前筛选下消耗前 10 客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）</div>
+      <div class="sub" id="trendSummarySub">当前筛选下消耗前 10 客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）</div>
       <div id="customerTrend"></div>
+      <div id="trendMoreBtn" style="margin-top:8px"></div>
     </div>
   </div>
 
@@ -114,6 +115,7 @@
 let currentView = 'industry';         // 视角：industry / agent / sales
 let currentViewSel = new Set();       // 当前视角下选中的项（多选交集）
 let showAll = false;
+let showAllTrend = false;   // 趋势图：默认前 10，点"更多"展示筛选下全部
 
 // 🔴 子青 9.3：Top 建议客户列表默认折叠前 3 个，点展开按钮 toggle
 function toggleRuleSubs(ruleId, btn){
@@ -354,10 +356,18 @@ async function render(){
     document.getElementById("dashboardTrend").innerHTML = '<div class="empty">大盘数据待上传</div>';
   }
 
-  /* ② 客户趋势折线（按 list 排序取前 10） */
-  const topN = 10;  // 子青 9.3 拍板：从 top5 改成 top10（更多客户）
-  const top10 = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume).slice(0, topN);
-  const series = top10.map(c=>{
+  /* ② 客户趋势折线（子青 9.3：默认前 10，点"更多"展示筛选下全部） */
+  const TREND_N = 10;
+  const sortedTrend = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume);
+  const trendList = showAllTrend ? sortedTrend : sortedTrend.slice(0, TREND_N);
+  // 副标
+  const trendSubEl = document.getElementById("trendSummarySub");
+  if(trendSubEl){
+    trendSubEl.textContent = showAllTrend
+      ? `当前筛选下全部 ${sortedTrend.length} 家客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）`
+      : `当前筛选下消耗前 ${Math.min(TREND_N, sortedTrend.length)} 客户 · 每日日均消耗（2026-08-26 ~ 2026-09-01）`;
+  }
+  const series = trendList.map(c=>{
     const pts = (d.customers_trend && d.customers_trend[c.sub]) || [];
     return {name:c.alias||c.sub.slice(0,6), data:pts.filter(r=>r.date!=='整体')};
   }).filter(s=>s.data.length>0);
@@ -374,6 +384,15 @@ async function render(){
     }
   } else {
     document.getElementById("customerTrend").innerHTML = '<div class="empty">当前筛选下客户暂无趋势数据</div>';
+  }
+  // 🔴 子青 9.3：趋势图"更多"按钮（默认前 10，点开展示筛选下全部）
+  const trendMoreBtn = document.getElementById("trendMoreBtn");
+  if(trendMoreBtn){
+    trendMoreBtn.innerHTML = sortedTrend.length > TREND_N ? `
+      <button class="btn ghost" id="toggleTrendMore">${showAllTrend ? '收起 ▲' : `展开全部 ${sortedTrend.length} 家 ▼`}</button>
+    ` : '';
+    const tt = document.getElementById("toggleTrendMore");
+    if(tt) tt.onclick = ()=>{ showAllTrend = !showAllTrend; render(); };
   }
 
   /* 客户健康度总表 —— Card Grid 前 5 + 更多 */
