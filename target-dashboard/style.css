@@ -1107,8 +1107,8 @@ a:hover{text-decoration:underline}
    ============================================================ */
 .ind-double{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
+  grid-template-columns:1fr;   /* 子青 9.3 拍板：上下排列，不挤在一起 */
+  gap:14px;
   margin-top:6px;
 }
 .ind-half{
@@ -1126,10 +1126,6 @@ a:hover{text-decoration:underline}
   background:var(--brand);margin-right:6px;vertical-align:middle;
 }
 .ind-half:nth-child(2) .ind-half-h::before{background:#7C6BD9}
-
-@media (max-width:1100px){
-  .ind-double{grid-template-columns:1fr}
-}
 
 /* 行业明细表新表头（6 列） */
 .ind-d-head,.ind-d-row,.ind-d-foot{
