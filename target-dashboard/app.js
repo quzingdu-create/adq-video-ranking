@@ -408,152 +408,142 @@ function riskTag(v, threshold, label){
 function genAdvice(c, bench){
   const a = [];
   const b = bench || {};
+  // 🔴 不同客户不同阈值（核心修复）
+  // 按日均消耗分阶段，ROI 阈值随阶段收紧（不是按"对标"做硬比较）
+  const cons = c.main_consume || c.consume || 0;
+  let stage = '新店期';      // <500 元/天
+  let roiTh = 2.0;          // 红线
+  if(cons >= 2000){ stage = '成熟期'; roiTh = 3.0; }
+  else if(cons >= 500){ stage = '成长期'; roiTh = 2.5; }
+  c._stage = stage;          // 后续 metric-cell 标头可读
+  c._roiTh = roiTh;
 
-  // ============================================================
-  // P0：紧急
-  // ============================================================
+  // —— P0：紧急 ——
   if(c.consume < 100 && c.shops.length===0){
-    a.push({level:"P0", tag:"未起量", reason:`日均消耗仅 ¥${Math.round(c.consume)}，无小店投数据`, action:"渠道经理 3 日内介入排查小店链路+素材，推动首次跑量", category:"双率"});
+    a.push({level:"P0", tag:"未起量", reason:`日均消耗 ¥${Math.round(c.consume)}（新店期）`, action:"3 日内介入排查小店链路+素材，推动首次跑量"});
   }
-  if(c.roi != null && c.roi < 2 && c.consume >= 1000){
-    a.push({level:"P0", tag:"ROI 严重偏低", reason:`ROI=${c.roi.toFixed(2)} < 2.0 警戒线`, action:"立即减少低效计划投放，链路一致性核查+人群定向洗牌", category:"双率"});
-  }
-
-  // ============================================================
-  // P1：核心 ROI 治理（4 档：严重/待优化/达标/优秀）
-  // ============================================================
-  if(c.roi != null && c.roi >= 2 && c.roi < 3 && c.consume >= 100){
-    a.push({level:"P1", tag:"ROI 待优化", reason:`ROI ${c.roi.toFixed(2)} < 3.0 · 行业(${c.industry||"其他"})头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'} · 差距 ${(((b.roi_p75||0)-c.roi)).toFixed(2)}`,
-      action: `▸ ① 关停 ROI<1.5 的低效计划 ② 优质素材跨账户分发（3+ 账户） ③ 提升客单价（关联销售/升级 SKU）④ 排查"广告主在投的消耗"占比是否 >20%`});
+  if(c.roi != null && c.roi < roiTh && c.consume >= 1000){
+    a.push({level:"P0", tag:"ROI 严重偏低", reason:`ROI ${c.roi.toFixed(2)} < ${stage}红线 ${roiTh.toFixed(1)} · 客户阶段：${stage}`, action:`▸ 紧急：① 当日关停 ROI<1.0 的计划 ② 保留 ROI≥${roiTh.toFixed(1)} 的优质计划扩量 ③ 排查主表素材与目标出价 ④ 7 天无改善考虑下线整账户`});
   }
 
-  // ============================================================
-  // P1/P2：双率（ctr/cvr）
-  // ============================================================
+  // —— P1：核心 ROI 治理（按客户阶段不同阈值）——
+  if(c.roi != null && c.roi >= roiTh && c.roi < roiTh+0.5 && c.consume >= 100){
+    a.push({level:"P1", tag:"ROI 待优化", reason:`ROI ${c.roi.toFixed(2)} 接近${stage}达标线`, action:`▸ ① 关停 ROI<${(roiTh-0.5).toFixed(1)} 的低效计划 ② 优质素材跨账户分发（3+ 账户）③ 提升客单价（关联销售/升级 SKU）④ 排查"广告主在投的消耗"占比是否 >20%`});
+  }
+  if(c.roi != null && c.roi >= roiTh+0.5 && c.roi < roiTh+2 && c.consume >= 1000){
+    a.push({level:"P2", tag:"ROI 已达标", reason:`ROI ${c.roi.toFixed(2)} ≥ ${stage}达标线（${roiTh.toFixed(1)}）`, action:"保持节奏，可考虑优质素材+账户分发扩量"});
+  }
+  if(c.roi != null && c.roi >= roiTh+2){
+    a.push({level:"P2", tag:"ROI 优秀", reason:`ROI ${c.roi.toFixed(2)}，超过${stage}头部线（${roiTh.toFixed(1)}）`, action:"跨账户/跨主体分发优质素材，规模化复制"});
+  }
+
+  // —— P1/P2：双率（ctr/cvr）—— 用绝对值阈值，不对标头部 ——
+  // 通用标准：ctr ≥ 2% 算正常，<1% 严重偏低；cvr ≥ 4% 正常，<2% 严重偏低
   if(c.ctr != null && c.ctr > 0 && c.ctr < 1){
-    a.push({level:"P1", tag:"点击率偏低(ctr)", reason:`ctr ${c.ctr.toFixed(2)}% < 1% 红线`, action:"视觉重构（高反差封面+大字报）、开启数据外显、人群定向洗牌、强制\"痛点+产品+承诺\"3秒结构"});
+    a.push({level:"P1", tag:"点击率严重偏低(ctr)", reason:`ctr ${c.ctr.toFixed(2)}% < 1% 红线`, action:"视觉重构（高反差封面+大字报）、开启数据外显、人群定向洗牌、强制\"痛点+产品+承诺\"3秒结构"});
+  } else if(c.ctr != null && c.ctr >= 1 && c.ctr < 2){
+    a.push({level:"P2", tag:"ctr 接近健康线", reason:`ctr ${c.ctr.toFixed(2)}% 接近 2%`, action:"对标爆款素材衍生，加大换镜头频次（每 5-8 秒）"});
   }
-  if(c.cvr != null && c.cvr > 0 && c.cvr < 3){
-    a.push({level:"P1", tag:"转化率偏低(cvr)", reason:`cvr ${c.cvr.toFixed(2)}% < 3% 红线`, action:"链路一致性核查、直播间逼单话术、商详页加倒计时/限时特诱因、及时处理中差评", category:"双率"});
-  }
-  if(c.ctr != null && c.ctr >= 1 && c.ctr < 2){
-    a.push({level:"P2", tag:"ctr 接近健康线", reason:`ctr ${c.ctr.toFixed(2)}% 接近 2% 行业头部`, action:`对标头部 P75 ${b.ctr_p75!=null?b.ctr_p75.toFixed(2):'?'}，加大爆款素材衍生`});
-  }
-  if(c.cvr != null && c.cvr >= 3 && c.cvr < 6){
-    a.push({level:"P2", tag:"cvr 接近健康线", reason:`cvr ${c.cvr.toFixed(2)}% 接近头部`, action:`对标头部 P75 ${b.cvr_p75!=null?b.cvr_p75.toFixed(2):'?'}，丰富直播间促销玩法`});
+  if(c.cvr != null && c.cvr > 0 && c.cvr < 2){
+    a.push({level:"P1", tag:"转化率严重偏低(cvr)", reason:`cvr ${c.cvr.toFixed(2)}% < 2% 红线`, action:"链路一致性核查、直播间逼单话术、商详页加倒计时/限时特诱因、及时处理中差评"});
+  } else if(c.cvr != null && c.cvr >= 2 && c.cvr < 4){
+    a.push({level:"P2", tag:"cvr 接近健康线", reason:`cvr ${c.cvr.toFixed(2)}% 接近 4%`, action:"对标头部，丰富直播间促销玩法"});
   }
 
-  // ============================================================
-  // ============================================================
+  // —— P1/P2：出价稳定 ——
   if(c.target_bid == null && c.consume >= 1000){
-    a.push({level:"P2", tag:"目标出价数据缺失", reason:`缺目标出价数据，无法判断出价稳定性`, action:"补全出价数据；遵循\"小步快跑\"原则（单次调幅 5-10%，日调 ≤ 2 次）"});
+    a.push({level:"P2", tag:"目标出价数据缺失",category:"双率", reason:`缺目标出价数据，无法判断出价稳定性`, action:"补全出价数据；遵循\"小步快跑\"原则（单次调幅 5-10%，日调 ≤ 2 次）"});
   }
 
-  // ============================================================
-  // P1/P2：基建/规模（账户/广告数/创意）
-  // ============================================================
+  // —— P1/P2：基建/规模（按客户阶段不同水位）——
+  // 通用标准：广告数<50/日 算薄；<100/日 算可扩
   if(c.ads != null && c.ads < 50 && c.consume >= 1000){
-    a.push({level:"P2", tag:"广告基建薄", reason:`日均广告数 ${Math.round(c.ads)}，远低于行业 P75 ${b.ads_p75!=null?Math.round(b.ads_p75):'?'}`, action:`每日新建计划数 ≥ 当前活跃计划数 × 1.5；优质素材跨账户同步`});
+    a.push({level:"P2", tag:"广告基建薄", reason:`日均广告数 ${Math.round(c.ads)} 偏少`, action:"每日新建计划数 ≥ 当前活跃计划数 × 1.5；优质素材跨账户同步"});
   }
   if(c.account != null && c.account < 2 && c.consume >= 1000){
-    a.push({level:"P2", tag:"账户数过少", reason:`有消耗的账户数仅 ${c.account}`, action:`多账户分发防单点故障，优质素材至少在 2 个账户同时投放`});
+    a.push({level:"P2", tag:"账户数过少", reason:`有消耗的账户数仅 ${c.account}`, action:"多账户分发防单点故障，优质素材至少在 2 个账户同时投放"});
   }
-  if(c.creative_id != null && b.creative_id_p75 != null && c.creative_id < b.creative_id_p75 * 0.6 && c.consume >= 1000){
-    a.push({level:"P2", tag:"创意数偏低", reason:`均曝光创意 ${Math.round(c.creative_id)} < 头部 P75 的 60%（${Math.round(b.creative_id_p75)}）`, action:`优质素材通过换封面/BGM/开头快速衍生 9 条 新创意`});
+  if(c.creative_id != null && c.creative_id < 30 && c.consume >= 1000){
+    a.push({level:"P2", tag:"创意数偏低", reason:`均曝光创意 ${Math.round(c.creative_id)} < 30`, action:"优质素材通过换封面/BGM/开头快速衍生 9 条新创意"});
   }
 
-  // ============================================================
-  // P1/P2：新广告/上新
-  // ============================================================
+  // —— P1/P2：新广告/上新 ——
   if(c.new_ratio != null && c.new_ratio < 5 && c.consume >= 1000){
-    a.push({level:"P1", tag:"上新严重不足", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% < 5% 红线`, action:`强制上新：每日流量高峰前 2 小时批量上新计划；清理低点击、无转化老计划释放额度`});
+    a.push({level:"P1", tag:"上新严重不足", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% < 5% 红线`, action:"强制上新：每日流量高峰前 2 小时批量上新计划；清理低点击、无转化老计划释放额度"});
   }
   if(c.new_ratio != null && c.new_ratio >= 5 && c.new_ratio < 20 && c.consume >= 1000){
-    a.push({level:"P2", tag:"素材节奏偏慢", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% 介于 5-20%`, action:`提升素材产出节奏，目标 ≥ 20%（头部 P75 ${b.new_ratio_p75!=null?b.new_ratio_p75.toFixed(1):'?'}%）`});
+    a.push({level:"P2", tag:"素材节奏偏慢", reason:`新广告占比 ${c.new_ratio.toFixed(1)}% 介于 5-20%`, action:"提升素材产出节奏，目标 ≥ 20%"});
   }
 
-  // ============================================================
-  // P1/P2：一键起量
-  // ============================================================
+  // —— P1/P2：一键起量 ——
   if(c.auto_ratio != null && c.auto_ratio < 10 && c.consume >= 1000){
-    a.push({level:"P1", tag:"一键起量严重不足", reason:`一键起量使用占比 ${c.auto_ratio.toFixed(1)}% < 10% 红线`, action:`为重点新计划配 200-500 元一键起量预算；新计划 1-2 小时无展现立即开启`});
+    a.push({level:"P1", tag:"一键起量严重不足", reason:`一键起量使用占比 ${c.auto_ratio.toFixed(1)}% < 10% 红线`, action:"为重点新计划配 200-500 元一键起量预算；新计划 1-2 小时无展现立即开启"});
   }
   if(c.auto_ratio != null && c.auto_ratio >= 10 && c.auto_ratio < 30 && c.consume >= 1000){
-    a.push({level:"P2", tag:"一键起量占比偏低", reason:`一键起量 ${c.auto_ratio.toFixed(1)}% 低于头部 P75 ${b.auto_ratio_p75!=null?b.auto_ratio_p75.toFixed(1):'?'}%`, action:"加大一键起量预算占比", category:"素材质量"});
+    a.push({level:"P2", tag:"一键起量占比偏低", reason:`一键起量 ${c.auto_ratio.toFixed(1)}% 偏低`, action:"加大一键起量预算占比"});
   }
 
-  // ============================================================
-  // P1/P2：3 秒完播率
-  // ============================================================
+  // —— P1/P2：3 秒完播率 ——
   if(c["3s_play"] != null && c["3s_play"] > 0 && c["3s_play"] < 20){
     const ind = c.industry || '';
     let hook = "产品惊艳特写";
     if(ind.includes("鞋")) hook = "上脚特写+脚步节奏";
     else if(ind.includes("运动")) hook = "运动中速切换+数据冲击";
     else if(ind.includes("珠宝")) hook = "光线打在产品上的特写";
-    a.push({level:"P1", tag:"3秒完播率严重偏低", reason:`完播率 ${c["3s_play"].toFixed(1)}% < 20% 红线 · 行业(${ind})头部 P75 ${b["3s_play_p75"]!=null?b["3s_play_p75"].toFixed(1):'?'}%`,
+    a.push({level:"P1", tag:"3秒完播率严重偏低", reason:`完播率 ${c["3s_play"].toFixed(1)}% < 20% 红线 · 行业(${ind})`,
       action: `▸ 前 0.5 秒用"${hook}" + 冲击音效 · 用反问开场（"你还不知道…"） · 数字人口播核心利益点 · 关键信息前 3 秒必须出现`});
-  }
-  if(c["3s_play"] != null && c["3s_play"] >= 20 && c["3s_play"] < 40){
-    a.push({level:"P2", tag:"完播率偏中", reason:`完播率 ${c["3s_play"].toFixed(1)}%，对标头部 P75 ${b["3s_play_p75"]!=null?b["3s_play_p75"].toFixed(1):'?'}%`, action:"首 3 秒强视觉冲击+产品惊艳对比，强化悬念结构", category:"素材质量"});
-  }
-
-  // ============================================================
-  // P1/P2：平均播放时长
-  // ============================================================
-  if(c.avg_dur != null && c.avg_dur > 0 && c.avg_dur < 20){
-    a.push({level:"P1", tag:"平均播放时长过短", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒 < 20 秒`, action:"每 5-8 秒换视角/特效字幕/产品特写；控制时长 45-60 秒；增加室内外场景切换", category:"素材质量"});
-  }
-  if(c.avg_dur != null && c.avg_dur >= 20 && c.avg_dur < 40){
-    a.push({level:"P2", tag:"时长偏中", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒`, action:`对比头部 P75 ${b.avg_dur_p75!=null?b.avg_dur_p75.toFixed(1):'?'} 秒，强化节点节奏`});
+  } else if(c["3s_play"] != null && c["3s_play"] >= 20 && c["3s_play"] < 35){
+    a.push({level:"P2", tag:"完播率偏中", reason:`完播率 ${c["3s_play"].toFixed(1)}% 介于 20-35%`, action:"首 3 秒强视觉冲击+产品惊艳对比，强化悬念结构"});
   }
 
-  // ============================================================
-  // P1：三率（独立分类：品退/差评/纠纷）
-  // ============================================================
+  // —— P1/P2：平均播放时长 ——
+  if(c.avg_dur != null && c.avg_dur > 0 && c.avg_dur < 15){
+    const ind = c.industry || '';
+    let scene = "产品上镜为主";
+    if(ind.includes("鞋") || ind.includes("包")) scene = "鞋子/包包细节特写+模特走动";
+    else if(ind.includes("运动")) scene = "运动场景+功能演示+数字人旁白";
+    else if(ind.includes("珠宝") || ind.includes("配饰")) scene = "近景细节+佩戴场景+试戴对比";
+    else if(ind.includes("贴身") || ind.includes("男") || ind.includes("女")) scene = "模特走秀+材质细节+搭配展示";
+    a.push({level:"P1", tag:"平均播放时长过短", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒 < 15 秒 · 行业(${ind})`,
+      action: `▸ 建议素材侧重"${scene}"，节奏 5-8 秒换镜头 · 时长控制 45-60 秒 · 关键利益点 3-5 个 · 前 3 秒强视觉冲击`});
+  } else if(c.avg_dur != null && c.avg_dur >= 15 && c.avg_dur < 30){
+    a.push({level:"P2", tag:"时长偏中", reason:`平均时长 ${c.avg_dur.toFixed(1)} 秒 介于 15-30 秒`, action:"强化节点节奏控制 30-45 秒完播区间，挂钩引流转化"});
+  }
+
+  // —— P1：三率（品退/差评/纠纷）—— 绝对值阈值 ——
   if(c.ret != null && c.ret > 1){
-    a.push({level:"P1", tag:"品退率超标", reason:`品退率 ${c.ret.toFixed(2)}% > 1% 红线`, action:"联系品控排查商品质量/描述一致性；必要时拉闸高品退商品", category:"小店三率"});
+    a.push({level:"P1", tag:"品退率超标", reason:`品退率 ${c.ret.toFixed(2)}% > 1% 红线`, action:"联系品控排查商品质量/描述一致性；必要时拉闸高品退商品"});
   }
   if(c.bad != null && c.bad > 15){
-    a.push({level:"P1", tag:"差评率超标", reason:`差评率 ${c.bad.toFixed(1)}% > 15% 红线`, action:"复盘高频差评，针对性改进 SKU/物流/客服话术；个别品类话术优化", category:"小店三率"});
+    a.push({level:"P1", tag:"差评率超标", reason:`差评率 ${c.bad.toFixed(1)}% > 15% 红线`, action:"复盘高频差评，针对性改进 SKU/物流/客服话术；个别品类话术优化"});
   }
   if(c.dispute != null && c.dispute > 0.5){
-    a.push({level:"P1", tag:"商责纠纷超标", reason:`纠纷率 ${c.dispute.toFixed(2)}% > 0.5% 红线`, action:"法务/客服介入，排查根因并完善售后流程", category:"小店三率"});
+    a.push({level:"P1", tag:"商责纠纷超标", reason:`纠纷率 ${c.dispute.toFixed(2)}% > 0.5% 红线`, action:"法务/客服介入，排查根因并完善售后流程"});
   }
 
-  // ============================================================
-  // P2：产品能力使用（用户视角：未使用则建议使用）
-  // ============================================================
+  // —— P2：产品使用类型（按子青 9.3 反馈，原生推广属于产品使用，不再放链路）——
   if(c.is_4m === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用 4+m", reason:"未识别到 4+m 投放数据", action:"接入 4+m 投放，覆盖多层级流量场景"});
+    a.push({level:"P2", tag:"未使用 4+m",category:"产品使用类型", reason:"未识别到 4+m 投放数据", action:"接入 4+m 投放，覆盖多层级流量场景"});
   }
   if(c.is_aggregate === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用多商品聚合页", reason:"未识别到多商品聚合页投放", action:"接入多商品聚合页，提升单次曝光价值"});
-  }
-  if(c.is_live === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用直播", reason:"未识别到直播投流数据", action:"接入直播间广告投放，借直播间转化高峰"});
+    a.push({level:"P2", tag:"未使用多商品聚合页",category:"产品使用类型", reason:"未识别到多商品聚合页投放", action:"接入多商品聚合页，提升单次曝光价值"});
   }
   if(c.is_smart_ad === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用小店艾米智投", reason:"未识别到艾米智投数据", action:"接入艾米智投，自动选品+定向+出价"});
+    a.push({level:"P2", tag:"未使用小店艾米智投",category:"产品使用类型", reason:"未识别到艾米智投数据", action:"接入艾米智投，自动选品+定向+出价"});
   }
-  if(c.is_quan_yu_tong === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未开全域通", reason:"未识别到全域通投放", action:"接入全域通，扩大流量池（大盘 Top 客户 94% 已开）"});
+  // 原生推广：已挪到产品能力，不在此处
+  if(c.is_native === false && c.consume >= 1000){
+    a.push({level:"P2", tag:"未使用原生推广",category:"产品使用类型", reason:"未识别到原生推广投放", action:"接入原生推广，原生信息流场景触达"});
   }
 
-  // ============================================================
-  // P2：链路
-  // ============================================================
+  // —— P2：链路（潜客优投/直播/小店，不再含原生推广）——
   if(c.is_latent === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用潜客优投", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
-  }
-  if(c.is_native === false && c.consume >= 1000){
-    a.push({level:"P2", tag:"未使用原生推广", reason:"未识别到原生推广投放", action:"接入原生推广，原生信息流场景触达"});
+    a.push({level:"P2", tag:"未使用潜客优投",category:"链路", reason:"未识别到潜客优投投放", action:"接入潜客优投，对高潜用户重点定向"});
   }
 
   return a;
 }
 
-/* 用前端规则引擎覆盖后端 advice（在 render 入口调用） */
 function refreshAdvice(c){
   c.advice = genAdvice(c, c.benchmark);
 }
@@ -1151,7 +1141,7 @@ function renderCustomerDetail(d, c){
     <div class="grid-2">
       <div class="card compact">
         <h2>① 消耗 / 双率 / ROI</h2>
-        <div class="sub">5 个核心指标 · 每个对标行业头部</div>
+        <div class="sub">5 个核心指标 · 每个绝对值阈值</div>
         <div class="metric-grid-3">${kpiRows.map(r=>mCell(...r)).join('')}</div>
       </div>
       <div class="card compact">

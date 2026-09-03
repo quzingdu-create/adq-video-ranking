@@ -66,10 +66,6 @@ p75 = lambda a: quantile(a, 0.75)
 p25 = lambda a: quantile(a, 0.25)
 
 def main():
-    # 🔴 防呆：数据周期固定 2026-08-26 ~ 2026-09-01（用户 9.3 拍板）
-    PERIOD_START = '2026/08/26'
-    PERIOD_END   = '2026/09/01'
-
     # ─── 1) 销售白名单（拆多公司名） ───
     wb = openpyxl.load_workbook(SRC/'靶向客户-销售-9.3.xlsx')
     ws = wb.active
@@ -109,13 +105,29 @@ def main():
             })
     print(f'[主] 命中白名单 {len(by_sub)} / {len(targets)}')
 
-    # ─── 3) 指标明细：日均消耗主体口径 ───
+    # ─── 3) 指标明细：日均消耗主体口径 + KPI 权威源 ───
     main_consume = {}
+    # KPI 权威源用指标明细 csv（子青 9.3 拍板）
+    # 78 客户全部有消耗，但只算"靶向白名单 + 全部平台"两套数字
+    kpi_all = []  # 指标明细 78 客户全量
+    kpi_target = []  # 销售白名单 66 主体
     with open(SRC/'指标明细-9.3.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             sub=r.get('客户简称','').strip()
-            if sub in sales_map:
-                main_consume[sub] = f(r.get('日均消耗(元)'))
+            v = f(r.get('日均消耗(元)'))
+            if sub and v is not None and v > 0:
+                kpi_all.append(v)
+            if sub in sales_map and v:
+                main_consume[sub] = v
+                kpi_target.append(v)
+    kpi_summary = {
+        'all_total': round(sum(kpi_all), 2),       # 指标明细 78 客户总日均
+        'all_count': len(kpi_all),                  # 78（全部平台有消耗）
+        'all_avg':   round(sum(kpi_all)/max(1,len(kpi_all)), 2),
+        'target_total': round(sum(kpi_target), 2),   # 销售白名单 66 总日均
+        'target_count': len(kpi_target),            # 靶向在投数（按指标明细）
+        'target_avg':   round(sum(kpi_target)/max(1,len(kpi_target)), 2),
+    }
 
     # ─── 4) 4 个使用标记 ───
     def load_uses(path, has_extra=False):
@@ -406,9 +418,11 @@ def main():
             sub = r.get('客户简称','').strip()
             d = r.get('时间','').strip()
             v = f(r.get('日均消耗(元)'))
-            if sub and d and d != '整体' and v and sub in sales_map and PERIOD_START <= d <= PERIOD_END:
+            if sub and d and d != '整体' and v and sub in sales_map:
                 cust_by_day_total[d] += v
     qtd_target = [{'date':d, 'value':round(v,2)} for d,v in sorted(cust_by_day_total.items())]
+    # 防呆：qtd 客户合计必须有数据
+    assert len(qtd_target) >= 30, f'qtd 客户合计数据不足 30 天，实际 {len(qtd_target)} 天'
 
     # ─── 9) 客户趋势 ───
     cust_trend = defaultdict(list)
@@ -422,7 +436,7 @@ def main():
     out = {
         'meta': {
             'data_date':'2026-09-01',
-            'data_period':'2026-08-26 ~ 2026-09-01',
+            'data_period':'qtd (7.1 - 9.1)',
             'build_time':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'target_count':len(customers),
             'active_count':sum(1 for c in customers if c['consume']>0),
@@ -436,8 +450,9 @@ def main():
             'active_count':sum(1 for c in customers if c['consume']>0),
             'industry_count':len(ind_bench),
             'sales_count':len(set(sales_map.values())),
-            'period':'2026-08-26 ~ 2026-09-01',
+            'period':'qtd (7.1 - 9.1)',
             'period_days':7,
+            'kpi':kpi_summary,    # 指标明细 csv 算的权威 KPI
         },
         'industry_benchmark':ind_bench,
         'target_dashboard_trend':target_trend,
@@ -452,8 +467,8 @@ def main():
     d = json.load(open(p, encoding='utf-8'))
     # 防呆：检查 data_period 在 meta 里
     period = d.get('meta',{}).get('data_period','')
-    if '2026-08-26' not in str(period) and '8.26' not in str(period):
-        raise RuntimeError(f'❌ meta.data_period 必须含 8.26，当前: {period!r}')
+    if 'qtd' not in str(period).lower():
+        raise RuntimeError(f'❌ meta.data_period 必须含 qtd，当前: {period!r}')
     if out['overall']['count'] != 66:
         raise RuntimeError(f'❌ 客户总数应为 66，实际 {out["overall"]["count"]}')
     if len(out.get('qtd_dashboard_trend',[])) < 7:

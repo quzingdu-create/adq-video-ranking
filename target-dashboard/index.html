@@ -10,8 +10,8 @@
 <div class="topbar" id="topbar"></div>
 <div class="wrap">
   <div class="page-head">
-    <h1>靶向客户投放监控 <span class="period">数据周期 2026-08-26 ~ 2026-09-01</span></h1>
-    <p><span id="dataSummary"><span id="ds-act">-</span> 家伙伴在投 · 覆盖 <span id="ds-ind">-</span> 个二级行业 · 数据日期 2026-09-01</span></p>
+    <h1>靶向客户投放监控 <span class="period">数据周期 qtd (7.1 - 9.1)</span></h1>
+    <p><span id="dataSummary"><span id="ds-act">-</span> 家伙伴在投 · 覆盖 <span id="ds-ind">-</span> 个二级行业 · 数据周期 qtd (7.1 - 9.1)</span></p>
   </div>
 
   <!-- ① KPI（用 list 随筛选变）+ 右上角浮动过滤器 -->
@@ -45,7 +45,7 @@
   <!-- ② 趋势折线图（2 张：大盘 + 客户，按客户多选） -->
   <div class="card-row" style="margin-top:8px">
     <div class="card">
-      <h2>① 服饰中心大盘日均消耗</h2>
+      <h2>① 服饰中心大盘 vs 靶向客户日耗走势</h2>
       <div class="sub" id="dashboardTrendSub">最近 8 天</div>
       <div id="dashboardTrend"></div>
     </div>
@@ -128,7 +128,7 @@ async function render(){
   if(indEl) indEl.textContent = ov.industry_count != null ? ov.industry_count : '?';
   // KPI 标签也同步
   const periodEl = document.getElementById('dataPeriod');
-  if(periodEl) periodEl.textContent = '数据周期 ' + (d.meta && d.meta.data_period || '2026-08-26 ~ 2026-09-01');
+  if(periodEl) periodEl.textContent = '数据周期 ' + (d.meta && d.meta.data_period || 'qtd (7.1 - 9.1');
 
   // 视角 chip 渲染
   const tabs = document.querySelectorAll('.view-tab');
@@ -190,7 +190,7 @@ async function render(){
   const highRisk = list.filter(c=> (c.advice||[]).some(a=>a.level==="P0"||a.level==="P1")).length;
 
   document.getElementById("kpiGrid").innerHTML = `
-    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">8.26-9.1</span></div>
+    <div class="kpi k-brand"><div class="kpi-label">总消耗 <span class="tag brand">QTD</span></div>
       <div class="kpi-val">${fmtMoney(consume,0)}<span class="unit">元</span></div>
       <div class="kpi-hint">${list.length} 家客户合计${list.length!==all.length?` / 总 ${all.length} 家`:''}</div></div>
     <div class="kpi k-info"><div class="kpi-label">下单 GMV</div>
@@ -264,7 +264,7 @@ async function render(){
   const dashRows = (d.qtd_dashboard_trend||[]);
   const targetRows = (d.qtd_target_trend||[]);
   document.getElementById("dashboardTrendSub").textContent =
-    dashRows.length ? `数据周期 2026-08-26 ~ 2026-09-01 (大盘 vs 靶向合计)` : '数据缺失';
+    dashRows.length ? `qtd · ${dashRows.length} 天` : '数据缺失';
   document.getElementById("dashboardTrend").innerHTML = dashRows.length
     ? renderDualLineChart(dashRows, targetRows, {w:620,h:210})
     : '<div class="empty">大盘数据待上传</div>';
