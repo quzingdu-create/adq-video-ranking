@@ -66,6 +66,10 @@ p75 = lambda a: quantile(a, 0.75)
 p25 = lambda a: quantile(a, 0.25)
 
 def main():
+    # 🔴 防呆：数据周期固定 2026-08-26 ~ 2026-09-01（用户 9.3 拍板）
+    PERIOD_START = '2026/08/26'
+    PERIOD_END   = '2026/09/01'
+
     # ─── 1) 销售白名单（拆多公司名） ───
     wb = openpyxl.load_workbook(SRC/'靶向客户-销售-9.3.xlsx')
     ws = wb.active
@@ -402,7 +406,7 @@ def main():
             sub = r.get('客户简称','').strip()
             d = r.get('时间','').strip()
             v = f(r.get('日均消耗(元)'))
-            if sub and d and d != '整体' and v and sub in sales_map:
+            if sub and d and d != '整体' and v and sub in sales_map and PERIOD_START <= d <= PERIOD_END:
                 cust_by_day_total[d] += v
     qtd_target = [{'date':d, 'value':round(v,2)} for d,v in sorted(cust_by_day_total.items())]
 
@@ -417,7 +421,8 @@ def main():
     # ─── 10) 输出 ───
     out = {
         'meta': {
-            'data_date':'2026-09-02',
+            'data_date':'2026-09-01',
+            'data_period':'2026-08-26 ~ 2026-09-01',
             'build_time':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'target_count':len(customers),
             'active_count':sum(1 for c in customers if c['consume']>0),
@@ -428,6 +433,11 @@ def main():
             'consume':sum(c['consume'] for c in customers),
             'gmv':sum(c['gmv'] for c in customers),
             'count':len(customers),
+            'active_count':sum(1 for c in customers if c['consume']>0),
+            'industry_count':len(ind_bench),
+            'sales_count':len(set(sales_map.values())),
+            'period':'2026-08-26 ~ 2026-09-01',
+            'period_days':7,
         },
         'industry_benchmark':ind_bench,
         'target_dashboard_trend':target_trend,
@@ -438,6 +448,18 @@ def main():
     }
     p = OUT/'data.json'
     p.write_text(json.dumps(out, ensure_ascii=False, separators=(',',':')), encoding='utf-8')
+    # 重新读 + 验证
+    d = json.load(open(p, encoding='utf-8'))
+    # 防呆：检查 data_period 在 meta 里
+    period = d.get('meta',{}).get('data_period','')
+    if '2026-08-26' not in str(period) and '8.26' not in str(period):
+        raise RuntimeError(f'❌ meta.data_period 必须含 8.26，当前: {period!r}')
+    if out['overall']['count'] != 66:
+        raise RuntimeError(f'❌ 客户总数应为 66，实际 {out["overall"]["count"]}')
+    if len(out.get('qtd_dashboard_trend',[])) < 7:
+        raise RuntimeError(f'❌ qtd 大盘数据不足 7 天')
+    if len(out.get('qtd_target_trend',[])) < 7:
+        raise RuntimeError(f'❌ qtd 客户合计数据不足 7 天')
     print(f'[out] {p}  {p.stat().st_size/1024:.1f}KB')
     print(f'[总体] 消耗 {out["overall"]["consume"]:.0f} 元 / GMV {out["overall"]["gmv"]:.0f} 元 / 客户 {out["overall"]["count"]} / 在投 {out["meta"]["active_count"]}')
 

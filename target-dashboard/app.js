@@ -423,7 +423,8 @@ function genAdvice(c, bench){
   // P1：核心 ROI 治理（4 档：严重/待优化/达标/优秀）
   // ============================================================
   if(c.roi != null && c.roi >= 2 && c.roi < 3 && c.consume >= 100){
-    a.push({level:"P1", tag:"ROI 待优化", reason:`ROI=${c.roi.toFixed(2)}，接近达标线 3.0`, action:`对标行业头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'}，继续优化素材+定向+出价`});
+    a.push({level:"P1", tag:"ROI 待优化", reason:`ROI ${c.roi.toFixed(2)} < 3.0 · 行业(${c.industry||"其他"})头部 P75 ${b.roi_p75!=null?b.roi_p75.toFixed(2):'?'} · 差距 ${(((b.roi_p75||0)-c.roi)).toFixed(2)}`,
+      action: `▸ ① 关停 ROI<1.5 的低效计划 ② 优质素材跨账户分发（3+ 账户） ③ 提升客单价（关联销售/升级 SKU）④ 排查"广告主在投的消耗"占比是否 >20%`});
   }
 
   // ============================================================
@@ -485,7 +486,13 @@ function genAdvice(c, bench){
   // P1/P2：3 秒完播率
   // ============================================================
   if(c["3s_play"] != null && c["3s_play"] > 0 && c["3s_play"] < 20){
-    a.push({level:"P1", tag:"3秒完播率严重偏低", reason:`完播率 ${c["3s_play"].toFixed(1)}% < 20% 红线`, action:"前 0.5 秒冲击音效+实拍明快画面；用\"难道你还在…？\"反问开场；数字人口播核心利益点"});
+    const ind = c.industry || '';
+    let hook = "产品惊艳特写";
+    if(ind.includes("鞋")) hook = "上脚特写+脚步节奏";
+    else if(ind.includes("运动")) hook = "运动中速切换+数据冲击";
+    else if(ind.includes("珠宝")) hook = "光线打在产品上的特写";
+    a.push({level:"P1", tag:"3秒完播率严重偏低", reason:`完播率 ${c["3s_play"].toFixed(1)}% < 20% 红线 · 行业(${ind})头部 P75 ${b["3s_play_p75"]!=null?b["3s_play_p75"].toFixed(1):'?'}%`,
+      action: `▸ 前 0.5 秒用"${hook}" + 冲击音效 · 用反问开场（"你还不知道…"） · 数字人口播核心利益点 · 关键信息前 3 秒必须出现`});
   }
   if(c["3s_play"] != null && c["3s_play"] >= 20 && c["3s_play"] < 40){
     a.push({level:"P2", tag:"完播率偏中", reason:`完播率 ${c["3s_play"].toFixed(1)}%，对标头部 P75 ${b["3s_play_p75"]!=null?b["3s_play_p75"].toFixed(1):'?'}%`, action:"首 3 秒强视觉冲击+产品惊艳对比，强化悬念结构", category:"素材质量"});
@@ -1113,13 +1120,12 @@ function renderCustomerDetail(d, c){
     ["差评率", c.bad, "%", 2, b.bad_p25, "lower"],
     ["纠纷率", c.dispute, "%", 2, b.dispute_p25, "lower"],
   ];
-  // ⑥ 投放端（是否都投了，消耗占比）+ 链路（小店/直播）
+  // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
   const deliveryCells = [
     // 投放端
     abilityCell("全域通", c.is_quan_yu_tong, c.consume_quanyutong, tot),
-    abilityCell("原生推广", c.is_native, c.consume_native, tot),
     abilityCell("adq", c.adq, tot, tot),  // adq 是主表全部
-    // 链路（暂无数据源，先显示是否使用）
+    // 链路（暂无独立数据源，先显示是否使用）
     usageCell("小店", c.shop_count>0, c.shop_count+' 个小店'),
     usageCell("直播", c.is_live, ''),
   ];
