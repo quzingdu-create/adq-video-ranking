@@ -1114,13 +1114,116 @@ function renderMultiLineChart(series, opts){
     var path = s.data.map(function(p,i){return (i===0?'M':'L')+' '+xAt(i)+' '+yAt(p.value);}).join(' ');
     return '<path d="'+path+'" stroke="'+c+'" stroke-width="1.8" fill="none" opacity="0.85"><title>'+s.name+'</title></path>';
   }).join('');
+  // 多线图：透明覆盖 + cursor + 每个客户一个圆点（默认隐藏）
+  var dotsAll = series.map(function(s,si){
+    var c = cols[si%cols.length];
+    return '<circle class="chart-dot-multi" data-i="'+si+'" cx="0" cy="0" r="3.5" fill="'+c+'" stroke="#fff" stroke-width="1.2" style="display:none;pointer-events:none"/>';
+  }).join('');
+  var overlayMulti = '<rect x="'+padL+'" y="'+padT+'" width="'+innerW+'" height="'+innerH+'" fill="transparent" style="cursor:crosshair"/>';
+  var cursorMulti = '<line class="chart-cursor-multi" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+innerH)+'" stroke="var(--text)" stroke-width="0.5" stroke-dasharray="2 2" style="display:none;pointer-events:none"/>';
   var legend = series.map(function(s,i){
     var c = cols[i%cols.length];
     return '<g transform="translate('+(padL+i*78)+',14)"><rect width="9" height="9" rx="2" fill="'+c+'"/><text x="13" y="8" fill="var(--text-2)" font-size="10">'+s.name.slice(0,8)+'</text></g>';
   }).join('');
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg">' +
-    grid + lines + legend + xLabels + '</svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg chart-hover" data-chart="multi" data-n="'+allDates.length+'" data-series="'+series.length+'">' +
+    grid + lines + legend + xLabels + cursorMulti + dotsAll + overlayMulti + '</svg>';
 }
+
+/* ============================================================
+   折线图 hover tooltip（子青 9.3 拍板：鼠标悬浮显示消耗值）
+   - 给 .chart-hover 加 mousemove/mouseleave
+   - 根据鼠标 x 找最近数据点 index
+   - 全局共用一个 #__chartTip
+   ============================================================ */
+function ensureChartTip(){
+  let t = document.getElementById('__chartTip');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '__chartTip';
+    t.style.cssText='position:fixed;pointer-events:none;z-index:9999;background:rgba(31,31,29,0.95);color:#fff;padding:8px 11px;border-radius:8px;font-size:12px;line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,0.25);display:none;font-family:var(--font-num);white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  return t;
+}
+function bindChartHover(svg){
+  if(svg._hoverBound) return;
+  svg._hoverBound = true;
+  const kind = svg.getAttribute('data-chart');
+  const n = parseInt(svg.getAttribute('data-n'), 10);
+  const seriesN = parseInt(svg.getAttribute('data-series')||'2', 10);
+  const tip = ensureChartTip();
+  svg.addEventListener('mousemove', e=>{
+    const rect = svg.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    // SVG viewBox 0..W
+    const W = parseFloat(svg.getAttribute('viewBox').split(' ')[2]);
+    const x = px / rect.width * W;
+    // x 对应的数据 index（padL=46/44）
+    const padL = (kind==='dual')?46:44;
+    const innerW = W - padL - ((kind==='dual')?46:14);
+    const idx = Math.round((x - padL) / innerW * (n-1));
+    if(idx<0 || idx>=n){ tip.style.display='none'; return; }
+    // 通过 SVG 的当前图形找数据：直接挂 dataset
+    const rows = svg._dataRows;  // 渲染时挂上去
+    if(!rows){ tip.style.display='none'; return; }
+    const xAt = (i) => padL + (n===1?innerW/2 : i*(innerW/(n-1)));
+    const xPix = xAt(idx);
+    // 竖线
+    const cursor = svg.querySelector(kind==='dual'?'.chart-cursor':'.chart-cursor-multi');
+    if(cursor){ cursor.setAttribute('x1', xPix); cursor.setAttribute('x2', xPix); cursor.style.display=''; }
+    let html = '';
+    if(kind==='dual'){
+      const rowsA = rows.rowsA, rowsB = rows.rowsB;
+      const mapA = rows.mapA, mapB = rows.mapB;
+      const allDates = rows.allDates;
+      const d = allDates[idx];
+      const va = mapA[d]||0, vb = mapB[d]||0;
+      // 大盘 Y 轴 + 客户合计 Y 轴
+      const vMaxA = rows.vMaxA, vMaxB = rows.vMaxB;
+      const padT = 28, innerH = (parseFloat(svg.getAttribute('viewBox').split(' ')[3]) - padT - 26);
+      const yA = padT + innerH - (va/vMaxA)*innerH;
+      const yB = padT + innerH - (vb/vMaxB)*innerH;
+      const dotA = svg.querySelector('.chart-dot-a');
+      const dotB = svg.querySelector('.chart-dot-b');
+      if(dotA){ dotA.setAttribute('cx', xPix); dotA.setAttribute('cy', yA); dotA.style.display=''; }
+      if(dotB){ dotB.setAttribute('cx', xPix); dotB.setAttribute('cy', yB); dotB.style.display=''; }
+      html = '<b>'+d+'</b><br>' +
+        '<span style="display:inline-block;width:8px;height:8px;background:var(--brand);border-radius:2px;margin-right:6px"></span>大盘日均 ' + fmtNum(va,0) + ' 元<br>' +
+        '<span style="display:inline-block;width:8px;height:8px;background:#7C6BD9;border-radius:2px;margin-right:6px"></span>靶向合计 ' + fmtNum(vb,0) + ' 元';
+    } else {  // multi
+      const series = rows.series;
+      const padT = 32;
+      const vMax = rows.vMax;
+      const innerH = (parseFloat(svg.getAttribute('viewBox').split(' ')[3]) - padT - 26);
+      const allDates = rows.allDates;
+      const d = allDates[idx];
+      const dotsAll = svg.querySelectorAll('.chart-dot-multi');
+      const cols = ["#4C5FD7","#22916B","#E08B24","#D95F8E","#35B0A7","#7C6BD9","#98A2B3","#E8734A"];
+      html = '<b>'+d+'</b><br>';
+      series.forEach((s,i)=>{
+        const v = s.data[idx] ? s.data[idx].value : 0;
+        const y = padT + innerH - (v/vMax)*innerH;
+        if(dotsAll[i]){ dotsAll[i].setAttribute('cx', xPix); dotsAll[i].setAttribute('cy', y); dotsAll[i].style.display=''; }
+        html += '<span style="display:inline-block;width:8px;height:8px;background:'+cols[i%cols.length]+';border-radius:2px;margin-right:6px"></span>'+s.name.slice(0,12)+' ' + fmtNum(v,0) + ' 元<br>';
+      });
+    }
+    tip.innerHTML = html;
+    tip.style.display='block';
+    // 防止超出右边界
+    const tipW = tip.offsetWidth;
+    const margin = 14;
+    let left = e.clientX + margin;
+    if(left + tipW > window.innerWidth) left = e.clientX - tipW - margin;
+    tip.style.left = left + 'px';
+    tip.style.top = (e.clientY + margin) + 'px';
+  });
+  svg.addEventListener('mouseleave', ()=>{
+    tip.style.display='none';
+    svg.querySelectorAll('.chart-cursor, .chart-cursor-multi, .chart-dot-a, .chart-dot-b, .chart-dot-multi')
+      .forEach(el=>el.style.display='none');
+  });
+}
+window.bindChartHover = bindChartHover;
 
 function goCustomer(sub){
   if(!sub) return;
@@ -1168,11 +1271,18 @@ function renderDualLineChart(rowsA, rowsB, opts){
     + '<rect width="9" height="9" rx="2" fill="var(--brand)"/><text x="13" y="8" fill="var(--text-2)" font-size="10">大盘日均(元)</text>'
     + '<rect x="100" width="9" height="9" rx="2" fill="#7C6BD9"/><text x="113" y="8" fill="var(--text-2)" font-size="10">靶向合计(元)</text>'
     + '</g>';
-  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg">'
+  // 竖线 cursor + 数据点（默认隐藏）+ 透明覆盖 rect（捕获鼠标）
+  const cursorLine = '<line class="chart-cursor" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+innerH)+'" stroke="var(--text)" stroke-width="0.5" stroke-dasharray="2 2" style="display:none;pointer-events:none"/>';
+  const dotA = '<circle class="chart-dot-a" cx="0" cy="0" r="4" fill="var(--brand)" stroke="#fff" stroke-width="1.5" style="display:none;pointer-events:none"/>';
+  const dotB = '<circle class="chart-dot-b" cx="0" cy="0" r="4" fill="#7C6BD9" stroke="#fff" stroke-width="1.5" style="display:none;pointer-events:none"/>';
+  // 透明覆盖 rect（让 mouse 即使不在线上也能触发）
+  const overlay = '<rect x="'+padL+'" y="'+padT+'" width="'+innerW+'" height="'+innerH+'" fill="transparent" style="cursor:crosshair"/>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="cmp-line-svg chart-hover" data-chart="dual" data-n="'+allDates.length+'">'
     + grid + legend
     + '<path d="'+lineA+'" stroke="var(--brand)" stroke-width="2" fill="none"/>'
     + '<path d="'+lineB+'" stroke="#7C6BD9" stroke-width="1.8" fill="none" stroke-dasharray="3 2"/>'
-    + xLabels + '</svg>';
+    + cursorLine + dotA + dotB
+    + '</svg>';
 }
 
 /* ============================================================

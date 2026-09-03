@@ -336,9 +336,23 @@ async function render(){
   // 复用前面算的 targetRows
   document.getElementById("dashboardTrendSub").textContent =
     `qtd · ${dashRows.length} 天 · 大盘（全平台） vs 靶向合计（当前筛选 ${list.filter(c=>c.consume>0).length} 家）`;
-  document.getElementById("dashboardTrend").innerHTML = dashRows.length
-    ? renderDualLineChart(dashRows, targetRows, {w:620,h:210})
-    : '<div class="empty">大盘数据待上传</div>';
+  if(dashRows.length){
+    const _dualHtml = renderDualLineChart(dashRows, targetRows, {w:620,h:210});
+    document.getElementById("dashboardTrend").innerHTML = _dualHtml;
+    // 🔴 子青 9.3：折线图鼠标悬浮显示消耗值
+    const _dualSvg = document.querySelector('#dashboardTrend svg.chart-hover');
+    if(_dualSvg){
+      const _mapA = Object.fromEntries(dashRows.map(r=>[r.date, r.value]));
+      const _mapB = Object.fromEntries(targetRows.map(r=>[r.date, r.value]));
+      const _allDates = [...new Set([...dashRows.map(r=>r.date), ...targetRows.map(r=>r.date)])].sort();
+      const _vMaxA = Math.max(...dashRows.map(r=>r.value).filter(v=>v>0)) || 1;
+      const _vMaxB = Math.max(...targetRows.map(r=>r.value).filter(v=>v>0)) || 1;
+      _dualSvg._dataRows = {rowsA:dashRows, rowsB:targetRows, mapA:_mapA, mapB:_mapB, allDates:_allDates, vMaxA:_vMaxA, vMaxB:_vMaxB};
+      bindChartHover(_dualSvg);
+    }
+  } else {
+    document.getElementById("dashboardTrend").innerHTML = '<div class="empty">大盘数据待上传</div>';
+  }
 
   /* ② 客户趋势折线（按 list 排序取前 5） */
   const top5 = list.filter(c=>c.consume>0).slice().sort((a,b)=>b.consume-a.consume).slice(0,5);
@@ -346,9 +360,20 @@ async function render(){
     const pts = (d.customers_trend && d.customers_trend[c.sub]) || [];
     return {name:c.alias||c.sub.slice(0,6), data:pts.filter(r=>r.date!=='整体')};
   }).filter(s=>s.data.length>0);
-  document.getElementById("customerTrend").innerHTML = series.length
-    ? renderMultiLineChart(series, {w:620,h:220})
-    : '<div class="empty">当前筛选下客户暂无趋势数据</div>';
+  if(series.length){
+    const _multiHtml = renderMultiLineChart(series, {w:620,h:220});
+    document.getElementById("customerTrend").innerHTML = _multiHtml;
+    // 🔴 子青 9.3：折线图鼠标悬浮显示消耗值
+    const _multiSvg = document.querySelector('#customerTrend svg.chart-hover');
+    if(_multiSvg){
+      const _allDates = series[0].data.map(p=>p.date);
+      const _vMax = Math.max(0, ...series.map(s=>Math.max(0, ...s.data.map(p=>p.value))));
+      _multiSvg._dataRows = {series, allDates:_allDates, vMax:_vMax||1};
+      bindChartHover(_multiSvg);
+    }
+  } else {
+    document.getElementById("customerTrend").innerHTML = '<div class="empty">当前筛选下客户暂无趋势数据</div>';
+  }
 
   /* 客户健康度总表 —— Card Grid 前 5 + 更多 */
   const SHOW_N = 5;
