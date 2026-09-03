@@ -13,7 +13,7 @@
 
 行业映射兜底：../dashboard.bak-20260831-pre-v2/data.json
 """
-import json, csv, re, sys
+import json, csv, re, sys, math
 from pathlib import Path
 from collections import defaultdict
 from datetime import datetime
@@ -60,9 +60,18 @@ def b(x):
     return None
 
 def quantile(arr, q):
+    """分位数 —— 线性插值法（numpy 默认 'linear'）
+    🔴 修复 2026-09-03：原用"最近秩" int(n*q)-1，小样本严重偏差
+       - n=2 时 P75 取到最小值（[10,20] → 10），完全错误
+       - 箱包鞋靴 ads=[1,2,3,223] → 旧 P75=3，正确应为 58
+    """
     if not arr: return 0
-    arr=sorted(arr); n=len(arr); idx=max(0, int(n*q)-1)
-    return arr[idx]
+    arr = sorted(arr); n = len(arr)
+    if n == 1: return arr[0]
+    idx = q * (n - 1)
+    lo = int(math.floor(idx)); hi = int(math.ceil(idx))
+    if lo == hi: return arr[lo]
+    return arr[lo] + (arr[hi] - arr[lo]) * (idx - lo)
 p75 = lambda a: quantile(a, 0.75)
 p25 = lambda a: quantile(a, 0.25)
 
@@ -124,6 +133,47 @@ def main():
                 'dispute':fn(r.get('小店订单-纠纷率(%)')),
             })
     print(f'[主] 命中白名单 {len(by_sub)} / {len(targets)}')
+
+    # ─── 2.5) 大盘基准：主表全量客户（不局限于靶向白名单）───
+    # 🔴 子青 9.3 拍板："行业标杆不仅仅是限制于靶向客户中"
+    # 主表虽名为"靶向"，实际含全量客户（15668 家）。但主表没有行业字段，
+    # 所以只能做"全平台大盘基准"（不分行业），用于补充行业标杆样本不足的情况。
+    market_vals = defaultdict(list)
+    _market_rows = 0
+    with open(SRC/'微信小店x视频号-靶向-9.3.csv', encoding='utf-8-sig') as fh:
+        for r in csv.DictReader(fh):
+            _market_rows += 1
+            cons = f(r.get('日均消耗(元)'))
+            if cons <= 0: continue        # 只统计有消耗的客户
+            for key, getter in [
+                ('ctr', lambda r: fn(r.get('ctr(%)'))),
+                ('cvr', lambda r: fn(r.get('浅层cvr(%)'))),
+                ('aov', lambda r: fn(r.get('下单单价(元)'))),
+                ('roi', lambda r: fn(r.get('下单ROI'))),
+                ('ads', lambda r: inn(r.get('有消耗广告数'))),
+                ('account', lambda r: inn(r.get('有消耗的账户数'))),
+                ('creative_id', lambda r: inn(r.get('日均曝光创意唯一性ID数'))),
+                ('new_ratio', lambda r: fn(r.get('新广告占比(%)'))),
+                ('auto_ratio', lambda r: fn(r.get('天一键起量使用广告占比(%)'))),
+                ('3s_play', lambda r: fn(r.get('视频3秒完播率(%)'))),
+                ('avg_dur', lambda r: fn(r.get('平均播放时长'))),
+                ('bad', lambda r: fn(r.get('小店订单-差评率(%)'))),
+                ('ret', lambda r: fn(r.get('小店订单-品退率(%)'))),
+                ('dispute', lambda r: fn(r.get('小店订单-纠纷率(%)'))),
+            ]:
+                v = getter(r)
+                if v is not None and v > 0:
+                    market_vals[key].append(v)
+    market_bench = {
+        'source': '微信小店x视频号-靶向-9.3.csv（全量，不局限于靶向白名单）',
+        'total_rows': _market_rows,
+        'sample_size': {k: len(v) for k, v in market_vals.items()},
+    }
+    for k, v in market_vals.items():
+        market_bench[k + '_p75'] = round(p75(v), 3) if v else 0
+        market_bench[k + '_p25'] = round(p25(v), 3) if v else 0
+    print(f'[大盘基准] 全量 {_market_rows} 行 · 有效样本 '
+          f'ctr={len(market_vals.get("ctr",[]))} ads={len(market_vals.get("ads",[]))}')
 
     # ─── 3) 指标明细：日均消耗主体口径 + KPI 权威源 ───
     main_consume = {}
@@ -400,8 +450,12 @@ def main():
         ret   = [c['ret']    for c in lst if c['ret']    is not None and c['ret']>0]
         bad   = [c['bad']    for c in lst if c['bad']    is not None and c['bad']>0]
         dsp   = [c['dispute']for c in lst if c['dispute']is not None and c['dispute']>0]
+        # 样本量：以 ads（有消耗广告数）的有效值个数代表该行业可对标样本数
+        _sample = len([c for c in lst if c['ads'] is not None and c['ads']>0])
         ind_bench[ind] = {
             'top10_count':len(lst),'industry_customer_count':len(lst),
+            'sample_size':_sample,
+            'sample_enough':_sample >= 3,   # 🔴 子青 9.3：样本<3 家的行业标杆不可信
             'ctr_p75':round(p75(ctr),3),'cvr_p75':round(p75(cvr),3),
             'roi_p75':round(p75(roi),2),'aov_p75':round(p75(aov),1),
             'ads_p75':int(p75(ads)),'account_p75':int(p75(acc)),
@@ -495,6 +549,7 @@ def main():
         'agent_policy_map': agent_policy_map,
         },
         'industry_benchmark':ind_bench,
+        'market_benchmark':market_bench,
         'target_dashboard_trend':target_trend,
         'qtd_dashboard_trend':qtd_dash,
         'qtd_target_trend':qtd_target,

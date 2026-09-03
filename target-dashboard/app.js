@@ -507,12 +507,9 @@ function genAdvice(c, bench){
   if(c.roi != null && c.roi >= roiTh && c.roi < roiTh+0.5 && c.consume >= 100){
     a.push({level:"P1", tag:"ROI 待优化", reason:`ROI ${c.roi.toFixed(2)} 接近${stage}达标线`, action:`▸ ① 关停 ROI<${(roiTh-0.5).toFixed(1)} 的低效计划 ② 优质素材跨账户分发（3+ 账户）③ 提升客单价（关联销售/升级 SKU）④ 排查"广告主在投的消耗"占比是否 >20%`});
   }
-  if(c.roi != null && c.roi >= roiTh+0.5 && c.roi < roiTh+2 && c.consume >= 1000){
-    a.push({level:"P2", tag:"ROI 已达标", reason:`ROI ${c.roi.toFixed(2)} ≥ ${stage}达标线（${roiTh.toFixed(1)}）`, action:"保持节奏，可考虑优质素材+账户分发扩量"});
-  }
-  if(c.roi != null && c.roi >= roiTh+2){
-    a.push({level:"P2", tag:"ROI 优秀", reason:`ROI ${c.roi.toFixed(2)}，超过${stage}头部线（${roiTh.toFixed(1)}）`, action:"跨账户/跨主体分发优质素材，规模化复制"});
-  }
+  // 🔴 子青 9.3 拍板删除：「ROI 已达标」「ROI 优秀」是好事不是问题，
+  //    出现在「需优先介入」列表里是错的（原话："这算啥问题？？？"）
+  // —— 只保留低于达标线的 ROI 问题 ——
 
   // —— P1/P2：双率（ctr/cvr）—— 用绝对值阈值，不对标头部 ——
   // 通用标准：ctr ≥ 2% 算正常，<1% 严重偏低；cvr ≥ 4% 正常，<2% 严重偏低
@@ -618,9 +615,16 @@ function genAdvice(c, bench){
 
   // === 子青 9.3 拍板：所有"标红指标"必须给具体建议 ===
   // 复用 mCell 的标红判断逻辑（mode=lower 看 val>bench；mode=higher 看 val<bench）
+  // 🔴 子青 9.3："这么多标红的" → 加 5% 容差，差一点点不算问题
+  //    例：3秒完播 51.28 vs 标杆 51.98（差 1.3%）→ 不再标红
+  const RED_TOLERANCE = 0.05;   // 5% 容差
   function isRed(val, bench, mode){
     if(val==null || bench==null || bench<=0) return false;
-    return mode==='lower' ? val>bench : val<bench;
+    const worse = mode==='lower' ? val>bench : val<bench;
+    if(!worse) return false;
+    // 差距小于容差 → 视为持平，不标红
+    const gap = Math.abs(val - bench) / bench;
+    return gap >= RED_TOLERANCE;
   }
   function vsTxt(val, bench, mode){
     if(!isRed(val,bench,mode)) return '';
@@ -1167,10 +1171,22 @@ function renderCustomerDetail(d, c){
     if(valid && hasBench){
       diff = (val - bench) / bench * 100;
       const dir = mode==='lower' ? (val<=bench?'高':'低') : (val>=bench?'高':'低');
-      const worse = mode==='lower' ? val>bench : val<bench;
-      vsTxt = `vs 行业头部 ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
+      // 标注基准来源：行业头部（同行业）还是大盘（全量客户）
+      const srcLabel = (window.__BENCH_SRC__ || '行业头部');
+      vsTxt = `vs ${srcLabel} ${dir}（${(diff>=0?'+':'')+diff.toFixed(0)}%）`;
     }
-    const cellCls = !valid ? 'm-na' : (!hasBench ? '' : ((mode==='lower' ? val>bench : val<bench) ? 'm-bad' : 'm-ok'));
+    // 🔴 与 genAdvice 的 isRed 保持同一套 5% 容差（否则建议不红但 cell 红，不一致）
+    const RED_TOL = 0.05;
+    function isWorse(){
+      if(!valid || !hasBench) return false;
+      const worse = mode==='lower' ? val>bench : val<bench;
+      if(!worse) return false;
+      return Math.abs(val - bench) / bench >= RED_TOL;
+    }
+    // 🔴 子青 9.3：样本<3 家的行业标杆 → 已由 pickBench 自动改用「大盘基准」，
+    //    这里只在完全没有基准（行业+大盘都无）时提示"无可对标"
+    const sampleN = b.sample_size;
+    const cellCls = !valid ? 'm-na' : (!hasBench ? '' : (isWorse() ? 'm-bad' : 'm-ok'));
     return `<div class="metric-cell ${cellCls}">
       <div class="ml">${label}</div>
       <div class="mv">${valid?fmtNum(val,digit):'—'}<small>${unit}</small></div>
@@ -1210,11 +1226,27 @@ function renderCustomerDetail(d, c){
 
   const tot = c.consume || 0;
 
+  // 🔴 子青 9.3 拍板：行业标杆不局限于靶向客户
+  // 智能选基准：行业样本充足(≥3家)用行业标杆；不足则用「大盘基准」（主表全量 37114 行）
+  const mkt = (d && d.market_benchmark) || {};
+  const indEnough = b.sample_enough !== false;
+  // 供 mCell 显示基准来源（行业头部 / 大盘）
+  window.__BENCH_SRC__ = indEnough
+    ? '行业头部'
+    : ('大盘（' + (mkt.sample_size && mkt.sample_size.ctr ? mkt.sample_size.ctr + ' 家' : '全量') + '）');
+  function pickBench(field){
+    const iv = b[field + '_p75'];
+    const mv = mkt[field + '_p75'];
+    if(indEnough && iv != null && iv > 0) return iv;   // 优先行业
+    if(mv != null && mv > 0) return mv;                // 退回大盘（全量）
+    return (iv != null && iv > 0) ? iv : null;
+  }
+
   // ① 消耗/双率/ROI —— 5 个核心（去目标出价，按截图）
   const kpiRows = [
     ["日均消耗(元)", c.main_consume||c.consume, "元", 1, null, null],
-    ["ctr", c.ctr, "%", 2, b.ctr_p75, "higher"],
-    ["cvr", c.cvr, "%", 2, b.cvr_p75, "higher"],
+    ["ctr", c.ctr, "%", 2, pickBench('ctr'), "higher"],
+    ["cvr", c.cvr, "%", 2, pickBench('cvr'), "higher"],
     // 子青 9.3 拍板：下单单价/下单ROI 不对比行业（不同客户无可比性）
     ["下单单价(元)", c.aov, "元", 0, null, null],
     ["下单ROI", c.roi, "", 2, null, null],
@@ -1222,16 +1254,16 @@ function renderCustomerDetail(d, c){
   // ② 广告基建
   const buildRows = [
     ["有消耗的主体数", c.main_subject, "", 0, null, null],
-    ["有消耗的账户数", c.account, "", 0, b.account_p75, "higher"],
-    ["有消耗广告数", c.ads, "", 0, b.ads_p75, "higher"],
-    ["均曝光创意唯一性ID数", c.creative_id, "", 0, b.creative_id_p75, "higher"],
-    ["新广告占比", c.new_ratio, "%", 1, b.new_ratio_p75, "higher"],
-    ["一键起量使用占比", c.auto_ratio, "%", 1, b.auto_ratio_p75, "higher"],
+    ["有消耗的账户数", c.account, "", 0, pickBench('account'), "higher"],
+    ["有消耗广告数", c.ads, "", 0, pickBench('ads'), "higher"],
+    ["均曝光创意唯一性ID数", c.creative_id, "", 0, pickBench('creative_id'), "higher"],
+    ["新广告占比", c.new_ratio, "%", 1, pickBench('new_ratio'), "higher"],
+    ["一键起量使用占比", c.auto_ratio, "%", 1, pickBench('auto_ratio'), "higher"],
   ];
   // ③ 素材质量/内容质量 —— 只看 3 秒完播和播放时长
   const matNumRows = [
-    ["视频3秒完播率", c["3s_play"], "%", 2, b["3s_play_p75"], "higher"],
-    ["平均播放时长", c.avg_dur, "秒", 1, b.avg_dur_p75, "higher"],
+    ["视频3秒完播率", c["3s_play"], "%", 2, pickBench('3s_play'), "higher"],
+    ["平均播放时长", c.avg_dur, "秒", 1, pickBench('avg_dur'), "higher"],
   ];
   // ④ 产品能力 —— 4+m / 多商品聚合页 / 潜客优投 / 原生推广 / 小店艾米（看是否使用 + 消耗占比）
   const productBools = [
@@ -1242,10 +1274,12 @@ function renderCustomerDetail(d, c){
     ["小店艾米智投", c.is_smart_ad, c.consume_smart_ad],
   ];
   // ⑤ 小店三率
+  // ⑤ 小店三率 —— 用绝对红线（与 genAdvice 的 rateRed 一致）
+  // 行业 P25 分位受样本影响大，改用业务红线更稳：品退>1% / 差评>15% / 纠纷>0.5%
   const threeRateRows = [
-    ["品退率", c.ret, "%", 2, b.ret_p25, "lower"],
-    ["差评率", c.bad, "%", 2, b.bad_p25, "lower"],
-    ["纠纷率", c.dispute, "%", 2, b.dispute_p25, "lower"],
+    ["品退率", c.ret, "%", 2, 1.0, "lower"],
+    ["差评率", c.bad, "%", 2, 15.0, "lower"],
+    ["纠纷率", c.dispute, "%", 2, 0.5, "lower"],
   ];
   // ⑥ 投放端（是否都投了，消耗占比）+ 链路（不含原生推广，原生推广在产品能力里）
   // ⑥ 投放端 + 链路（子青 9.3 拍板：链路只看 小店 + 直播）
