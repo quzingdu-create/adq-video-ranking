@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>团建房间抽签</title>
+<style>
+  :root{
+    --bg:#F7F5F0; --bg2:#EFEAE0; --card:#FFFFFF; --line:rgba(60,40,20,.12);
+    --text:#2A2320; --text2:#6B6058; --text3:#9A8F84;
+    --m:#2F6DB5; --m-bg:#EAF1FB; --f:#8B4FBF; --f-bg:#F4ECFB;
+    --gold:#C79A3A; --gold2:#E9C766; --accent:#C0392B;
+    --ok:#3B7D3B; --warn:#B5622A;
+    --shadow:0 8px 30px rgba(60,40,20,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #FBF3E2 0%, transparent 60%),
+      radial-gradient(1000px 500px at 90% 0%, #F3ECFB 0%, transparent 55%),
+      var(--bg);
+    color:var(--text); min-height:100vh; overflow-x:hidden;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:22px 16px 60px;}
+  header{text-align:center;padding:18px 0 8px;}
+  .kicker{font-size:12px;letter-spacing:3px;color:var(--gold);font-weight:700;}
+  h1{font-size:27px;margin:8px 0 6px;letter-spacing:1px;
+     background:linear-gradient(120deg,#C79A3A,#8B4FBF 60%,#2F6DB5);
+     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .sub{font-size:13px;color:var(--text2);line-height:1.7;margin:0 auto;max-width:420px;}
+  .prog{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;font-size:12px;color:var(--text2);}
+  .prog .bar{flex:1;max-width:180px;height:7px;background:var(--bg2);border-radius:99px;overflow:hidden;}
+  .prog .bar i{display:block;height:100%;width:0;border-radius:99px;
+     background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .6s cubic-bezier(.4,1.2,.5,1);}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:20px 18px;margin-top:16px;box-shadow:var(--shadow);animation:rise .5s cubic-bezier(.2,.8,.3,1);}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .hide{display:none!important;}
+  .ptitle{font-size:13px;color:var(--text3);margin-bottom:14px;font-weight:600;letter-spacing:1px;}
+
+  /* chips */
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:9px;}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:11px 8px;
+    cursor:pointer;text-align:center;transition:.16s;min-height:56px;display:flex;flex-direction:column;
+    justify-content:center;gap:2px;position:relative;overflow:hidden;}
+  .chip:active{transform:scale(.95);}
+  .chip .nm{font-size:15px;font-weight:700;}
+  .chip .en{font-size:10px;color:var(--text3);}
+  .chip.m{background:var(--m-bg);border-color:#CADEF5;} .chip.m .nm{color:var(--m);}
+  .chip.f{background:var(--f-bg);border-color:#E6D3F5;} .chip.f .nm{color:var(--f);}
+  .chip[disabled]{opacity:.4;filter:grayscale(.5);cursor:not-allowed;}
+  .chip .done{position:absolute;top:3px;right:5px;font-size:9px;color:var(--ok);font-weight:700;}
+
+  /* confirm */
+  .cfname{font-size:30px;font-weight:800;text-align:center;margin:6px 0;letter-spacing:1px;}
+  .cfsub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:16px;}
+  .ctrl{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  button.primary,button{font-family:inherit;font-size:15px;border-radius:12px;cursor:pointer;
+    padding:12px 22px;border:1.5px solid var(--line);background:#fff;color:var(--text);transition:.16s;min-height:46px;font-weight:600;}
+  button:active{transform:scale(.96);}
+  button.primary{background:linear-gradient(120deg,var(--gold),#B8862B);color:#fff;border:none;
+    box-shadow:0 6px 18px rgba(199,154,58,.35);}
+
+  /* 抽签：宝箱/翻牌 */
+  .rollstage{text-align:center;padding:14px 0 6px;}
+  .chest{font-size:78px;line-height:1;display:inline-block;animation:shake .5s infinite;filter:drop-shadow(0 8px 16px rgba(199,154,58,.3));}
+  @keyframes shake{0%,100%{transform:rotate(-6deg) scale(1)}25%{transform:rotate(6deg) scale(1.06)}50%{transform:rotate(-4deg) scale(1)}75%{transform:rotate(5deg) scale(1.05)}}
+  .rollnum{font-size:56px;font-weight:800;letter-spacing:3px;margin:10px 0 4px;
+    background:linear-gradient(120deg,var(--gold),var(--f));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    font-variant-numeric:tabular-nums;min-height:64px;}
+  .rolltip{color:var(--text2);font-size:14px;letter-spacing:1px;}
+  .dots span{display:inline-block;animation:blink 1.2s infinite;}
+  .dots span:nth-child(2){animation-delay:.2s} .dots span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+  /* 结果 */
+  .rband{text-align:center;font-size:13px;color:var(--gold);font-weight:700;letter-spacing:2px;margin-bottom:6px;}
+  .rno{font-size:66px;font-weight:900;text-align:center;letter-spacing:2px;line-height:1.05;
+    background:linear-gradient(120deg,var(--gold),#B8862B);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .rno.pop{animation:pop .6s cubic-bezier(.2,1.6,.3,1);}
+  @keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+  .rmeta{text-align:center;font-size:15px;color:var(--text);margin:8px 0 4px;font-weight:600;}
+  .rtag{text-align:center;margin:8px 0;}
+  .tag{display:inline-block;font-size:12px;padding:4px 12px;border-radius:99px;font-weight:700;}
+  .tag.m{background:var(--m-bg);color:var(--m);} .tag.f{background:var(--f-bg);color:var(--f);}
+  .mates{margin-top:16px;border-top:1px dashed var(--line);padding-top:14px;}
+  .mates .k{font-size:12px;color:var(--text3);margin-bottom:8px;text-align:center;letter-spacing:1px;}
+  .matelist{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .mate{background:var(--bg2);border-radius:11px;padding:8px 14px;font-size:14px;font-weight:600;
+    opacity:0;transform:translateY(8px);animation:matein .5s forwards;}
+  .mate u{font-style:normal;text-decoration:none;color:var(--text3);font-size:11px;margin-left:5px;}
+  .mate.solo{color:var(--text2);font-weight:500;}
+  @keyframes matein{to{opacity:1;transform:none}}
+  .locknote{margin-top:16px;text-align:center;font-size:12px;color:var(--text3);
+    background:var(--bg2);border-radius:10px;padding:9px;}
+
+  /* 名单 */
+  .rosterbtn{margin-top:16px;}
+  #sRoster .floor{margin-top:14px;}
+  .floor h3{font-size:13px;color:var(--gold);margin:0 0 8px;letter-spacing:2px;border-left:3px solid var(--gold2);padding-left:8px;}
+  .room{border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;background:#fff;}
+  .room.m{background:linear-gradient(0deg,#fff,#fff),var(--m-bg);border-color:#CADEF5;}
+  .room.f{background:var(--f-bg);border-color:#E6D3F5;}
+  .room .rh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .room .no{font-size:16px;font-weight:800;}
+  .room .bd{font-size:11px;color:var(--text3);}
+  .room .ppl{margin-top:6px;font-size:14px;line-height:1.7;}
+  .room .ppl .q{color:var(--text3);}
+  .room .cap{font-size:11px;color:var(--text3);margin-left:4px;}
+
+  .foot{text-align:center;margin-top:26px;font-size:11px;color:var(--text3);}
+  .foot a{color:var(--text3);}
+  .adminlink{color:var(--text3);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+
+  /* 彩带 */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:99;}
+  .conf{position:absolute;width:9px;height:14px;opacity:.95;will-change:transform;}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <header>
+    <div class="kicker">TEAM · 团建之旅</div>
+    <h1>房间抽签</h1>
+    <div class="sub">选择你的身份，抽出你的专属房间与室友。<br>每人限抽一次，结果即刻锁定 —— 祝你好运 🍀</div>
+    <div class="prog">
+      <span>已抽 <b id="pDone">0</b> / <b id="pTotal">–</b></span>
+      <span class="bar"><i id="pBar"></i></span>
+    </div>
+  </header>
+
+  <!-- 1 选身份 -->
+  <section class="panel" id="sPick">
+    <div class="ptitle">① 我是</div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <!-- 2 确认 -->
+  <section class="panel hide" id="sConfirm">
+    <div class="ptitle">② 确认身份</div>
+    <div class="cfname" id="cfName">—</div>
+    <div class="cfsub">确认是你本人？抽完不能重来哦～</div>
+    <div class="ctrl">
+      <button class="primary" id="btnGo">✦ 就是我，开抽！</button>
+      <button id="btnBack">选错了</button>
+    </div>
+  </section>
+
+  <!-- 3 抽签中 -->
+  <section class="panel hide" id="sRoll">
+    <div class="ptitle">③ 命运转盘</div>
+    <div class="rollstage">
+      <div class="chest" id="chest">🎁</div>
+      <div class="rollnum" id="rollNum">···</div>
+      <div class="rolltip">正在为你翻牌<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    </div>
+  </section>
+
+  <!-- 4 结果 -->
+  <section class="panel hide" id="sResult">
+    <div class="rband">✦ 你的专属房间 ✦</div>
+    <div class="rno" id="rNo">—</div>
+    <div class="rmeta" id="rMeta"></div>
+    <div class="rtag" id="rTag"></div>
+    <div class="mates">
+      <div class="k" id="mateK">同住室友</div>
+      <div class="matelist" id="rMates"></div>
+    </div>
+    <div class="ctrl rosterbtn">
+      <button class="primary" id="btnRoster">查看完整住宿名单</button>
+    </div>
+    <div class="locknote" id="lockNote"></div>
+  </section>
+
+  <!-- 5 名单 -->
+  <section class="panel hide" id="sRoster">
+    <div class="ptitle">全部房间安排</div>
+    <div id="rosterBox"></div>
+  </section>
+
+  <div class="foot">
+    <span class="adminlink" id="adminLink">管理</span>　·　祝大家玩得开心
+  </div>
+</div>
+
+<script>
+/* ====== 锁定方案（构建时写入，全体访客一致）====== */
+const PLAN = [{"no":"201","floor":"二楼","bed":"1.2米床(海景)","cap":3,"need":3,"group":"男","residents":[{"name":"周宇航","en":"dariuszhou","g":"男"},{"name":"李海友","en":"haiyouli","g":"男"},{"name":"林嘉淇","en":"xiaobilin","g":"男"}]},{"no":"202","floor":"二楼","bed":"1.2米床(海景)","cap":3,"need":3,"group":"女","residents":[{"name":"潘佳鑫","en":"echopan","g":"女"},{"name":"黄麒文","en":"harvihuang","g":"女"},{"name":"陈燕","en":"yvaineechen","g":"女"}]},{"no":"203","floor":"二楼","bed":"1.2米床","cap":2,"need":2,"group":"女","residents":[{"name":"詹蕊伶","en":"ruilingzhan","g":"女"},{"name":"彭露媛","en":"lululypeng","g":"女"}]},{"no":"204","floor":"二楼","bed":"2米床(麻将)","cap":1,"need":1,"group":"男","residents":[{"name":"樊志权","en":"brownfan","g":"男"}]},{"no":"301","floor":"三楼","bed":"1.2米床(海景)","cap":3,"need":2,"group":"女","residents":[{"name":"陈小美","en":"ivyxmchen","g":"女"},{"name":"卢桂枝","en":"irisalu","g":"女"}]},{"no":"302","floor":"三楼","bed":"1.2米床(海景)","cap":3,"need":3,"group":"女","residents":[{"name":"关惠文","en":"stellaguan","g":"女"},{"name":"杜子青","en":"ziqingdu","g":"女"},{"name":"朱姿宣","en":"jaquelynzhu","g":"女"}]},{"no":"303","floor":"三楼","bed":"1.8米床(海景)","cap":1,"need":1,"group":"男","residents":[{"name":"王俊昊","en":"johnsywang","g":"男"}]},{"no":"304","floor":"三楼","bed":"1.5米床","cap":1,"need":1,"group":"男","residents":[{"name":"李根","en":"kaikaigenli","g":"男"}]},{"no":"305","floor":"三楼","bed":"1.5米床","cap":1,"need":1,"group":"男","residents":[{"name":"益博文","en":"kevinbwyi","g":"男"}]},{"no":"306","floor":"三楼","bed":"1.8米床","cap":1,"need":1,"group":"男","residents":[{"name":"吴立军","en":"lijunwu","g":"男"}]},{"no":"307","floor":"三楼","bed":"1.8米床","cap":1,"need":1,"group":"男","residents":[{"name":"谢嘉润","en":"jaronxie","g":"男"}]},{"no":"308","floor":"三楼","bed":"1.8米床","cap":1,"need":1,"group":"男","residents":[{"name":"赵映杰","en":"jasperzhao","g":"男"}]},{"no":"309","floor":"三楼","bed":"2米床","cap":2,"need":2,"group":"女","residents":[{"name":"姚敏琦","en":"meganyao","g":"女"},{"name":"金洁","en":"kinsleyjin","g":"女"}]},{"no":"401","floor":"四楼","bed":"2.3米床(海景)","cap":1,"need":1,"group":"男","residents":[{"name":"朱仲秋","en":"jonzhu","g":"男"}]},{"no":"402","floor":"四楼","bed":"1.8米床+1.2米床(海景)","cap":2,"need":2,"group":"女","residents":[{"name":"张玙瑶","en":"rickyozhang","g":"女"},{"name":"赵雪晴","en":"grettazhao","g":"女"}]},{"no":"403","floor":"四楼","bed":"1.8米床(侧海景)","cap":1,"need":1,"group":"男","residents":[{"name":"陈冠宏","en":"edcchen","g":"男"}]},{"no":"404","floor":"四楼","bed":"1.5米床","cap":1,"need":1,"group":"男","residents":[{"name":"杜文战","en":"sevendu","g":"男"}]}];
+const PEOPLE = [{"name":"杜文战","en":"sevendu","g":"男"},{"name":"陈冠宏","en":"edcchen","g":"男"},{"name":"李海友","en":"haiyouli","g":"男"},{"name":"谢嘉润","en":"jaronxie","g":"男"},{"name":"王俊昊","en":"johnsywang","g":"男"},{"name":"林嘉淇","en":"xiaobilin","g":"男"},{"name":"朱仲秋","en":"jonzhu","g":"男"},{"name":"李根","en":"kaikaigenli","g":"男"},{"name":"吴立军","en":"lijunwu","g":"男"},{"name":"樊志权","en":"brownfan","g":"男"},{"name":"周宇航","en":"dariuszhou","g":"男"},{"name":"赵映杰","en":"jasperzhao","g":"男"},{"name":"益博文","en":"kevinbwyi","g":"男"},{"name":"黄麒文","en":"harvihuang","g":"女"},{"name":"陈小美","en":"ivyxmchen","g":"女"},{"name":"姚敏琦","en":"meganyao","g":"女"},{"name":"张玙瑶","en":"rickyozhang","g":"女"},{"name":"杜子青","en":"ziqingdu","g":"女"},{"name":"金洁","en":"kinsleyjin","g":"女"},{"name":"詹蕊伶","en":"ruilingzhan","g":"女"},{"name":"赵雪晴","en":"grettazhao","g":"女"},{"name":"陈燕","en":"yvaineechen","g":"女"},{"name":"潘佳鑫","en":"echopan","g":"女"},{"name":"卢桂枝","en":"irisalu","g":"女"},{"name":"朱姿宣","en":"jaquelynzhu","g":"女"},{"name":"彭露媛","en":"lululypeng","g":"女"},{"name":"关惠文","en":"stellaguan","g":"女"}];
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ====== 本地进度（跨设备无法共享，仅本设备记录已抽的人 + 自己的锁定结果）====== */
+const LS_DONE = 'roomLotteryStatic_done_v3';   // 已抽名单(en数组)，本设备可见
+const LS_LOCK = 'roomLotteryStatic_lock_v3';   // 本设备绑定身份+结果
+function getDone(){ try{return JSON.parse(localStorage.getItem(LS_DONE)||'[]');}catch(e){return[];} }
+function addDone(en){ const s=new Set(getDone()); s.add(en); localStorage.setItem(LS_DONE, JSON.stringify([...s])); }
+function getLock(){ try{return JSON.parse(localStorage.getItem(LS_LOCK)||'null');}catch(e){return null;} }
+function setLock(o){ localStorage.setItem(LS_LOCK, JSON.stringify(o)); }
+
+/* ====== 查询自己的房间 ====== */
+function roomOf(en){
+  for(const r of PLAN){ if(r.residents.some(p=>p.en===en)) return r; }
+  return null;
+}
+
+let CUR = null;
+
+/* ---------- 进度条 ---------- */
+function refreshProg(){
+  const done = getDone().length;
+  $('pTotal').textContent = PEOPLE.length;
+  $('pDone').textContent = done;
+  $('pBar').style.width = (done/PEOPLE.length*100)+'%';
+}
+
+/* ---------- 选身份 ---------- */
+function renderChips(){
+  const done = new Set(getDone());
+  $('chips').innerHTML = PEOPLE.map(p=>{
+    const cls = p.g==='男'?'m':'f';
+    const d = done.has(p.en);
+    return '<button class="chip '+cls+'" data-e="'+p.en+'"'+(d?' disabled':'')+'>'
+      + '<span class="nm">'+p.name+'</span><span class="en">'+p.en+'</span>'
+      + (d?'<span class="done">✓</span>':'') + '</button>';
+  }).join('');
+  $('chips').querySelectorAll('.chip').forEach(el=>{
+    el.onclick = ()=>{
+      const p = PEOPLE.find(x=>x.en===el.dataset.e);
+      CUR = p;
+      $('cfName').textContent = p.name + '（' + p.en + '）';
+      show('sConfirm');
+      $('sConfirm').scrollIntoView({behavior:'smooth',block:'center'});
+    };
+  });
+}
+
+function show(id){
+  ['sPick','sConfirm','sRoll','sResult'].forEach(x=>$(x).classList.toggle('hide', x!==id));
+  // 设备已锁定后，选身份区永久隐藏
+  if(getLock() && id!=='sResult'){ /* 不允许回到选人 */ }
+}
+
+/* ---------- 抽签动画 ---------- */
+$('btnBack').onclick = ()=>show('sPick');
+
+$('btnGo').onclick = async ()=>{
+  if(!CUR) return;
+  // 立即在本设备落锁（防止中途刷新换人）
+  const room = roomOf(CUR.en);
+  if(!room){ alert('方案里找不到你，请联系管理员'); return; }
+
+  $('btnGo').disabled = true;
+  show('sRoll');
+  $('sRoll').scrollIntoView({behavior:'smooth',block:'center'});
+
+  // 房号滚动（悬念）——只滚房号，不泄露室友
+  const nos = PLAN.map(r=>r.no);
+  let t=0;
+  const timer = setInterval(()=>{
+    $('rollNum').textContent = nos[Math.floor(Math.random()*nos.length)];
+  }, 65);
+
+  await sleep(1600);          // 悬念铺垫
+  $('chest').textContent = '🎉';
+  clearInterval(timer);
+  $('rollNum').textContent = room.no;
+  await sleep(500);
+
+  // 落锁
+  addDone(CUR.en);
+  setLock({en:CUR.en, name:CUR.name});
+  $('btnGo').disabled = false;
+
+  showResult(CUR.en, {celebrate:true});
+};
+
+/* ---------- 展示结果 ---------- */
+function showResult(en, opt={}){
+  const p = PEOPLE.find(x=>x.en===en);
+  const room = roomOf(en);
+  $('rNo').textContent = room.no;
+  $('rNo').classList.remove('pop'); void $('rNo').offsetWidth; $('rNo').classList.add('pop');
+
+  const loose = room.need < room.cap;
+  $('rMeta').textContent = room.floor + ' · ' + room.bed
+    + '（' + (room.cap===1 ? '单人房，一个人住' : (loose ? '住 '+room.need+' 人 / 可住 '+room.cap : '住满 '+room.cap+' 人')) + '）';
+  $('rTag').innerHTML = '<span class="tag '+(p.g==='男'?'m':'f')+'">'+p.g+'生房</span>';
+
+  const mates = room.residents.filter(x=>x.en!==en);
+  if(mates.length){
+    $('mateK').textContent = '同住室友（' + mates.length + '位）';
+    $('rMates').innerHTML = mates.map((m,i)=>
+      '<span class="mate" style="animation-delay:'+(0.15*(i+1))+'s">'+m.name+'<u>'+m.en+'</u></span>'
+    ).join('');
+  }else{
+    $('mateK').textContent = '房间归属';
+    $('rMates').innerHTML = '<span class="mate solo">🛏 单人房，独享一间，安静又自在</span>';
+  }
+  $('lockNote').textContent = '本设备已锁定为「'+p.name+'」，无法再抽 · 结果已保存';
+  show('sResult');
+  $('sResult').scrollIntoView({behavior:'smooth',block:'center'});
+  if(opt.celebrate) confetti();
+}
+
+/* ---------- 完整名单 ---------- */
+let rosterOpen = false;
+$('btnRoster').onclick = ()=>{
+  rosterOpen = !rosterOpen;
+  $('sRoster').classList.toggle('hide', !rosterOpen);
+  $('btnRoster').textContent = rosterOpen ? '收起名单' : '查看完整住宿名单';
+  if(rosterOpen){ renderRoster(); $('sRoster').scrollIntoView({behavior:'smooth',block:'start'}); }
+};
+function renderRoster(){
+  const done = new Set(getDone());
+  const floors = [...new Set(PLAN.map(r=>r.floor))];
+  let html = '';
+  floors.forEach(fl=>{
+    const rooms = PLAN.filter(r=>r.floor===fl && r.group);
+    if(!rooms.length) return;
+    html += '<div class="floor"><h3>'+fl+'</h3>';
+    rooms.forEach(r=>{
+      const ppl = r.residents.map(m=>{
+        // 没抽到的人保留悬念：显示「？ 待揭晓」
+        return done.has(m.en)
+          ? '<b>'+m.name+'</b>'
+          : '<span class="q">？ 待揭晓</span>';
+      }).join('、');
+      html += '<div class="room '+(r.group==='男'?'m':'f')+'">'
+        + '<div class="rh"><span class="no">'+r.no+'</span>'
+        + '<span class="bd">'+r.bed+'<span class="cap"> · '+r.group+'生房</span></span></div>'
+        + '<div class="ppl">'+ppl+'</div></div>';
+    });
+    html += '</div>';
+  });
+  $('rosterBox').innerHTML = html;
+}
+
+/* ---------- 管理（仅本地：重置本设备）---------- */
+$('adminLink').onclick = ()=>{
+  const k = prompt('管理口令（清除本设备抽签记录，让本机可重新选人）：');
+  if(k===null) return;
+  if(k==='reset'){
+    localStorage.removeItem(LS_LOCK);
+    // 保留 LS_DONE，避免误清全局已抽标记；如需全清输入 resetall
+    location.reload();
+  }else if(k==='resetall'){
+    localStorage.removeItem(LS_LOCK);
+    localStorage.removeItem(LS_DONE);
+    location.reload();
+  }else{
+    alert('口令不对');
+  }
+};
+
+/* ---------- 彩带 ---------- */
+function confetti(){
+  const cv = $('confetti'), ctx = cv.getContext('2d');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const colors = ['#C79A3A','#E9C766','#8B4FBF','#2F6DB5','#C0392B','#3B7D3B'];
+  const N = 130, parts = [];
+  for(let i=0;i<N;i++){
+    parts.push({
+      x: innerWidth/2 + (Math.random()-.5)*120,
+      y: innerHeight*0.35,
+      vx: (Math.random()-.5)*11,
+      vy: Math.random()*-13 - 4,
+      g: .32 + Math.random()*.15,
+      rot: Math.random()*6, vr: (Math.random()-.5)*.4,
+      w: 7+Math.random()*6, h: 10+Math.random()*8,
+      c: colors[i%colors.length], life: 0
+    });
+  }
+  let raf;
+  const draw = ()=>{
+    ctx.clearRect(0,0,cv.width,cv.height);
+    let alive = 0;
+    parts.forEach(p=>{
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life++;
+      if(p.y < cv.height+40){ alive++; }
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - p.life/150);
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+    });
+    if(alive>0){ raf = requestAnimationFrame(draw); }
+    else{ ctx.clearRect(0,0,cv.width,cv.height); cancelAnimationFrame(raf); }
+  };
+  draw();
+}
+
+/* ---------- 启动 ---------- */
+(function init(){
+  refreshProg();
+  renderChips();
+  const lock = getLock();
+  if(lock && roomOf(lock.en)){
+    // 本设备已抽过 → 直接回到锁定结果，选人区隐藏
+    showResult(lock.en, {celebrate:false});
+    $('sPick').classList.add('hide');
+  }else{
+    show('sPick');
+  }
+})();
+</script>
+</body>
+</html>
