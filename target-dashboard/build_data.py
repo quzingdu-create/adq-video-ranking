@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-靶向客户监控看板 · v2 数据构建器
-输入（~/Downloads/）：
-  靶向客户-销售-9.3.xlsx                销售归属白名单（49 主体）
-  微信小店x视频号-靶向-9.3.csv         主指标（13 个）+ 视频号明细
-  指标明细-9.3.csv                     日均消耗主体口径
-  投放端-靶向-9.3.csv / 原生推广...csv / 潜客优投...csv / 智投广告-9.3.csv
-                                       是否使用标记（4 类产品能力）
-  大盘消耗趋势-9.3.csv                 总览折线图 1
-  消耗趋势-客户-9.3.csv                总览折线图 2（按客户）
+靶向客户监控看板 · v2 数据构建器（2026-09-13 刷新版）
+输入（~/Downloads/ 通用分析数据集 - 2026-09-13T*.csv）：
+  T200348.333  客户 QTD by 天（含整体行，73 天 7.1-9.11）
+  T200355.667  整体 QTD by 天 + 总览趋势（74 行 = 73 天 + 整体）
+  T200311.092  主表（微信小店x视频号）：15 指标 + 内嵌环比 + 日均消耗
+  T200303.051  投放端（是否全域通广告）+ 消耗 + 环比
+  T200203.206  行业对标（运营二级行业）+ 15 指标 + 环比 → 市场基准
+  T200257.240  原生推广（1538）   T200249.997  潜客优投（458）
+  T200240.184  智投广告（1187）   T200224.237  4+m（86）       —— 4 个产品能力
+  靶向客户-销售-9.3.xlsx          销售归属白名单（49 主体，本轮复用 9.3 版）
+  154421 副本 csv               代理商政策集团（本轮复用 9.3 版）
 
+注：指标明细/大盘趋势/203808 环比 已合并进上述主表/行业表；多商品聚合页 = T200704.276（客户简称口径）。
 行业映射兜底：../dashboard.bak-20260831-pre-v2/data.json
 """
 import json, csv, re, sys, math
@@ -87,53 +90,55 @@ def main():
             if name: sales_map[name] = str(r[0]).strip()
     targets = list(sales_map.keys())
 
+    # 环比 + 全平台 日均消耗 累加器（在主表扫描 §2 时填充）
+    mom_map = {}            # sub -> {field_mom: value}
+    main_consume_all = {}   # sub -> 日均消耗合计（全平台，含非靶向）
+    MOM_COLS = {
+        'consume_mom':'日均消耗(元)环比变化率(%)',
+        'ctr_mom':'ctr(%)环比变化率(%)',
+        'cvr_mom':'浅层cvr(%)环比变化率(%)',
+        'aov_mom':'下单单价(元)环比变化率(%)',
+        'roi_mom':'下单ROI环比变化率(%)',
+        'account_mom':'有消耗的账户数环比变化率(%)',
+        'ads_mom':'有消耗广告数环比变化率(%)',
+        'creative_id_mom':'日均曝光创意唯一性ID数环比变化率(%)',
+        'new_ratio_mom':'新广告占比(%)环比变化率(%)',
+        'auto_ratio_mom':'天一键起量使用广告占比(%)环比变化率(%)',
+        '3s_play_mom':'视频3秒完播率(%)环比变化率(%)',
+        'avg_dur_mom':'平均播放时长环比变化率(%)',
+        'bad_mom':'小店订单-差评率(%)环比变化率(%)',
+        'ret_mom':'小店订单-品退率(%)环比变化率(%)',
+        'dispute_mom':'小店订单-纠纷率(%)环比变化率(%)',
+    }
+    def read_mom(r):
+        out = {}
+        for k, c in MOM_COLS.items():
+            v = fn(r.get(c))
+            out[k] = round(v, 2) if v is not None else None
+        return out
+
     # === 4.5) 客户趋势（提前加载，给 customers 用 consume_recent/qtd）===
+    # 🔴 9.13 优化：同一次扫描顺带累加 cust_by_day_total（靶向客户 by 天合计），
+    #    避免下方 §8.5 再次全量读取 30 万行大文件（原双读 ≈ 0.5s 浪费）。
     cust_trend = defaultdict(list)
-    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
+    cust_by_day_total = defaultdict(float)
+    with open(SRC/'通用分析数据集 - 2026-09-13T200348.333.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             sub = (r.get('客户简称') or '').strip()
             d = (r.get('时间') or '').strip()
             v = f(r.get('日均消耗(元)'))
             if sub and d and d != '整体' and v is not None and sub in sales_map:
                 cust_trend[sub].append({'date':d, 'value':v})
+                cust_by_day_total[d] += v
     for sub in cust_trend:
         cust_trend[sub].sort(key=lambda x: x['date'])
-    print(f'[trend] {len(cust_trend)} 客户趋势（每客户 64 天 by 天）')
+    print(f'[trend] {len(cust_trend)} 客户趋势（每客户 73 天 by 天）')
 
-    # === 4.55) 环比数据（203808.282 csv：客户主体级 + 每指标环比变化率）===
-    # 🔴 子青 9.3 拍板："指标加上环比试试"
-    # 字段映射：新文件 "X环比变化率(%)" → c["X_mom"]
-    MOM_FILE = SRC/'通用分析数据集 - 2026-09-03T203808.282.csv'
-    mom_map = {}   # sub -> {field_mom: value}
-    if MOM_FILE.exists():
-        with open(MOM_FILE, encoding='utf-8-sig') as fh:
-            for r in csv.DictReader(fh):
-                sub = (r.get('客户主体名称(OPS)') or '').strip()
-                if not sub or sub == '整体': continue
-                if sub not in sales_map: continue
-                def mv(col):
-                    v = fn(r.get(col))
-                    return None if v is None else round(v, 2)
-                mom_map[sub] = {
-                    'consume_mom':      mv('消耗(元)环比变化率(%)'),
-                    'ctr_mom':          mv('ctr(%)环比变化率(%)'),
-                    'cvr_mom':          mv('浅层cvr(%)环比变化率(%)'),
-                    'aov_mom':          mv('下单单价(元)环比变化率(%)'),
-                    'roi_mom':          mv('下单ROI环比变化率(%)'),
-                    'account_mom':      mv('有消耗的账户数环比变化率(%)'),
-                    'ads_mom':          mv('有消耗广告数环比变化率(%)'),
-                    'creative_id_mom':  mv('曝光创意唯一性ID数环比变化率(%)'),
-                    'new_ratio_mom':    mv('新广告占比(%)环比变化率(%)'),
-                    'auto_ratio_mom':   mv('天一键起量使用广告占比(%)环比变化率(%)'),
-                    '3s_play_mom':      mv('视频3秒完播率(%)环比变化率(%)'),
-                    'avg_dur_mom':      mv('平均播放时长环比变化率(%)'),
-                    'bad_mom':          mv('小店订单-差评率(%)环比变化率(%)'),
-                    'ret_mom':          mv('小店订单-品退率(%)环比变化率(%)'),
-                    'dispute_mom':      mv('小店订单-纠纷率(%)环比变化率(%)'),
-                }
-        print(f'[环比] {len(mom_map)} 个主体有环比数据（在投全部覆盖）')
-    else:
-        print(f'[环比] ⚠️ 文件不存在: {MOM_FILE.name}')
+    # === 4.55) 环比数据 ===
+    # 🔴 9.13 调整：环比已内嵌进主表 T200311.092（每个指标带 环比变化率(%) 列）
+    #   → 不再单独加载 203808.282；mom_map 在主表扫描（§2）时按 客户简称 填充。
+    #   对照表 T200203.206（行业对标）同样带环比，仅用于市场基准，不进客户级 mom。
+    print(f'[环比] 主表内嵌：{len(mom_map)} 个靶向主体已带环比（主表扫描时填充）')
 
     # === 4.6) 代理商政策集团对应（154421 副本 csv） ===
     agent_policy_map = {}
@@ -155,16 +160,20 @@ def main():
 
     print(f'[xlsx] 主体 {len(targets)} 条 / 销售 {len(set(sales_map.values()))} 人')
 
-    # ─── 2) 主表（微信小店x视频号）→ 索引到白名单 ───
+    # ─── 2) 主表（微信小店x视频号，T200311.092，含 15 指标 + 环比）───
     by_sub = defaultdict(lambda: {'shops':[], 'consume_total':0.0})
-    with open(SRC/'微信小店x视频号-靶向-9.3.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-13T200311.092.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             sub=r.get('客户简称','').strip()
+            consume = f(r.get('日均消耗(元)'))
+            if sub:
+                main_consume_all[sub] = main_consume_all.get(sub,0.0) + consume
             if sub not in sales_map: continue
             shop_id = r.get('微信小店店铺id','').strip()
             video   = r.get('视频号名称','').strip()
-            consume = f(r.get('日均消耗(元)'))
             by_sub[sub]['consume_total'] += consume
+            if sub not in mom_map:
+                mom_map[sub] = read_mom(r)
             by_sub[sub]['shops'].append({
                 'shop_id':shop_id,'video':video,'consume':consume,
                 # 指标类用 fn/inn —— '~' 保留为 None（无数据），不当 0
@@ -188,7 +197,7 @@ def main():
     # 所以只能做"全平台大盘基准"（不分行业），用于补充行业标杆样本不足的情况。
     market_vals = defaultdict(list)
     _market_rows = 0
-    with open(SRC/'微信小店x视频号-靶向-9.3.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-13T200203.206.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             _market_rows += 1
             cons = f(r.get('日均消耗(元)'))
@@ -213,7 +222,7 @@ def main():
                 if v is not None and v > 0:
                     market_vals[key].append(v)
     market_bench = {
-        'source': '微信小店x视频号-靶向-9.3.csv（全量，不局限于靶向白名单）',
+        'source': '通用分析数据集 - 2026-09-13T200203.206.csv（行业对标·全量，不局限于靶向白名单）',
         'total_rows': _market_rows,
         'sample_size': {k: len(v) for k, v in market_vals.items()},
     }
@@ -223,27 +232,18 @@ def main():
     print(f'[大盘基准] 全量 {_market_rows} 行 · 有效样本 '
           f'ctr={len(market_vals.get("ctr",[]))} ads={len(market_vals.get("ads",[]))}')
 
-    # ─── 3) 指标明细：日均消耗主体口径 + KPI 权威源 ───
-    main_consume = {}
-    # KPI 权威源用指标明细 csv（子青 9.3 拍板）
-    # 78 客户全部有消耗，但只算"靶向白名单 + 全部平台"两套数字
-    kpi_all = []  # 指标明细 78 客户全量
-    kpi_target = []  # 销售白名单 66 主体
-    with open(SRC/'指标明细-9.3.csv', encoding='utf-8-sig') as fh:
-        for r in csv.DictReader(fh):
-            sub=r.get('客户简称','').strip()
-            v = f(r.get('日均消耗(元)'))
-            if sub and v is not None and v > 0:
-                kpi_all.append(v)
-            if sub in sales_map and v:
-                main_consume[sub] = v
-                kpi_target.append(v)
+    # ─── 3) KPI 权威源：日均消耗主体口径（从主表 T200311.092 汇总）───
+    # 🔴 9.13 调整：原 指标明细-9.3.csv 已合并进主表，主表 日均消耗(元) 按 客户简称 逐行累加
+    #   = 该客户全部视频号日均消耗合计（主体口径）。全平台 kpi_all 取全部有消耗客户。
+    main_consume = dict(main_consume_all)   # sub -> 日均消耗合计（全平台）
+    kpi_all = list(main_consume_all.values())
+    kpi_target = [main_consume_all[s] for s in targets if s in main_consume_all]
     kpi_summary = {
-        'all_total': round(sum(kpi_all), 2),       # 指标明细 78 客户总日均
-        'all_count': len(kpi_all),                  # 78（全部平台有消耗）
+        'all_total': round(sum(kpi_all), 2),       # 全平台有消耗客户总日均
+        'all_count': len(kpi_all),                  # 全平台客户数
         'all_avg':   round(sum(kpi_all)/max(1,len(kpi_all)), 2),
         'target_total': round(sum(kpi_target), 2),   # 销售白名单 66 总日均
-        'target_count': len(kpi_target),            # 靶向在投数（按指标明细）
+        'target_count': len(kpi_target),            # 靶向在投数
         'target_avg':   round(sum(kpi_target)/max(1,len(kpi_target)), 2),
     }
 
@@ -256,12 +256,13 @@ def main():
                 if sub in sales_map:
                     m[sub] = b(r.get('是否全域通广告')) if has_extra else True
         return m
-    use_quanyutong = load_uses(SRC/'投放端-靶向-9.3.csv', True)
-    use_native     = load_uses(SRC/'原生推广-靶向-9，3.csv')
-    use_latent     = load_uses(SRC/'潜客优投-靶向-9.3.csv')
-    use_smart_ad   = load_uses(SRC/'智投广告-9.3.csv')
-    use_4m         = load_uses(SRC/'4+m.csv')
-    use_aggregate  = load_uses(SRC/'多商品聚合页-靶向-9.3.csv')
+    # 🔴 9.13：4 个产品能力来自新 通用分析数据集；多商品聚合页本轮未提供 → 置空
+    use_quanyutong = load_uses(SRC/'通用分析数据集 - 2026-09-13T200303.051.csv', True)
+    use_native     = load_uses(SRC/'通用分析数据集 - 2026-09-13T200257.240.csv')
+    use_latent     = load_uses(SRC/'通用分析数据集 - 2026-09-13T200249.997.csv')
+    use_smart_ad   = load_uses(SRC/'通用分析数据集 - 2026-09-13T200240.184.csv')
+    use_4m         = load_uses(SRC/'通用分析数据集 - 2026-09-13T200224.237.csv')
+    use_aggregate  = load_uses(SRC/'通用分析数据集 - 2026-09-13T200704.276.csv')   # 商品聚合页
 
     # 各工具/能力的消耗（用于"消耗占比"展示）
     def load_consumes(path, has_extra=False):
@@ -273,14 +274,14 @@ def main():
                 v = f(r.get('日均消耗(元)'))
                 if v: m[sub] = m.get(sub,0) + v
         return m
-    consume_4m         = load_consumes(SRC/'4+m.csv')
-    consume_aggregate  = load_consumes(SRC/'多商品聚合页-靶向-9.3.csv')
-    consume_latent     = load_consumes(SRC/'潜客优投-靶向-9.3.csv')
-    consume_native     = load_consumes(SRC/'原生推广-靶向-9，3.csv')
-    consume_smart_ad   = load_consumes(SRC/'智投广告-9.3.csv')
+    consume_4m         = load_consumes(SRC/'通用分析数据集 - 2026-09-13T200224.237.csv')
+    consume_aggregate  = load_consumes(SRC/'通用分析数据集 - 2026-09-13T200704.276.csv')   # 商品聚合页
+    consume_latent     = load_consumes(SRC/'通用分析数据集 - 2026-09-13T200249.997.csv')
+    consume_native     = load_consumes(SRC/'通用分析数据集 - 2026-09-13T200257.240.csv')
+    consume_smart_ad   = load_consumes(SRC/'通用分析数据集 - 2026-09-13T200240.184.csv')
     # 全域通：从"是否全域通广告=true"的行累加
     consume_quanyutong = {}
-    with open(SRC/'投放端-靶向-9.3.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-13T200303.051.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             v = r.get('是否全域通广告','')
             if str(v).strip().lower() in ('true','是','1','yes','t'):
@@ -412,19 +413,19 @@ def main():
             gmv = sum((s['consume'] or 0)*(s['roi'] or 0) for s in roi_rows)
             tw_roi = sum((s['consume'] or 0) for s in roi_rows)
             roi = (gmv/tw_roi) if tw_roi>0 else None
-            # 🔴 子青 9.3 拍板：标注周期——「近期」(8.28-9.1) 和「季度」(QTD) 都开
-            # 用 customers_trend[sub]（64 天 by 天）累加
+            # 🔴 子青 9.3 拍板：标注周期——「近期」(9.4-9.11) 和「季度」(QTD) 都开
+            # 用 customers_trend[sub]（73 天 by 天）累加
             _trend = cust_trend.get(sub, [])
-            _recent = sum(p['value'] for p in _trend if '2026/08/26' <= p['date'] <= '2026/09/01')
-            _qtd    = sum(p['value'] for p in _trend)   # 全部 64 天累计
+            _recent = sum(p['value'] for p in _trend if '2026/09/04' <= p['date'] <= '2026/09/11')
+            _qtd    = sum(p['value'] for p in _trend)   # 全部 73 天累计
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
                 'agent':agent_policy_map.get(sub,'内部'),
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
-                'consume_recent':round(_recent,2),   # 近期 7 天累计（8.28-9.1）
-                'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~64 天）
-                # 🔴 环比（203808.282 csv）：每指标环比变化率(%)，无数据为 None
+                'consume_recent':round(_recent,2),   # 近期 8 天累计（9.4-9.11）
+                'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~73 天）
+                # 🔴 环比（主表 T200311.092 内嵌）：每指标环比变化率(%)，无数据为 None
                 **{k: mom_map.get(sub, {}).get(k) for k in [
                     'consume_mom','ctr_mom','cvr_mom','aov_mom','roi_mom',
                     'account_mom','ads_mom','creative_id_mom',
@@ -446,7 +447,7 @@ def main():
                 # 三率（越低越好）
                 'ret':rnd(w_avg('ret'),3),'bad':rnd(w_avg('bad'),3),'dispute':rnd(w_avg('dispute'),3),
                 # 产品能力（默认 False；直播/4+m/聚合页 无数据源 → 默认 False）
-                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
+                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':False,
                 'is_latent':bool(use_latent.get(sub,False)),
                 'is_native':bool(use_native.get(sub,False)),
                 'is_smart_ad':bool(use_smart_ad.get(sub,False)),
@@ -476,7 +477,7 @@ def main():
                 'new_ratio':None,'auto_ratio':None,
                 '3s_play':None,'avg_dur':None,
                 'ret':None,'bad':None,'dispute':None,
-                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
+                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':False,
                 'is_latent':bool(use_latent.get(sub,False)),
                 'is_native':bool(use_native.get(sub,False)),
                 'is_smart_ad':bool(use_smart_ad.get(sub,False)),
@@ -535,28 +536,24 @@ def main():
 
     # ─── 8) 大盘趋势 ───
     target_trend = []
-    with open(SRC/'大盘消耗趋势-9.3.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-13T200355.667.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
-            target_trend.append({'date':r['时间'],'value':f(r['日均消耗(元)'])})
+            d=(r.get('时间') or '').strip()
+            v=f(r.get('日均消耗(元)'))
+            if d and d!='整体' and v:
+                target_trend.append({'date':d,'value':v})
 
 
     # ─── 8.5) qtd by 天双线（大盘 + 客户合计）───
     qtd_dash = []
-    with open(SRC/'通用分析数据集 - 2026-09-03T141548.650.csv', encoding='utf-8-sig') as fh:
+    with open(SRC/'通用分析数据集 - 2026-09-13T200355.667.csv', encoding='utf-8-sig') as fh:
         for r in csv.DictReader(fh):
             d = r.get('时间','').strip()
             v = f(r.get('日均消耗(元)'))
             if d and d != '整体' and v:
                 qtd_dash.append({'date':d, 'value':v})
     qtd_dash.sort(key=lambda x:x['date'])
-    cust_by_day_total = defaultdict(float)
-    with open(SRC/'通用分析数据集 - 2026-09-03T141458.414.csv', encoding='utf-8-sig') as fh:
-        for r in csv.DictReader(fh):
-            sub = r.get('客户简称','').strip()
-            d = r.get('时间','').strip()
-            v = f(r.get('日均消耗(元)'))
-            if sub and d and d != '整体' and v and sub in sales_map:
-                cust_by_day_total[d] += v
+    # 🔴 9.13：cust_by_day_total 已在 §4.5 同一次扫描中累加，此处不再二次读取大文件
     qtd_target = [{'date':d, 'value':round(v,2)} for d,v in sorted(cust_by_day_total.items())]
     # 防呆：qtd 客户合计必须有数据
     assert len(qtd_target) >= 30, f'qtd 客户合计数据不足 30 天，实际 {len(qtd_target)} 天'
@@ -564,8 +561,8 @@ def main():
     # === 10) 输出 ===
     out = {
         'meta': {
-            'data_date':'2026-09-01',
-            'data_period':'qtd (7.1 - 9.1)',
+            'data_date':'2026-09-11',
+            'data_period':'qtd (7.1 - 9.11)',
             'build_time':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'target_count':len(customers),
             'active_count':sum(1 for c in customers if c['consume']>0),
@@ -579,20 +576,20 @@ def main():
             'active_count':sum(1 for c in customers if c['consume']>0),
             'industry_count':len(ind_bench),
             'sales_count':len(set(sales_map.values())),
-            'period':'qtd (7.1 - 9.1)',
-            'period_days':7,
+            'period':'qtd (7.1 - 9.11)',
+            'period_days':8,
             'kpi': {
-            'period_8_28_9_1': {     # 指标明细 csv 口径
-                'period': '2026-08-28 ~ 2026-09-01',
+            'period_8_28_9_1': {     # 主表 T200311.092 口径（近期 9.4-9.11）
+                'period': '2026-09-04 ~ 2026-09-11',
                 'total_yuan': kpi_summary['all_total'],
                 'count': kpi_summary['all_count'],
                 'avg_yuan': kpi_summary['all_avg'],
-                'source': '指标明细-9.3.csv',
+                'source': '通用分析数据集 - 2026-09-13T200311.092.csv',
             },
-            'period_qtd': {         # 通用分析数据集 csv 口径
-                'period': 'QTD (7.1 - 9.1)',
+            'period_qtd': {         # 整体 by 天 T200355.667 口径
+                'period': 'QTD (7.1 - 9.11)',
                 'total_wan': round(agent_total_wan or 0, 2),
-                'source': '通用分析数据集 - 2026-09-03T141548.650.csv',
+                'source': '通用分析数据集 - 2026-09-13T200355.667.csv',
             },
         },
         'agents': sorted(agent_consume_wan.keys()),
