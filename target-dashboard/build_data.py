@@ -413,17 +413,17 @@ def main():
             gmv = sum((s['consume'] or 0)*(s['roi'] or 0) for s in roi_rows)
             tw_roi = sum((s['consume'] or 0) for s in roi_rows)
             roi = (gmv/tw_roi) if tw_roi>0 else None
-            # 🔴 子青 9.3 拍板：标注周期——「近期」(9.4-9.11) 和「季度」(QTD) 都开
+            # 🔴 子青 9.3 拍板：标注周期——「近期」(9.5-9.11) 和「季度」(QTD) 都开
             # 用 customers_trend[sub]（73 天 by 天）累加
             _trend = cust_trend.get(sub, [])
-            _recent = sum(p['value'] for p in _trend if '2026/09/04' <= p['date'] <= '2026/09/11')
+            _recent = sum(p['value'] for p in _trend if '2026/09/05' <= p['date'] <= '2026/09/11')
             _qtd    = sum(p['value'] for p in _trend)   # 全部 73 天累计
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
                 'agent':agent_policy_map.get(sub,'内部'),
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
-                'consume_recent':round(_recent,2),   # 近期 8 天累计（9.4-9.11）
+                'consume_recent':round(_recent,2),   # 近期 7 天累计（9.5-9.11）
                 'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~73 天）
                 # 🔴 环比（主表 T200311.092 内嵌）：每指标环比变化率(%)，无数据为 None
                 **{k: mom_map.get(sub, {}).get(k) for k in [
@@ -577,10 +577,10 @@ def main():
             'industry_count':len(ind_bench),
             'sales_count':len(set(sales_map.values())),
             'period':'qtd (7.1 - 9.11)',
-            'period_days':8,
+            'period_days':7,
             'kpi': {
-            'period_8_28_9_1': {     # 主表 T200311.092 口径（近期 9.4-9.11）
-                'period': '2026-09-04 ~ 2026-09-11',
+            'period_8_28_9_1': {     # 主表 T200311.092 口径（近期 9.5-9.11）
+                'period': '2026-09-05 ~ 2026-09-11',
                 'total_yuan': kpi_summary['all_total'],
                 'count': kpi_summary['all_count'],
                 'avg_yuan': kpi_summary['all_avg'],
