@@ -10,8 +10,8 @@
 <div class="topbar" id="topbar"></div>
 <div class="wrap">
   <div class="page-head">
-    <h1>靶向客户投放监控 <span class="period">数据周期 qtd (7.1 - 9.1)</span></h1>
-    <p><span id="dataSummary"><span id="ds-act">-</span> 家伙伴在投 · 覆盖 <span id="ds-ind">-</span> 个二级行业 · 数据周期 qtd (7.1 - 9.1)</span></p>
+    <h1>靶向客户投放监控 <span class="period">数据周期 qtd (7.1 - 9.11)</span></h1>
+    <p><span id="dataSummary"><span id="ds-act">-</span> 家伙伴在投 · 覆盖 <span id="ds-ind">-</span> 个二级行业 · 数据周期 qtd (7.1 - 9.11)</span></p>
   </div>
 
   <!-- ① KPI（用 list 随筛选变）+ 右上角浮动过滤器 -->
@@ -66,7 +66,7 @@
     </div>
     <div class="card">
       <h2>行业消耗结构</h2>
-      <div class="sub">靶向客户在各二级行业的消耗分布 · <b>近 7 天 (8.28-9.1)</b> vs <b>QTD (7.1-9.1)</b></div>
+      <div class="sub">靶向客户在各二级行业的消耗分布 · <b>近 7 天 (9.5-9.11)</b> vs <b>QTD (7.1-9.11)</b></div>
       <div id="industryDist"></div>
     </div>
   </div>
@@ -152,7 +152,7 @@ async function render(){
   if(indEl) indEl.textContent = ov.industry_count != null ? ov.industry_count : '?';
   // KPI 标签也同步
   const periodEl = document.getElementById('dataPeriod');
-  if(periodEl) periodEl.textContent = '数据周期 ' + (d.meta && d.meta.data_period || 'qtd (7.1 - 9.1');
+  if(periodEl) periodEl.textContent = '数据周期 ' + (d.meta && d.meta.data_period || 'qtd (7.1 - 9.11');
 
   // 视角 chip 渲染
   const tabs = document.querySelectorAll('.view-tab');
@@ -208,8 +208,8 @@ async function render(){
   })();
 
   /* KPI —— 双周期数据展示（子青 9.3 拍板）
-   - 8.28-9.1（指标明细 csv 78 客户 26 万元）
-   - qtd（通用分析数据集大盘 401 万元） */
+   - 9.5-9.11（近期窗口，主表 T200311.092 口径）
+   - qtd（通用分析数据集大盘，7.1-9.11） */
   const k = d.overall.kpi || {};
   const k828 = k.period_8_28_9_1 || {};
   const kqtd = k.period_qtd || {};
@@ -230,7 +230,7 @@ async function render(){
 
   document.getElementById("kpiGrid").innerHTML = `
     <div class="kpi k-brand">
-      <div class="kpi-label">当前筛选日耗 <span class="tag brand">8.28-9.1</span></div>
+      <div class="kpi-label">当前筛选日耗 <span class="tag brand">9.5-9.11</span></div>
       <div class="kpi-val">¥${consume.toLocaleString('zh-CN',{maximumFractionDigits:0})}<span class="unit">元</span></div>
       <div class="kpi-hint">${list.filter(c=>c.consume>0).length} 家伙伴在投 · 跟随筛选变化</div></div>
     <div class="kpi k-info">
@@ -306,7 +306,7 @@ async function render(){
     <div class="hint" style="margin-top:10px">共 ${flat.length} 条建议 · 已按规则去重 · 共 ${merged.length} 类问题</div>
   ` : '<div class="empty">当前筛选下暂无建议</div>';
 
-  /* 行业消耗 —— 双周期：近期(8.28-9.1) + 季度(QTD 7.1-9.1)
+  /* 行业消耗 —— 双周期：近期(9.5-9.11) + 季度(QTD 7.1-9.11)
      子青 9.3 拍板："标注是什么周期的 近期的和季度的都开一个" */
   function buildIndMap(field){
     const m = {};
@@ -320,11 +320,11 @@ async function render(){
   document.getElementById("industryDist").innerHTML = (Object.keys(indMapRecent).length || Object.keys(indMapQtd).length)
     ? `<div class="ind-double">
         <div class="ind-half">
-          <div class="ind-half-h">近 7 天 (8.28-9.1) · 合计 ¥${(consumeRecent).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
+          <div class="ind-half-h">近 7 天 (9.5-9.11) · 合计 ¥${(consumeRecent).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
           ${renderIndustryPie(indMapRecent, consumeRecent, d.industry_benchmark)}
         </div>
         <div class="ind-half">
-          <div class="ind-half-h">QTD (7.1-9.1) · 合计 ¥${(consumeQtd).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
+          <div class="ind-half-h">QTD (7.1-9.11) · 合计 ¥${(consumeQtd).toLocaleString('zh-CN',{maximumFractionDigits:0})}</div>
           ${renderIndustryPie(indMapQtd, consumeQtd, d.industry_benchmark)}
         </div>
       </div>
