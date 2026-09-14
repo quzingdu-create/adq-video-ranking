@@ -404,6 +404,25 @@ def main():
                 return sub_to_industry.get(full,'其他')
         return '其他'
 
+    # 🔴 9.14 切换：QTD 总额真源改吃 `靶向客户消耗数据-9.14.csv` 的 2026/Q3 合计
+    # 背景：9.13 T200348.333 漏覆盖 30/87 个靶向客户的 QTD 行（被当 0），且 57 命中客户金额偏低；
+    #       9.14 文件 60 个有消耗客户 100% 命中 87 名单，合计 577.91 万 = 87 靶向真实 QTD。
+    #       9.14 数据日截至 9.11（与看板周期一致），整体行(786万)为含历史季度，仅取 2026/Q3。
+    q3_consume_map = {}
+    _q3p = SRC / '靶向客户消耗数据-9.14.csv'
+    if _q3p.exists():
+        with open(_q3p, encoding='utf-8-sig') as _f:
+            _rr = csv.reader(_f); next(_rr)
+            for _row in _rr:
+                if len(_row) < 4: continue
+                if _row[1].strip() != '2026/Q3': continue
+                _nm = _row[2].strip()
+                if not _nm or _nm == '整体': continue
+                _v = f(_row[3])
+                if _v is None: continue
+                q3_consume_map[_nm] = q3_consume_map.get(_nm, 0.0) + _v
+    print(f"[QTD源] 靶向客户消耗数据-9.14.csv 2026/Q3 命中 87 名单客户数={len(q3_consume_map)}, 合计={sum(q3_consume_map.values())/1e4:.2f}万")
+
     # ─── 6) 构建客户数组（含 28 个空白占位） ───
     customers = []
     for sub in targets:
@@ -434,7 +453,7 @@ def main():
             # 用 customers_trend[sub]（73 天 by 天）累加
             _trend = cust_trend.get(sub, [])
             _recent = sum(p['value'] for p in _trend if '2026/09/05' <= p['date'] <= '2026/09/11')
-            _qtd    = sum(p['value'] for p in _trend)   # 全部 73 天累计
+            _qtd    = q3_consume_map.get(sub, sum(p['value'] for p in _trend))   # 全部 73 天累计（9.14 优先）
             c = {
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
@@ -488,13 +507,13 @@ def main():
             # 仍要计入 QTD/近期，绝不能清零（否则总消耗漏算"有趋势无主表"的目标）
             _trend = cust_trend.get(sub, [])
             _recent = sum(p['value'] for p in _trend if '2026/09/05' <= p['date'] <= '2026/09/11')
-            _qtd    = sum(p['value'] for p in _trend)
+            _qtd    = q3_consume_map.get(sub, sum(p['value'] for p in _trend))
             _consume_proxy = round(_qtd/max(1,len(_trend)), 2) if _trend else 0.0
             c = {
                 'sub':sub,'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub],'industry':resolve_industry(sub),'agent':agent_policy_map.get(sub,'内部'),
                 'service':svc_map.get(sub,''),'brand':brand_map.get(sub,''),
-                'consume':_consume_proxy,'gmv':0.0,'roi':None,'consume_recent':round(_recent,2),'consume_qtd':round(_qtd,2),
+                'consume':round(q3_consume_map.get(sub, _consume_proxy),2),'gmv':0.0,'roi':None,'consume_recent':round(_recent,2),'consume_qtd':round(_qtd,2),
                 'main_consume':main_consume.get(sub,0.0),
                 'ctr':None,'cvr':None,'aov':None,'target_bid':None,
                 'ads':None,'account':None,'main_subject':1,'creative_id':None,
@@ -618,7 +637,7 @@ def main():
             'period_qtd': {         # 87 靶向目标 QTD 7.1-9.11 合计
                 'period': 'QTD (7.1 - 9.11)',
                 'total_wan': round(target_qtd/10000, 2),
-                'source': '通用分析数据集 - 2026-09-13T200348.333.csv（87 靶向目标）',
+                'source': '靶向客户消耗数据-9.14.csv（87 靶向目标，2026/Q3）',
             },
         },
         'agents': sorted(agent_consume_wan.keys()),
