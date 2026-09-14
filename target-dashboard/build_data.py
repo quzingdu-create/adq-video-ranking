@@ -10,7 +10,7 @@
   T200203.206  行业对标（运营二级行业）+ 15 指标 + 环比 → 市场基准
   T200257.240  原生推广（1538）   T200249.997  潜客优投（458）
   T200240.184  智投广告（1187）   T200224.237  4+m（86）       —— 4 个产品能力
-  靶向客户-销售-9.3.xlsx          销售归属白名单（49 主体，本轮复用 9.3 版）
+  靶向-9.14.xlsx                销售归属白名单 v2（87 主体，15 列追踪表：行业/销售/投放主体/服务商）
   154421 副本 csv               代理商政策集团（本轮复用 9.3 版）
 
 注：指标明细/大盘趋势/203808 环比 已合并进上述主表/行业表；多商品聚合页 = T200704.276（客户简称口径）。
@@ -79,15 +79,30 @@ p75 = lambda a: quantile(a, 0.75)
 p25 = lambda a: quantile(a, 0.25)
 
 def main():
-    # ─── 1) 销售白名单（拆多公司名） ───
-    wb = openpyxl.load_workbook(SRC/'靶向客户-销售-9.3.xlsx')
+    # ─── 1) 销售白名单（靶向-9.14.xlsx，15 列追踪表）───
+    # 🔴 9.14 新口径：白名单真源改为「靶向-9.14.xlsx」
+    #   列序：0=行业 3=品牌/小店名称 8=销售 11=投放主体(公司全称) 14=服务商/渠道反馈
+    #   投放主体 = join 9.13 数据「客户简称(=公司全称)」的键；多公司会叠在同一格（换行/顿号/逗号），需拆开
+    wb = openpyxl.load_workbook(SRC/'靶向-9.14.xlsx')
     ws = wb.active
-    sales_map = {}
+    sales_map = {}        # sub(公司全称) -> 销售
+    ind_map_x = {}        # sub -> 行业（来自 xlsx，优先于 INDUSTRY_MAP）
+    svc_map   = {}        # sub -> 服务商/渠道反馈
+    brand_map = {}        # sub -> 品牌/小店名称
     for r in ws.iter_rows(min_row=2, values_only=True):
-        if not r[0] or not r[1]: continue
-        for name in re.split(r'[、，,\s]+', str(r[1])):
-            name=name.strip()
-            if name: sales_map[name] = str(r[0]).strip()
+        ind   = str(r[0]).strip()  if r[0]  else ''
+        sale  = str(r[8]).strip()  if r[8]  else ''
+        svc   = str(r[14]).strip() if r[14] else ''
+        brand = str(r[3]).strip()  if r[3]  else ''
+        raw   = str(r[11]).strip() if r[11] else ''
+        if not raw or raw == '-': continue
+        for name in re.split(r'[\n、，,\s]+', raw):
+            name = name.strip()
+            if not name: continue
+            sales_map[name] = sale
+            ind_map_x[name] = ind
+            svc_map[name]   = svc
+            brand_map[name] = brand
     targets = list(sales_map.keys())
 
     # 环比 + 全平台 日均消耗 累加器（在主表扫描 §2 时填充）
@@ -381,6 +396,8 @@ def main():
                 sub_to_industry[c['sub']] = c.get('industry','其他')
     alias_to_sub = {c['alias']:c['sub'] for c in (old.get('customers',[]) if old_path.exists() else []) if c.get('alias')}
     def resolve_industry(sub):
+        if sub in ind_map_x and ind_map_x[sub]:
+            return ind_map_x[sub]
         if sub in sub_to_industry: return sub_to_industry[sub]
         for alias, full in alias_to_sub.items():
             if alias and (alias in sub or sub in alias):
@@ -422,6 +439,7 @@ def main():
                 'sub':sub, 'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub], 'industry':resolve_industry(sub),
                 'agent':agent_policy_map.get(sub,'内部'),
+                'service':svc_map.get(sub,''), 'brand':brand_map.get(sub,''),
                 'consume':round(consume,2),'gmv':round(gmv,2),'roi':rnd(roi,2),
                 'consume_recent':round(_recent,2),   # 近期 7 天累计（9.5-9.11）
                 'consume_qtd':round(_qtd,2),          # 季度累计（QTD ~73 天）
@@ -447,7 +465,7 @@ def main():
                 # 三率（越低越好）
                 'ret':rnd(w_avg('ret'),3),'bad':rnd(w_avg('bad'),3),'dispute':rnd(w_avg('dispute'),3),
                 # 产品能力（默认 False；直播/4+m/聚合页 无数据源 → 默认 False）
-                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':False,
+                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
                 'is_latent':bool(use_latent.get(sub,False)),
                 'is_native':bool(use_native.get(sub,False)),
                 'is_smart_ad':bool(use_smart_ad.get(sub,False)),
@@ -466,18 +484,24 @@ def main():
                 'shops':shops,
             }
         else:
-            # 占位（暂无消耗数据）——指标一律 None（前端显示 —），不用 0 冒充
+            # 占位（主表 T200311 无视频号行）——但若趋势文件 T200348 有该主体 by 天消耗，
+            # 仍要计入 QTD/近期，绝不能清零（否则总消耗漏算"有趋势无主表"的目标）
+            _trend = cust_trend.get(sub, [])
+            _recent = sum(p['value'] for p in _trend if '2026/09/05' <= p['date'] <= '2026/09/11')
+            _qtd    = sum(p['value'] for p in _trend)
+            _consume_proxy = round(_qtd/max(1,len(_trend)), 2) if _trend else 0.0
             c = {
                 'sub':sub,'alias':sub_to_alias.get(sub, sub[:6]),
                 'sales':sales_map[sub],'industry':resolve_industry(sub),'agent':agent_policy_map.get(sub,'内部'),
-                'consume':0.0,'gmv':0.0,'roi':None,
+                'service':svc_map.get(sub,''),'brand':brand_map.get(sub,''),
+                'consume':_consume_proxy,'gmv':0.0,'roi':None,'consume_recent':round(_recent,2),'consume_qtd':round(_qtd,2),
                 'main_consume':main_consume.get(sub,0.0),
                 'ctr':None,'cvr':None,'aov':None,'target_bid':None,
                 'ads':None,'account':None,'main_subject':1,'creative_id':None,
                 'new_ratio':None,'auto_ratio':None,
                 '3s_play':None,'avg_dur':None,
                 'ret':None,'bad':None,'dispute':None,
-                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':False,
+                'is_4m':bool(use_4m.get(sub,False)),'is_aggregate':bool(use_aggregate.get(sub,False)),
                 'is_latent':bool(use_latent.get(sub,False)),
                 'is_native':bool(use_native.get(sub,False)),
                 'is_smart_ad':bool(use_smart_ad.get(sub,False)),
@@ -558,6 +582,11 @@ def main():
     # 防呆：qtd 客户合计必须有数据
     assert len(qtd_target) >= 30, f'qtd 客户合计数据不足 30 天，实际 {len(qtd_target)} 天'
 
+    # 87 靶向目标 总消耗（来自客户级 consume_recent / consume_qtd）
+    target_recent   = sum(c['consume_recent'] for c in customers)
+    target_qtd      = sum(c['consume_qtd'] for c in customers)
+    target_recent_n = sum(1 for c in customers if c['consume_recent'] > 0)
+
     # === 10) 输出 ===
     out = {
         'meta': {
@@ -579,17 +608,17 @@ def main():
             'period':'qtd (7.1 - 9.11)',
             'period_days':7,
             'kpi': {
-            'period_8_28_9_1': {     # 主表 T200311.092 口径（近期 9.5-9.11）
+            'period_8_28_9_1': {     # 87 靶向目标 近期 9.5-9.11 合计（趋势文件 T200348.333）
                 'period': '2026-09-05 ~ 2026-09-11',
-                'total_yuan': kpi_summary['all_total'],
-                'count': kpi_summary['all_count'],
-                'avg_yuan': kpi_summary['all_avg'],
-                'source': '通用分析数据集 - 2026-09-13T200311.092.csv',
+                'total_yuan': round(target_recent, 2),
+                'count': target_recent_n,
+                'avg_yuan': round(target_recent/max(1,target_recent_n), 2),
+                'source': '通用分析数据集 - 2026-09-13T200348.333.csv（87 靶向目标）',
             },
-            'period_qtd': {         # 整体 by 天 T200355.667 口径
+            'period_qtd': {         # 87 靶向目标 QTD 7.1-9.11 合计
                 'period': 'QTD (7.1 - 9.11)',
-                'total_wan': round(agent_total_wan or 0, 2),
-                'source': '通用分析数据集 - 2026-09-13T200355.667.csv',
+                'total_wan': round(target_qtd/10000, 2),
+                'source': '通用分析数据集 - 2026-09-13T200348.333.csv（87 靶向目标）',
             },
         },
         'agents': sorted(agent_consume_wan.keys()),
@@ -612,8 +641,8 @@ def main():
     period = d.get('meta',{}).get('data_period','')
     if 'qtd' not in str(period).lower():
         raise RuntimeError(f'❌ meta.data_period 必须含 qtd，当前: {period!r}')
-    if out['overall']['count'] != 66:
-        raise RuntimeError(f'❌ 客户总数应为 66，实际 {out["overall"]["count"]}')
+    if out['overall']['count'] != 87:
+        raise RuntimeError(f'❌ 客户总数应为 87（靶向-9.14.xlsx 投放主体拆后），实际 {out["overall"]["count"]}')
     if len(out.get('qtd_dashboard_trend',[])) < 7:
         raise RuntimeError(f'❌ qtd 大盘数据不足 7 天')
     if len(out.get('qtd_target_trend',[])) < 7:
