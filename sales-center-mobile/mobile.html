@@ -1244,6 +1244,7 @@ window.__TOP80_EFFECTIVE_METRICS__ = [{"sale":"grettazhao","rank":1,"name":"台�
     const sel = $("sbSaleSel");
     if (sel) sel.style.display = (sbView === "mine") ? "" : "none";
 
+    const _rdOvr = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate === '2026-09-14');
     let saleKey, kpiRow, counts, scopeLabel;
     if (sbView === "team") {
       saleKey = "合计";
@@ -1277,7 +1278,7 @@ window.__TOP80_EFFECTIVE_METRICS__ = [{"sale":"grettazhao","rank":1,"name":"台�
       { lab: (sbView==="team"?"服饰中心日耗":"新客昨日消耗"), val: ((costVal/1e4).toFixed(1)), u:"万", sub: sub(costChg, true) },
       { lab:"本季度新客", val: Number(kpiRow.newCount||0).toLocaleString("zh-CN"), u:"", sub: sub(kpiRow.newDayDelta, false) },
       { lab:"有效新客", val: Number(kpiRow.validCount||0).toLocaleString("zh-CN"), u:"", sub: sub(kpiRow.validDayDelta, false) },
-      { lab:"新锐客户", val: Number(kpiRow.risingCount||0).toLocaleString("zh-CN"), u:"", sub: sub(kpiRow.risingDayDelta, false) },
+      { lab:"新锐客户", val: Number(kpiRow.risingCount||0).toLocaleString("zh-CN"), u:"", sub:(saleKey==="合计" ? (_rdOvr ? `<div class="c-sub">较前一天 <span class="up">+0</span></div>` : sub(kpiRow.risingDayDelta, false)) : (_rdOvr ? `<div class="c-sub"><span class="flat">较前一天 —</span></div>` : sub(kpiRow.risingDayDelta, false))) },
       { lab:"头部掉量", val: counts.dropN, u:"个", sub:`<div class="c-sub"><span class="${counts.dropN>0?'up':'flat'}">今日需处理</span></div>` },
       { lab:"头客稳定", val: counts.stableN, u:"个", sub:`<div class="c-sub"><span class="flat">持续观察</span></div>` },
       { lab:"昨日Top客户", val: counts.yestTopN, u:"个", sub:`<div class="c-sub"><span class="flat">维护好</span></div>` },

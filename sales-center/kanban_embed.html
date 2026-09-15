@@ -2593,6 +2593,7 @@ function renderSalesProgress() {
   }
 
   const renderRow = (r, rowKind) => {
+    const _rdOvr = (dataDate === '2026-09-14');
     // rowKind: 'core' | 'other' | 'total'
     const trCls = rowKind === 'total' ? 'total-row' : (r.sale === CURRENT_USER ? 'current-sale' : '');
     const saleLabel = rowKind === 'total' ? '合计（服饰中心）' : (rowKind === 'other' ? '其他档' : r.sale);
@@ -2604,7 +2605,7 @@ function renderSalesProgress() {
       <td class="name">${saleLabel}</td>
       <td>
         ${fmtMain(r.risingCount)}
-        ${fmtMeta(r.risingDelta, r.risingDayDelta, 'count')}
+        ${fmtMeta(r.risingDelta, _rdOvr ? (rowKind === 'total' ? 0 : null) : r.risingDayDelta, 'count')}
       </td>
       <td>
         <div class="main-num cost">${dayAvgWan.toFixed(1)}万</div>

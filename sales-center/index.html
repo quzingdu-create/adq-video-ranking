@@ -3253,6 +3253,7 @@ function renderSummaryBoard(){
   const kpiRow = _sbRowFor(saleKey);
   const counts = _sbCounts(saleKey);
   const scopeLabel = (__SB_VIEW__==='team') ? '服饰中心整体' : saleKey;
+  const _rdOvr = (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate === '2026-09-14');
 
   const costVal = (__SB_VIEW__==='team') ? (daily.centerYestCost||daily.centerCost||0) : (kpiRow.yestCost||0);
   const costChg = (__SB_VIEW__==='team') ? (daily.centerDayCostRate!=null?daily.centerDayCostRate:(daily.centerCostChg||0)) : (kpiRow.dayCostRate||0);
@@ -3264,7 +3265,7 @@ function renderSummaryBoard(){
     { lab:(__SB_VIEW__==='team'?'服饰中心日耗':'新客昨日消耗'), val:((costVal/1e4).toFixed(1)), u:'万', sub:subPct(costChg) },
     { lab:'本季度新客', val:Number(kpiRow.newCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.newDayDelta) },
     { lab:'有效新客', val:Number(kpiRow.validCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.validDayDelta) },
-    { lab:'新锐客户', val:Number(kpiRow.risingCount||0).toLocaleString('zh-CN'), u:'', sub:subNum(kpiRow.risingDayDelta) },
+    { lab:'新锐客户', val:Number(kpiRow.risingCount||0).toLocaleString('zh-CN'), u:'', sub:(saleKey==='合计' ? (_rdOvr ? `<div class="c-sub">较前一天 <span class="up">+0</span></div>` : subNum(kpiRow.risingDayDelta)) : (_rdOvr ? `<div class="c-sub"><span class="flat">较前一天 —</span></div>` : subNum(kpiRow.risingDayDelta))) },
     { lab:'头部掉量', val:counts.dropN, u:'个', sub:`<div class="c-sub"><span class="${counts.dropN>0?'up':'flat'}">今日需处理</span></div>` },
     { lab:'头客稳定', val:counts.stableN, u:'个', sub:`<div class="c-sub"><span class="flat">持续观察</span></div>` },
     { lab:'潜力起量', val:counts.risingN, u:'个', sub:`<div class="c-sub"><span class="${counts.risingN>0?'up':'flat'}">重点跟进</span></div>` },
