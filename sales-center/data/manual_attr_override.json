@@ -18481,6 +18481,11 @@
    "sale": "kaikaigenli",
    "reason": "2026-09-14 客户明细纠偏-9.14.xlsx 归属修正（子青拍板）",
    "date": "2026-09-14"
+  },
+  "义乌市往戎电子商务商行(个体工商户)": {
+   "sale": "grettazhao",
+   "reason": "2026-09-17 子青主动拍板归 grettazhao（原底表 yvaineechen/Jonzhu 双记录冲突，子青重新拍板，可溯源）",
+   "date": "2026-09-17"
   }
  },
  "updatedAt": "2026-09-14",
