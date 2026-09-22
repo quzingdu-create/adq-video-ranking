@@ -1,1 +1,5 @@
-{"v": "20260921x2", "dataDate": "2026-09-21", "note": "纠偏-9.21.xlsx 归属重算 (rebuild+缓存刷新)"}
+{
+  "v": "20260922x",
+  "dataDate": "2026-09-22",
+  "note": "每日更新 2026-09-22 (rebuild+快照净增+归并CloudBase tuoke_user_records)"
+}
