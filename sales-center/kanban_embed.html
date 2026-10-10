@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20261010f"></script>
+<script src="sc_logger.js?v=20261010g"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -58,7 +58,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20261010f')
+    return fetch('data/manual_attr_override.json?v=20261010g')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -94,33 +94,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20261010f"></script>
-<script defer src="api_client.js?v=20261010f"></script>
-<script defer src="data_adapter.js?v=20261010f"></script>
+<script defer src="cloud_gray_switch.js?v=20261010g"></script>
+<script defer src="api_client.js?v=20261010g"></script>
+<script defer src="data_adapter.js?v=20261010g"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20261010f"></script> -->
-<script src="data/center_sales_summary.js?v=20261010f"></script>
-<script src="data/center_quarter_summary.js?v=20261010f"></script>
-<script src="data/center_daily_kpi.js?v=20261010f"></script>
-<script src="data/top80_effective_metrics.js?v=20261010f"></script>
-<script src="data/top_status_data.js?v=20261010f"></script>
-<script src="data/enough_candidates.js?v=20261010f"></script>
-<script src="data/handover_customers_519.js?v=20261010f"></script>
-<script src="data/target_brand_pool.js?v=20261010f"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20261010g"></script> -->
+<script src="data/center_sales_summary.js?v=20261010g"></script>
+<script src="data/center_quarter_summary.js?v=20261010g"></script>
+<script src="data/center_daily_kpi.js?v=20261010g"></script>
+<script src="data/top80_effective_metrics.js?v=20261010g"></script>
+<script src="data/top_status_data.js?v=20261010g"></script>
+<script src="data/enough_candidates.js?v=20261010g"></script>
+<script src="data/handover_customers_519.js?v=20261010g"></script>
+<script src="data/target_brand_pool.js?v=20261010g"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20261010f" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20261010g" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20261010f"></script>
-<script defer src="dual_check.js?v=20261010f"></script>
-<script defer src="big_data_dual_check.js?v=20261010f"></script>
+<script defer src="cloud_sync.js?v=20261010g"></script>
+<script defer src="dual_check.js?v=20261010g"></script>
+<script defer src="big_data_dual_check.js?v=20261010g"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -923,7 +923,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261010f`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261010g`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260915x')) frame.setAttribute('src', target);
   }
@@ -1122,7 +1122,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261010f" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261010g" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1138,7 +1138,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261010f" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261010g" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1228,7 +1228,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261010f" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261010g" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3757,7 +3757,7 @@ function renderNewCustomerBadge(look) {
     }
   } else {
     // 首投季度未知 = AData 真源无该客户消耗记录 → 从未投放过，属全新客户
-    html += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客（AData 无历史消耗）</span>`;
+    html += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ 本季度新客（AData 暂无历史消耗，待回扫确认）</span>`;
   }
   // 简称待回扫仅作附加提示，不覆盖新客结论
   if (look.needReconcile) {
@@ -4346,12 +4346,18 @@ function onNameInput() {
     if (hasHardDup && hardDups.every(function(d){ return String(d.sales||'').toLowerCase() === 'brownfan'; })) {
       hasHardDup = false;
     }
-    const salesList = dup.entries.map(d => {
+    // 2026-10-10 规范化：① 去重（本地 localStorage + 云端底表会重复计入同一条）
+    //                    ② 用词修正：原「历史表」不存在(__HISTORY_DATA__ 从未加载)，实为本地登记记录
+    const _seen = new Set(), _parts = [];
+    (dup.entries || []).forEach(d => {
       const tag = d.src === "底表" ? '<span style="font-size:11px;color:#6b7280;">[底表]</span>'
-                : d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>' 
+                : d.src === "历史" ? '<span style="font-size:11px;color:#bfbfbf;">[历史]</span>'
                 : `<span style="font-size:11px;color:#bfbfbf;">[${d.date}]</span>`;
-      return `<b>${d.sales}</b>${tag}`;
-    }).join('、');
+      const key = String(d.sales || '') + '|' + String(d.date || '') + '|' + String(d.src || '');
+      if (!_seen.has(key)) { _seen.add(key); _parts.push(`<b>${d.sales}</b>${tag}`); }
+    });
+    const salesList = _parts.join('、');
+    const dupCount = _parts.length;
     if (hasHardDup) {
       // R3.2: 把 raw(查询名)传给 _dupCurrentOwner,触发云端 attribution_log fallback
       try { window.__prefetchAttrLog && window.__prefetchAttrLog((raw||'').trim().replace(/\s+/g,'')); } catch(_){}
@@ -4367,7 +4373,7 @@ function onNameInput() {
       </div>`;
     } else {
       hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
-        ⚠️ 该主体在历史表出现 <b>${dup.total}</b> 次：${salesList}。如确为同一客户请确认是否继续。
+        ⚠️ 该客户在已有记录中出现 <b>${dupCount}</b> 次：${salesList}。如确为同一客户请确认是否继续。
       </div>`;
     }
   }
@@ -4429,7 +4435,7 @@ function onInlineNameInput() {
       </div>`;
     } else {
       hint += `<div class="hint-dup" style="background:#fef3c7;color:#92400e;padding:6px 10px;border-radius:6px;margin-top:6px;">
-        ⚠️ 该主体在历史表出现 <b>${dup.total}</b> 次：${salesList}。如确为同一客户请确认是否继续。
+        ⚠️ 该客户在已有记录中出现 <b>${dupCount}</b> 次：${salesList}。如确为同一客户请确认是否继续。
       </div>`;
     }
   }
@@ -4639,8 +4645,15 @@ window.submitRecord = async () => {
     return alert(msg);
   }
   if (dup.total) {
-    const salesList = dup.entries.map(d => d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`).join('、');
-    if (!confirm(`客户主体「${name}」在历史表出现 ${dup.total} 次：\n${salesList}\n\n是否仍要提交？`)) return;
+    // 2026-10-10 规范化：去重 + 用词修正（同上）
+    const _seen2 = new Set(), _parts2 = [];
+    (dup.entries || []).forEach(d => {
+      const item = d.src === '历史' ? `${d.sales}[历史]` : `${d.sales}（${d.date}）`;
+      const key = String(d.sales || '') + '|' + String(d.date || '') + '|' + String(d.src || '');
+      if (!_seen2.has(key)) { _seen2.add(key); _parts2.push(item); }
+    });
+    const salesList = _parts2.join('、');
+    if (!confirm(`客户「${name}」在已有记录中出现 ${_parts2.length} 次：\n${salesList}\n\n是否仍要提交？`)) return;
   }
   // R12.1 靶向来源: 云端二次判决 (allowed=false 弹窗降级)
   let targetRejected = false, rejectedBrand = '', targetBrand = '';
@@ -4678,8 +4691,14 @@ window.submitRecord = async () => {
   if (rec.source === TARGET_BRAND_SOURCE && rec.brand) __targetInfo = `\n🎯 靶向拓客：${rec.brand}`;
   else if (targetRejected) __targetInfo = `\n⚠️ 品牌【${rejectedBrand}】已被覆盖 3 次，本次已作为「${TARGET_FALLBACK_SOURCE}」入库（不计入靶向拓客）。`;
   // R14 根治#1: 云端确认成功才说"提交成功"；否则明确"暂存本地未入云"
-  if (_cloudRet && _cloudRet.ok) {
+  // 2026-10-10 根治「假成功」：云端返回 ok 但无写入凭证时，不得报"已入云端"
+  //   凭证 = cached(此前已推送成功) / docId(新增返回) / updated(更新成功) 三者之一
+  //   云函数旧逻辑在 add 失败时 docId='' 仍返回 ok:true → 前端误报成功
+  const _proof = !!(_cloudRet && (_cloudRet.cached || _cloudRet.docId || _cloudRet.updated));
+  if (_cloudRet && _cloudRet.ok && _proof) {
     alert(`✅ 已入云端：${name}\n系统识别简称：${shortName}\n客户口径：${rec.customerType}\n投放端：${deliverySide}${__targetInfo}`);
+  } else if (_cloudRet && _cloudRet.ok) {
+    alert(`⚠️ 未确认入库：${name}\n云端返回成功但无写入凭证，可能未真正写入。\n\n该条已暂存本地，系统会 30 秒/次自动重试；请稍后在列表中确认，或联系管理员核查。`);
   } else {
     // R33 (2026-08-04 V0 audit): 不再fallback "网络异常"字面量
     const _why = (_cloudRet && _cloudRet.reason) ? _cloudRet.reason :'SDK 无消息(请截图诊断)';
@@ -4784,7 +4803,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20261010f';
+  s.src = 'data/bulk_import_rows.js?v=20261010g';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');

@@ -874,11 +874,20 @@ async function saveUserRecord(params, context) {
       await database.collection(COLLECTIONS.userRecords).doc(row._id).update(rec);
       updated = true;
     }
-  } catch (_) { /* ignore */ }
+  } catch (e) {
+    // 2026-10-10：不再静默吞异常（旧实现掩盖了查询/更新失败，导致难定位与重复插入）
+    console.error('[saveUserRecord] 查询或更新已有记录失败', e && e.message, JSON.stringify({ id: rec.id }));
+  }
   let docId = '';
   if (!updated) {
     const addRes = await database.collection(COLLECTIONS.userRecords).add(rec);
     docId = (addRes && addRes.id) || '';
+  }
+  // 2026-10-10 根治「假成功」：没有任何写入凭证就必须报错，不能返回 ok:true
+  //   旧逻辑 add 失败/静默异常时 docId='' 仍返回成功 → 前端弹「✅ 已入云端」但云端实际无记录
+  if (!updated && !docId) {
+    console.error('[saveUserRecord] 写入无凭证(可能未成功)', JSON.stringify({ id: rec.id, name: name, sale: sale }));
+    return fail('saveUserRecord', 'WRITE_NO_DOCID', '写入未返回 docId，登记可能未成功，请重试');
   }
   // 归属留痕
   if (sale) {
@@ -969,7 +978,10 @@ async function deleteUserRecord(params, context) {
       await database.collection(COLLECTIONS.userRecords).doc(row._id).remove();
       removed = 1;
     }
-  } catch (_) { /* ignore */ }
+  } catch (e) {
+    // 2026-10-10：不再静默吞异常（旧实现掩盖了查询/更新失败，导致难定位与重复插入）
+    console.error('[saveUserRecord] 查询或更新已有记录失败', e && e.message, JSON.stringify({ id: rec.id }));
+  }
   if (!removed && params._id) {
     try { await database.collection(COLLECTIONS.userRecords).doc(String(params._id)).remove(); removed = 1; } catch (_) {}
   }
