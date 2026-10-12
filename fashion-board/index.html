@@ -328,6 +328,16 @@ function renderContent() {
   const tab = tabByKey(state.tabKey);
   if (!state.category) state.category = tab.categories[0] || '';
   const panel = document.getElementById('contentPanel');
+  // 视频号数据隐藏开关：展示"数据更新中"占位，不渲染旧数据
+  if (tab.data_hidden) {
+    panel.innerHTML = `
+      <div style="margin:48px auto;max-width:540px;text-align:center;padding:52px 24px;border:1px dashed #c9d4e6;border-radius:16px;background:#f7f9fc;">
+        <div style="font-size:42px;line-height:1;">📡</div>
+        <div style="font-size:19px;font-weight:800;color:#13366d;margin:16px 0 10px;">视频号爆品数据更新中</div>
+        <div style="font-size:13px;color:#5a6b88;line-height:1.7;">本期视频号爆品数据正在整理中，敬请期待。<br/>AMS 投放爆品 / 抖音机会爆品 榜单不受影响，可正常查看。</div>
+      </div>`;
+    return;
+  }
 
   const catTabs = tab.categories.map(c => `<div class="cat-tab ${c===state.category?'active':''}" data-c="${c}">${c.split('-').pop()}</div>`).join('');
   const summary = tab.category_summary[state.category] || null;
