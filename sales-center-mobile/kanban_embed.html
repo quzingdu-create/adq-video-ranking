@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20261012a"></script>
+<script src="sc_logger.js?v=20261013a"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -58,7 +58,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20261012a')
+    return fetch('data/manual_attr_override.json?v=20261013a')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -94,33 +94,33 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20261012a"></script>
-<script defer src="api_client.js?v=20261012a"></script>
-<script defer src="data_adapter.js?v=20261012a"></script>
+<script defer src="cloud_gray_switch.js?v=20261013a"></script>
+<script defer src="api_client.js?v=20261013a"></script>
+<script defer src="data_adapter.js?v=20261013a"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20261012a"></script> -->
-<script src="data/center_sales_summary.js?v=20261012a"></script>
-<script src="data/center_quarter_summary.js?v=20261012a"></script>
-<script src="data/center_daily_kpi.js?v=20261012a"></script>
-<script src="data/top80_effective_metrics.js?v=20261012a"></script>
-<script src="data/top_status_data.js?v=20261012a"></script>
-<script src="data/enough_candidates.js?v=20261012a"></script>
-<script src="data/handover_customers_519.js?v=20261012a"></script>
-<script src="data/target_brand_pool.js?v=20261012a"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20261013a"></script> -->
+<script src="data/center_sales_summary.js?v=20261013a"></script>
+<script src="data/center_quarter_summary.js?v=20261013a"></script>
+<script src="data/center_daily_kpi.js?v=20261013a"></script>
+<script src="data/top80_effective_metrics.js?v=20261013a"></script>
+<script src="data/top_status_data.js?v=20261013a"></script>
+<script src="data/enough_candidates.js?v=20261013a"></script>
+<script src="data/handover_customers_519.js?v=20261013a"></script>
+<script src="data/target_brand_pool.js?v=20261013a"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20261012a" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20261013a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20261012a"></script>
-<script defer src="dual_check.js?v=20261012a"></script>
-<script defer src="big_data_dual_check.js?v=20261012a"></script>
+<script defer src="cloud_sync.js?v=20261013a"></script>
+<script defer src="dual_check.js?v=20261013a"></script>
+<script defer src="big_data_dual_check.js?v=20261013a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -923,7 +923,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261012a`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261013a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260915x')) frame.setAttribute('src', target);
   }
@@ -1122,7 +1122,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261012a" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261013a" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1138,7 +1138,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261012a" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261013a" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1178,10 +1178,17 @@ window.applyManualSaleOverride = function(r) {
         <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="inline-m-channel"></select></div>
         <div class="field"><label id="inline-m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="inline-m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
         <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="inline-m-source"></select></div>
+        <div id="inline-m-belt-wrap" style="grid-column:span 2;display:none;border:1px solid #fed7aa;background:#fff7ed;border-radius:8px;padding:12px 14px;">
+          <div style="grid-column:span 2;font-size:12px;color:#9a3412;font-weight:600;margin-bottom:6px;">🏭 产业带客户必填（客户来源 =「26年4月后产业带拓客」）</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">产业带类目</label><select id="inline-m-belt-cat"><option value="">请选择类目...</option><option value="男装">男装</option><option value="女装">女装</option><option value="贴身衣物">贴身衣物</option><option value="箱包">箱包</option><option value="鞋靴">鞋靴</option><option value="运动户外">运动户外</option><option value="珠宝">珠宝</option><option value="文玩">文玩</option><option value="配饰">配饰</option></select></div>
+            <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">省市</label><input id="inline-m-belt-loc" placeholder="如：湖南株洲（自动规范为 湖南省-株洲市）" autocomplete="off" oninput="onBeltLocInput('inline')" onchange="onBeltLocInput('inline')" /><div id="inline-m-belt-loc-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;">填写后自动规范，例如「湖南株洲」→「湖南省-株洲市」</div></div>
+          </div>
+        </div>
         <div class="field" id="inline-m-brand-wrap" style="grid-column:span 2;display:none;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">靶向品牌 <span style="color:#bfbfbf;font-weight:normal;">（从竞媒靶向名单选择；同品牌全渠道累计最多 3 次）</span></label><select id="inline-m-brand"><option value="">请选择品牌...</option></select><div id="inline-m-brand-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;"></div></div>
         <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="inline-m-date" type="date" /></div>
         <div class="field" style="grid-column:span 2;">
-          <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
+          <label class="req" style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#dc2626;font-weight:normal;">（<b>必填</b> · 新客登记必须上传建联材料，如微信聊天/通话/走访照片）</span></label>
           <input id="inline-m-evidence" type="file" accept="image/*" multiple style="font-size:12px;" />
           <div id="inline-m-evidence-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
         </div>
@@ -1228,7 +1235,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261012a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261013a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -1307,6 +1314,13 @@ window.applyManualSaleOverride = function(r) {
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">拓客途径</label><select id="m-channel" onchange="onChannelChange()"></select></div>
       <div class="field"><label id="m-resource-label" style="display:block;color:#595959;margin-bottom:4px;">资源方</label><input id="m-resource" placeholder="自拓无需填写；其他途径填写服务商/转介绍方" disabled /></div>
       <div class="field" style="grid-column:span 2;"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">客户来源</label><select id="m-source" onchange="onSourceChange('modal')"></select></div>
+      <div id="m-belt-wrap" style="grid-column:span 2;display:none;border:1px solid #fed7aa;background:#fff7ed;border-radius:8px;padding:12px 14px;">
+        <div style="grid-column:span 2;font-size:12px;color:#9a3412;font-weight:600;margin-bottom:6px;">🏭 产业带客户必填（客户来源 =「26年4月后产业带拓客」）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">产业带类目</label><select id="m-belt-cat"><option value="">请选择类目...</option><option value="男装">男装</option><option value="女装">女装</option><option value="贴身衣物">贴身衣物</option><option value="箱包">箱包</option><option value="鞋靴">鞋靴</option><option value="运动户外">运动户外</option><option value="珠宝">珠宝</option><option value="文玩">文玩</option><option value="配饰">配饰</option></select></div>
+          <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">省市</label><input id="m-belt-loc" placeholder="如：湖南株洲（自动规范为 湖南省-株洲市）" autocomplete="off" oninput="onBeltLocInput('modal')" onchange="onBeltLocInput('modal')" /><div id="m-belt-loc-hint" style="font-size:11px;color:#94a3b8;margin-top:4px;">填写后自动规范，例如「湖南株洲」→「湖南省-株洲市」</div></div>
+        </div>
+      </div>
       <div class="field" id="m-brand-wrap" style="grid-column:span 2;display:none;">
         <label class="req" style="display:block;color:#595959;margin-bottom:6px;">靶向品牌 <span style="color:#bfbfbf;font-weight:normal;">（从竞媒靶向名单选择 · 同品牌全渠道累计最多 3 次）</span></label>
         <div class="brand-picker" id="m-brand-picker">
@@ -1325,7 +1339,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
       <div class="field"><label class="req" style="display:block;color:#595959;margin-bottom:4px;">日期</label><input id="m-date" type="date" /></div>
       <div class="field" style="grid-column:span 2;">
-        <label style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#bfbfbf;font-weight:normal;">（可选；批量登记后可在「修改/补充」中补传）</span></label>
+        <label class="req" style="display:block;color:#595959;margin-bottom:4px;">建联截图 <span style="color:#dc2626;font-weight:normal;">（<b>必填</b> · 新客登记必须上传建联材料，如微信聊天/通话/走访照片）</span></label>
         <input id="m-evidence" type="file" accept="image/*" multiple style="font-size:12px;" onchange="onEvidenceChange(event)" />
         <div id="m-evidence-preview" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
       </div>
@@ -1348,6 +1362,170 @@ window.applyManualSaleOverride = function(r) {
 const SALES = ["grettazhao","lijunwu","Jonzhu","kaikaigenli","kinsleyjin","ruilingzhan","yvaineechen"];
 let CURRENT_USER = new URLSearchParams(window.location.search).get("user") || "kinsleyjin";
 const CATEGORIES = ["男装","女装","贴身衣物","箱包鞋靴","珠宝文玩","配饰","运动户外","未打标"];
+
+/* =========================================================================
+   产业带强制字段 v1（2026-10-13 子青需求）
+   ① 客户来源 =「26年4月后产业带拓客」时，强制填「产业带类目」+「省市」
+   ② 省市由销售自由填写（如「湖南株洲」/「株洲」），系统自动规范为「湖南省-株洲市」
+   ========================================================================= */
+const BELT_SOURCE = "26年4月后产业带拓客";
+// 产业带类目（单选 9 项；与现有 8 类 cat 体系做归并映射，保证产业带看板可消费）
+const BELT_CATS = ["男装","女装","贴身衣物","箱包","鞋靴","运动户外","珠宝","文玩","配饰"];
+const BELT_CAT_TO_CAT = {
+  "男装":"男装","女装":"女装","贴身衣物":"贴身衣物",
+  "箱包":"箱包鞋靴","鞋靴":"箱包鞋靴",
+  "运动户外":"运动户外",
+  "珠宝":"珠宝文玩","文玩":"珠宝文玩",
+  "配饰":"配饰"
+};
+// 省市字典（省级全名 -> 地级市/区 canonical 名，已带后缀）
+const BELT_REGION = {
+  "北京市":["东城区","西城区","朝阳区","海淀区","丰台区","石景山区","门头沟区","房山区","通州区","顺义区","昌平区","大兴区","怀柔区","平谷区","密云区","延庆区"],
+  "天津市":["和平区","河东区","河西区","南开区","河北区","红桥区","东丽区","西青区","津南区","北辰区","武清区","宝坻区","滨海新区","宁河区","静海区","蓟州区"],
+  "上海市":["黄浦区","徐汇区","长宁区","静安区","普陀区","虹口区","杨浦区","闵行区","宝山区","嘉定区","浦东新区","金山区","松江区","青浦区","奉贤区","崇明区"],
+  "重庆市":["渝中区","江北区","南岸区","九龙坡区","沙坪坝区","大渡口区","渝北区","巴南区","北碚区","万州区","涪陵区","永川区","合川区","江津区","璧山区","荣昌区","大足区","綦江区","长寿区","南川区","潼南区","铜梁区","开州区","梁平区","武隆区","黔江区","两江新区"],
+  "河北省":["石家庄市","唐山市","秦皇岛市","邯郸市","邢台市","保定市","张家口市","承德市","沧州市","廊坊市","衡水市"],
+  "山西省":["太原市","大同市","阳泉市","长治市","晋城市","朔州市","晋中市","运城市","忻州市","临汾市","吕梁市"],
+  "内蒙古自治区":["呼和浩特市","包头市","乌海市","赤峰市","通辽市","鄂尔多斯市","呼伦贝尔市","巴彦淖尔市","乌兰察布市","兴安盟","锡林郭勒盟","阿拉善盟"],
+  "辽宁省":["沈阳市","大连市","鞍山市","抚顺市","本溪市","丹东市","锦州市","营口市","阜新市","辽阳市","盘锦市","铁岭市","朝阳市","葫芦岛市"],
+  "吉林省":["长春市","吉林市","四平市","辽源市","通化市","白山市","松原市","白城市","延边州"],
+  "黑龙江省":["哈尔滨市","齐齐哈尔市","鸡西市","鹤岗市","双鸭山市","大庆市","伊春市","佳木斯市","七台河市","牡丹江市","黑河市","绥化市","大兴安岭地区"],
+  "江苏省":["南京市","无锡市","徐州市","常州市","苏州市","南通市","连云港市","淮安市","盐城市","扬州市","镇江市","泰州市","宿迁市"],
+  "浙江省":["杭州市","宁波市","温州市","嘉兴市","湖州市","绍兴市","金华市","衢州市","舟山市","台州市","丽水市"],
+  "安徽省":["合肥市","芜湖市","蚌埠市","淮南市","马鞍山市","淮北市","铜陵市","安庆市","黄山市","阜阳市","宿州市","滁州市","六安市","亳州市","池州市","宣城市"],
+  "福建省":["福州市","厦门市","莆田市","三明市","泉州市","漳州市","南平市","龙岩市","宁德市"],
+  "江西省":["南昌市","景德镇市","萍乡市","九江市","新余市","鹰潭市","赣州市","吉安市","宜春市","抚州市","上饶市"],
+  "山东省":["济南市","青岛市","淄博市","枣庄市","东营市","烟台市","潍坊市","济宁市","泰安市","威海市","日照市","临沂市","德州市","聊城市","滨州市","菏泽市"],
+  "河南省":["郑州市","开封市","洛阳市","平顶山市","安阳市","鹤壁市","新乡市","焦作市","濮阳市","许昌市","漯河市","三门峡市","南阳市","商丘市","信阳市","周口市","驻马店市","济源市"],
+  "湖北省":["武汉市","黄石市","十堰市","宜昌市","襄阳市","鄂州市","荆门市","孝感市","荆州市","黄冈市","咸宁市","随州市","恩施州","仙桃市","潜江市","天门市","神农架林区"],
+  "湖南省":["长沙市","株洲市","湘潭市","衡阳市","邵阳市","岳阳市","常德市","张家界市","益阳市","郴州市","永州市","怀化市","娄底市","湘西州"],
+  "广东省":["广州市","深圳市","珠海市","汕头市","佛山市","韶关市","湛江市","肇庆市","江门市","茂名市","惠州市","梅州市","汕尾市","河源市","阳江市","清远市","东莞市","中山市","潮州市","揭阳市","云浮市"],
+  "广西壮族自治区":["南宁市","柳州市","桂林市","梧州市","北海市","防城港市","钦州市","贵港市","玉林市","百色市","贺州市","河池市","来宾市","崇左市"],
+  "海南省":["海口市","三亚市","三沙市","儋州市"],
+  "四川省":["成都市","自贡市","攀枝花市","泸州市","德阳市","绵阳市","广元市","遂宁市","内江市","乐山市","南充市","眉山市","宜宾市","广安市","达州市","雅安市","巴中市","资阳市","阿坝州","甘孜州","凉山州"],
+  "贵州省":["贵阳市","六盘水市","遵义市","安顺市","毕节市","铜仁市","黔西南州","黔东南州","黔南州"],
+  "云南省":["昆明市","曲靖市","玉溪市","保山市","昭通市","丽江市","普洱市","临沧市","楚雄州","红河州","文山州","西双版纳州","大理州","德宏州","怒江州","迪庆州"],
+  "西藏自治区":["拉萨市","日喀则市","昌都市","林芝市","山南市","那曲市","阿里地区"],
+  "陕西省":["西安市","铜川市","宝鸡市","咸阳市","渭南市","延安市","汉中市","榆林市","安康市","商洛市"],
+  "甘肃省":["兰州市","嘉峪关市","金昌市","白银市","天水市","武威市","张掖市","平凉市","酒泉市","庆阳市","定西市","陇南市","临夏州","甘南州"],
+  "青海省":["西宁市","海东市","海北州","黄南州","海南州","果洛州","玉树州","海西州"],
+  "宁夏回族自治区":["银川市","石嘴山市","吴忠市","固原市","中卫市"],
+  "新疆维吾尔自治区":["乌鲁木齐市","克拉玛依市","吐鲁番市","哈密市","昌吉州","博尔塔拉州","巴音郭楞州","阿克苏地区","克孜勒苏州","喀什地区","和田地区","伊犁州","塔城地区","阿勒泰地区"]
+};
+const BELT_MUNICIPALS = ["北京市","天津市","上海市","重庆市"];
+// 省级别名（简称 -> 全名），按长度降序使用
+const BELT_PROV_ALIAS = (function(){
+  var out = [];
+  var SUF = ["特别行政区","维吾尔自治区","壮族自治区","回族自治区","自治区","省","市"];
+  Object.keys(BELT_REGION).forEach(function(full){
+    var alias = full;
+    for (var i=0;i<SUF.length;i++){
+      if (alias.length > SUF[i].length && alias.slice(-SUF[i].length) === SUF[i]) { alias = alias.slice(0, -SUF[i].length); break; }
+    }
+    out.push({ alias: full, full: full });
+    if (alias !== full) out.push({ alias: alias, full: full });
+  });
+  out.sort(function(a,b){ return b.alias.length - a.alias.length; });
+  return out;
+})();
+// 市名候选（去后缀后的裸名，用于包含匹配）
+function _beltCityBases(city){
+  var out = [city], x = city;
+  ["特别行政区","自治州","地区","林区","新区","盟","市","州","区","县"].forEach(function(suf){
+    if (x.length > suf.length && x.slice(-suf.length) === suf) { x = x.slice(0, -suf.length); out.push(x); }
+  });
+  return out.filter(function(v){ return v && v.length >= 2; });
+}
+// 常见县级产业带 / 商圈别名 -> 标准 省-市（2026-10-13：产业带看板 34 个带前缀集群中非地级市的部分全部补齐）
+const BELT_CITY_ALIAS = {
+  "义乌":"浙江省-金华市","义乌市":"浙江省-金华市","桐乡":"浙江省-嘉兴市","濮院":"浙江省-嘉兴市","海宁":"浙江省-嘉兴市","平湖":"浙江省-嘉兴市",
+  "常熟":"江苏省-苏州市","昆山":"江苏省-苏州市","张家港":"江苏省-苏州市","江阴":"江苏省-无锡市","织里":"浙江省-湖州市","诸暨":"浙江省-绍兴市",
+  "慈溪":"浙江省-宁波市","乐清":"浙江省-温州市","瑞安":"浙江省-温州市","四会":"广东省-肇庆市","虎门":"广东省-东莞市","大朗":"广东省-东莞市",
+  "石狮":"福建省-泉州市","晋江":"福建省-泉州市","闽西":"福建省-龙岩市","白沟":"河北省-保定市","即墨":"山东省-青岛市",
+  "十三行":"广东省-广州市","沙河":"广东省-广州市","增城":"广东省-广州市","番禺":"广东省-广州市","南海":"广东省-佛山市","顺德":"广东省-佛山市",
+  "小榄":"广东省-中山市","芦淞":"湖南省-株洲市"
+};
+/* 省市规范化：raw -> {ok, fuzzy, prov, city, text, msg}
+   例：「湖南株洲」-> 湖南省-株洲市 ；「株洲」-> 湖南省-株洲市 ；「上海」-> 上海市-上海市 */
+function normalizeBeltRegion(raw){
+  var s = String(raw || '').replace(/[\s\u3000]/g, '')
+            .replace(/[·、,，\/|\\;；:：\-—_（）()【】\[\]]/g, '');
+  if (!s) return { ok:false, fuzzy:false, prov:'', city:'', text:'', msg:'请填写省市（如：湖南株洲）' };
+  // 0) 县级产业带/商圈别名直查（义乌->浙江省-金华市）
+  if (BELT_CITY_ALIAS[s]) {
+    var ap = BELT_CITY_ALIAS[s].split('-');
+    return { ok:true, fuzzy:false, prov:ap[0], city:ap[1], text:BELT_CITY_ALIAS[s], msg:'' };
+  }
+  // 1) 省级：优先匹配开头，其次整体包含
+  var prov = '', hitAlias = '', i, j;
+  for (i=0;i<BELT_PROV_ALIAS.length;i++){
+    var a = BELT_PROV_ALIAS[i].alias;
+    if (s.slice(0, a.length) === a) { prov = BELT_PROV_ALIAS[i].full; hitAlias = a; break; }
+  }
+  if (!prov){
+    for (i=0;i<BELT_PROV_ALIAS.length;i++){
+      var a2 = BELT_PROV_ALIAS[i].alias;
+      if (s.indexOf(a2) >= 0) { prov = BELT_PROV_ALIAS[i].full; hitAlias = a2; break; }
+    }
+  }
+  var rest = prov ? s.split(hitAlias).join('') : s;
+  // 2) 市级
+  var provs = prov ? [prov] : Object.keys(BELT_REGION);
+  var hitCity = '';
+  for (i=0;i<provs.length && !hitCity;i++){
+    var cities = BELT_REGION[provs[i]] || [];
+    for (j=0;j<cities.length;j++){
+      var bases = _beltCityBases(cities[j]);
+      for (var k=0;k<bases.length;k++){
+        if (rest && rest.indexOf(bases[k]) >= 0) { hitCity = cities[j]; prov = provs[i]; break; }
+        if (!prov && s.indexOf(bases[k]) >= 0) { hitCity = cities[j]; prov = provs[i]; break; }
+      }
+      if (hitCity) break;
+    }
+  }
+  // 3) 直辖市只填到省级（如「上海」）→ 规范为 上海市-上海市
+  if (prov && !hitCity && BELT_MUNICIPALS.indexOf(prov) >= 0 && !rest) hitCity = prov;
+  if (prov && hitCity){
+    return { ok:true, fuzzy:false, prov:prov, city:hitCity, text:prov + '-' + hitCity, msg:'' };
+  }
+  if (prov && !hitCity){
+    if (!rest) return { ok:false, fuzzy:false, prov:prov, city:'', text:'', msg:'已识别「' + prov + '」，但没识别到市，请补到市级（如：湖南株洲）' };
+    var tail = rest;
+    if (!/(市|州|盟|区|县|地区|林区)$/.test(tail)) tail += '市';
+    return { ok:true, fuzzy:true, prov:prov, city:tail, text:prov + '-' + tail, msg:'市名未在标准字典中，已按原文填充为「' + tail + '」，请人工确认' };
+  }
+  return { ok:false, fuzzy:false, prov:'', city:'', text:'', msg:'未识别到省市，请按「湖南株洲」或「浙江金华义乌」格式填写到地级市' };
+}
+// 产业带字段显隐同步（modal / inline 双入口）
+function syncBeltFields(scope){
+  scope = scope || 'modal';
+  const prefix = scope === 'inline' ? 'inline-m' : 'm';
+  const src = document.getElementById(prefix + '-source');
+  const wrap = document.getElementById(prefix + '-belt-wrap');
+  if (!src || !wrap) return;
+  const isBelt = src.value === BELT_SOURCE;
+  wrap.style.display = isBelt ? 'block' : 'none';
+  if (!isBelt) {
+    ['-belt-cat','-belt-loc'].forEach(function(suf){
+      const el = document.getElementById(prefix + suf); if (el) el.value = '';
+    });
+    const hintEl = document.getElementById(prefix + '-belt-loc-hint'); if (hintEl) { hintEl.textContent = ''; hintEl.style.color = '#94a3b8'; }
+  }
+}
+// 省市输入实时规范化预览
+function onBeltLocInput(scope){
+  scope = scope || 'modal';
+  const prefix = scope === 'inline' ? 'inline-m' : 'm';
+  const el = document.getElementById(prefix + '-belt-loc');
+  const hint = document.getElementById(prefix + '-belt-loc-hint');
+  if (!el || !hint) return;
+  const r = normalizeBeltRegion(el.value);
+  if (!el.value.trim()) { hint.textContent = '填写后自动规范，例如「湖南株洲」→「湖南省-株洲市」'; hint.style.color = '#94a3b8'; return; }
+  if (r.ok && !r.fuzzy) { hint.textContent = '✅ 已规范为：' + r.text; hint.style.color = '#15803d'; }
+  else if (r.ok && r.fuzzy) { hint.textContent = '⚠️ ' + r.text + '（' + r.msg + '）'; hint.style.color = '#b45309'; }
+  else { hint.textContent = '❌ ' + r.msg; hint.style.color = '#b91c1c'; }
+}
+
 const LINKS = ["直播带货","短视频挂车","小程序商城","微信小店直购","视频号橱窗"];
 const AGENTS = ["蓝色光标","利欧数字","引力传媒","华扬联众","天与空","直接对接"];
 const SOURCES = ["沙龙拓客","1v1走访","全域通电销","服务商转介绍","客户转介绍","主动来询"]; // 兼容旧字段（实际是「拓客途径」）
@@ -1489,6 +1667,8 @@ function onSourceChange(scope) {
   if (!src || !wrap) return;
   const isTarget = src.value === TARGET_BRAND_SOURCE;
   wrap.style.display = isTarget ? '' : 'none';
+  // 2026-10-13 子青需求：产业带来源 → 强制「产业带类目 + 省市」
+  try { syncBeltFields(scope); } catch(e){}
   if (isTarget) {
     fillBrandSelect(prefix + '-brand');
     // 异步刷新 count 后重填 (确保下拉里的 [剩 N/3] 是最新的)
@@ -3908,6 +4088,12 @@ function initRegisterModal() {
     const prev = document.getElementById('m-evidence-preview'); if (prev) prev.innerHTML = '';
   } catch(e){}
   document.getElementById('m-name-hint').innerHTML = '';
+  // 2026-10-13：清空产业带强制字段（显隐交给下面的 onSourceChange）
+  try {
+    var _mbc = document.getElementById('m-belt-cat'); if (_mbc) _mbc.value = '';
+    var _mbl = document.getElementById('m-belt-loc'); if (_mbl) _mbl.value = '';
+    var _mbh = document.getElementById('m-belt-loc-hint'); if (_mbh) { _mbh.textContent = '填写后自动规范，例如「湖南株洲」→「湖南省-株洲市」'; _mbh.style.color = '#94a3b8'; }
+  } catch(e){}
   onChannelChange();
   // 销售身份锁定：普通销售=锁本人；管理员=可改
   try {
@@ -3989,6 +4175,11 @@ function resetInlineRegister(){
   const hint = document.getElementById('inline-m-name-hint'); if (hint) hint.innerHTML='';
   const ev = document.getElementById('inline-m-evidence'); if (ev) ev.value='';
   const prev = document.getElementById('inline-m-evidence-preview'); if (prev) prev.innerHTML='';
+  window.__EDIT_PENDING_EVIDENCE__ = []; window.__EVIDENCE_PROMISES__ = [];
+  // 2026-10-13：清空产业带强制字段
+  const ibc = document.getElementById('inline-m-belt-cat'); if (ibc) ibc.value='';
+  const ibl = document.getElementById('inline-m-belt-loc'); if (ibl) ibl.value='';
+  const ibh = document.getElementById('inline-m-belt-loc-hint'); if (ibh) { ibh.textContent='填写后自动规范，例如「湖南株洲」→「湖南省-株洲市」'; ibh.style.color='#94a3b8'; }
   pendingImages = []; renderThumbs();
   const date = document.getElementById('inline-m-date'); if (date) date.value = new Date().toISOString().slice(0,10);
   // R12.1 重置品牌选择器
@@ -3999,7 +4190,8 @@ function resetInlineRegister(){
 function copyInlineToModalAndSubmit(){
   if (!document.getElementById('inline-m-name')) return;
   fillModalSelect('m-category', CATEGORIES); fillModalSelect('m-sales', SALES); fillModalSelect('m-channel', CHANNELS); fillModalSelect('m-source', CUSTOMER_SOURCES);
-  const map = [['inline-m-name','m-name'],['inline-m-category','m-category'],['inline-m-sales','m-sales'],['inline-m-channel','m-channel'],['inline-m-resource','m-resource'],['inline-m-source','m-source'],['inline-m-date','m-date']];
+  // 2026-10-13：产业带强制字段一并同步到 modal（校验统一在 submitRecord 收口）
+  const map = [['inline-m-name','m-name'],['inline-m-category','m-category'],['inline-m-sales','m-sales'],['inline-m-channel','m-channel'],['inline-m-resource','m-resource'],['inline-m-source','m-source'],['inline-m-date','m-date'],['inline-m-belt-cat','m-belt-cat'],['inline-m-belt-loc','m-belt-loc']];
   map.forEach(([a,b]) => { const src=document.getElementById(a), dst=document.getElementById(b); if(src&&dst) dst.value=src.value; });
   onChannelChange();
   // R12.1 靶向品牌同步 (先触发 modal 侧的 source 切换, 再复制品牌值)
@@ -4604,6 +4796,18 @@ window.submitRecord = async () => {
         rec.source = _newSrc;
       }
       rec.date = document.getElementById('m-date').value || rec.date;
+      // 2026-10-13：产业带字段（修改/补充模式可选，填了才更新）
+      try {
+        await awaitEvidenceReady();
+        const _bc = (document.getElementById('m-belt-cat') || {}).value || '';
+        const _bl = (document.getElementById('m-belt-loc') || {}).value || '';
+        if (_bc) { rec.beltCat = _bc; rec.cat = BELT_CAT_TO_CAT[_bc] || _bc; }
+        if (_bl) {
+          const _rr = normalizeBeltRegion(_bl);
+          if (_rr.ok) { rec.beltLoc = _rr.text; rec.zone = _rr.text; }
+          else { rec.beltLoc = _bl; rec.zone = _bl; }
+        }
+      } catch(e){}
       // 建联截图合并：保留已有 + 新增
       const existImgs = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
       const newImgs = Array.isArray(window.__EDIT_PENDING_EVIDENCE__) ? window.__EDIT_PENDING_EVIDENCE__ : [];
@@ -4620,6 +4824,9 @@ window.submitRecord = async () => {
       return;
     }
   }
+  // 2026-10-13 子青需求②：等所有建联截图压缩完成，再取最终列表
+  await awaitEvidenceReady();
+  const evidenceImages = Array.isArray(window.__EDIT_PENDING_EVIDENCE__) ? window.__EDIT_PENDING_EVIDENCE__.slice() : [];
   const name = document.getElementById('m-name').value.trim();
   const category = document.getElementById('m-category').value;
   const sales = document.getElementById('m-sales').value;
@@ -4630,6 +4837,12 @@ window.submitRecord = async () => {
   let source = document.getElementById('m-source').value;
   const date = document.getElementById('m-date').value;
   if (!name) return alert('客户主体名称必填');
+  // 2026-10-13 子青需求②：建联截图必填（新增登记；「修改/补充」模式仍可选）
+  if (!evidenceImages.length) {
+    alert('❌ 建联截图为必填项\n\n新客登记必须上传至少 1 张建联截图（微信聊天记录 / 通话记录 / 走访照片等可证明已建立联系的材料）。\n\n请点击下方「建联截图」选择图片后再提交。');
+    try { const evEl = document.getElementById('m-evidence') || document.getElementById('inline-m-evidence'); if (evEl) evEl.focus(); } catch(e){}
+    return;
+  }
   if (channel !== '自拓' && !resource) return alert('拓客途径为「' + channel + '」时，资源方需要填写');
   const look = lookupEntity(name);
   const shortName = look.short || name;
@@ -4665,17 +4878,38 @@ window.submitRecord = async () => {
     targetRejected = !!judge.targetRejected;
     rejectedBrand = judge.rejectedBrand || '';
   }
+  // 2026-10-13 子青需求①：产业带客户强制「产业带类目 + 省市」，省市自动规范为 省-市
+  let beltCat = '', beltLoc = '';
+  if (source === BELT_SOURCE) {
+    beltCat = (document.getElementById('m-belt-cat') || {}).value || '';
+    const beltLocRaw = (document.getElementById('m-belt-loc') || {}).value || '';
+    if (!beltCat) {
+      return alert('客户来源为「' + BELT_SOURCE + '」时，必须选择「产业带类目」。\n\n可选：男装 / 女装 / 贴身衣物 / 箱包 / 鞋靴 / 运动户外 / 珠宝 / 文玩 / 配饰');
+    }
+    if (!beltLocRaw.trim()) {
+      return alert('客户来源为「' + BELT_SOURCE + '」时，必须填写「省市」。\n\n按「湖南株洲」格式填到地级市，系统会自动规范为「湖南省-株洲市」。');
+    }
+    const _rg = normalizeBeltRegion(beltLocRaw);
+    if (!_rg.ok) {
+      return alert('省市无法自动规范：' + _rg.msg + '\n\n请按「湖南株洲」格式填到地级市；也可只填市名（如「株洲」「义乌」），系统会自动补全省份。');
+    }
+    beltLoc = _rg.text;
+  }
   const finalBrand = targetBrand || shortName;
   // 自动匹配投放端（基于今晚的字典；查不到 = 未匹配投放）
   const DELIVERY_SIDE_MAP = window.__DELIVERY_SIDE_MAP__ || {};
   const deliverySide = DELIVERY_SIDE_MAP[shortName] || DELIVERY_SIDE_MAP[name] || '未匹配投放';
   const rec = {
     id:Date.now(), date, sale:sales, name, shortName,
-    brand:finalBrand, cat:category, link:links.join('、'), links,
+    brand:finalBrand, cat:(beltCat ? (BELT_CAT_TO_CAT[beltCat] || beltCat) : category), link:links.join('、'), links,
+    // 2026-10-13 产业带强制字段（beltCat 细项 + beltLoc 规范后的「省-市」）
+    beltCat: beltCat, beltLoc: beltLoc,
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:isNewForQuarter(look.firstQuarter), isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', customerType:isNewForQuarter(look.firstQuarter) ? '新客' : `非本季度新客 ${look.firstQuarter || ''}老客`, status:isNewForQuarter(look.firstQuarter) ? '新客' : '存量',
-    cost:0, zone:'', maturity:'', deliverySide, images:[],
+    cost:0, zone:(beltLoc || ''), maturity:'', deliverySide, images:[],
+    // 2026-10-13 建联截图（必填，已压缩为 jpeg dataURL）
+    evidenceImages: evidenceImages, evidenceCount: evidenceImages.length,
     // R12.1 靶向登记留痕
     targetRejected: targetRejected, rejectedBrand: rejectedBrand
   };
@@ -4686,10 +4920,12 @@ window.submitRecord = async () => {
     window.__TARGET_BRAND_COUNTS__[rec.brand] = (window.__TARGET_BRAND_COUNTS__[rec.brand] || 0) + 1;
   }
   closeModal('modalRecord');
+  window.__EDIT_PENDING_EVIDENCE__ = [];   // 2026-10-13：提交成功后清空截图缓冲，避免下一条串图
   renderAll();
   let __targetInfo = '';
-  if (rec.source === TARGET_BRAND_SOURCE && rec.brand) __targetInfo = `\n🎯 靶向拓客：${rec.brand}`;
-  else if (targetRejected) __targetInfo = `\n⚠️ 品牌【${rejectedBrand}】已被覆盖 3 次，本次已作为「${TARGET_FALLBACK_SOURCE}」入库（不计入靶向拓客）。`;
+  if (beltLoc) __targetInfo = `\n🏭 产业带：${beltLoc} · ${beltCat}` + (evidenceImages.length ? `（建联截图 ${evidenceImages.length} 张）` : '');
+  if (rec.source === TARGET_BRAND_SOURCE && rec.brand) __targetInfo += `\n🎯 靶向拓客：${rec.brand}`;
+  else if (targetRejected) __targetInfo += `\n⚠️ 品牌【${rejectedBrand}】已被覆盖 3 次，本次已作为「${TARGET_FALLBACK_SOURCE}」入库（不计入靶向拓客）。`;
   // R14 根治#1: 云端确认成功才说"提交成功"；否则明确"暂存本地未入云"
   // 2026-10-10 根治「假成功」：云端返回 ok 但无写入凭证时，不得报"已入云端"
   //   凭证 = cached(此前已推送成功) / docId(新增返回) / updated(更新成功) 三者之一
@@ -4753,6 +4989,11 @@ function recordFromRow(row) {
   const links = splitLinks(pickField(row, ['链路','投放链路','客户链路']));
   const channel = pickField(row, ['拓客途径','渠道来源']) || (resource ? '服务商转介绍' : '自拓');
   const source = pickField(row, ['客户来源','来源']) || '';
+  // 2026-10-13：批量导入也支持产业带列（省市列自动规范为 省-市）
+  let beltCat = pickField(row, ['产业带类目','产业带品类']) || '';
+  const _beltLocRaw = pickField(row, ['省市','省-市','省 / 市','产业带省市','地区','城市','所在地','所在地市']);
+  let beltLoc = '';
+  if (_beltLocRaw) { try { const _rr = normalizeBeltRegion(_beltLocRaw); if (_rr.ok) beltLoc = _rr.text; } catch(e){} }
   const date = normalizeExcelDate(pickField(row, ['日期','登记日期']));
   const recognizedShort = look.matched ? (look.short || '') : '';
   const finalBrand = pickField(row, ['品牌名称','品牌/店铺名','品牌']) || recognizedShort || name;
@@ -4762,12 +5003,13 @@ function recordFromRow(row) {
   const customerType = _isNewFQ ? '新客' : `非本季度新客 ${look.firstQuarter || ''}老客`;
   return {
     id:Date.now()+Math.random(), date, sale:sales, name, shortName:recognizedShort,
-    brand:finalBrand, cat:category, link:(links.length ? links.join('、') : ''), links,
+    brand:finalBrand, cat:(beltCat ? (BELT_CAT_TO_CAT[beltCat] || beltCat) : category), link:(links.length ? links.join('、') : ''), links,
+    beltCat: beltCat, beltLoc: beltLoc,
     agent:resource, source, channel, resource,
     isRising:'', isTarget:false, isNew:_isNewFQ, isLaoke:look.isLaoke, matched:look.matched,
     firstQuarter:look.firstQuarter || '', old24:false,
     customerType,
-    status:_isNewFQ ? '新客' : '老客', cost:0, zone:'', maturity:'', images:[]
+    status:_isNewFQ ? '新客' : '老客', cost:0, zone:(beltLoc || ''), maturity:'', images:[], evidenceImages:[]
   };
 }
 function showAllImportedRecords() {
@@ -4793,7 +5035,16 @@ function importRows(rows) {
   showAllImportedRecords();
   renderAll();
   setTimeout(() => document.getElementById('recordTable')?.scrollIntoView({behavior:'smooth', block:'start'}), 50);
-  alert(`批量导入完成：${records.length} 条；已自动切换到「全部」周期并清空筛选。缺少字段已留空。数据量较大时仅前2000条持久化，当前页面已载入全部导入记录。`);
+  // 2026-10-13：产业带记录缺「省市/类目」的软提示（批量导入无法带图，不阻断）
+  let _beltTip = '';
+  try {
+    const _beltAll = records.filter(r => r.source === BELT_SOURCE);
+    const _beltMiss = _beltAll.filter(r => !r.beltLoc || !r.beltCat);
+    if (_beltMiss.length) _beltTip = `\n\n🏭 其中产业带客户 ${_beltAll.length} 条，${_beltMiss.length} 条缺「产业带类目/省市」：请在「修改/补充」中补齐（或导入表带「产业带类目」「省市」两列，系统会自动规范为 湖南省-株洲市）。`;
+    const _noImg = records.length;
+    if (_noImg) _beltTip += `\n📎 批量导入无法带建联截图，${_noImg} 条均需在「修改/补充」中补传截图。`;
+  } catch(e){}
+  alert(`批量导入完成：${records.length} 条；已自动切换到「全部」周期并清空筛选。缺少字段已留空。数据量较大时仅前2000条持久化，当前页面已载入全部导入记录。${_beltTip}`);
 }
 function importPresetBulkRows() {
   // R12.1 (2026-06-26): 改懒加载, 首屏省 360KB
@@ -4803,7 +5054,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20261012a';
+  s.src = 'data/bulk_import_rows.js?v=20261013a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -4964,6 +5215,13 @@ function openEditRecord(rid) {
     if ($('m-resource')) $('m-resource').value = rec.resource || '';
     if ($('m-source'))   $('m-source').value = rec.source || '';
     if ($('m-date'))     $('m-date').value = rec.date || '';
+    // 2026-10-13：产业带字段回显（beltCat 细项 / beltLoc 规范后的 省-市）
+    try {
+      if ($('m-belt-cat')) $('m-belt-cat').value = rec.beltCat || '';
+      if ($('m-belt-loc')) $('m-belt-loc').value = rec.beltLoc || rec.zone || '';
+      if (typeof syncBeltFields === 'function') syncBeltFields('modal');
+      if (typeof onBeltLocInput === 'function' && ($('m-belt-loc').value || '')) onBeltLocInput('modal');
+    } catch(e){}
     if (typeof onChannelChange === 'function') onChannelChange();
     // 修改模式销售下拉权限（2026-05-26 12:25 用户拍板，业务死规矩）：
     //   1. 管理员 (ziqingdu/kinsleyjin) → 解锁，可任意改
@@ -5019,27 +5277,66 @@ function openEditRecord(rid) {
 }
 window.openEditRecord = openEditRecord;
 
+/* 2026-10-13 子青需求②：建联截图改为「登记必填」，并压缩后再上传。
+   原图（手机直出 3~5MB/张）直接转 dataURL 会撑爆云端单文档，统一压到长边 1280 / jpeg 0.72。 */
+function _compressImageFile(file, maxEdge, quality) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var src = e.target.result;
+      var img = new Image();
+      img.onload = function() {
+        try {
+          var w = img.width, h = img.height;
+          var scale = Math.min(1, maxEdge / Math.max(w, h || 1));
+          var cw = Math.round(w * scale), ch = Math.round(h * scale);
+          var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+          var ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cw, ch); ctx.drawImage(img, 0, 0, cw, ch);
+          var out = cv.toDataURL('image/jpeg', quality);
+          resolve(out && out.length > 100 ? out : src);
+        } catch (err) { resolve(src); }
+      };
+      img.onerror = function() { resolve(src); };
+      img.src = src;
+    };
+    reader.onerror = function() { resolve(null); };
+    reader.readAsDataURL(file);
+  });
+}
+window.__EVIDENCE_PROMISES__ = [];
 function onEvidenceChange(ev) {
+  const isInline = /^inline-/.test((ev.target && ev.target.id) || '');
+  const prevId = isInline ? 'inline-m-evidence-preview' : 'm-evidence-preview';
   const files = Array.from(ev.target.files || []);
   files.forEach(f => {
     if (!f.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = e => {
+    const p = _compressImageFile(f, 1280, 0.72).then(function(dataUrl) {
+      if (!dataUrl) return;
       window.__EDIT_PENDING_EVIDENCE__ = window.__EDIT_PENDING_EVIDENCE__ || [];
-      window.__EDIT_PENDING_EVIDENCE__.push(e.target.result);
-      const prev = document.getElementById('m-evidence-preview');
+      window.__EDIT_PENDING_EVIDENCE__.push(dataUrl);
+      const prev = document.getElementById(prevId);
       if (prev) {
         const img = document.createElement('img');
-        img.src = e.target.result;
+        img.src = dataUrl;
         img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer;';
-        img.onclick = () => openLightbox(e.target.result);
+        img.onclick = (function(u){ return function(){ openLightbox(u); }; })(dataUrl);
         prev.appendChild(img);
+        // 去掉「暂无建联截图」占位
+        const ph = prev.querySelector('span'); if (ph) ph.remove();
       }
-    };
-    reader.readAsDataURL(f);
+    });
+    window.__EVIDENCE_PROMISES__.push(p);
   });
 }
 window.onEvidenceChange = onEvidenceChange;
+// 提交前等待所有截图压缩完成（否则会出现「已选图但提交时判定未上传」）
+async function awaitEvidenceReady() {
+  const ps = window.__EVIDENCE_PROMISES__ || [];
+  if (!ps.length) return;
+  try { await Promise.all(ps); } catch (e) {}
+  window.__EVIDENCE_PROMISES__ = [];
+}
+window.awaitEvidenceReady = awaitEvidenceReady;
 
 // 事件代理：点击 .btn-edit-record → openEditRecord
 document.addEventListener('click', e => {
