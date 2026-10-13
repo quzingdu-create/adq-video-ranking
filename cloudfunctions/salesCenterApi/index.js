@@ -854,6 +854,12 @@ async function saveUserRecord(params, context) {
     date: normName(record.date || params.date) || new Date(now).toISOString().slice(0, 10),
     link: normName(record.link || params.link || ''),
     brand: normName(record.brand || params.brand || ''),
+    // 2026-10-13 产业带登记强制字段：销售自填的「产业带类目(细项)」+「规范化省市(省-市)」
+    //   前端 kanban_embed.html 在 source='26年4月后产业带拓客' 时强制填写，此前云函数字段白名单会丢弃 → 补上
+    beltCat: normName(record.beltCat || params.beltCat || ''),
+    beltLoc: normName(record.beltLoc || params.beltLoc || ''),
+    zone: normName(record.zone || params.zone || ''),
+    agent: normName(record.agent || record.resource || params.agent || params.resource || ''),
     isRising: !!(record.isRising),
     isTarget: !!(record.isTarget),
     isNew: !!(record.isNew),
