@@ -9,7 +9,7 @@
  *   - 全量「拓新组登记客户明细」：window.__TUOKE_REAL_RECORDS__ 全部 (14631 登记表口径)
  *     表头 18 列 = 登记日期/销售/主体/简称/首投季度/是否新客/有效/新锐/链路（手填）/投放端（AData）
  *                /类目/拓客途径/拓客来源/商品消费链路/链路日耗/全域通日耗/ADQ日耗/综合投放端
- *   - 新客「25Q3-26Q3新客明细」：data/kanban_new_customer_view.js 大盘视图 (30402 / 与 KPI 卡 8142 同源)
+ *   - 新客「25Q3-26Q4新客明细」：data/kanban_new_customer_view.js 大盘视图 (30402 / 与 KPI 卡 8142 同源)
  *     表头 6 列 = 客户简称 / 登记销售 / 首投季度 / 是否新客 / 是否有效 / 是否新锐
  *
  * 2026-06-15 修复1：PC / mobile 首屏提速后不再同步加载 tuoke_real_records.js，
@@ -340,7 +340,7 @@
     return r.link || '';
   }
 
-  var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1,'2026Q3':1 };
+  var NEW_QSET = { '2025Q3':1,'2025Q4':1,'2026Q1':1,'2026Q2':1,'2026Q3':1,'2026Q4':1 };
   function normalizeQuarter(v) { return String(v || '').replace('/', ''); }
   function isNewByFq(r) { return !!NEW_QSET[normalizeQuarter(r.firstQuarter)]; }
   // 2026-07-13 修复：废除硬编码年份映射（原逻辑 7-12月→2025 / 1-6月→2026）。
@@ -423,7 +423,7 @@
   function exportXlsxNewView(rows, sheetName, filenamePrefix) {
     if (!rows.length) return Promise.reject(new Error('没有命中数据'));
     return ensureXlsxReady().then(function () {
-      var quarterOrder = { '2025Q3':1, '2025Q4':2, '2026Q1':3, '2026Q2':4, '2026Q3':5 };
+      var quarterOrder = { '2025Q3':1, '2025Q4':2, '2026Q1':3, '2026Q2':4, '2026Q3':5, '2026Q4':6 };
       var sorted = rows.slice().sort(function (a, b) {
         var qa = quarterOrder[normalizeQuarter(a['首投季度'])] || 9;
         var qb = quarterOrder[normalizeQuarter(b['首投季度'])] || 9;
@@ -449,7 +449,7 @@
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
       // 汇总分季度
-      var summary = { '2025Q3':[0,0,0], '2025Q4':[0,0,0], '2026Q1':[0,0,0], '2026Q2':[0,0,0], '2026Q3':[0,0,0] };
+      var summary = { '2025Q3':[0,0,0], '2025Q4':[0,0,0], '2026Q1':[0,0,0], '2026Q2':[0,0,0], '2026Q3':[0,0,0], '2026Q4':[0,0,0] };
       sorted.forEach(function (r) {
         var q = normalizeQuarter(r['首投季度']); if (!summary[q]) return;
         if (r['是否新客'] === '是') summary[q][0]++;
@@ -469,7 +469,8 @@
         ['2025Q4', summary['2025Q4'].join(' / ')],
         ['2026Q1', summary['2026Q1'].join(' / ')],
         ['2026Q2', summary['2026Q2'].join(' / ')],
-        ['2026Q3', summary['2026Q3'].join(' / ')]
+        ['2026Q3', summary['2026Q3'].join(' / ')],
+        ['2026Q4', summary['2026Q4'].join(' / ')]
       ];
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
       var ymd = new Date().toISOString().slice(0, 10);
@@ -542,8 +543,8 @@
       '拓新组登记客户明细',
       '全量登记');
     bindNewViewBtn('btnExportTuokeNew',
-      '⬇️ 25Q3-26Q3新客明细',
-      '25Q3-26Q3新客明细',
+      '⬇️ 25Q3-26Q4新客明细',
+      '25Q3-26Q4新客明细',
       '新客明细');
   }
 
