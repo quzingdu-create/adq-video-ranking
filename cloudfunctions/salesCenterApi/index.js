@@ -928,13 +928,33 @@ async function listUserRecords(params) {
   if (params.since) where._updatedAt = _.gte(Number(params.since));
   // R37 (2026-08-09): 上限 1000 → 3000. 云端一次批量补录 kaikai/Jonzhu 300+ 条,
   // 加上其他销售当天登记, 1000 完全不够, 前端能拉但看不到本人 08-09 记录
-  const limit = safeLimit(params.limit, 500, 3000);
+  // 🔴 2026-10-19 二次放宽：剥离 evidenceImages 后单条实测 613 字节，
+  //   6000 条 ≈ 3.7MB，仍在 CloudBase 6MB 响应上限内（62%），
+  //   足以一次覆盖云端全量（当前 5,643 条），彻底消除「翻页不全 → 漏拉 → 显示未登记」。
+  const limit = safeLimit(params.limit, 500, 6000);
   // 🔴 2026-10-19：CloudBase 单次 get() 硬上限 1000 条，而云端已 5600+ 条，
   //   旧实现 limit=3000 实际只回 1000 条 → 稍早的登记永远拉不回来（同样表现为「看不到」）。
   //   改为按 _updatedAt 游标翻页，直到凑满 limit 或无更多数据。
   //   （剥离 evidenceImages 后单条 0.57KB，3000 条仅 1.7MB，远低于 6MB 上限）
+  // 🔴 2026-10-19 P0 根治：列表接口必须剥离 evidenceImages（base64 建联截图）。
+  //   实测单条均 5.6KB → 前端 pullCloudOnBoot 的 limit=3000 约 17.4MB，远超 CloudBase
+  //   HTTP 响应 6MB 上限 → 云函数返回 406 → 前端 `if (!cloudList.length) return` 静默吞错
+  //   → 销售刷新后看不到自己刚提交的登记 → 反复提交 → 云端产生同一客户多条重复记录
+  //   （2026-10-19「嘉兴羽畅服饰有限公司」被 Jonzhu 连提 5 次）。
+  //   修法：列表只回 evidenceCount；建联截图按需走 getCustomerDetail 单独取。
+  // 🔴 注意：必须在翻页循环「内」就剥离，否则体积熔断量到的是含图裸记录
+  //   （1000 条即 5.6MB，会误判超限直接截断 —— 2026-10-19 实测踩坑）。
+  const strip = function (r) {
+    if (!r || typeof r !== 'object') return r;
+    var imgs = Array.isArray(r.evidenceImages) ? r.evidenceImages : [];
+    var o = Object.assign({}, r);
+    delete o.evidenceImages;
+    o.evidenceCount = imgs.length;
+    return o;
+  };
   const rows = [];
   let lastTs = null;
+  let truncated = false;
   while (rows.length < limit) {
     const size = Math.min(1000, limit - rows.length);
     const w = Object.assign({}, where);
@@ -944,25 +964,19 @@ async function listUserRecords(params) {
     const res = await database.collection(COLLECTIONS.userRecords).where(w).orderBy('_updatedAt', 'desc').limit(size).get();
     const batch = (res && res.data) || [];
     if (!batch.length) break;
-    for (const b of batch) rows.push(b);
-    lastTs = batch[batch.length - 1]._updatedAt;
+    const rawLast = batch[batch.length - 1]._updatedAt;
+    for (const b of batch) rows.push(strip(b));
+    lastTs = rawLast;
+    // 🔴 体积熔断：逼近 6MB 响应上限时主动停止翻页，避免整包 406（宁可少回，不可全丢）
+    try {
+      if (JSON.stringify(rows).length > 4.5 * 1024 * 1024) { truncated = true; break; }
+    } catch (_e) { truncated = true; break; }
     if (batch.length < size) break;
   }
-  // 🔴 2026-10-19 P0 根治：列表接口必须剥离 evidenceImages（base64 建联截图）。
-  //   实测单条均 5.6KB → 前端 pullCloudOnBoot 的 limit=3000 约 17.4MB，远超 CloudBase
-  //   HTTP 响应 6MB 上限 → 云函数返回 406 → 前端 `if (!cloudList.length) return` 静默吞错
-  //   → 销售刷新后看不到自己刚提交的登记 → 反复提交 → 云端产生同一客户多条重复记录
-  //   （2026-10-19「嘉兴羽畅服饰有限公司」被 Jonzhu 连提 5 次）。
-  //   修法：列表只回 evidenceCount；建联截图按需走 getCustomerDetail 单独取。
-  const light = (rows || []).map(function (r) {
-    if (!r || typeof r !== 'object') return r;
-    var imgs = Array.isArray(r.evidenceImages) ? r.evidenceImages : [];
-    var o = Object.assign({}, r);
-    delete o.evidenceImages;
-    o.evidenceCount = imgs.length;
-    return o;
-  });
-  return ok('listUserRecords', { count: light.length, records: light }, { collection: COLLECTIONS.userRecords, strippedImages: true });
+  const light = rows;
+  return ok('listUserRecords',
+    { count: light.length, records: light, truncated: truncated },
+    { collection: COLLECTIONS.userRecords, strippedImages: true, limit: limit });
 }
 // R34 (2026-08-07): 匿名会话读redspot_progress 集合会被行级安全拦截 (每次徽章卡 "☁️ 同步中")
 // 用云函数 admin 凭证读,绕过行级安全, 所有销售的 done 状态互相可见
