@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>客户生命周期系统 v0.1 · 服饰销售作战中心</title>
-<script src="data/mock_data.js?v=20261010h"></script>
+<script src="data/mock_data.js?v=20261019a"></script>
 <style>
   :root {
     --bg: #f5f7fb;
@@ -617,7 +617,7 @@
         <option value="李明">李明</option>
       </select>
     </span>
-    <span>数据日期：2026-06-10</span>
+    <span>数据日期：2026-10-18</span>
     <span style="color:var(--success);">✅ v0.5 服务映射+指标对标</span>
   </div>
 </header>
@@ -1030,7 +1030,7 @@ function renderCustomerGrid() {
     ? list.slice(customerPage * CUST_PAGE, customerPage * CUST_PAGE + CUST_PAGE)
     : list.slice(0, 10);
   grid.innerHTML = renderList.map(c => {
-    const lights = Object.values(c.metrics).map(m => m.status);
+    const lights = Object.values(c.metrics).map(m => m.s);
     const greenN = lights.filter(s => s === 'green').length;
     const yellowN = lights.filter(s => s === 'yellow').length;
     const redN = lights.filter(s => s === 'red').length;
@@ -1159,17 +1159,17 @@ function openDetail(id) {
   
   const metricRows = Object.entries(c.metrics).map(([key, m]) => {
     const d = dict[key] || { name: key, unit: '', desc: '' };
-    const valStr = (typeof m.val === 'number') ? `${m.val}${d.unit}` : m.val;
-    const benchStr = (typeof m.benchmark === 'number') ? `${m.benchmark}${d.unit}` : m.benchmark;
-    const aspireRaw = (m.bench_val !== undefined) ? m.bench_val : m.benchmark;
+    const valStr = (typeof m.v === 'number') ? `${m.v}${d.unit}` : m.v;
+    const benchStr = (typeof m.b === 'number') ? `${m.b}${d.unit}` : m.b;
+    const aspireRaw = (m.bv !== undefined) ? m.bv : m.b;
     const aspireStr = (typeof aspireRaw === 'number') ? `${aspireRaw}${d.unit}` : aspireRaw;
     return `
       <tr>
         <td class="m-name">${d.name}<span class="desc">${d.desc}</span></td>
-        <td><span class="v-self ${m.status}">${valStr}</span></td>
+        <td><span class="v-self ${m.s}">${valStr}</span></td>
         <td><span class="v-bench">${benchStr}</span></td>
         <td><span class="v-aspire">${aspireStr}</span></td>
-        <td class="light-cell"><span class="light ${m.status}"></span></td>
+        <td class="light-cell"><span class="light ${m.s}"></span></td>
       </tr>
     `;
   }).join('');
