@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1789447035';
+const dataUrl = './data.json?v=1792459405';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -328,6 +328,7 @@ function renderContent() {
   const tab = tabByKey(state.tabKey);
   if (!state.category) state.category = tab.categories[0] || '';
   const panel = document.getElementById('contentPanel');
+
   // 视频号数据隐藏开关：展示"数据更新中"占位，不渲染旧数据
   if (tab.data_hidden) {
     panel.innerHTML = `
@@ -786,17 +787,18 @@ function renderContent() {
 
   panel.innerHTML = `
     ${tab.key === 'ams' ? `
-<div style="margin:0 0 14px;padding:16px 18px;background:linear-gradient(135deg,#fff0f4 0%,#fffdfd 72%);border:1px solid #ffb3c6;border-radius:14px;box-shadow:0 3px 12px rgba(255,80,120,.10);">
-  <div style="font-weight:900;color:#d6336c;font-size:15px;margin-bottom:10px;">📣【女装暴量案例 · 四天消耗超100万单品｜搭配神器打底裤爆量】</div>
+<div style="margin:0 0 14px;padding:16px 18px;background:linear-gradient(135deg,#f6f0ff 0%,#fffdfd 72%);border:1px solid #c4b5fd;border-radius:14px;box-shadow:0 3px 12px rgba(139,92,246,.10);">
+  <div style="font-weight:900;color:#6d28d9;font-size:15px;margin-bottom:10px;">📣【案例分享・女装秋冬爆品｜艾草纤维半高领双面磨绒打底衫 7 天日耗从 0 到 42W】</div>
   <div style="font-size:12.5px;color:#33415c;line-height:1.9;">
-    <div style="margin-bottom:6px;"><span style="font-weight:800;color:#a61e4d;">● 核心概况：</span>主打女装搭配神器保暖打底裤，客单价 49.9 元（买一送一）</div>
-    <div style="margin-bottom:6px;"><span style="font-weight:800;color:#a61e4d;">● 核心数据：</span>近 4 天累计消耗超 100 万，ROI 达 2.80</div>
-    <div style="margin-bottom:4px;"><span style="font-weight:800;color:#a61e4d;">● 核心打法 &amp; 亮点：</span></div>
-    <div style="padding-left:16px;margin-bottom:3px;">① 投放节奏：采用「测试 - 爆发 - 稳定」三阶段递进放量，完成模型样本积累后叠加商品聚合页 + 潜客优投，消耗环比上涨 836%</div>
-    <div style="padding-left:16px;">② 素材迭代：套用场景种草黄金脚本，通过 AI 素材批量生产提升素材量级与丰富度，长视频拿量效果翻倍</div>
+    <div style="margin-bottom:6px;"><span style="font-weight:800;color:#5b21b6;">🔥 数据表现：</span>单品 GMV 单日峰值突破 85W+，环比涨幅超 4000%；点击率环比提升 20%，下单率环比上涨 43%，3 秒快滑率低至 20%，退款率仅 15%，较大盘低 20pp，成功打造秋冬打底衫标杆爆品！</div>
+    <div style="margin-bottom:4px;"><span style="font-weight:800;color:#5b21b6;">💡 核心打法：</span></div>
+    <div style="padding-left:16px;margin-bottom:3px;">✅ 多商品聚合页快速铺量：7 天落地 57 个多商品聚合页，为模型跑量提供充足基建弹药，支撑账户快速突破流量瓶颈，单日消耗快速冲至 42W 量级</div>
+    <div style="padding-left:16px;margin-bottom:3px;">✅ 高价拿量：首次出价约为客单价 50%，开播前提价三次提升广告竞争力；爆量后小幅降价逐步收窄成本，兼顾跑量速度与投产效率</div>
+    <div style="padding-left:16px;margin-bottom:3px;">✅ 冷启加速：多次开启「一键起量」持续正向刺激模型，预算从 200 元提升至 500 元，给予系统更充足的探索空间，大幅缩短冷启动周期</div>
+    <div style="padding-left:16px;">✅ ECO 分优化 + AIGC 数字人赋能：套用「封面钩子留人 - 中段卖点轰炸 - 结尾行动号召」三段式黄金素材结构，搭配 AIGC 数字人混剪展示上身效果；素材拿量能力与种草深度同步提升，长效拉高账户 ECO 分竞争力。</div>
   </div>
 </div>
-<div style="margin:0 0 16px;padding:16px 18px;background:linear-gradient(135deg,#fff6ef 0%,#fffdfb 70%);border:1px solid #ffd2b8;border-radius:14px;box-shadow:0 3px 12px rgba(255,130,70,.10);display:flex;gap:20px;align-items:flex-start;"><div style="flex:0 0 57%;min-width:0;"><div style="font-weight:900;color:#c2410c;font-size:15px;margin-bottom:12px;">近期 AMS 女装投放亮点（近 14 天）</div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 童装 · 校服保暖刚需领跑</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 8~10 万，ROI 达 3.0，退货率 23.7%<br>✅ 品类 童装、价格带 主力 60-99 元<br>✅ 卖点：棉/纯棉/羊毛、透气/速干/凉感，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 休闲裤 · 高ROI转化标杆</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 8~10 万，ROI 达 6.8，退货率 51.0%<br>✅ 品类 休闲裤、价格带 主力 200 元<br>✅ 卖点：麻/棉/冰丝、显瘦/高腰/透气，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● T恤 · 高CTR换季主力</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 8~10 万，ROI 达 4.5，退货率 48.0%<br>✅ 品类 T恤、价格带 主力 0-59 元<br>✅ 卖点：棉/纯棉/针织、显瘦/遮肉/透气，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="font-size:12.5px;color:#1f3a5f;font-weight:700;line-height:1.7;padding-top:10px;border-top:1px dashed #ffd2b8;">一句话总结：童装、休闲裤、T恤——三个方向消耗与转化都在上行，建议优先蓄水、提前占量。</div></div><div style="flex:0 0 38%;min-width:0;display:flex;gap:8px;align-items:flex-start;"><div class="hl-video-wrap" style="flex:1;position:relative;border-radius:10px;overflow:hidden;border:1px solid #ffd2b8;background:#000;"><span style="position:absolute;top:0;left:0;z-index:2;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#10b981,#10b981);border-radius:0 0 6px 0;">童装</span><video class="hl-lazy-video" data-src="https://adsmind.gdtimg.com/ads_svp_video__0b53aqaqqaabqaaccamix5vbwbaebacaccca.f10.mp4" muted loop autoplay playsinline webkit-playsinline controls preload="none" poster="" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover;"></video></div><div class="hl-video-wrap" style="flex:1;position:relative;border-radius:10px;overflow:hidden;border:1px solid #ffd2b8;background:#000;"><span style="position:absolute;top:0;left:0;z-index:2;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#f97316,#f97316);border-radius:0 0 6px 0;">休闲裤</span><video class="hl-lazy-video" data-src="https://adsmind.gdtimg.com/ads_svp_video__0b53uybdoaac4maof5meofurrjqeg6taen2a.f10.mp4" muted loop autoplay playsinline webkit-playsinline controls preload="none" poster="" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover;"></video></div><div class="hl-video-wrap" style="flex:1;position:relative;border-radius:10px;overflow:hidden;border:1px solid #ffd2b8;background:#000;"><span style="position:absolute;top:0;left:0;z-index:2;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:linear-gradient(135deg,#6366f1,#6366f1);border-radius:0 0 6px 0;">T恤</span><video class="hl-lazy-video" data-src="https://adsmind.gdtimg.com/ads_svp_video__0bc3wea2kaabxaafpu4ocnvbxmieuwyqdjka.f10.mp4" muted loop autoplay playsinline webkit-playsinline controls preload="none" poster="" style="width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:cover;"></video></div></div></div>` : ''}
+<div style="margin:0 0 16px;padding:16px 18px;background:linear-gradient(135deg,#fff6ef 0%,#fffdfb 70%);border:1px solid #ffd2b8;border-radius:14px;box-shadow:0 3px 12px rgba(255,130,70,.10);display:flex;gap:20px;align-items:flex-start;"><div style="flex:0 0 57%;min-width:0;"><div style="font-weight:900;color:#c2410c;font-size:15px;margin-bottom:12px;">近期 AMS 女装投放亮点（近 14 天）</div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 童装 · 校服保暖刚需领跑</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 15~20 万，ROI 达 3.2，退货率 36.7%<br>✅ 品类 童装、价格带 主力 60-99 元<br>✅ 卖点：棉/纯棉/针织、透气/亲肤/速干，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 打底衫 · 内搭基本盘稳增</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 15~20 万，ROI 达 3.4，退货率 44.3%<br>✅ 品类 打底衫、价格带 主力 60-99 元<br>✅ 卖点：棉/羊毛/蕾丝、显瘦/亲肤/透气，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="margin-bottom:11px;"><div style="font-weight:800;color:#13366d;font-size:13.5px;margin-bottom:4px;">● 休闲裤 · 高ROI转化标杆</div><div style="font-size:12.5px;color:#33415c;line-height:1.75;">✅ 数据亮点：日耗 10~15 万，ROI 达 6.0，退货率 48.9%<br>✅ 品类 休闲裤、价格带 主力 200 元<br>✅ 卖点：棉/麻/羊毛、显瘦/高腰/透气，适配人群 应季刚需客群，消耗与转化持续上行</div></div><div style="font-size:12.5px;color:#1f3a5f;font-weight:700;line-height:1.7;padding-top:10px;border-top:1px dashed #ffd2b8;">一句话总结：童装、打底衫、休闲裤——三个方向消耗与转化都在上行，建议优先蓄水、提前占量。</div></div><div style="flex:0 0 38%;min-width:0;display:flex;gap:8px;align-items:flex-start;"></div></div>` : ''}
     ${(tab.key === 'ams' || tab.key === 'douyin' || tab.key === 'wechat') ? `
     <!-- AMS/抖音/视频号：趋势图左(2/3) + 词云右(1/3) 并排 -->
     <div class="top-grid" style="grid-template-columns:${hasTrend ? '2fr 1fr' : '1fr'};gap:14px;align-items:stretch;">
