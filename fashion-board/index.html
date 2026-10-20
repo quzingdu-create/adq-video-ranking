@@ -194,7 +194,7 @@ html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-s
 </div>
 
 <script>
-const dataUrl = './data.json?v=1792467008';
+const dataUrl = './data.json?v=1792467392';
 let state = { tabKey: 'ams', category: '' };
 let store = null;
 
@@ -693,7 +693,7 @@ function renderContent() {
 
     return `
     <div class="chart-card" style="grid-column:1/-1;padding:18px 20px 14px;">
-      <div class="chart-title">Top5 品类 · 近30天销售额走势（万元）</div>
+      <div class="chart-title">抖音大盘 · 按天带货趋势（近${dates.length}天，单位：万）</div>
       <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" style="background:linear-gradient(180deg,#fcfdff 0%,#f7f9fc 100%);border-radius:10px;">
         ${legendHtml}
         ${yGrid}
