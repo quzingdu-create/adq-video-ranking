@@ -918,6 +918,50 @@ async function saveUserRecordsBatch(params, context) {
   }
   return ok('saveUserRecordsBatch', { requested: records.length, ok: okN, failed: failN });
 }
+// 2026-10-21 建联截图回补（P0 数据恢复）：只合并 evidenceImages，绝不覆盖其他业务字段。
+// 背景：2026-10-19 为修「销售看不到自己登记」把 listUserRecords 改成剥离 evidenceImages（只回 evidenceCount），
+//   随后 2026-10-21 00:13 的一次全量批量回写，用剥离版数据把云端原图覆盖成了空数组
+//   → 26Q4 344 条登记只剩 1 张截图。本机 localStorage 可能仍保有原图，故提供本接口做「只增不删」的合并回补。
+// 安全约束：
+//   ① 只 update evidenceImages / evidenceCount / _updatedAt 三个字段（CloudBase update 是部分更新，其余字段不动）
+//   ② 已有图片一律保留，按字符串去重后追加，任何情况下不写入空数组
+//   ③ 只接受 data:image/ 开头的 dataURL，防脏数据
+async function mergeEvidenceImages(params, context) {
+  params = params || {};
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  const items = Array.isArray(params.items) ? params.items : [];
+  if (!items.length) return fail('mergeEvidenceImages', 'EMPTY_ITEMS', 'items is required');
+  let merged = 0, skipped = 0, notFound = 0;
+  const errs = [];
+  for (const it of items) {
+    const id = (it && it.id != null) ? String(it.id) : '';
+    const rawImgs = (it && Array.isArray(it.evidenceImages)) ? it.evidenceImages : [];
+    const clean = rawImgs.filter(function (x) { return typeof x === 'string' && x.indexOf('data:image/') === 0; });
+    if (!id || !clean.length) { skipped++; continue; }
+    try {
+      const res = await database.collection(COLLECTIONS.userRecords).where({ id: id }).limit(1).get();
+      const row = res && res.data && res.data[0];
+      if (!row || !row._id) { notFound++; continue; }
+      const exist = Array.isArray(row.evidenceImages) ? row.evidenceImages : [];
+      const seen = new Set(exist);
+      const add = clean.filter(function (x) { return !seen.has(x); });
+      if (!add.length) { skipped++; continue; }
+      await database.collection(COLLECTIONS.userRecords).doc(row._id).update({
+        evidenceImages: exist.concat(add),
+        evidenceCount: exist.length + add.length,
+        _updatedAt: Date.now()
+      });
+      merged++;
+    } catch (e) {
+      errs.push(id + ':' + ((e && e.message) || 'unknown'));
+    }
+  }
+  return ok('mergeEvidenceImages',
+    { requested: items.length, merged: merged, skipped: skipped, notFound: notFound, errors: errs.slice(0, 5) },
+    { collection: COLLECTIONS.userRecords, actor: getActor(params, context) });
+}
+
 async function listUserRecords(params) {
   params = params || {};
   const database = getDb();
@@ -1327,6 +1371,7 @@ async function handle(action, params, context) {
     case 'listUserRecords': return await listUserRecords(params);
     case 'exportAllUserRecords': return await exportAllUserRecords(params);
     case 'deleteUserRecord': return await deleteUserRecord(params, context);
+    case 'mergeEvidenceImages': return await mergeEvidenceImages(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     case 'listRedspotProgress': return await listRedspotProgress(params);
