@@ -1,2 +1,2 @@
-/* Auto-generated 2026-10-20 from 新锐名单-10.19.xlsx */
-window.__CURRENT_RISING_SET__ = new Set(["广州一群科技有限公司","泉州卡尊贸易有限公司"]);
+/* Auto-generated 2026-10-21 from 新锐名单-10.19.xlsx */
+window.__CURRENT_RISING_SET__ = new Set(["QIIKII","义乌茉沫服饰有限公司","多特(苏州)服饰有限公司","天石(二代)","常熟市奔晨服饰有限公司","广州一群科技有限公司","株洲澜石服饰有限公司","泉州卡尊贸易有限公司","海口龙华洽仁百货店"]);
