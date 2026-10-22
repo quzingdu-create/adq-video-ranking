@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20261022a"></script>
+<script src="sc_logger.js?v=20261022b"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -58,7 +58,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20261022a')
+    return fetch('data/manual_attr_override.json?v=20261022b')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -94,33 +94,35 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20261022a"></script>
-<script defer src="api_client.js?v=20261022a"></script>
-<script defer src="data_adapter.js?v=20261022a"></script>
+<script defer src="cloud_gray_switch.js?v=20261022b"></script>
+<script defer src="api_client.js?v=20261022b"></script>
+<script defer src="data_adapter.js?v=20261022b"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20261022a"></script> -->
-<script src="data/center_sales_summary.js?v=20261022a"></script>
-<script src="data/center_quarter_summary.js?v=20261022a"></script>
-<script src="data/center_daily_kpi.js?v=20261022a"></script>
-<script src="data/top80_effective_metrics.js?v=20261022a"></script>
-<script src="data/top_status_data.js?v=20261022a"></script>
-<script src="data/enough_candidates.js?v=20261022a"></script>
-<script src="data/handover_customers_519.js?v=20261022a"></script>
-<script src="data/target_brand_pool.js?v=20261022a"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20261022b"></script> -->
+<script src="data/center_sales_summary.js?v=20261022b"></script>
+<script src="data/center_quarter_summary.js?v=20261022b"></script>
+<script src="data/center_daily_kpi.js?v=20261022b"></script>
+<script src="data/top80_effective_metrics.js?v=20261022b"></script>
+<script src="data/top_status_data.js?v=20261022b"></script>
+<script src="data/enough_candidates.js?v=20261022b"></script>
+<script src="data/handover_customers_519.js?v=20261022b"></script>
+<script src="data/target_brand_pool.js?v=20261022b"></script>
+<!-- 2026-10-22 新增：本季度新客唯一真源（ops 新客表），与 first_quarter.js 事实口径解耦 -->
+<script src="data/ops_new_set.js?v=20261022b"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20261022a" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20261022b" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20261022a"></script>
-<script defer src="dual_check.js?v=20261022a"></script>
-<script defer src="big_data_dual_check.js?v=20261022a"></script>
+<script defer src="cloud_sync.js?v=20261022b"></script>
+<script defer src="dual_check.js?v=20261022b"></script>
+<script defer src="big_data_dual_check.js?v=20261022b"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -923,7 +925,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261022a`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261022b`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260915x')) frame.setAttribute('src', target);
   }
@@ -1122,7 +1124,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261022a" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261022b" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1138,7 +1140,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261022a" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261022b" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1235,7 +1237,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261022a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261022b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3327,10 +3329,11 @@ function customerTypeForQuarter(r) {
   //   不再拿 customerType/status 当季度用（normalizeQuarter 对非季度串恒返回 ''，
   //   旧写法会让「历史无消耗记录」的客户落进 `非本季度新客  老客` 这种空季度文案）
   const fq = normalizeQuarter(r.firstQuarter || '');
-  const t = customerTierOf(fq, state.quarter);
-  if (t.tier === 'new') return `${fmtQuarter(t.fq)} 新客`;
+  const t = customerTierOf(fq, state.quarter, [r.shortName, r.name]);
+  if (t.tier === 'new') return `${fmtQuarter(state.quarter)} 新客`;
   if (t.tier === 'old') return `老客（首投 ${fmtQuarter(t.fq)}）`;
-  // ③ 首投季度缺失：ops 新客表命中过（rebuild 回写 isNew）才算已确认新客
+  if (t.tier === 'q4_not_ops') return `${fmtQuarter(state.quarter)} 首投 · ops 未收录`;
+  // ④ 首投季度缺失：ops 新客表命中过（rebuild 回写 isNew）才算已确认新客
   if (r.isNew === true) return `${fmtQuarter(state.quarter)} 新客`;
   return '历史无消耗记录';
 }
@@ -3646,9 +3649,9 @@ function renderRecords() {
     // 2026-06-11 用户拍板：删除「24年老客」灰标，命中老客名单的客户改按首投季度归类
     // 2026-08-17 子青拍板：判定收口到 isNewForQuarter（首投季度唯一权威），不再信 isLaoke 反推
     // 🔴 2026-10-22 子青拍板：明细表状态同步改四档，走 customerTierOf 唯一权威函数
-    const _tier = customerTierOf(fq, curQ);
+    const _tier = customerTierOf(fq, curQ, [r.shortName, r.name]);
     if (_tier.tier === 'new') {
-      // ① AData 命中本季度首投 → 文案强制"当季新客"，不读销售登记字段
+      // ① 在 ops 新客名单 → 文案强制"当季新客"，不读销售登记字段
       stateLabel = curQDisp;
       stateCls = 'green';
     } else if (_tier.tier === 'old') {
@@ -3656,6 +3659,11 @@ function renderRecords() {
       //    （2026-05-21 拍板从「2025Q2存量」改「2025Q2新客」标红；2026-10-22 再改为「老客」）
       stateLabel = `老客（首投 ${fmtQuarter(_tier.fq)}）`;
       stateCls = 'red';
+    } else if (_tier.tier === 'q4_not_ops') {
+      // ③ 当季首投但 ops 未收录（原降级成 2026/Q3 是伪造，2026-10-22 废止）
+      //    → 橙标提示需确认是否补入 ops 名单，不计新客 KPI
+      stateLabel = `${curQDisp.replace('新客','')}首投·ops未收录`;
+      stateCls = 'orange';
     } else if (r.isNew === true) {
       // 兜底：rebuild 回写的 isNew=true（ops 新客表命中 → 明确是本季度新客）
       // 走到这里说明 firstQuarter 字段没回写但底层标已就位 → 仍然标为本季度新客
@@ -4136,11 +4144,37 @@ function isNewForQuarter(firstQuarter, targetQuarter) {
  * 边界：isNewForQuarter 仅保留给 KPI 统计口径（历史累计不回退），
  *       所有**面向销售的展示**一律走 customerTierOf，禁止再用 isNewForQuarter 反推。
  * ========================================================================== */
-function customerTierOf(firstQuarter, targetQuarter) {
+/* ----------------------------------------------------------------------------
+ * ops 新客名单查询（2026-10-22 新增，子青拍板「不在 ops 就不算新客」）
+ * 真源：data/ops_new_set.js → window.__OPS_NEW_SET__（rebuild 每日从 ops 新客表生成）
+ * 与 first_quarter.js 的「事实首投季度」完全解耦：一个管 KPI 口径，一个管事实，互不伪造。
+ * -------------------------------------------------------------------------- */
+let _OPS_NORM = null;
+function _inOpsNewSet(key) {
+  const S = window.__OPS_NEW_SET__ || {};
+  if (!key) return false;
+  if (S[key]) return true;                       // 精确命中
+  if (!_OPS_NORM) {                              // 懒建归一化索引（全角括号/空格防呆）
+    _OPS_NORM = {};
+    for (const k in S) { const nk = normName(k); if (nk) _OPS_NORM[nk] = 1; }
+  }
+  return !!_OPS_NORM[normName(key)];
+}
+/** 多个候选键任一命中 ops 名单即算命中（简称 + 主体名都试） */
+function _anyInOps(keys) {
+  if (!keys) return false;
+  if (typeof keys === 'string') return _inOpsNewSet(keys);
+  for (const k of keys) { if (_inOpsNewSet(k)) return true; }
+  return false;
+}
+function customerTierOf(firstQuarter, targetQuarter, opsKeys) {
   const fq = String(firstQuarter || '').replace(/[\s\/]/g, '');
   const tq = String(targetQuarter || CURRENT_QUARTER).replace(/[\s\/]/g, '');
-  if (!fq) return { tier: 'unknown', fq: '', tq };        // ③ 历史无消耗记录
-  if (fq === tq) return { tier: 'new', fq, tq };          // ① 本季新客
+  // ① 在 ops 名单 → 就是新客（ops 是 KPI 唯一真源）
+  //    byOps=true 表示 full_quarter 事实首投不是当季、但 ops 认定是新客（不谎报首投季度）
+  if (_anyInOps(opsKeys)) return { tier: 'new', fq, tq, byOps: fq !== tq };
+  if (!fq) return { tier: 'unknown', fq: '', tq };        // ④ 历史无消耗记录
+  if (fq === tq) return { tier: 'q4_not_ops', fq, tq };   // ③ 当季首投但 ops 未收录 → 不计新客 KPI
   return { tier: 'old', fq, tq };                         // ② 老客
 }
 /** 把 2026Q3 / 2026/Q3 统一渲染成「2026Q3」 */
@@ -4158,15 +4192,22 @@ function fmtQuarter(q) {
 function renderNewCustomerBadge(look) {
   // 2026-10-22 子青拍板：改为四档（new / old / unknown + 待回扫小尾巴）
   const curQ = ((window.__CENTER_DAILY_KPI__ || {}).currentQuarter || '').replace('/', '') || CURRENT_QUARTER;
-  const t = customerTierOf(look.firstQuarter, curQ);
+  const t = customerTierOf(look.firstQuarter, curQ, [look.short, look.name]);
   const qDisp = fmtQuarter(curQ);
   let html = '';
   if (t.tier === 'new') {
-    // ① 首投季度 == 当前季度
-    html += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ ${qDisp} 新客（首投 ${fmtQuarter(t.fq)}）</span>`;
+    // ① 在 ops 新客名单 → 就是新客（ops 是 KPI 唯一真源）
+    //    byOps：full_quarter 事实首投不是当季但 ops 认定新客 → 只说「ops 认定」，不谎报首投季度
+    const tail = t.byOps ? '（ops 认定）' : (t.fq ? `（首投 ${fmtQuarter(t.fq)}）` : '');
+    html += `<span class="badge-newk" style="background:#d1fae5;color:#065f46;">✅ ${qDisp} 新客${tail}</span>`;
   } else if (t.tier === 'old') {
     // ② 首投季度存在且早于当前季度
     html += `<span class="badge-laoke" style="background:#fef3c7;color:#92400e;">老客（首投 ${fmtQuarter(t.fq)}）</span>`;
+  } else if (t.tier === 'q4_not_ops') {
+    // ③ 当季首投，但 ops 新客表没收录 → 子青 2026-10-22 拍板「不在 ops 就不算新客」
+    //    既不发新客绿标，也不谎报成老客（以前降级成 2026/Q3 是伪造，已废止）
+    html += `<span class="badge-q4noops" style="background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;">${qDisp} 首投 · ops 未收录（不计新客 KPI）</span>`
+         +  `<span style="display:block;margin-top:4px;font-size:11px;color:#9ca3af;">事实当季首投，但 ops 新客表未收录，需确认是否补入 ops 名单</span>`;
   } else {
     // ③ 历史各季度均无消耗记录 → 既不算老客，也不发新客绿标
     //    （子青 2026-10-22：等 ops 新客表命中了才表明他是新客）
@@ -4680,8 +4721,9 @@ function parseBatchPaste() {
   function bpWarnTag(row) {
     // 🔴 2026-10-22 子青拍板：四档文案，走 customerTierOf
     const _curQ = ((window.__CENTER_DAILY_KPI__ || {}).currentQuarter || '').replace('/', '') || CURRENT_QUARTER;
-    const t = customerTierOf(row.firstQuarter, _curQ);
+    const t = customerTierOf(row.firstQuarter, _curQ, [row.shortName, row.name]);
     if (t.tier === 'old') return `<span style="color:#d97706;">⚠ 老客（首投 ${fmtQuarter(t.fq)}）</span>`;
+    if (t.tier === 'q4_not_ops') return '<span style="color:#4338ca;">⚠ 当季首投 · ops 未收录（不计新客 KPI）</span>';
     if (t.tier === 'unknown') return '<span style="color:#6b7280;">⚠ 历史无消耗记录，待 ops 新客表确认</span>';
     return '<span style="color:#d97706;">⚠ 警告</span>';
   }
@@ -5147,7 +5189,7 @@ window.submitRecord = async () => {
     agent:resource || '自拓', source, channel, resource,
     isRising:'否', isTarget:false, isNew:isNewForQuarter(look.firstQuarter), isLaoke:look.isLaoke, matched:look.matched,
     // 2026-10-22 子青拍板：customerType 文案改四档（isNew/status 是 KPI 字段，口径不动）
-    firstQuarter:look.firstQuarter || '', customerType:customerTypeForQuarter({firstQuarter:look.firstQuarter, isNew:isNewForQuarter(look.firstQuarter)}), status:isNewForQuarter(look.firstQuarter) ? '新客' : '存量',
+    firstQuarter:look.firstQuarter || '', customerType:customerTypeForQuarter({firstQuarter:look.firstQuarter, shortName:look.short, name, isNew:isNewForQuarter(look.firstQuarter)}), status:isNewForQuarter(look.firstQuarter) ? '新客' : '存量',
     cost:0, zone:(beltLoc || ''), maturity:'', deliverySide, images:[],
     // 2026-10-13 建联截图（必填，已压缩为 jpeg dataURL）
     evidenceImages: evidenceImages, evidenceCount: evidenceImages.length,
@@ -5258,7 +5300,7 @@ function recordFromRow(row) {
   // 2026-08-17 子青拍板：新客判定统一走 isNewForQuarter，不用 !isLaoke 反推
   const _isNewFQ = isNewForQuarter(look.firstQuarter);
   // 2026-10-22 子青拍板：customerType 文案改四档（isNew/status 是 KPI 字段，口径不动）
-  const customerType = customerTypeForQuarter({firstQuarter:look.firstQuarter, isNew:_isNewFQ});
+  const customerType = customerTypeForQuarter({firstQuarter:look.firstQuarter, shortName:(recognizedShort || name), name, isNew:_isNewFQ});
   return {
     id:Date.now()+Math.random(), date, sale:sales, name, shortName:recognizedShort,
     brand:finalBrand, cat:(beltCat ? (BELT_CAT_TO_CAT[beltCat] || beltCat) : category), link:(links.length ? links.join('、') : ''), links,
@@ -5312,7 +5354,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20261022a';
+  s.src = 'data/bulk_import_rows.js?v=20261022b';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
