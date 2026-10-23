@@ -867,6 +867,9 @@ async function saveUserRecord(params, context) {
     evidenceImages: Array.isArray(record.evidenceImages) ? record.evidenceImages : [],
     // 2026-10-23 直传云存储：图只落存储，文档里只留 fileID（约 60B），供日后续期临时链接
     evidenceFileIds: Array.isArray(record.evidenceFileIds) ? record.evidenceFileIds : [],
+    // 2026-10-23 登记入口埋点：modal=弹窗逐条登记(强制截图) / batch=批量粘贴 / api=接口导入 / unknown
+    // 用途：每天对账「走弹窗的登记数」与「截图数」是否一一对应，缺图时能立刻定位是哪条路径进来的
+    entry: normName(record.entry || params.entry || '') || 'unknown',
     _clientVersion: String(params.clientVersion || record.clientVersion || ''),
     _createdAt: now,
     _updatedAt: now
@@ -892,6 +895,8 @@ async function saveUserRecord(params, context) {
       }
       // _createdAt 是文档创建时间，update 时不应被覆盖（原实现每次回写都重置，导致无法判断真实登记入库时间）
       if (row._createdAt) rec._createdAt = row._createdAt;
+      // 入口埋点同理：后续回写若没带 entry，保留首次记录的入口，避免把 modal 洗成 unknown
+      if (rec.entry === 'unknown' && row.entry) rec.entry = row.entry;
       await database.collection(COLLECTIONS.userRecords).doc(row._id).update(rec);
       updated = true;
     }
@@ -1022,6 +1027,51 @@ async function uploadEvidenceImage(params, context) {
   return ok('uploadEvidenceImage',
     { fileID: fileID, tempUrl: tempUrl, cloudPath: cloudPath, bytes: buf.length },
     { collection: 'cloud-storage', actor: getActor(params, context) });
+}
+
+/* 2026-10-23 临时链接续期：云存储里的文件本身永久，但 tempUrl 默认 1 年到期。
+   本接口按 evidenceFileIds 重新换取长期 tempUrl 并回写，保证截图「永久可读」。
+   安全：只改 evidenceImages 中的远程直链部分，内联 dataURL 原样保留；绝不删图。 */
+async function refreshEvidenceUrls(params, context) {
+  params = params || {};
+  if (!cloudbase) return fail('refreshEvidenceUrls', 'SDK_NOT_AVAILABLE', '@cloudbase/node-sdk missing');
+  if (!app) app = cloudbase.init({ env: ENV_ID });
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  let q = database.collection(COLLECTIONS.userRecords).where({ evidenceFileIds: database.command.exists(true) });
+  const onlyIds = Array.isArray(params.ids) ? params.ids.map(String) : [];
+  if (onlyIds.length) q = database.collection(COLLECTIONS.userRecords).where({ id: database.command.in(onlyIds) });
+  const limit = Math.min(Number(params.limit) || 200, 1000);
+  const res = await q.limit(limit).get();
+  const rows = (res && res.data) || [];
+  let updated = 0, skipped = 0, failed = 0;
+  const errs = [];
+  for (const row of rows) {
+    const fids = Array.isArray(row.evidenceFileIds) ? row.evidenceFileIds.filter(function (x) { return typeof x === 'string' && x.indexOf('cloud://') === 0; }) : [];
+    if (!fids.length) { skipped++; continue; }
+    try {
+      const t = await app.getTempFileURL({ fileList: fids.map(function (fileID) { return { fileID: fileID, maxAge: 365 * 24 * 3600 }; }) });
+      const list = (t && t.fileList) || [];
+      const map = {};
+      list.forEach(function (it) { if (it && it.fileID && it.tempFileURL) map[it.fileID] = it.tempFileURL; });
+      const fresh = fids.map(function (f) { return map[f] || ''; }).filter(Boolean);
+      if (!fresh.length) { skipped++; continue; }
+      // 保留内联 dataURL，远程部分整体替换为新链接
+      const oldImgs = Array.isArray(row.evidenceImages) ? row.evidenceImages : [];
+      const inline = oldImgs.filter(function (x) { return typeof x === 'string' && x.indexOf('data:image/') === 0; });
+      const merged = inline.concat(fresh);
+      await database.collection(COLLECTIONS.userRecords).doc(row._id).update({
+        evidenceImages: merged, evidenceCount: merged.length, _updatedAt: Date.now()
+      });
+      updated++;
+    } catch (e) {
+      failed++;
+      if (errs.length < 5) errs.push(String(row.id) + ':' + ((e && e.message) || 'unknown'));
+    }
+  }
+  return ok('refreshEvidenceUrls',
+    { scanned: rows.length, updated: updated, skipped: skipped, failed: failed, errors: errs },
+    { collection: COLLECTIONS.userRecords, actor: getActor(params, context) });
 }
 
 // 2026-10-23 建联截图防清空「探针」：供一键自检脚本查询某条记录的真实图数（不走剥离逻辑）。
@@ -1455,6 +1505,7 @@ async function handle(action, params, context) {
     case 'mergeEvidenceImages': return await mergeEvidenceImages(params, context);
     case 'evidenceProbe': return await evidenceProbe(params);
     case 'uploadEvidenceImage': return await uploadEvidenceImage(params, context);
+    case 'refreshEvidenceUrls': return await refreshEvidenceUrls(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     case 'listRedspotProgress': return await listRedspotProgress(params);

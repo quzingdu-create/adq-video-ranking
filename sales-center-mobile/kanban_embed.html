@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20261023b"></script>
+<script src="sc_logger.js?v=20261023c"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -58,7 +58,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20261023b')
+    return fetch('data/manual_attr_override.json?v=20261023c')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -94,35 +94,35 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20261023b"></script>
-<script defer src="api_client.js?v=20261023b"></script>
-<script defer src="data_adapter.js?v=20261023b"></script>
+<script defer src="cloud_gray_switch.js?v=20261023c"></script>
+<script defer src="api_client.js?v=20261023c"></script>
+<script defer src="data_adapter.js?v=20261023c"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20261023b"></script> -->
-<script src="data/center_sales_summary.js?v=20261023b"></script>
-<script src="data/center_quarter_summary.js?v=20261023b"></script>
-<script src="data/center_daily_kpi.js?v=20261023b"></script>
-<script src="data/top80_effective_metrics.js?v=20261023b"></script>
-<script src="data/top_status_data.js?v=20261023b"></script>
-<script src="data/enough_candidates.js?v=20261023b"></script>
-<script src="data/handover_customers_519.js?v=20261023b"></script>
-<script src="data/target_brand_pool.js?v=20261023b"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20261023c"></script> -->
+<script src="data/center_sales_summary.js?v=20261023c"></script>
+<script src="data/center_quarter_summary.js?v=20261023c"></script>
+<script src="data/center_daily_kpi.js?v=20261023c"></script>
+<script src="data/top80_effective_metrics.js?v=20261023c"></script>
+<script src="data/top_status_data.js?v=20261023c"></script>
+<script src="data/enough_candidates.js?v=20261023c"></script>
+<script src="data/handover_customers_519.js?v=20261023c"></script>
+<script src="data/target_brand_pool.js?v=20261023c"></script>
 <!-- 2026-10-22 新增：本季度新客唯一真源（ops 新客表），与 first_quarter.js 事实口径解耦 -->
-<script src="data/ops_new_set.js?v=20261023b"></script>
+<script src="data/ops_new_set.js?v=20261023c"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20261023b" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20261023c" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20261023b"></script>
-<script defer src="dual_check.js?v=20261023b"></script>
-<script defer src="big_data_dual_check.js?v=20261023b"></script>
+<script defer src="cloud_sync.js?v=20261023c"></script>
+<script defer src="dual_check.js?v=20261023c"></script>
+<script defer src="big_data_dual_check.js?v=20261023c"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -925,7 +925,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261023b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261023c`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260915x')) frame.setAttribute('src', target);
   }
@@ -1124,7 +1124,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261023b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261023c" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1140,7 +1140,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261023b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261023c" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1237,7 +1237,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261023b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261023c" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -4784,6 +4784,9 @@ function submitBatchPaste() {
       needReconcile: !r.matched,         // 主体兜底待回扫
       matchedAt: r.matched ? r.date : "", // 命中字典的日期，便于回扫追溯
       _batchPaste: true,
+      // 2026-10-23 登记入口埋点：batch=批量粘贴（不经过弹窗，因此不会强制截图）
+      // 注意 _batchPaste 不在云函数字段白名单里落不了库，entry 才是可查询的口径
+      entry: 'batch',
       images: '[]',
       links: r.link ? '["' + r.link + '"]' : '[]',
     });
@@ -5206,6 +5209,8 @@ window.submitRecord = async () => {
     // 2026-10-13 建联截图（必填，已压缩为 jpeg dataURL）
     evidenceImages: evidenceImages, evidenceCount: evidenceImages.length,
     evidenceFileIds: evidenceFileIds,
+    // 2026-10-23 登记入口埋点：modal=弹窗逐条登记（强制截图），用于每天对账登记数 vs 截图数
+    entry: 'modal',
     // R12.1 靶向登记留痕
     targetRejected: targetRejected, rejectedBrand: rejectedBrand
   };
@@ -5216,6 +5221,22 @@ window.submitRecord = async () => {
     window.__TARGET_BRAND_COUNTS__[rec.brand] = (window.__TARGET_BRAND_COUNTS__[rec.brand] || 0) + 1;
   }
   closeModal('modalRecord');
+  // 2026-10-23：若本次有截图因上传失败而回退成内联 base64，登记到待补传队列，
+  //   下次打开看板会自动上传并换成云存储直链 —— 保证「换设备/清缓存也不会丢图」
+  try {
+    var _fb = window.__FALLBACK_INLINE_EVIDENCE__ || [];
+    if (_fb.length && rec && rec.id != null) {
+      _fb.forEach(function (d) {
+        try {
+          pushPendingEvidenceUpload(String(rec.id), d);
+          window.__PENDING_EVIDENCE_UPLOAD__ = window.__PENDING_EVIDENCE_UPLOAD__ || [];
+          window.__PENDING_EVIDENCE_UPLOAD__.push({ id: String(rec.id), dataUrl: d });
+        } catch (_e) {}
+      });
+      window.__FALLBACK_INLINE_EVIDENCE__ = [];
+      setTimeout(function(){ flushPendingEvidenceUploads(); }, 3000);
+    }
+  } catch (_e) {}
   window.__EDIT_PENDING_EVIDENCE__ = []; window.__EDIT_PENDING_EVIDENCE_IDS__ = [];   // 2026-10-13：提交成功后清空截图缓冲，避免下一条串图
   renderAll();
   let __targetInfo = '';
@@ -5369,7 +5390,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20261023b';
+  s.src = 'data/bulk_import_rows.js?v=20261023c';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -5623,22 +5644,71 @@ window.__EVIDENCE_PROMISES__ = [];
    旧方案把 100KB+ 的 base64 塞进文档 + localStorage(仅5MB)，导致图存不下、接口被迫剥离、回写还会清空。
    新方案：压缩后先传云存储，文档里只留 URL/fileID（几十字节），彻底绕开 5MB 瓶颈。
    ⚠ 上传失败必须回退成内联 base64，绝不能因为存储挂了就卡住销售登记。 */
-function uploadEvidenceToCloud(dataUrl) {
+function uploadEvidenceToCloud(dataUrl, retries) {
+  retries = (retries == null) ? 2 : retries;   // 默认最多尝试 3 次（首试 + 2 次重试）
   return new Promise(function(resolve, reject){
     if (!(window.cloud && typeof window.cloud.callFunction === 'function')) return reject(new Error('cloud SDK 不可用'));
     var sale = '';
     try { sale = (window.getCurrentRtx && window.getCurrentRtx()) || ''; } catch(_){}
-    window.cloud.callFunction('salesCenterApi', {
-      action: 'uploadEvidenceImage', params: { dataUrl: dataUrl, sale: sale }
-    }).then(function(res){
-      var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
-      var d = (r && r.data) || {};
-      if (r && r.ok && d.fileID) resolve({ fileID: d.fileID, url: d.tempUrl || d.fileID });
-      else reject(new Error((r && r.error && r.error.message) || '上传未返回 fileID'));
-    }).catch(reject);
+    function attempt(left){
+      window.cloud.callFunction('salesCenterApi', {
+        action: 'uploadEvidenceImage', params: { dataUrl: dataUrl, sale: sale }
+      }).then(function(res){
+        var r = (res && res.result && typeof res.result === 'object') ? res.result : res;
+        var d = (r && r.data) || {};
+        if (r && r.ok && d.fileID) resolve({ fileID: d.fileID, url: d.tempUrl || d.fileID });
+        else reject(new Error((r && r.error && r.error.message) || '上传未返回 fileID'));
+      }).catch(function(e){
+        if (left > 0) {
+          setTimeout(function(){ attempt(left - 1); }, 800 * (3 - left));
+        } else {
+          reject(e);
+        }
+      });
+    }
+    attempt(retries);
   });
 }
 window.uploadEvidenceToCloud = uploadEvidenceToCloud;
+
+/* 待补传队列：上传彻底失败时，把内联 base64 记下来，下次打开看板自动上传并换成云存储直链。
+   目的：绝不因为「当时网络不好」就让截图永久留在本机（换设备/清缓存就没了）。 */
+function pushPendingEvidenceUpload(recId, dataUrl) {
+  try {
+    var KEY = 'tuoke_pending_evidence_upload_v1';
+    var q = JSON.parse(localStorage.getItem(KEY) || '{}') || {};
+    q[recId] = q[recId] || [];
+    q[recId].push(dataUrl);
+    localStorage.setItem(KEY, JSON.stringify(q));
+  } catch(_){}
+}
+window.pushPendingEvidenceUpload = pushPendingEvidenceUpload;
+
+// 页面加载后自动补传（只处理云端已存在、但截图仍是内联 base64 的记录）
+async function flushPendingEvidenceUploads() {
+  try {
+    var pending = [];
+    try { pending = (Array.isArray(window.__PENDING_EVIDENCE_UPLOAD__) ? window.__PENDING_EVIDENCE_UPLOAD__ : []).slice(); } catch(_){}
+    if (!pending.length) return;
+    var done = 0;
+    for (var i = 0; i < pending.length; i++) {
+      var it = pending[i];
+      if (!it || !it.id || !it.dataUrl) continue;
+      try {
+        var r = await uploadEvidenceToCloud(it.dataUrl);
+        if (r && r.url) {
+          await window.cloud.callFunction('salesCenterApi', {
+            action: 'mergeEvidenceImages',
+            params: { items: [{ id: String(it.id), evidenceImages: [r.url] }] }
+          });
+          done++;
+        }
+      } catch(_){}
+    }
+    if (done > 0) console.info('[evidence] 补传完成 ' + done + ' 张');
+  } catch(_){}
+}
+window.flushPendingEvidenceUploads = flushPendingEvidenceUploads;
 
 function onEvidenceChange(ev) {
   const isInline = /^inline-/.test((ev.target && ev.target.id) || '');
@@ -5653,7 +5723,10 @@ function onEvidenceChange(ev) {
         const r = await uploadEvidenceToCloud(dataUrl);
         if (r && r.url) { url = r.url; fid = r.fileID || ''; }
       } catch (e) {
-        console.warn('[evidence] 直传云存储失败，回退内联 base64', e && e.message);
+        // 彻底失败才回退内联，并登记到待补传队列，下次打开看板自动上传（避免图永远留在本机）
+        console.warn('[evidence] 直传云存储失败（已重试），暂存本机待补传', e && e.message);
+        window.__FALLBACK_INLINE_EVIDENCE__ = window.__FALLBACK_INLINE_EVIDENCE__ || [];
+        window.__FALLBACK_INLINE_EVIDENCE__.push(dataUrl);
       }
       window.__EDIT_PENDING_EVIDENCE__ = window.__EDIT_PENDING_EVIDENCE__ || [];
       window.__EDIT_PENDING_EVIDENCE__.push(url);
