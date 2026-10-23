@@ -1415,14 +1415,15 @@ function tgBase(){
       y:{grid:{color:'rgba(0,0,0,.07)'},beginAtZero:true,ticks:{color:'#5F5E5A',font:{size:11}}}}};
 }
 function tgFunnel(){
-  var s=TD.stat,T=tgG('靶向'),Q=tgG('Q3整体');
+  var s=TD.stat,T=tgG('靶向'),Q=tgG('Q3整体'),TN=TD.groups['新客']['靶向'];
   var q3NewSpend=(Q.q.arpuFull[0]||0)*Q.N;              // Q3 新客当季消耗合计（万元）
   var st=[
     {n:s.subjects, l:'登记主体数',  q:'靶向表 68 行、一格多主体逐个拆开后的主体数', v:s.tgSpend},
     {n:s.investClientN,l:'在投客户数', q:'2026 年 7~9 月有消耗的 '+s.tgWithSpend+' 个主体，经桥表翻成客户简称后去重'
       +'（其余 '+(s.subjects-s.tgWithSpend)+' 个主体这三个月零消耗；一个简称可含多个主体，反过来不会）', v:s.tgSpend},
-    {n:T.N,         l:'Q3 新客数',   q:'客户简称维度 ｜ 主体命中 '+s.hitQ3+' 个 = Q3 首投 '+s.hitQ3a+' + Q3前消耗不足一万 '+s.hitQ3b
-      +' ｜ 新客全集 '+s.targetN+' 家、有效新客 '+s.targetEffN+' 家（当前：'+SEG+'）', v:s.tgtQ3Spend, hl:1}
+    {n:TN.N,        l:'Q3 新客数',   q:'客户简称维度 · 固定用<b>新客全集</b>口径（不随上方「客户范围」开关变）'
+      +' ｜ 主体命中 '+s.hitQ3+' 个 = Q3 首投 '+s.hitQ3a+' + Q3前消耗不足一万 '+s.hitQ3b
+      +' ｜ 其中有效新客 '+s.targetEffN+' 家', v:s.tgtQ3Spend, hl:1}
   ];
   document.getElementById('tg-funnel').innerHTML=st.map(function(x){
     return '<div class="fstep'+(x.hl?' hl':'')+'">'
@@ -1433,9 +1434,9 @@ function tgFunnel(){
       +'<span class="arw">&#9654;</span></div>';}).join('');
   document.getElementById('tg-funnel-note').innerHTML=
     '左边两个数是<b>同一条价值链上的两把尺子</b>：<b>客户数</b>回答「落地了多少家」，<b>Q3 消耗</b>回答「这些家真的投了多少钱」。'
-    +'从 '+s.subjects+' 个主体到 '+T.N+' 个 Q3 新客，客户数还剩 '+(T.N/s.subjects*100).toFixed(1)+'%，而消耗从 '
+    +'从 '+s.subjects+' 个主体到 '+TN.N+' 个 Q3 新客，客户数还剩 '+(TN.N/s.subjects*100).toFixed(1)+'%，而消耗从 '
     +tgP(s.tgSpend)+' 万到 '+tgP(s.tgtQ3Spend)+' 万（'+(s.tgSpend?(s.tgtQ3Spend/s.tgSpend*100).toFixed(1):'0')+'%）—— '
-    +(s.tgSpend&&(s.tgtQ3Spend/s.tgSpend)>(T.N/s.subjects)
+    +(s.tgSpend&&(s.tgtQ3Spend/s.tgSpend)>(TN.N/s.subjects)
       ?'<b>消耗的留存率高于客户数</b>，说明进 Q3 新客的这批人<b>单客更重</b>，钱是靠少数大客户撑起来的（不是撒胡椒面）。'
       :'<b>钱掉得比人快</b>，说明名单里大部分的消耗并不是 Q3 新签客户贡献的，而是存量客户在撑。');
   document.getElementById('tg-nsub').textContent=s.subjects;
@@ -1447,7 +1448,7 @@ function tgKpi2(){
     ['靶向主体 Q3 消耗', tgP(s.tgSpend)+' 万',
       '占当季大盘 <b>'+s.tgShare+'%</b>（大盘 '+s.q3Market.toLocaleString()+' 万）｜2026 年 7~9 月，'+s.tgWithSpend+' 个主体有消耗'],
     ['其中来自 Q3 新客主体', tgP(s.tgtQ3Spend)+' 万',
-      s.hitQ3+' 个主体（Q3 首投 '+s.hitQ3a+' + Q3前消耗不足一万 '+s.hitQ3b+'）/ '+T.N+' 个新客简称｜占靶向主体消耗 <b>'+(s.tgSpend?(s.tgtQ3Spend/s.tgSpend*100).toFixed(1):'0')+'%</b>'
+      s.hitQ3+' 个主体（Q3 首投 '+s.hitQ3a+' + Q3前消耗不足一万 '+s.hitQ3b+'）/ '+TD.groups['新客']['靶向'].N+' 个新客简称（其中有效 '+s.targetEffN+'）｜占靶向主体消耗 <b>'+(s.tgSpend?(s.tgtQ3Spend/s.tgSpend*100).toFixed(1):'0')+'%</b>'
       +'｜占 Q3 新客当季消耗 <b>'+(q3NewSpend?(s.tgtQ3Spend/q3NewSpend*100).toFixed(2):'0')+'%</b>']
   ];
   document.getElementById('tg-kpi2').innerHTML=k.map(function(x){
