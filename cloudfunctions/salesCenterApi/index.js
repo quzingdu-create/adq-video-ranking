@@ -865,6 +865,8 @@ async function saveUserRecord(params, context) {
     isNew: !!(record.isNew),
     isLaoke: !!(record.isLaoke),
     evidenceImages: Array.isArray(record.evidenceImages) ? record.evidenceImages : [],
+    // 2026-10-23 直传云存储：图只落存储，文档里只留 fileID（约 60B），供日后续期临时链接
+    evidenceFileIds: Array.isArray(record.evidenceFileIds) ? record.evidenceFileIds : [],
     _clientVersion: String(params.clientVersion || record.clientVersion || ''),
     _createdAt: now,
     _updatedAt: now
@@ -877,6 +879,19 @@ async function saveUserRecord(params, context) {
     const res = await database.collection(COLLECTIONS.userRecords).where({ id: String(rec.id) }).limit(1).get();
     const row = res && res.data && res.data[0];
     if (row && row._id) {
+      // 🔴 2026-10-23 P0 防清空兜底（事故复盘：selfHealLocalOnly 用 localStorage 剥离版批量回写，
+      //    把云端 33 张已回补的建联截图覆盖成空数组；10-21 00:13 发生过同类事故）
+      //    规则：本次写入「无图」而云端「已有图」→ 保留云端原图，绝不用空数组覆盖。
+      //    正常登记/编辑路径带图上传不受影响（incomingImgs.length > 0 时照常写入）。
+      const incomingImgs = Array.isArray(rec.evidenceImages) ? rec.evidenceImages : [];
+      const existImgs = Array.isArray(row.evidenceImages) ? row.evidenceImages : [];
+      if (!incomingImgs.length && existImgs.length) {
+        rec.evidenceImages = existImgs;
+        rec.evidenceCount = existImgs.length;
+        console.warn('[saveUserRecord] 空图写入被拦截，保留云端原图', JSON.stringify({ id: rec.id, kept: existImgs.length }));
+      }
+      // _createdAt 是文档创建时间，update 时不应被覆盖（原实现每次回写都重置，导致无法判断真实登记入库时间）
+      if (row._createdAt) rec._createdAt = row._createdAt;
       await database.collection(COLLECTIONS.userRecords).doc(row._id).update(rec);
       updated = true;
     }
@@ -937,7 +952,12 @@ async function mergeEvidenceImages(params, context) {
   for (const it of items) {
     const id = (it && it.id != null) ? String(it.id) : '';
     const rawImgs = (it && Array.isArray(it.evidenceImages)) ? it.evidenceImages : [];
-    const clean = rawImgs.filter(function (x) { return typeof x === 'string' && x.indexOf('data:image/') === 0; });
+    // 2026-10-23：兼容三种形态 —— 旧 dataURL、云存储 fileID(cloud://)、临时直链(https)
+    const clean = rawImgs.filter(function (x) {
+      if (typeof x !== 'string' || !x) return false;
+      return x.indexOf('data:image/') === 0 || x.indexOf('cloud://') === 0
+        || x.indexOf('https://') === 0 || x.indexOf('http://') === 0;
+    });
     if (!id || !clean.length) { skipped++; continue; }
     try {
       const res = await database.collection(COLLECTIONS.userRecords).where({ id: id }).limit(1).get();
@@ -960,6 +980,67 @@ async function mergeEvidenceImages(params, context) {
   return ok('mergeEvidenceImages',
     { requested: items.length, merged: merged, skipped: skipped, notFound: notFound, errors: errs.slice(0, 5) },
     { collection: COLLECTIONS.userRecords, actor: getActor(params, context) });
+}
+
+/* ============ 2026-10-23 建联截图「直传云存储」（P0 架构改造） ============
+   背景：原方案把 base64 直接塞进 tuoke_user_records 文档 + 存 localStorage，
+   ① 单文档膨胀、listUserRecords 被迫剥离图片（6MB 响应体上限）
+   ② localStorage 只有 5MB，每人 100+ 条登记根本存不下 → 图丢
+   ③ 剥离版回写会把云端原图覆盖成空数组（10-21 / 10-23 两次事故）
+   新方案：图只落云存储，文档里只存 fileID（约 60 字节），彻底绕开上面三个问题。
+   兼容：旧数据仍是 data:image/... base64，读取侧必须两种都能渲染，不能一刀切。 */
+async function uploadEvidenceImage(params, context) {
+  params = params || {};
+  if (!cloudbase) return fail('uploadEvidenceImage', 'SDK_NOT_AVAILABLE', '@cloudbase/node-sdk missing');
+  if (!app) app = cloudbase.init({ env: ENV_ID });
+  const raw = String(params.dataUrl || params.base64 || '');
+  const m = /^data:image\/([a-zA-Z0-9+.-]+);base64,([\s\S]+)$/.exec(raw);
+  if (!m) return fail('uploadEvidenceImage', 'BAD_DATAURL', '需要 data:image/xxx;base64 格式');
+  const ext = String(m[1] || '').toLowerCase().replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+  const buf = Buffer.from(m[2], 'base64');
+  if (!buf.length) return fail('uploadEvidenceImage', 'EMPTY_IMAGE', '图片内容为空');
+  if (buf.length > 8 * 1024 * 1024) return fail('uploadEvidenceImage', 'TOO_LARGE', '单张不能超过 8MB');
+  const sale = normName(params.sale || 'unknown') || 'unknown';
+  const day = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const cloudPath = 'evidence/' + sale + '/' + day + '_' + Date.now()
+    + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+  let up = null;
+  try {
+    up = await app.uploadFile({ cloudPath: cloudPath, fileContent: buf });
+  } catch (e) {
+    return fail('uploadEvidenceImage', 'UPLOAD_FAILED', (e && e.message) || 'upload failed');
+  }
+  const fileID = (up && up.fileID) || '';
+  if (!fileID) return fail('uploadEvidenceImage', 'NO_FILEID', '上传未返回 fileID');
+  // 换一个长期临时链接，前端可直接 <img src>；拿不到也不影响，前端可再换
+  let tempUrl = '';
+  try {
+    const t = await app.getTempFileURL({ fileList: [{ fileID: fileID, maxAge: 365 * 24 * 3600 }] });
+    const it = t && t.fileList && t.fileList[0];
+    if (it && it.tempFileURL) tempUrl = it.tempFileURL;
+  } catch (_) { /* 不阻断 */ }
+  return ok('uploadEvidenceImage',
+    { fileID: fileID, tempUrl: tempUrl, cloudPath: cloudPath, bytes: buf.length },
+    { collection: 'cloud-storage', actor: getActor(params, context) });
+}
+
+// 2026-10-23 建联截图防清空「探针」：供一键自检脚本查询某条记录的真实图数（不走剥离逻辑）。
+async function evidenceProbe(params) {
+  params = params || {};
+  const id = (params.id != null) ? String(params.id) : '';
+  if (!id) return fail('evidenceProbe', 'MISSING_ID', 'id required');
+  const database = getDb();
+  await ensureUserRecordsCollection();
+  const res = await database.collection(COLLECTIONS.userRecords).where({ id: id }).limit(1).get();
+  const row = res && res.data && res.data[0];
+  const imgs = (row && Array.isArray(row.evidenceImages)) ? row.evidenceImages : [];
+  return ok('evidenceProbe', {
+    id: id,
+    found: !!(row && row._id),
+    images: imgs.length,
+    evidenceCount: (row && row.evidenceCount) || 0,
+    firstHead: imgs.length ? String(imgs[0]).slice(0, 30) : ''
+  });
 }
 
 async function listUserRecords(params) {
@@ -1372,6 +1453,8 @@ async function handle(action, params, context) {
     case 'exportAllUserRecords': return await exportAllUserRecords(params);
     case 'deleteUserRecord': return await deleteUserRecord(params, context);
     case 'mergeEvidenceImages': return await mergeEvidenceImages(params, context);
+    case 'evidenceProbe': return await evidenceProbe(params);
+    case 'uploadEvidenceImage': return await uploadEvidenceImage(params, context);
     case 'diffKpiSnapshot': return await diffKpiSnapshot(params);
     case 'listKpiSnapshots': return await listKpiSnapshots(params);
     case 'listRedspotProgress': return await listRedspotProgress(params);
