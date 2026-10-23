@@ -926,31 +926,30 @@ function snapHTML(){
   if(bt){
     if(ks.length<=1){bt.innerHTML='';}
     else{
-      var BTH=[{t:'批次',l:1},{t:'新客数'},{t:'首投当期消耗(万)'},
-               {t:'单客 ARPU(万)'},{t:g+'1 留存'},{t:'最长可观察'},{t:'新锐客户数'}];
-      function rw(lab,N,X,C,ret,mx2,sub){
-        var sm=(sub&&N!=null&&N<CORE.minN);
-        var lb=sub?('<span style="color:'+(sm?'#8A8983':'#5F5E5A')+'">'+lab+'</span>'):lab;
-        if(sm)lb+='<span style="font-size:10px;color:#B45309"> 小样本</span>';
+      var BTH=[{t:'批次',l:1},{t:'新客数'},{t:'新锐客户数'},
+               {t:'首投当期消耗(万)'},{t:'单客 ARPU(万)'},{t:g+'1 留存'}];
+      var KC=['','#185FA5','#993C1D'];           // 行色：0 批次行 / 1 投放端 / 2 客群
+      function rw(lab,N,X,C,ret,kind){
+        var lb=kind?('<span style="color:'+KC[kind]+'">'+lab+'</span>'):lab;
         return [{t:lb,l:1},
           {t:N==null?'&mdash;':N.toLocaleString()},
+          {t:X==null?'&mdash;':X.toLocaleString()},
           {t:numU(C,'')},{t:numU(N?C/N:null,'')},
-          {t:numU(ret,'%')},{t:g+(mx2||0)},
-          {t:X==null?'&mdash;':X.toLocaleString()}];
+          {t:numU(ret,'%')}];
       }
       var br=[];
       ks.forEach(function(k){
         var oo=cell(k,'整体'); if(!oo)return;
         var a0=oo.arpuFull[0], cc=crossOf(k), xN=(cc&&cc['新锐'])?cc['新锐'].N:null;
-        br.push(rw(cohLab(k),oo.N,xN,a0==null?null:a0*oo.N,oo.ret[0],oo.max));
+        br.push(rw(cohLab(k),oo.N,xN,a0==null?null:a0*oo.N,oo.ret[0],0));
         if(BEXP&&cc){
           ['ADQ','全域通','双投'].forEach(function(n){
             var c=cc[n]; if(!c||!c.N)return;
-            br.push(rw('&nbsp;&nbsp;&#8627; 投放端 · '+n,c.N,c.X,c.C,xRet(c,1),xMax(c),1));
+            br.push(rw('&nbsp;&nbsp;&#8627; 投放端 · '+n,c.N,c.X,c.C,xRet(c,1),1));
           });
           ['新锐','非新锐'].forEach(function(n){
             var c=cc[n]; if(!c||!c.N)return;
-            br.push(rw('&nbsp;&nbsp;&#8627; 客群 · '+n,c.N,c.X,c.C,xRet(c,1),xMax(c),1));
+            br.push(rw('&nbsp;&nbsp;&#8627; 客群 · '+n,c.N,c.X,c.C,xRet(c,1),2));
           });
         }
       });
@@ -960,13 +959,14 @@ function snapHTML(){
           var oo=cell(k,'整体'); if(oo){sN+=oo.N;if(oo.arpuFull[0]!=null)sC+=oo.arpuFull[0]*oo.N;}
           var cc=crossOf(k); if(cc&&cc['新锐'])sX+=cc['新锐'].N;
         });
-        br.push(rw('<b>合计 / 合并</b>',sN,sX,sC,o.ret[0],mx));
+        br.push(rw('<b>合计 / 合并</b>',sN,sX,sC,o.ret[0],0));
       }
       bt.innerHTML='<div class="bttl" style="color:#12306E;margin:2px 0 6px;font-size:13px;display:flex;align-items:center;gap:8px">'
         +'<span>各批次对照（共 '+ks.length+' 个，上方速览是它们合并后的结果）</span>'
         +'<button class="mini" id="bt-bexp">'+(BEXP?'收起 ◂':'更多 ▸')+'</button>'
         +'<span style="font-family:-apple-system,sans-serif;font-weight:400;font-size:11.5px;color:#8A8983">'
-        +(BEXP?'已展开：每个批次下按投放端 / 客群拆开':'展开可看每个批次分投放端、分客群')+'</span></div>'
+        +(BEXP?'已展开：<b style="color:#185FA5;font-weight:600">投放端</b> · <b style="color:#993C1D;font-weight:600">客群</b>'
+              :'展开可看每个批次分投放端、分客群')+'</span></div>'
         +'<div class="tblwrap">'+tbl(br,BTH)+'</div>';
       var bb=document.getElementById('bt-bexp');
       if(bb)bb.onclick=function(){BEXP=!BEXP;snapHTML();};
