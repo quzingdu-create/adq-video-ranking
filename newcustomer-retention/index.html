@@ -271,9 +271,10 @@ th[data-sort]:hover{background:#E8F3FF}
   三组对照 —— <span class="tag" style="background:#FBE9E7;color:#993C1D">靶向</span>
   <span class="tag">非靶向</span>
   <span class="tag" style="background:#F1F1EF;color:#5F5E5A">Q3 整体</span>。
+  <b>本页三组一律用「新客全集」口径</b>，不跟随顶部「客户范围」开关 —— 靶向看的是<b>这批客户有没有来</b>，
+  用有效新客会先把没跑出消耗的小客户筛掉，规模就看不真了。
   靶向判定：<b>靶向表的「投放主体」→ 经通用分析数据集的「主体名称 → 客户简称」桥表翻成客户简称 → 该客户首投季度 = 2026Q3</b>，
-  或 <b>首投早于 Q3、但该主体 Q3 前累计消耗不足 1 万元且 Q3 内有消耗</b>（这类客户的起始期按 <b>Q3 内首次有消耗的月份</b> 重设），都算靶向新客。
-  上方「客户范围」开关切到「新客全集 / 有效新客」会同步重算本页三组。</div>
+  或 <b>首投早于 Q3、但该主体 Q3 前累计消耗不足 1 万元且 Q3 内有消耗</b>（这类客户的起始期按 <b>Q3 内首次有消耗的月份</b> 重设），都算靶向新客。</div>
 
   <div class="card"><h2>一、名单是怎么落到客户上的</h2>
     <div class="funnel" id="tg-funnel"></div>
@@ -1401,7 +1402,9 @@ const TGC={'靶向':'#993C1D','非靶向':'#185FA5','Q3整体':'#8792A8'};
 const TGS={'✅ 靶向新客':'#3B6D11','🟡 Q3前消耗不足一万':'#B45309','⚠️ 是新客但非Q3首投':'#B45309','🔶 非新客（存量客户）':'#185FA5','❌ 桥表查无此主体':'#B91C1C'};
 let TGF='all';
 let AMO=false;                /* 主体表：7/8/9 月三列是否向右展开 */
-function tgG(g){return TD.groups[SEG][g];}
+/* ④ 页固定用「新客全集」口径：靶向看的是一批客户有没有来，不是有没有跑出有效消耗，
+   所以不跟随顶部「客户范围」开关（有效新客会把这批小客户筛掉，看不出靶向的真实规模） */
+function tgG(g){return TD.groups['新客'][g];}
 function tgP(v,d){if(v==null)return'&mdash;';var r=Math.round(v*100)/100;if(r===0&&v!==0)return(v>0?'&lt;0.01':'&gt;-0.01');return r.toLocaleString(undefined,{maximumFractionDigits:2});}
 /* 带单位的空值处理：null 时只输出 —— ，不要输出「—%」「— 万」 */
 function tgU(v,unit,d){return v==null?'&mdash;':tgP(v,d)+unit;}
@@ -1421,7 +1424,7 @@ function tgFunnel(){
     {n:s.subjects, l:'登记主体数',  q:'靶向表 68 行、一格多主体逐个拆开后的主体数', v:s.tgSpend},
     {n:s.investClientN,l:'在投客户数', q:'2026 年 7~9 月有消耗的 '+s.tgWithSpend+' 个主体，经桥表翻成客户简称后去重'
       +'（其余 '+(s.subjects-s.tgWithSpend)+' 个主体这三个月零消耗；一个简称可含多个主体，反过来不会）', v:s.tgSpend},
-    {n:TN.N,        l:'Q3 新客数',   q:'客户简称维度 · 固定用<b>新客全集</b>口径（不随上方「客户范围」开关变）'
+    {n:TN.N,        l:'Q3 新客数',   q:'客户简称维度 · 本页固定<b>新客全集</b>口径'
       +' ｜ 主体命中 '+s.hitQ3+' 个 = Q3 首投 '+s.hitQ3a+' + Q3前消耗不足一万 '+s.hitQ3b
       +' ｜ 其中有效新客 '+s.targetEffN+' 家', v:s.tgtQ3Spend, hl:1}
   ];
