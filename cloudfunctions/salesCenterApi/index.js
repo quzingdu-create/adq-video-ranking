@@ -1042,10 +1042,12 @@ async function refreshEvidenceUrls(params, context) {
   const onlyIds = Array.isArray(params.ids) ? params.ids.map(String) : [];
   if (onlyIds.length) q = database.collection(COLLECTIONS.userRecords).where({ id: database.command.in(onlyIds) });
   const limit = Math.min(Number(params.limit) || 200, 1000);
-  const res = await q.limit(limit).get();
+  const skip = Math.max(Number(params.skip) || 0, 0);
+  const res = skip ? await q.skip(skip).limit(limit).get() : await q.limit(limit).get();
   const rows = (res && res.data) || [];
   let updated = 0, skipped = 0, failed = 0;
   const errs = [];
+  const doneIds = [];   // 2026-10-23 审计用：记录本次真正续期的客户 id，便于事后核对
   for (const row of rows) {
     const fids = Array.isArray(row.evidenceFileIds) ? row.evidenceFileIds.filter(function (x) { return typeof x === 'string' && x.indexOf('cloud://') === 0; }) : [];
     if (!fids.length) { skipped++; continue; }
@@ -1064,13 +1066,14 @@ async function refreshEvidenceUrls(params, context) {
         evidenceImages: merged, evidenceCount: merged.length, _updatedAt: Date.now()
       });
       updated++;
+      if (doneIds.length < 50) doneIds.push(String(row.id));
     } catch (e) {
       failed++;
       if (errs.length < 5) errs.push(String(row.id) + ':' + ((e && e.message) || 'unknown'));
     }
   }
   return ok('refreshEvidenceUrls',
-    { scanned: rows.length, updated: updated, skipped: skipped, failed: failed, errors: errs },
+    { scanned: rows.length, updated: updated, skipped: skipped, failed: failed, errors: errs, updatedIds: doneIds },
     { collection: COLLECTIONS.userRecords, actor: getActor(params, context) });
 }
 
