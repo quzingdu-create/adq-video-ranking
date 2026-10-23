@@ -79,7 +79,9 @@ ul{margin:6px 0 0;padding-left:19px}li{margin-bottom:5px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:1100px){.grid3{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.grid3{grid-template-columns:1fr}}
-.mcell{background:#fff;border:.5px solid rgba(0,0,0,.10);border-radius:9px;padding:10px 12px}
+/* grid track 的 min-width:auto 会被子项（表格）的 min-content 撑开 → 整页变宽，必须显式归零 */
+.grid2>*,.grid3>*{min-width:0}
+.mcell{background:#fff;border:.5px solid rgba(0,0,0,.10);border-radius:9px;padding:10px 12px;min-width:0;overflow:hidden}
 .mcell .mt{font-family:'腾讯体 W7',sans-serif;font-size:13px;color:#12306E;margin-bottom:2px}
 .mcell .ms{font-size:11px;color:#8A8983;margin-bottom:6px}
 .mcell .mb{height:186px;position:relative}
