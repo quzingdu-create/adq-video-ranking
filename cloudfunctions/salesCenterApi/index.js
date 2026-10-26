@@ -1,5 +1,8 @@
 'use strict';
 
+// 2026-10-26 L3：建联截图内容指纹（服务端兜底，需 crypto 算 md5）
+const crypto = require('crypto');
+
 const ENV_ID = 'adq-tuoke-2-d9gktr9mn2e462acd';
 const VERSION = 'v6.7-audit-idempotency-20260703';
 // R12.1 (2026-07-03): 靶向品牌覆盖上限 3 次(跨销售累计). source in TARGET_SOURCES 且 brand 非空 才计数
@@ -28,6 +31,8 @@ const COLLECTIONS = {
   customerLinks: 'sc_customer_links',          // 客户投放链路 (直播/小店/share)
   registerLookup: 'sc_register_lookup',         // 登记查重字典 (主体→简称 mapping + 老客标记)
   customerDiag: 'sc_customer_diag',             // 客户诊断指标
+  // 2026-10-26 L3：建联截图指纹索引（fp → 绑定记录，用于拦截「一图多用」）
+  evidenceFingerprints: 'sc_evidence_fingerprints',
   // Q1+Q2+Q3 (2026-07-03) 写操作可观测三件套
   auditLog: 'sc_audit_log',                     // 通用审计日志(所有写操作,含 traceId+idempotencyKey)
   idempotency: 'sc_idempotency',                // 幂等键缓存(24h 窗口,同 key 直接回放结果)
@@ -946,6 +951,127 @@ async function saveUserRecordsBatch(params, context) {
 //   ① 只 update evidenceImages / evidenceCount / _updatedAt 三个字段（CloudBase update 是部分更新，其余字段不动）
 //   ② 已有图片一律保留，按字符串去重后追加，任何情况下不写入空数组
 //   ③ 只接受 data:image/ 开头的 dataURL，防脏数据
+/* ============ 2026-10-26 L3 服务端兜底：建联截图内容指纹 ============
+   背景（10-23 事故）：前端 fallback 队列 bug 把 11 张图铺给了 24 条记录，
+   8 个不同客户挂着同一张群聊截图 —— 建联证据被污染且无法找回（污染前本就无图）。
+   结论：前端补传逻辑已被证明会出错，同类 bug 还会换形态再出现。
+   必须把「同一张图不能属于多个客户」这条规则下沉到服务端，
+   不再依赖前端正确性 —— 前端再写错，云端也能兜住。
+
+   三条规则：
+     ① 指纹：dataURL 取 base64 正文 md5；http(s) 直链取「去查询参数后的路径」md5
+        （临时签名每次都变，必须剥掉，否则同一张图会算出不同指纹）
+     ② 一图多用拦截：指纹已绑定到【其他记录】→ 标记 DUPLICATE_ACROSS_RECORDS
+     ③ 最小尺寸：短边 < 300px 或 面积 < 15 万像素 → 标记 TOO_SMALL
+
+   ⚠ 容错原则：索引集合不可用时【放行】，兜底逻辑绝不能反过来阻断业务登记。
+
+   🔴 模式开关（2026-10-26 子青拍板：先宽松跑 1~2 周，观察命中率后再决定是否转严格）：
+      EVIDENCE_GUARD_STRICT = false → 只记录 rejected 供审计，**照常放行**（零误伤）
+      EVIDENCE_GUARD_STRICT = true  → 真正拒绝写入（彻底堵死污染）
+      为什么要先宽松：8 张重复图的内容是「ADQ 直客对接(7)」群聊截图，
+      若销售确在同一群里对接多个客户，同图是【合法】的 —— 直接拒绝会把正常登记卡死。
+      转严格前先看 rejected 里 DUPLICATE 的真实命中量与集中度。
+*/
+const EVIDENCE_GUARD_STRICT = false;
+async function _ensureEvidenceFingerprintsCollection() {
+  try { await ensureCollection(COLLECTIONS.evidenceFingerprints); } catch (e) {}
+}
+
+function _fpOfImage(x) {
+  if (typeof x !== 'string' || !x) return '';
+  try {
+    if (x.indexOf('data:image/') === 0) {
+      const b64 = (x.split(',')[1] || '').trim();
+      if (!b64) return '';
+      return crypto.createHash('md5').update(b64).digest('hex');
+    }
+    if (x.indexOf('http://') === 0 || x.indexOf('https://') === 0) {
+      return crypto.createHash('md5').update(x.split('?')[0]).digest('hex');
+    }
+    if (x.indexOf('cloud://') === 0) {
+      return crypto.createHash('md5').update(x).digest('hex');
+    }
+  } catch (e) {}
+  return '';
+}
+
+function _sizeOfImage(x) {
+  if (typeof x !== 'string' || x.indexOf('data:image/') !== 0) return null;
+  try {
+    const buf = Buffer.from((x.split(',')[1] || ''), 'base64');
+    if (buf.length < 32) return null;
+    if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47) {
+      return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) };
+    }
+    if (buf[0] === 0xFF && buf[1] === 0xD8) {
+      let i = 2;
+      while (i + 9 < buf.length) {
+        if (buf[i] !== 0xFF) { i++; continue; }
+        const m = buf[i + 1];
+        if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7)) { i += 2; continue; }
+        if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) {
+          return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+        }
+        const len = buf.readUInt16BE(i + 2);
+        if (len < 2) break;
+        i += 2 + len;
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function guardEvidenceImages(database, recordId, imgs, exist) {
+  const allow = [], rejected = [];
+  const existFps = new Set((exist || []).map(_fpOfImage).filter(Boolean));
+  const seenInBatch = new Set();
+  const rows = [];
+  for (const x of imgs) {
+    const fp = _fpOfImage(x);
+    if (!fp) { rejected.push({ fp: '', reason: 'UNFINGERPRINTABLE' }); continue; }
+    if (existFps.has(fp) || seenInBatch.has(fp)) continue;
+    const sz = _sizeOfImage(x);
+    if (sz && (Math.min(sz.w, sz.h) < 300 || sz.w * sz.h < 150000)) {
+      rejected.push({ fp: fp, reason: 'TOO_SMALL', size: sz.w + 'x' + sz.h,
+                      mode: EVIDENCE_GUARD_STRICT ? 'BLOCKED' : 'WARN_ONLY' });
+      if (EVIDENCE_GUARD_STRICT) continue;   // 宽松模式：照常放行，只标记
+    }
+    rows.push({ img: x, fp: fp });
+    seenInBatch.add(fp);
+  }
+  if (!rows.length) return { allow: allow, rejected: rejected };
+
+  try {
+    await _ensureEvidenceFingerprintsCollection();
+    const fps = rows.map(function (r) { return r.fp; });
+    const res = await database.collection(COLLECTIONS.evidenceFingerprints)
+      .where({ fp: database.command.in(fps) }).limit(200).get();
+    const bound = {};
+    ((res && res.data) || []).forEach(function (d) { bound[d.fp] = d.recordId; });
+    for (const r of rows) {
+      const b = bound[r.fp];
+      if (b && String(b) !== String(recordId)) {
+        rejected.push({ fp: r.fp, reason: 'DUPLICATE_ACROSS_RECORDS', boundTo: String(b),
+                        mode: EVIDENCE_GUARD_STRICT ? 'BLOCKED' : 'WARN_ONLY' });
+        if (EVIDENCE_GUARD_STRICT) continue;   // 宽松模式：只记录，照常放行
+      }
+      allow.push(r.img);
+      if (!b) {
+        try {
+          await database.collection(COLLECTIONS.evidenceFingerprints).add({
+            data: { fp: r.fp, recordId: String(recordId), ts: Date.now() }
+          });
+        } catch (e) {}
+      }
+    }
+  } catch (e) {
+    console.warn('[guardEvidenceImages] 指纹索引不可用，已放行（兜底不阻断业务）', e && e.message);
+    return { allow: rows.map(function (r) { return r.img; }), rejected: rejected };
+  }
+  return { allow: allow, rejected: rejected };
+}
+
 async function mergeEvidenceImages(params, context) {
   params = params || {};
   const database = getDb();
@@ -954,6 +1080,7 @@ async function mergeEvidenceImages(params, context) {
   if (!items.length) return fail('mergeEvidenceImages', 'EMPTY_ITEMS', 'items is required');
   let merged = 0, skipped = 0, notFound = 0;
   const errs = [];
+  const rejectedList = [];   // 2026-10-26 L3：被服务端拦截的截图明细
   for (const it of items) {
     const id = (it && it.id != null) ? String(it.id) : '';
     const rawImgs = (it && Array.isArray(it.evidenceImages)) ? it.evidenceImages : [];
@@ -970,7 +1097,16 @@ async function mergeEvidenceImages(params, context) {
       if (!row || !row._id) { notFound++; continue; }
       const exist = Array.isArray(row.evidenceImages) ? row.evidenceImages : [];
       const seen = new Set(exist);
-      const add = clean.filter(function (x) { return !seen.has(x); });
+      const cand = clean.filter(function (x) { return !seen.has(x); });
+      if (!cand.length) { skipped++; continue; }
+      // 2026-10-26 L3 服务端兜底：一图多用拦截 + 截屏碎片拒收
+      const g = await guardEvidenceImages(database, id, cand, exist);
+      if (g.rejected && g.rejected.length) {
+        rejectedList.push({ id: id, items: g.rejected.slice(0, 5) });
+        console.warn('[mergeEvidenceImages] 截图被服务端拦截',
+          JSON.stringify({ id: id, n: g.rejected.length, reasons: g.rejected.map(function (r) { return r.reason; }) }));
+      }
+      const add = (g.allow || []).filter(function (x) { return !seen.has(x); });
       if (!add.length) { skipped++; continue; }
       await database.collection(COLLECTIONS.userRecords).doc(row._id).update({
         evidenceImages: exist.concat(add),
@@ -983,7 +1119,9 @@ async function mergeEvidenceImages(params, context) {
     }
   }
   return ok('mergeEvidenceImages',
-    { requested: items.length, merged: merged, skipped: skipped, notFound: notFound, errors: errs.slice(0, 5) },
+    { requested: items.length, merged: merged, skipped: skipped, notFound: notFound,
+      rejected: rejectedList,   // 2026-10-26 L3：一图多用 / 尺寸过小 被拦截的明细
+      errors: errs.slice(0, 5) },
     { collection: COLLECTIONS.userRecords, actor: getActor(params, context) });
 }
 
