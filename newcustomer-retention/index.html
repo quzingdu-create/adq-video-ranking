@@ -85,6 +85,13 @@ ul{margin:6px 0 0;padding-left:19px}li{margin-bottom:5px}
 .mcell .mt{font-family:'腾讯体 W7',sans-serif;font-size:13px;color:#12306E;margin-bottom:2px}
 .mcell .ms{font-size:11px;color:#8A8983;margin-bottom:6px}
 .mcell .mb{height:186px;position:relative}
+/* 同一维度两个视角（人数 / 消耗）并排：两个都画出来，不用切 */
+.mb2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.mb2>div{min-width:0;text-align:center}
+.mb2 .mbs{font-size:10.5px;color:#8A8983;margin-bottom:3px}
+.mb2 .mbs b{color:#12306E;font-weight:600}
+.mb2 .mbw{height:150px;position:relative}
+@media(max-width:900px){.mb2{grid-template-columns:1fr}}
 .mcell table{font-size:11.5px}
 .mcell td,.mcell th{padding:4px 6px}
 .funnel{display:flex;gap:0;flex-wrap:wrap;margin:4px 0 12px;align-items:stretch}
@@ -290,10 +297,11 @@ th[data-sort]:hover{background:#E8F3FF}
 
   <div class="card"><h2>二、靶向客户结构</h2>
     <div class="note" style="margin-bottom:10px">这 <b id="tg-mixN">60</b> 家靶向新客，分别从哪些<b>类目</b>、哪个<b>投放端</b>、什么<b>体量</b>进来。
-      人数和消耗看的是同一批客户，只是两种切法 —— <b>两边占比不对称才有信息</b>。</div>
+      每个维度都给<b>两张饼图</b>：左边按<b>人数</b>、右边按<b>消耗</b> —— 同一批人两种切法，
+      <b>两张图长得越不一样，这一格的信息量越大</b>。</div>
     <div class="seg" id="tg-mixk" style="margin-bottom:10px">
-      <button class="on" data-v="n">按人数（家）</button>
-      <button data-v="c">按消耗（万元）</button>
+      <button data-v="n">表格按人数排序</button>
+      <button class="on" data-v="c">表格按消耗排序</button>
     </div>
     <div class="grid2" id="tg-mix"></div>
     <div class="fx" id="tg-fx3"></div>
@@ -1694,7 +1702,7 @@ const TMIXG=[['end','投放端','客户首投时走的端（ADQ / 全域通 / �
              ['xr','新锐 / 非新锐','客群标签为「新锐」或「经销商」的算新锐，其余兜底'],
              ['dsz','消耗层级（日耗）','日耗 = 首投当期消耗 ÷ 当月自然天数'],
              ['ind','类目（行业）','取自靶向表的「行业」字段，按客户主简称归属']];
-let TMK='n';                                    /* n=按人数 c=按消耗 */
+let TMK='c';                                    /* c=按消耗（默认，钱在哪儿更关键） n=按人数；只控制表格排序口径 */
 function tgMixHTML(){
   var box=document.getElementById('tg-mix'); if(!box)return;
   var G=TD.groups['新客']['靶向'], M=G.mix;
@@ -1702,9 +1710,11 @@ function tgMixHTML(){
   if(!M){box.innerHTML='<span style="color:#8A8983">无结构数据</span>';return;}
   function itemsOf(g){
     var a=Object.keys(M[g]||{}).filter(function(n){return M[g][n]&&M[g][n].N>0;});
-    a.sort(function(x,y){return M[g][y].N-M[g][x].N;});
+    a.sort(function(x,y){return TMK==='c'?(M[g][y].C-M[g][x].C):(M[g][y].N-M[g][x].N);});
     return a;
   }
+  /* 当前排序口径的那一列占比加粗，方便一眼顺着读 */
+  function hi(v,b){var s=numU(v,'%');return b?'<b style="color:#12306E">'+s+'</b>':s;}
   var h='', allC=0;
   TMIXG.forEach(function(G2){
     var g=G2[0], items=itemsOf(g);
@@ -1715,37 +1725,48 @@ function tgMixHTML(){
     var rows=items.map(function(n){
       var v=M[g][n];
       return [{t:n,l:1},{t:v.N.toLocaleString()},
-        {t:numU(tn?100*v.N/tn:null,'%')},
+        {t:hi(tn?100*v.N/tn:null,TMK==='n')},
         {t:num(v.C)},
-        {t:numU(tc?100*v.C/tc:null,'%')},
+        {t:hi(tc?100*v.C/tc:null,TMK==='c')},
         {t:num(v.N?v.C/v.N:null)}];
     });
     h+='<div class="mcell"><div class="mt">'+G2[1]+'</div><div class="ms">'+G2[2]+'</div>'
-      +'<div class="mb"><canvas id="c-tmix-'+g+'"></canvas></div>'
+      +'<div class="mb2">'
+        +'<div><div class="mbs">按 <b>人数</b>（家）</div>'
+        +'<div class="mbw"><canvas id="c-tmn-'+g+'"></canvas></div></div>'
+        +'<div><div class="mbs">按 <b>消耗</b>（万元）</div>'
+        +'<div class="mbw"><canvas id="c-tmc-'+g+'"></canvas></div></div>'
+      +'</div>'
       +'<div class="tblwrap">'+tbl(rows,[{t:'分组',l:1},{t:'客户数'},{t:'人数占比'},
         {t:'首投当期消耗(万)'},{t:'消耗占比'},{t:'单客(万)'}])+'</div></div>';
   });
   box.innerHTML=h;
+  /* 每个维度出两张：左边按人数、右边按消耗 —— 两个视角都摆出来，不用切着看 */
   TMIXG.forEach(function(G2){
     var g=G2[0], items=itemsOf(g);
-    var el=document.getElementById('c-tmix-'+g); if(!el)return;
-    var vals=items.map(function(n){return TMK==='c'?Math.round(M[g][n].C*100)/100:M[g][n].N;});
-    if(CH['c-tmix-'+g])CH['c-tmix-'+g].destroy();
-    var tt=Object.assign({},TT,{callbacks:{label:function(c){
-      var v=c.parsed,s=0;
-      c.dataset.data.forEach(function(x){s+=x||0;});
-      return c.label+'：'+v+(TMK==='c'?' 万':' 家')+'（'+(s?Math.round(v/s*1000)/10:0)+'%）';}}});
-    CH['c-tmix-'+g]=new Chart(el,{type:'doughnut',
-      data:{labels:items,datasets:[{data:vals,
-        backgroundColor:items.map(function(n){return TMIXC[n]||'#8792A8';})}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'62%',
-        plugins:{legend:{position:'bottom',labels:{boxWidth:10,boxHeight:10,
-          font:{size:11},color:'#5F5E5A',padding:10}},
-          tooltip:tt,dl:{on:false},dlp:{on:true}}}});
+    [['n','c-tmn-'+g,'家'],['c','c-tmc-'+g,'万']].forEach(function(P){
+      var key=P[0], id=P[1], u=P[2];
+      var el=document.getElementById(id); if(!el)return;
+      var vals=items.map(function(nm){return key==='c'?Math.round(M[g][nm].C*100)/100:M[g][nm].N;});
+      if(CH[id])CH[id].destroy();
+      var tt=Object.assign({},TT,{callbacks:{label:function(c){
+        var v=c.parsed,s=0;
+        c.dataset.data.forEach(function(x){s+=x||0;});
+        return c.label+'：'+v+' '+u+'（'+(s?Math.round(v/s*1000)/10:0)+'%）';}}});
+      CH[id]=new Chart(el,{type:'doughnut',
+        data:{labels:items,datasets:[{data:vals,
+          backgroundColor:items.map(function(nm){return TMIXC[nm]||'#8792A8';})}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+          plugins:{legend:{position:'bottom',labels:{boxWidth:9,boxHeight:9,
+            font:{size:10},color:'#5F5E5A',padding:8}},
+            tooltip:tt,dl:{on:false},dlp:{on:true}}}});
+    });
   });
   var fx=document.getElementById('tg-fx3');
   if(fx)fx.innerHTML='<span class="t">这张结构怎么看</span>'
-    +'<b>人数占比和消耗占比差得越多，信息量越大</b>：人数少、消耗高 = 这一格是「进来的少但投得重」；'
+    +'<b>每个维度都出两张饼图：左边按人数、右边按消耗</b>，两个视角一起看，不用切。'
+    +'上方开关只决定<b>表格按哪一档排序</b>（默认消耗），对应的占比列会加粗。<br>'
+    +'<b>左右两张图长得越不一样，信息量越大</b>：人数占比小、消耗占比大 = 这一格是「进来的少但投得重」；'
     +'反过来 = 人多但都是小客户。<br>'
     +'<b>类目</b>取自靶向表的「行业」字段，按客户主简称归属，一个客户只归一个类目；'
     +'桥表对不上的客户归「—」。<br>'
