@@ -19313,9 +19313,9 @@
       "date": "2026-10-16"
     },
     "深圳市龙岗区米枷工艺品商行(个体工商户)": {
-      "sale": "grettazhao",
-      "reason": "2026-10-16 子青拍板归 grettazhao（销售客户登记遗漏补登）",
-      "date": "2026-10-16"
+      "sale": "yvaineechen",
+      "reason": "2026-11-03 子青拍板：由 grettazhao 改为 yvaineechen",
+      "date": "2026-11-03"
     },
     "深圳市罗湖区知利程服饰店(个体工商户)": {
       "sale": "grettazhao",
@@ -19368,9 +19368,9 @@
       "date": "2026-10-16"
     },
     "济南天桥卓冉文化艺术中心(个体工商户)": {
-      "sale": "grettazhao",
-      "reason": "2026-10-16 子青拍板归 grettazhao（销售客户登记遗漏补登）",
-      "date": "2026-10-16"
+      "sale": "yvaineechen",
+      "reason": "2026-11-03 子青拍板：由 grettazhao 改为 yvaineechen",
+      "date": "2026-11-03"
     },
     "北京兆芳陶瓷商店(个体工商户)": {
       "sale": "grettazhao",
@@ -19418,9 +19418,9 @@
       "date": "2026-10-16"
     },
     "郑州莳予网络科技有限公司": {
-      "sale": "grettazhao",
-      "reason": "2026-10-16 子青拍板归 grettazhao（销售客户登记遗漏补登）",
-      "date": "2026-10-16"
+      "sale": "yvaineechen",
+      "reason": "2026-11-03 子青拍板：由 grettazhao 改为 yvaineechen",
+      "date": "2026-11-03"
     },
     "杭州腾诺服装有限公司": {
       "sale": "grettazhao",
@@ -19958,9 +19958,9 @@
       "date": "2026-10-19"
     },
     "广州奢言商贸有限公司": {
-      "sale": "Jonzhu",
-      "reason": "2026-10-19 纠偏-10.19.xlsx 归属修正（子青拍板）",
-      "date": "2026-10-19"
+      "sale": "grettazhao",
+      "reason": "2026-11-03 子青拍板：由 Jonzhu 改为 grettazhao",
+      "date": "2026-11-03"
     },
     "株洲澜石服饰有限公司": {
       "sale": "kaikaigenli",
@@ -20811,8 +20811,23 @@
       "sale": "lijunwu",
       "reason": "2026-10-27 矫正-10.26.xlsx 归属矫正",
       "date": "2026-10-27"
+    },
+    "新余市戈薇鞋业有限公司": {
+      "sale": "grettazhao",
+      "reason": "2026-11-03 子青拍板：由 Jonzhu 改为 grettazhao",
+      "date": "2026-11-03"
+    },
+    "沙洋县玉旭双商贸商行(个体工商户)": {
+      "sale": "grettazhao",
+      "reason": "2026-11-03 子青拍板：由 lijunwu/Jonzhu 重复登记 改为 grettazhao",
+      "date": "2026-11-03"
+    },
+    "深圳市龙岗区博光悦工艺品商行(个体工商户)": {
+      "sale": "yvaineechen",
+      "reason": "2026-11-03 子青拍板：由 grettazhao 改为 yvaineechen",
+      "date": "2026-11-03"
     }
   },
-  "updatedAt": "2026-10-29",
+  "updatedAt": "2026-11-03",
   "note": "逐单归属覆盖；最近一次 2026-10-19 纠偏-10.19.xlsx 归属修正（子青拍板）"
 }
