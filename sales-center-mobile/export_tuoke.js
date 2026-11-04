@@ -24,7 +24,13 @@
   if (window.__EXPORT_TUOKE_BOUND__) return;
   window.__EXPORT_TUOKE_BOUND__ = true;
 
-  var HEADERS = ['登记日期','销售名称','客户主体','客户简称','首投季度','是否新客','是否有效','是否新锐','链路（手填）','投放端（AData）','类目','拓客途径','拓客来源','商品消费链路','链路日耗','全域通日耗','ADQ日耗','综合投放端'];
+  // 🔴 2026-11-04 子青拍板：全站导出统一 19 列新口径表头（与看板「⬇ 导出我的客户」一致）
+  var HEADERS = ['客户简称','主体名称','当前归属','归属生效层','首登人','登记日期','登记条数',
+                 '首投季度(ops)','登记状态','是否新客','是否有效','是否新锐','投放端','链路',
+                 '类目(销售手填)','来源','季度消耗(元)','昨日消耗(元)','消耗环比'];
+  var PROFILE_COLS = [26,30,14,16,14,12,10,14,16,10,10,10,12,10,16,24,14,14,12];
+  // 注：下方 exportXlsxNewView 为历史 6 列死函数（runExportNewView 已改走 19 列新口径），
+  //     其表头必须保持 6 列，不能跟 HEADERS 联动，否则一旦被误调用就会「19 列表头 + 6 列数据」错位。
   var NEW_VIEW_HEADERS = ['客户简称','登记销售','首投季度','是否新客','是否有效','是否新锐'];
   var EXPORT_FALLBACK_VERSION = '20260622c';
   var _tuokePromise = null;
@@ -353,28 +359,37 @@
   }
   window.__fixRegYearForExport = fixRegYear;
 
-  function rowOf(r) {
-    var isNewFlag = (r.isNew === true || r.isNewCustomer === true) ? true : isNewByFq(r);
-    return [
-      fixRegYear(r.date),
-      r.sale || '',
-      r.name || '',
-      r.shortName || '',
-      normalizeQuarter(r.firstQuarter),
-      isNewFlag ? '是' : '否',
-      (r.isValid === true || r.isValidNew === true) ? '是' : '否',
-      (r.isRising === '是' || r.status === '新锐' || r.isXinrui === true) ? '是' : '否',
-      parseLinks(r),
-      r.deliverySide || '',
-      r.cat || '',
-      r.channel || '',
-      r.source || '',
-      r.linkType || '',
-      (r.linkCost != null && r.linkCost !== '') ? Number(r.linkCost) : 0,
-      (r.qytCost != null && r.qytCost !== '') ? Number(r.qytCost) : 0,
-      (r.adqCost != null && r.adqCost !== '') ? Number(r.adqCost) : 0,
-      r.deliverySideEnriched || ''
-    ];
+
+  // 新口径 profile（每日 daily_rebuild.sh 第 4.5/8 步生成，前端只读不算）
+  // 🔴 版本号从本文件 <script src="export_tuoke.js?v=XXXX"> 读取，bump 只扫 html 不扫 js。
+  var _profilePromise = null;
+  function ensureProfile() {
+    if (window.__CUSTOMER_EXPORT_PROFILE__) return Promise.resolve(window.__CUSTOMER_EXPORT_PROFILE__);
+    if (_profilePromise) return _profilePromise;
+    _profilePromise = loadScriptOnce('data/customer_export_profile.js?v=' + currentVersion())
+      .then(function () {
+        if (!window.__CUSTOMER_EXPORT_PROFILE__) throw new Error('profile 加载后仍不可用');
+        return window.__CUSTOMER_EXPORT_PROFILE__;
+      });
+    return _profilePromise;
+  }
+  function profileOf(n) {
+    var P = window.__CUSTOMER_EXPORT_PROFILE__ || {};
+    var I = window.__CUSTOMER_EXPORT_SHORT_INDEX__ || {};
+    return P[n] || P[I[n]] || null;
+  }
+  function rowOfProfile(n, r) {
+    r = r || {};
+    var e = profileOf(n);
+    if (e) {
+      return [e.short || n, n, e.owner || '未解析', e.attrSrc || '', e.firstBy || '',
+              e.regDate || '', e.regCount || 0, e.q || '', e.status || '',
+              e.isNew || '', e.isValid || '', e.isRising || '', e.side || '', e.link || '',
+              e.cat || '', e.source || '', e.qCost || '', e.yCost || '', e.chg || ''];
+    }
+    // 云端 T-0 新登记：profile 尚未收录，用底表记录兜底，判定列留空待次日 rebuild 补齐
+    return [r.shortName || n, n, r.sale || '', '', '', fixRegYear(r.date), 1,
+            '', '', '', '', '', '', '', r.cat || '', r.source || '', '', '', ''];
   }
 
   function ensureXlsxReady() {
@@ -386,36 +401,45 @@
     return Promise.reject(new Error('xlsx 库未加载，请刷新页面'));
   }
 
-  // 登记表口径导出（13 列）
+  // 🔴 2026-11-04：全量导出统一 19 列新口径，按主体名称去重（19 列均为主体级字段）
   function exportXlsxRecords(records, sheetName, filenamePrefix) {
     if (!records.length) return Promise.reject(new Error('没有命中数据'));
-    return ensureXlsxReady().then(function () {
-      var sorted = records.slice().sort(function (a, b) {
-        return (fixRegYear(a.date) + '').localeCompare(fixRegYear(b.date) + '')
-            || ((a.sale || '') + '').localeCompare((b.sale || '') + '');
+    return ensureProfile().then(function () {
+      return ensureXlsxReady();
+    }).then(function () {
+      var byName = {}, fallback = 0;
+      records.forEach(function (r) {
+        var n = String((r && (r.name || r.shortName)) || '').trim();
+        if (n && !byName[n]) byName[n] = r;
       });
+      var names = Object.keys(byName).sort(function (a, b) { return a.localeCompare(b); });
       var aoa = [HEADERS];
-      sorted.forEach(function (r) { aoa.push(rowOf(r)); });
+      names.forEach(function (n) {
+        if (!profileOf(n)) fallback++;
+        aoa.push(rowOfProfile(n, byName[n]));
+      });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!cols'] = [
-        { wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 24 }, { wch: 10 }, { wch: 8 }, { wch: 8 }, { wch: 8 },
-        { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
-        { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }
-      ];
+      ws['!cols'] = PROFILE_COLS.map(function (w) { return { wch: w }; });
       var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      var M = window.__CUSTOMER_EXPORT_META__ || {};
       var meta = [
         ['指标', '值'],
         ['导出时间', new Date().toLocaleString()],
         ['Sheet名称', sheetName],
-        ['总记录数', records.length],
-        ['来源', '看板 __TUOKE_REAL_RECORDS__（登记表口径）'],
-        ['数据日', (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || '']
+        ['主体数（按名称去重）', names.length],
+        ['口径', '11-04 新口径：五项命中 ops / 链路双投 / 类目手填 / 归属取 attribution_resolved.js'],
+        ['数据日', M.dataDate || (window.__CENTER_DAILY_KPI__ && window.__CENTER_DAILY_KPI__.dataDate) || ''],
+        ['当季', M.currentQuarter || ''],
+        ['profile 生成时间', M.generatedAt || ''],
+        ['🔴 云端 T-0 新登记（profile 未收录）', fallback + ' 家，判定列留空，次日 rebuild 补齐'],
+        ['🔴 两个「双投」别混', '链路列的双投=小店+直播；投放端列的双投放=ADQ+全域通'],
+        ['来源', 'customer_export_profile.js（每日 rebuild）+ 静态/云端登记底表（主体名集合）']
       ];
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(meta), '说明');
       var ymd = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, filenamePrefix + '_' + ymd + '_' + records.length + '条.xlsx');
-      return records.length;
+      XLSX.writeFile(wb, filenamePrefix + '_' + ymd + '_' + names.length + '家.xlsx');
+      return names.length;
     });
   }
 
@@ -499,16 +523,23 @@
     });
   }
 
+  // 🔴 2026-11-04：新客明细菜单也统一 19 列新口径，季度范围 25Q3~26Q4
   function runExportNewView(btn, label, filePrefix, sheetName) {
     if (btn && btn.disabled) return;
-    if (btn) { btn.disabled = true; btn.innerText = '加载大盘视图…'; }
-    ensureNewCustomerView().then(function (rows) {
+    if (btn) { btn.disabled = true; btn.innerText = '加载新口径…'; }
+    ensureProfile().then(function () {
+      var P = window.__CUSTOMER_EXPORT_PROFILE__ || {};
+      var QSET = { '2025Q3':1, '2025Q4':1, '2026Q1':1, '2026Q2':1, '2026Q3':1, '2026Q4':1 };
+      var rows = [];
+      Object.keys(P).forEach(function (n) {
+        if (QSET[(P[n] || {}).q]) rows.push({ name: n, shortName: (P[n] || {}).short });
+      });
       if (!rows.length) throw new Error('没有命中数据');
       if (btn) btn.innerText = '生成表格…';
       toast('正在生成表格…');
-      return exportXlsxNewView(rows, sheetName, filePrefix).then(function (n) {
-        if (btn) btn.innerText = '✅ 已下载 ' + n + ' 条';
-        toast('✅ 已下载 ' + n + ' 条');
+      return exportXlsxRecords(rows, sheetName, filePrefix).then(function (n) {
+        if (btn) btn.innerText = '✅ 已下载 ' + n + ' 家';
+        toast('✅ 已下载 ' + n + ' 家');
         if (btn) setTimeout(function () { btn.disabled = false; btn.innerText = label; }, 2500);
       });
     }).catch(function (err) {
