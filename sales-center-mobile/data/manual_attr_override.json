@@ -17703,9 +17703,10 @@
       "date": "2026-09-14"
     },
     "洛阳市偃师区伊洛街道滨海鞋业商行": {
-      "sale": "Jonzhu",
-      "reason": "2026-09-14 客户明细纠偏-9.14.xlsx 归属修正（子青拍板）",
-      "date": "2026-09-14"
+      "sale": "lijunwu",
+      "reason": "2026-11-04 子青拍板：由 Jonzhu 转 lijunwu",
+      "date": "2026-11-04",
+      "by": "子青"
     },
     "石狮市和拓商贸有限公司": {
       "sale": "kaikaigenli",
@@ -17753,9 +17754,10 @@
       "date": "2026-09-14"
     },
     "洛阳市偃师区鹿鹿鞋业商行": {
-      "sale": "Jonzhu",
-      "reason": "2026-09-14 客户明细纠偏-9.14.xlsx 归属修正（子青拍板）",
-      "date": "2026-09-14"
+      "sale": "lijunwu",
+      "reason": "2026-11-04 子青拍板：由 Jonzhu 转 lijunwu",
+      "date": "2026-11-04",
+      "by": "子青"
     },
     "石狮市灵秀镇李根连服装经营部(个体工商户)": {
       "sale": "kaikaigenli",
@@ -19328,9 +19330,10 @@
       "date": "2026-10-16"
     },
     "望都县诺言鞋店(个体工商户)": {
-      "sale": "grettazhao",
-      "reason": "2026-10-16 子青拍板归 grettazhao（销售客户登记遗漏补登）",
-      "date": "2026-10-16"
+      "sale": "lijunwu",
+      "reason": "2026-11-04 子青拍板：由 grettazhao 转 lijunwu",
+      "date": "2026-11-04",
+      "by": "子青"
     },
     "仙桃市素瑾风尚服装有限公司": {
       "sale": "grettazhao",
@@ -20826,6 +20829,12 @@
       "sale": "yvaineechen",
       "reason": "2026-11-03 子青拍板：由 grettazhao 改为 yvaineechen",
       "date": "2026-11-03"
+    },
+    "洛阳市偃师区源恒鞋业商行": {
+      "sale": "lijunwu",
+      "reason": "2026-11-04 子青拍板：由 Jonzhu 转 lijunwu",
+      "date": "2026-11-04",
+      "by": "子青"
     }
   },
   "updatedAt": "2026-11-04",
