@@ -9,7 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- 分级日志（必须最先加载，其他脚本都可用 SC.log）-->
-<script src="sc_logger.js?v=20261103b"></script>
+<script src="sc_logger.js?v=20261104a"></script>
 <!-- =========================================================================
      2026-06-12 首屏加载优化（最小侵入，业务逻辑零改动）
      问题：7 个 MB 级数据文件（合计约 22.4MB）原以同步 <script src> 阻塞首屏，
@@ -40,6 +40,29 @@ window.__DELIVERY_COUNTS__ = window.__DELIVERY_COUNTS__ || {};
 window.__FIRST_QUARTER__ = window.__FIRST_QUARTER__ || {};
 window.__TUOKE_REAL_RECORDS__ = window.__TUOKE_REAL_RECORDS__ || [];
 window.__CUSTOMER_LIFECYCLE__ = window.__CUSTOMER_LIFECYCLE__ || [];
+window.__ATTR_RESOLVED__ = window.__ATTR_RESOLVED__ || {};
+window.__ATTR_META__ = window.__ATTR_META__ || {};
+/* 🔴 2026-11-04 子青拍板：前端「流转显示」按变更来源分流。
+   flow=1（管理员拍板 override / 原销售主动改 saleHistory）→ 允许显示流转；
+   flow=0（看板与算法按真实时间取最早登记的纠偏，非人为）→ 静默，
+   页面只显示当前归属单值，不出现「销售已由 X 修改为 Y」「最早由 X 登记」「↔ 变更历史」。
+   ⚠️ 产物是 BIG_DATA_LOADER 异步加载；未加载完时返回 false，保守静默。 */
+window.attrFlowOf = function(name){
+  var _R = window.__ATTR_RESOLVED__ || {};
+  var _q = String(name||'').trim();
+  var _h = _R[_q] || {};
+  if (!_h.flow) { var _mp = window.__MAPPING_DATA__ || {}; if (_mp[_q]) _h = _R[_mp[_q]] || {}; }
+  if (!_h.flow) { var _rg = window.__REGISTERED_SUBJECTS__ || {}; if (_rg[_q] && _rg[_q].shortName) _h = _R[_rg[_q].shortName] || {}; }
+  return _h.flow === 1;
+};
+window.attrOwnerOf = function(name){
+  var _R = window.__ATTR_RESOLVED__ || {};
+  var _q = String(name||'').trim();
+  var _h = _R[_q] || {};
+  if (!_h.s) { var _mp = window.__MAPPING_DATA__ || {}; if (_mp[_q]) _h = _R[_mp[_q]] || {}; }
+  if (!_h.s) { var _rg = window.__REGISTERED_SUBJECTS__ || {}; if (_rg[_q] && _rg[_q].shortName) _h = _R[_rg[_q].shortName] || {}; }
+  return _h.s || '';
+};
 window.__BIG_DATA_READY__ = false;
 /* 2026-08-17：当前季度按今日自动算，挂到 window 供所有 <script> 块共用。
    替换掉此前散落各处的 || '2026Q2' 硬编码兜底（那个值已过期，一旦 center_daily_kpi.js
@@ -58,7 +81,7 @@ window.__OVERRIDE_READY__ = false;
 //   由 applyOverrideToRecords 定义后(line ~1474)再消费,避免函数未定义时 fetch 已 resolve 报 TypeError。
 window.__OVERRIDE_FETCH__ = (function(){
   try {
-    return fetch('data/manual_attr_override.json?v=20261103b')
+    return fetch('data/manual_attr_override.json?v=20261104a')
       .then(function(r){return r.json();})
       .then(function(j){
         if (j && typeof j === 'object') {
@@ -94,35 +117,35 @@ window.__OVERRIDE_FETCH__ = (function(){
 })();
 </script>
 <!-- CloudBase 重构 V1：API/数据适配骨架，默认 dataMode=static，不改变现有数据链路 -->
-<script defer src="cloud_gray_switch.js?v=20261103b"></script>
-<script defer src="api_client.js?v=20261103b"></script>
-<script defer src="data_adapter.js?v=20261103b"></script>
+<script defer src="cloud_gray_switch.js?v=20261104a"></script>
+<script defer src="api_client.js?v=20261104a"></script>
+<script defer src="data_adapter.js?v=20261104a"></script>
 <!-- KB 级小文件保留同步加载（首屏 KPI 直接依赖，体积小加载快，不阻塞首屏感知） -->
 <!-- 2026-06-11 用户拍板：删除「24年老客」口径，摘除 old24_customer_data.js / old24_names.js 外链。
      相关 window.__OLD24_* 读取处均兜底空 Set，逻辑自动失效。 -->
 <!-- R12.1 (2026-06-26) bulk_import_rows.js 360KB 改懒加载, 首屏省 360KB. 仅"批量预置数据导入"按钮触发. -->
-<!-- <script src="data/bulk_import_rows.js?v=20261103b"></script> -->
-<script src="data/center_sales_summary.js?v=20261103b"></script>
-<script src="data/center_quarter_summary.js?v=20261103b"></script>
-<script src="data/center_daily_kpi.js?v=20261103b"></script>
-<script src="data/top80_effective_metrics.js?v=20261103b"></script>
-<script src="data/top_status_data.js?v=20261103b"></script>
-<script src="data/enough_candidates.js?v=20261103b"></script>
-<script src="data/handover_customers_519.js?v=20261103b"></script>
-<script src="data/target_brand_pool.js?v=20261103b"></script>
+<!-- <script src="data/bulk_import_rows.js?v=20261104a"></script> -->
+<script src="data/center_sales_summary.js?v=20261104a"></script>
+<script src="data/center_quarter_summary.js?v=20261104a"></script>
+<script src="data/center_daily_kpi.js?v=20261104a"></script>
+<script src="data/top80_effective_metrics.js?v=20261104a"></script>
+<script src="data/top_status_data.js?v=20261104a"></script>
+<script src="data/enough_candidates.js?v=20261104a"></script>
+<script src="data/handover_customers_519.js?v=20261104a"></script>
+<script src="data/target_brand_pool.js?v=20261104a"></script>
 <!-- 2026-10-22 新增：本季度新客唯一真源（ops 新客表），与 first_quarter.js 事实口径解耦 -->
-<script src="data/ops_new_set.js?v=20261103b"></script>
+<script src="data/ops_new_set.js?v=20261104a"></script>
 <!-- R12.3 (2026-06-26) customer_main_product.js 614KB 改 BIG_FILES 异步, 首屏省 614KB.
      Top80 表"主营"列首屏空白(2-3 秒补齐), bigdata ready 后 renderAll() 自动二次渲染. -->
-<!-- <script src="data/customer_main_product.js?v=20261103b" defer></script> -->
+<!-- <script src="data/customer_main_product.js?v=20261104a" defer></script> -->
 <script>window.__CUSTOMER_MAIN_PRODUCT__ = {}; // R12.3 首屏占位, BIG_FILES 异步填充</script>
 <!-- 🦞 云端同步层（2026-05-21 19:52 第十四批：tcbjs 1.x 不支持用户名登录，切到 v2 SDK 用 signInWithPassword） -->
 <!-- 2026-07-21 修复「卡住」：cloudbase SDK 改 defer，避免 static.cloudbase.net 慢时同步阻塞整页。
      云同步非首屏必需，defer 后于 DOMContentLoaded 前就绪，静态数据照常渲染。 -->
 <script defer src="https://static.cloudbase.net/cloudbase-js-sdk/latest/cloudbase.full.js"></script>
-<script defer src="cloud_sync.js?v=20261103b"></script>
-<script defer src="dual_check.js?v=20261103b"></script>
-<script defer src="big_data_dual_check.js?v=20261103b"></script>
+<script defer src="cloud_sync.js?v=20261104a"></script>
+<script defer src="dual_check.js?v=20261104a"></script>
+<script defer src="big_data_dual_check.js?v=20261104a"></script>
 <style>
   /* ===== 2026-06-12 首屏优化：大文件异步加载的 loading / 骨架样式 ===== */
   @keyframes bigDataSpin { to { transform: rotate(360deg); } }
@@ -925,7 +948,7 @@ window.__OVERRIDE_FETCH__ = (function(){
     const frame = document.getElementById('lifecycleFrame');
     if (!frame) return;
     const sale = currentLifecycleSales();
-    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261103b`;
+    const target = `lifecycle-system/index.html?embed=1&sales=${encodeURIComponent(sale)}&v=20261104a`;
     const src = frame.getAttribute('src') || '';
     if (!src.includes(`sales=${encodeURIComponent(sale)}`) || !src.includes('20260915x')) frame.setAttribute('src', target);
   }
@@ -1124,7 +1147,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🧵 产业带进展</div>
         </div>
-        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261103b" title="产业带进展内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialBeltFrame" data-special-frame="belt" src="industry-belt.html?embed=1&v=20261104a" title="产业带进展内嵌看板"></iframe>
       </div>
     </div>
     <div class="placeholder-grid" id="specialPursuitEntry">
@@ -1140,7 +1163,7 @@ window.applyManualSaleOverride = function(r) {
         <div class="special-inline-head">
           <div class="special-inline-title">🎯 靶向拓客名单</div>
         </div>
-        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261103b" title="靶向拓客名单内嵌看板"></iframe>
+        <iframe class="special-inline-frame" id="specialPursuitFrame" data-special-frame="pursuit" src="pursuit_v2.html?embed=1&v=20261104a" title="靶向拓客名单内嵌看板"></iframe>
       </div>
       <div class="special-inline-tip">产业带与靶向名单按上下顺序直接展开，不使用切换 Tab。</div>
     </div>
@@ -1237,7 +1260,7 @@ window.applyManualSaleOverride = function(r) {
       </div>
     </div>
     <div class="panel" style="padding:0;overflow:hidden;">
-      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261103b" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
+      <iframe id="lifecycleFrame" src="lifecycle-system/index.html?embed=1&sales=kinsleyjin&v=20261104a" data-base-src="lifecycle-system/index.html?embed=1" style="width:100%;height:520px;border:0;display:block;background:#fff;" title="客户生命周期系统"></iframe>
     </div>
   </div>
 
@@ -3718,7 +3741,7 @@ function renderRecords() {
           // 2026-10-10 子青拍板：新增「最新归属修改时间」= _updatedAt（本地时区）
           return display(fmtLocalDateTime(r && r._updatedAt));
         })()}</td>
-        <td>${display(r.sale)}${(function(){var h=getSaleHistory(r);return h.length?`<span class="history-badge clickable-status" data-rid="${r.id}" data-act="saleHistory" title="查看归属变更历史" style="margin-left:4px;">↔${h.length}</span>`:'';})()}</td>
+        <td>${(function(){var _o=window.attrOwnerOf(r.shortName||r.name)||r.sale;return display(_o);})()}${(function(){var h=getSaleHistory(r);return (h.length && window.attrFlowOf(r.shortName||r.name))?`<span class="history-badge clickable-status" data-rid="${r.id}" data-act="saleHistory" title="查看归属变更历史" style="margin-left:4px;">↔${h.length}</span>`:'';})()}</td>
         <td>${display(r.name)}${mainProdInline(r.name)}</td>
         <td>${display(r.shortName)}${mainProdInline(r.shortName || r.name)}</td>
         <td>${display(r.cat)}</td>
@@ -4293,25 +4316,26 @@ function lookupDuplicates(name) {
    多条 _ts 都同 → fallback 到云端 attribution_log 的 toSale 最新值(异步预加载到 window.__ATTR_LOG_CACHE__).
    这能彻底解决子青 12:47 "由 X 改为 Y 顺序倒置" 问题: 同毫秒/数组反向 都会被时间序兜住. */
 function _dupCurrentOwner(entries, queryName){
-  const local = (entries||[]).filter(e=>e.src==='本地');
-  if(local.length){
-    // 优先 1: 有 date 的取最新
-    const withDate = local.filter(e=>e.date).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    if (withDate.length && withDate[0].date !== (withDate[1] && withDate[1].date)) return withDate[0].sales;
-    // 优先 2: 按 _ts 取最新 (R3.2 新增)
-    const withTs = local.filter(e=>e._ts).sort((a,b)=>(b._ts||0)-(a._ts||0));
-    if (withTs.length && withTs[0]._ts !== (withTs[1] && withTs[1]._ts)) return withTs[0].sales;
-    // 优先 3: 查云端 attribution_log 最新一条 (异步缓存,同步可用)
-    if (queryName && window.__ATTR_LOG_CACHE__ && window.__ATTR_LOG_CACHE__[queryName]) {
-      const latestToSale = window.__ATTR_LOG_CACHE__[queryName];
-      if (latestToSale) return latestToSale;
-    }
-    // 优先 4: 兜底用数组最后一项
-    return local[local.length-1].sales;
+  // 🔴 2026-11-04 框架化：归属统一读 __ATTR_RESOLVED__（单一真源）
+  //   旧四级（手填 date 最新 → _ts 最新 → attribution_log 最新 → 数组最后一项）
+  //   全是「取最新」，与「先登记先归属」冲突，且手填 date 可倒填。
+  var _R = window.__ATTR_RESOLVED__ || {};
+  var _q = (queryName || '').trim();
+  var _hit = _R[_q];
+  if (!_hit && window.__MAPPING_DATA__ && window.__MAPPING_DATA__[_q]) _hit = _R[window.__MAPPING_DATA__[_q]];
+  if (!_hit && window.__REGISTERED_SUBJECTS__ && window.__REGISTERED_SUBJECTS__[_q]) {
+    var _sn = window.__REGISTERED_SUBJECTS__[_q].shortName;
+    if (_sn) _hit = _R[_sn];
   }
-  const base = (entries||[]).filter(e=>e.src==='底表');
-  if(base.length) return base[base.length-1].sales;
-  return (entries&&entries.length) ? entries[entries.length-1].sales : '';
+  if (_hit && _hit.s) return _hit.s;
+  // 兜底（产物未加载时）：按真实时间戳取【最早】，不再采信手填 date
+  var _local = (entries||[]).filter(function(e){ return e.src==='本地' || e.src==='底表'; });
+  if (_local.length){
+    var _ts = _local.filter(function(e){ return e._ts; }).sort(function(a,b){ return (a._ts||0)-(b._ts||0); });
+    if (_ts.length) return _ts[0].sales;
+    return _local[0].sales;
+  }
+  return (entries&&entries.length) ? entries[0].sales : '';
 }
 // R3.2: 异步预加载 attribution_log 到本地缓存(避免每次 lookupDuplicates 都同步阻塞)
 window.__ATTR_LOG_CACHE__ = window.__ATTR_LOG_CACHE__ || {};
@@ -4868,7 +4892,7 @@ function onNameInput() {
       const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
       const _changed = _others.length > 0;  // 出现过别的销售 = 归属被改过
       const _ownerHtml = `<b>${_owner}</b>`;
-      const _bodyHtml = _changed
+      const _bodyHtml = (_changed && window.attrFlowOf(raw))
         ? `❌ <b>主体重复</b>：该客户当前归属 ${_ownerHtml}（销售已由 ${_others.map(s=>`<span style="text-decoration:line-through;color:#9ca3af;">${s}</span>`).join('、')} 修改为 ${_ownerHtml}）。按「先登记先归属」规则<b>本次拒绝提交</b>。`
         : `❌ <b>主体重复</b>：该客户已被 ${_ownerHtml} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。`;
       hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
@@ -4930,7 +4954,7 @@ function onInlineNameInput() {
       const _others = [...new Set(dup.entries.map(d=>d.sales).filter(s=>s && s!==_owner))];
       const _changed = _others.length > 0;
       const _ownerHtml = `<b>${_owner}</b>`;
-      const _bodyHtml = _changed
+      const _bodyHtml = (_changed && window.attrFlowOf(raw))
         ? `❌ <b>主体重复</b>：该客户当前归属 ${_ownerHtml}（销售已由 ${_others.map(s=>`<span style="text-decoration:line-through;color:#9ca3af;">${s}</span>`).join('、')} 修改为 ${_ownerHtml}）。按「先登记先归属」规则<b>本次拒绝提交</b>。`
         : `❌ <b>主体重复</b>：该客户已被 ${_ownerHtml} 登记。按「先登记先归属」规则<b>本次拒绝提交</b>。`;
       hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
@@ -5002,11 +5026,16 @@ function renderCloudNameHint(d, raw, hintId, submitId){
                 || String(d.firstRegisterBy || '').toLowerCase() === 'brownfan';
     hasHardDup = !_isBfNow;
     var firstBy = d.firstRegisterBy || d.currentSale;
-    // R4.6: override 优先 — 如果是 override 客户，显示 override 归属
-    var displaySale = overrideSale || d.currentSale;
-    var displayFirstBy = overrideSale || firstBy;
+    // 🔴 2026-11-04 框架化：当前归属与「最早登记人」都取自单一真源解析结果
+    var _AR = (window.__ATTR_RESOLVED__ || {})[shortName]
+           || (window.__ATTR_RESOLVED__ || {})[raw] || {};
+    var displaySale = overrideSale || _AR.s || d.currentSale;
+    var displayFirstBy = overrideSale || _AR.f || firstBy;
+    // 🔴 非人为（算法纠偏）不暴露首登人；人为流转才保留原登记说明
+    var _flowTail = (window.attrFlowOf(shortName) || window.attrFlowOf(raw))
+      ? `（最早由 <b>${displayFirstBy}</b> 登记）` : '';
     hint += `<div class="hint-dup" style="background:#fee2e2;color:#991b1b;padding:8px 10px;border-radius:6px;margin-top:6px;border:1px solid #fca5a5;">
-      ❌ <b>主体重复</b>：该客户当前归属 <b>${displaySale}</b>（最早由 <b>${displayFirstBy}</b> 登记）。按「先登记先归属」规则<b>本次拒绝提交</b>。</div>`;
+      ❌ <b>主体重复</b>：该客户当前归属 <b>${displaySale}</b>${_flowTail}。按「先登记先归属」规则<b>本次拒绝提交</b>。</div>`;
   }
   hintEl.innerHTML = hint;
   if (submitBtn) submitBtn.disabled = hasHardDup;
@@ -5097,7 +5126,7 @@ window.submitRecord = async () => {
         var __isAdm = !!(window.cloud && cloud.isAdmin && cloud.isAdmin());
         if (__hasOwner && !__isOwner && !__isAdm) {
           __newSale = rec.sale;
-          __saleChgInfo = '\n\n🔒 归属未变更：该客户当前归属为 ' + rec.sale
+          __saleChgInfo = '\n\n该客户当前归属为 ' + rec.sale
             + '，按规则只有归属人本人或管理员可修改归属（其余修改已保存）';
         } else {
           var __whoChg = (window.cloud && cloud.rtx && cloud.rtx()) || CURRENT_USER || 'unknown';
@@ -5183,7 +5212,7 @@ window.submitRecord = async () => {
   if (hardDup.length > 0) {
     const _owner = _dupCurrentOwner(dup.entries);
     const _others = [...new Set(dup.entries.map(d => d.sales).filter(s => s && s !== _owner))];
-    const msg = _others.length > 0
+    const msg = (_others.length > 0 && window.attrFlowOf(name))
       ? `❌ 主体重复：该客户当前归属 ${_owner}（销售已由 ${_others.join('、')} 修改为 ${_owner}）。\n按「先登记先归属」规则拒绝提交。`
       : `❌ 主体重复：该客户已被 ${_owner} 登记。\n按「先登记先归属」规则拒绝提交。`;
     return alert(msg);
@@ -5440,7 +5469,7 @@ function importPresetBulkRows() {
   }
   // 动态 fetch
   const s = document.createElement('script');
-  s.src = 'data/bulk_import_rows.js?v=20261103b';
+  s.src = 'data/bulk_import_rows.js?v=20261104a';
   s.onload = () => {
     const rows = window.__BULK_IMPORT_ROWS__ || [];
     if (!rows.length) return alert('未找到预置批量数据');
@@ -6725,6 +6754,7 @@ try { window.__bootLifecycle(); } catch(e){ console.warn('[lifecycle] boot defer
   // 7 个 MB 级大文件 → 各自暴露的全局变量名（用于原地填充占位对象）
   // type: 'obj' 原地 Object.assign 填充；'records' 重填 window.RECORDS；'raw' 直接覆盖(允许换引用)
   var BIG_FILES = [
+    { file:'data/attribution_resolved.js',   vars:['__ATTR_RESOLVED__'], label:'归属解析单一真源' },
     { file:'data/register_lookup_data.js',   vars:['__MAPPING_DATA__','__REGISTERED_SUBJECTS__'],                              label:'登记校验字典' },
     /* 2026-07-28 死规矩 0b 已废弃，注释加载：{ file:'data/laoke_lookup_data.js', vars:['__SUBJECT_SHORT_MAP__','__SHORT_FIRST_QUARTER_MAP__','__OLD_SUBJECT_QUARTER_MAP__'], label:'首投季度字典' }, */
     { file:'data/customer_link_data.js',     vars:['__CUSTOMER_LINK_DATA__'], cloudLookupType:'customer_link_data',             label:'客户链路数据' },
