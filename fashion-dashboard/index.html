@@ -416,6 +416,10 @@ const gytPctCell = v => {
   return `<span class="gyt-pct ${cls}">${fmt(v,1)}%</span>`;
 };
 
+// 🔴 11.11 浏览器渲染实测发现：rankCls 定义在 10/22 后被误删，但 3 处表格渲染仍在调用，
+//   抛 ReferenceError 会中断后续所有渲染。依据 index.html.bak_20261022_before_commit:583 原文恢复。
+const rankCls = i => i < 3 ? 'top3' : '';
+
 // ============ KPI ============
 const kpis = [
   { lb:'消耗',      val:P.overall.cost_wan,pct:P.overall.cost_pct,   abs:P.overall.cost_delta_wan, unit:'万', d:2, deltaUnit:'万' },
