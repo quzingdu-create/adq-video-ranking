@@ -112,6 +112,12 @@
   }
 
   .row-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* 11.12 子青「并在一行输出」：潜客优投 / 非潜客优投 两组并排一行，分组标题随列走 */
+  .qk-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .qk-pair .seg-kpi { margin-top: 2px; }
+  .qk-pair .seg-kpi .k { padding: 6px 6px; }
+  .qk-pair .seg-kpi .k .dd { font-size: 10px; white-space: normal; }
+  @media (max-width: 900px) { .qk-pair { grid-template-columns: 1fr; } }
   .seg-kpi { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px; }
   .seg-kpi .k {
     background: linear-gradient(135deg, #F5FAFF, #E3F2FD);
@@ -288,8 +294,10 @@
       <div class="sec-title">潜客优投 vs 非潜客优投
         <span class="aux">占女装闭环 / 占直播（女装白名单聚合）</span>
       </div>
-      <div id="qkKpiA" class="seg-kpi"></div>
-      <div id="qkKpiB" class="seg-kpi"></div>
+      <div class="qk-pair">
+        <div class="qk-col"><div id="qkKpiA" class="seg-kpi"></div></div>
+        <div class="qk-col"><div id="qkKpiB" class="seg-kpi"></div></div>
+      </div>
     </section>
   </div>
 
