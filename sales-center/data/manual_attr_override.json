@@ -9337,9 +9337,9 @@
       "date": "2026-09-14"
     },
     "广州意汇传媒有限公司": {
-      "sale": "Jonzhu",
-      "reason": "2026-09-14 客户明细纠偏-9.14.xlsx 归属修正（子青拍板）",
-      "date": "2026-09-14"
+      "sale": "kaikaigenli",
+      "reason": "2026-11-16 子青拍板：Jonzhu 与 kaikaigenli 已协商好，主体交接给 kaikaigenli",
+      "date": "2026-11-16"
     },
     "深圳市龙岗区川奇鞋业店(个体工商户)": {
       "sale": "Jonzhu",
@@ -23345,8 +23345,23 @@
       "sale": "kaikaigenli",
       "reason": "2026-11-16 子青点名：投放主体.xls 无销售登记冲突，登记给 kaikaigenli",
       "date": "2026-11-16"
+    },
+    "佛山市禅城区菩古嘉选百货商行(个体工商户)": {
+      "sale": "kaikaigenli",
+      "reason": "2026-11-16 子青拍板：Jonzhu 与 kaikaigenli 已协商好，主体交接给 kaikaigenli（投放主体名单省略「(个体工商户)」后缀，补三个 key 全覆盖）",
+      "date": "2026-11-16"
+    },
+    "菩古嘉选百货商行": {
+      "sale": "kaikaigenli",
+      "reason": "2026-11-16 子青拍板：Jonzhu 与 kaikaigenli 已协商好，主体交接给 kaikaigenli（投放主体名单省略「(个体工商户)」后缀，补三个 key 全覆盖）",
+      "date": "2026-11-16"
+    },
+    "佛山市禅城区菩古嘉选百货商行": {
+      "sale": "kaikaigenli",
+      "reason": "2026-11-16 子青拍板：Jonzhu 与 kaikaigenli 已协商好，主体交接给 kaikaigenli（投放主体名单省略「(个体工商户)」后缀，补三个 key 全覆盖）",
+      "date": "2026-11-16"
     }
   },
   "updatedAt": "2026-11-16",
-  "note": "逐单归属覆盖；2026-11-09 按 矫正过-1109.xlsx 销售矫正版归属名单全量锁死 714 个 Q4 新客简称（子青拍板，替代 靶向 1109-新.xlsx 口径；26 条靶向独有 override 保留）；2026-11-10 按 校对-1110.xlsx 矫正 12 条归属（子青拍板，jonzhu 按项目标准 rtx 规范为 Jonzhu，霖兴桂原已 Jonzhu 未动）；2026-11-16 补半角 key 锁（11-10 全角锁未覆盖半角精确匹配，半角 name 记录回退显示 yvaineechen） ; 2026-11-16 投放主体.xls 无登记冲突的 58 个主体批量登记给 kaikaigenli（子青拍板）"
+  "note": "逐单归属覆盖；2026-11-09 按 矫正过-1109.xlsx 销售矫正版归属名单全量锁死 714 个 Q4 新客简称（子青拍板，替代 靶向 1109-新.xlsx 口径；26 条靶向独有 override 保留）；2026-11-10 按 校对-1110.xlsx 矫正 12 条归属（子青拍板，jonzhu 按项目标准 rtx 规范为 Jonzhu，霖兴桂原已 Jonzhu 未动）；2026-11-16 补半角 key 锁（11-10 全角锁未覆盖半角精确匹配，半角 name 记录回退显示 yvaineechen） ; 2026-11-16 投放主体.xls 无登记冲突的 58 个主体批量登记给 kaikaigenli（子青拍板） ; 2026-11-16 菩古嘉选/意汇传媒两主体协商交接给 kaikaigenli（子青拍板）"
 }
