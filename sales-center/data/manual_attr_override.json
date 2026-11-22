@@ -20331,9 +20331,9 @@
       "date": "2026-10-19"
     },
     "广州艺承皮具有限公司": {
-      "sale": "kaikaigenli",
-      "reason": "2026-10-19 纠偏-10.19.xlsx 归属修正（子青拍板）",
-      "date": "2026-10-19"
+      "sale": "Jonzhu",
+      "reason": "2026-11-22 19:54 子青点名：广州艺承皮具有限公司 由 kaikaigenli 转给 Jonzhu",
+      "date": "2026-11-22"
     },
     "义乌市登珉电子商务有限公司": {
       "sale": "lijunwu",
@@ -23305,8 +23305,13 @@
       "sale": "yvaineechen",
       "reason": "2026-11-22 子青拍板：由 lijunwu 转 yvaineechen（重复登记 2 条：11-17 原 yvaineechen / 11-18 lijunwu）",
       "date": "2026-11-22"
+    },
+    "淄博云仓电子商务有限公司": {
+      "sale": "kaikaigenli",
+      "reason": "2026-11-22 19:54 子青点名：淄博云仓电子商务有限公司 由 Jonzhu 转给 kaikaigenli（云端已有登记，补本地拍板锁）",
+      "date": "2026-11-22"
     }
   },
   "updatedAt": "2026-11-22",
-  "note": "逐单归属覆盖；2026-11-09 按 矫正过-1109.xlsx 销售矫正版归属名单全量锁死 714 个 Q4 新客简称（子青拍板，替代 靶向 1109-新.xlsx 口径；26 条靶向独有 override 保留）；2026-11-10 按 校对-1110.xlsx 矫正 12 条归属（子青拍板，jonzhu 按项目标准 rtx 规范为 Jonzhu，霖兴桂原已 Jonzhu 未动）；2026-11-16 补半角 key 锁（11-10 全角锁未覆盖半角精确匹配，半角 name 记录回退显示 yvaineechen） ; 2026-11-16 投放主体.xls 无登记冲突的 58 个主体批量登记给 kaikaigenli（子青拍板） ; 2026-11-16 菩古嘉选/意汇传媒两主体协商交接给 kaikaigenli（子青拍板） ; 2026-11-16 9 家 yvaineechen 解绑归「其他」（不锁死，保留可再登记）；朗润→yvaineechen；乔润→Jonzhu ; 2026-11-16 15:35 南平叙述/郴州初月 grettazhao→kaikaigenli，深圳市朗润视界 Jonzhu→yvaineechen，桐乡卓澜新登记 kaikaigenli；广州稳隐按子青拍板维持 kaikaigenli"
+  "note": "逐单归属覆盖；2026-11-09 按 矫正过-1109.xlsx 销售矫正版归属名单全量锁死 714 个 Q4 新客简称（子青拍板，替代 靶向 1109-新.xlsx 口径；26 条靶向独有 override 保留）；2026-11-10 按 校对-1110.xlsx 矫正 12 条归属（子青拍板，jonzhu 按项目标准 rtx 规范为 Jonzhu，霖兴桂原已 Jonzhu 未动）；2026-11-16 补半角 key 锁（11-10 全角锁未覆盖半角精确匹配，半角 name 记录回退显示 yvaineechen） ; 2026-11-16 投放主体.xls 无登记冲突的 58 个主体批量登记给 kaikaigenli（子青拍板） ; 2026-11-16 菩古嘉选/意汇传媒两主体协商交接给 kaikaigenli（子青拍板） ; 2026-11-16 9 家 yvaineechen 解绑归「其他」（不锁死，保留可再登记）；朗润→yvaineechen；乔润→Jonzhu ; 2026-11-16 15:35 南平叙述/郴州初月 grettazhao→kaikaigenli，深圳市朗润视界 Jonzhu→yvaineechen，桐乡卓澜新登记 kaikaigenli；广州稳隐按子青拍板维持 kaikaigenli ; 2026-11-22 19:54 广州艺承皮具 kaikaigenli→Jonzhu，淄博云仓 Jonzhu→kaikaigenli"
 }
