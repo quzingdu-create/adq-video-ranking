@@ -1,5 +1,15 @@
 {
   "overrides": {
+    "苍南县孟秀电子商务商行(个体工商户)": {
+      "sale": "lijunwu",
+      "reason": "2026-11-25 子青拍板：由 Jonzhu 转 lijunwu（首登 2026-11-17）",
+      "date": "2026-11-25"
+    },
+    "泉州市鲤城区克瑞商贸有限公司": {
+      "sale": "lijunwu",
+      "reason": "2026-11-25 子青拍板：由 kaikaigenli 转 lijunwu（首登 2026-11-23）",
+      "date": "2026-11-25"
+    },
     "佛山市高明区霖兴桂百货店（个体工商户）": {
       "sale": "Jonzhu",
       "reason": "2026-11-10 子青拍板：改到 Jonzhu（两条重复登记 shortName 全角、后登记 name 半角为 yvaineechen；按先登记先归属原已 Jonzhu，锁死消除半角回退误显）",
@@ -21112,9 +21122,9 @@
       "date": "2026-11-09"
     },
     "南京佩露琪科技有限公司": {
-      "sale": "yvaineechen",
-      "reason": "2026-11-09 按 矫正过-1109.xlsx 全量锁死（销售矫正版归属名单）",
-      "date": "2026-11-09"
+      "sale": "lijunwu",
+      "reason": "2026-11-25 子青拍板：由 yvaineechen 转 lijunwu（原 11-09 矫正名单锁死；首登 2026-10-25）",
+      "date": "2026-11-25"
     },
     "武汉市洪山区寓琛服装店(个体工商户)": {
       "sale": "Jonzhu",
